@@ -1,5 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
+from statistics import mean 
+
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -81,7 +83,7 @@ class MyWindow(QMainWindow):
         
         # Value in USD
         self.risk = 25
-        self.currencies = ["AUDNZD"]
+        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF"]
         
     def initUI(self):
         # Font Initiation
@@ -165,6 +167,28 @@ class MyWindow(QMainWindow):
         self.radioButton7.setFont(label_font)
         self.radioButton7.resize(140, 40)
         self.radioButton7.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        
+        self.radioButton8 = QRadioButton(self)
+        self.radioButton8.move(140, vertical_align)
+        self.radioButton8.setText("USDJPY")
+        self.radioButton8.setFont(label_font)
+        self.radioButton8.resize(140, 40)
+        self.radioButton8.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        
+        self.radioButton9 = QRadioButton(self)
+        self.radioButton9.move(260, vertical_align)
+        self.radioButton9.setText("USDCHF")
+        self.radioButton9.setFont(label_font)
+        self.radioButton9.resize(140, 40)
+        self.radioButton9.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        
+        vertical_align += self.vertical_gap + 40
+        self.radioButton10 = QRadioButton(self)
+        self.radioButton10.move(self.left_margin, vertical_align)
+        self.radioButton10.setText("AUDJPY")
+        self.radioButton10.setFont(label_font)
+        self.radioButton10.resize(140, 40)
+        self.radioButton10.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         # Set the initial state of the radio buttons (optional)
         self.radioButton1.setChecked(True)
@@ -374,8 +398,23 @@ class MyWindow(QMainWindow):
             self.spread = round(self.get_spread_price(), 2) # 1.0
         elif self.radioButton7.isChecked():
             self.symbol = "AUDNZD"
-            self.dollor_value = 1/1.6685
-            self.spread = round(self.get_spread_price(), 5) # 1.0
+            self.dollor_value = 1/self.get_mid_price()
+            self.spread = round(self.get_spread_price(), 5) # 1.0# TODO Need to add USD factor
+        elif self.radioButton8.isChecked():
+            self.symbol = "USDJPY"
+            tick_price = mean(self.get_mid_price())
+            self.dollor_value = 1/tick_price
+            self.spread = round(self.get_spread_price(), 3) # DONE
+        elif self.radioButton9.isChecked():
+            self.symbol = "USDCHF"
+            tick_price = mean(self.get_mid_price())
+            self.dollor_value = 1/tick_price
+            self.spread = round(self.get_spread_price(), 5) # TODO Need to fix this
+        elif self.radioButton10.isChecked():
+            self.symbol = "AUDJPY"
+            tick_price = mean(self.get_mid_price())
+            self.dollor_value = 1/tick_price
+            self.spread = round(self.get_spread_price(), 3) # 1.0 # TODO Need to add USD factor
     
     def entry_long_on_bid(self):
         self.long_limit_and_bid_orders("bid_ask")
@@ -579,19 +618,7 @@ class MyWindow(QMainWindow):
             mt.order_send(request1)
 
     def trade_confirmation(self, points_in_stop, position_size, target_price1):
-        # print(self.symbol)
-        # print(f"- risk in $     : {self.risk}")
-        # print(f"- risk in points: {points_in_stop}")
-        # print(f"- spread        : {self.spread}")
-        # print(f"- position size : {position_size}")
-        # print(f"- target 1      : {target_price1}")
-        # print("")
-        input_string = self.symbol + "\n" + \
-                        f"- risk in $     : {self.risk}" + "\n" + \
-                            f"- risk in points: {points_in_stop}" + \
-                                f"- spread        : {self.spread}" + \
-                                    f"- position size : {position_size}" + \
-                                        f"- target 1      : {target_price1}"
+        input_string = f"{self.symbol} with ${self.risk} Risk ({points_in_stop})pips, {position_size} Positions, Target @ {target_price1}"
             
         reply = QMessageBox.question(self, 'Trade Confirmation!', input_string,
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
