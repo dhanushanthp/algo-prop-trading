@@ -591,13 +591,21 @@ class MyWindow(QMainWindow):
         else:
             print(f"Order placed successfully!")
 
+    def warning_message(self, message):
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText(message)
+        msgBox.exec()
+
     def long_limit_and_bid_orders(self, type):
         if type == "limit":
             entry_price = self.get_limit_price()
         elif type == "bid_ask":
             entry_price, _ = self.get_mid_price()
         else:
+            self.warning_message("The order type not found!")
             raise Exception("Type not defined!")
+            
         
         stop_price = self.get_stop_price() - self.spread
         
