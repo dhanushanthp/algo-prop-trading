@@ -845,19 +845,14 @@ class MyWindow(QMainWindow):
         positions = mt.positions_get()
         
         for obj in positions:
-            if obj.symbol == self.symbol:
-                if obj.type == 1:
-                    adjusted_stop = obj.price_open - 0.25
-                else:                   
-                    adjusted_stop = obj.price_open + 0.20
-            
+            if obj.symbol == self.symbol:           
                 modify_request = {
                     "action": mt.TRADE_ACTION_SLTP,
                     "symbol": obj.symbol,
                     "volume": obj.volume,
                     "type": obj.type,
                     "position": obj.ticket,
-                    "sl": adjusted_stop,
+                    "sl": obj.price_open,
                     "tp": obj.tp,
                     "comment": 'Break Even',
                     "magic": 234000,
