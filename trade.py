@@ -84,7 +84,7 @@ class MyWindow(QMainWindow):
         
         # Value in USD
         self.risk = 50
-        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF"]
+        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD"]
         
     def initUI(self):
         # Font Initiation
@@ -191,6 +191,20 @@ class MyWindow(QMainWindow):
         self.radioButton10.resize(140, 40)
         self.radioButton10.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
+        self.radioButton11 = QRadioButton(self)
+        self.radioButton11.move(140, vertical_align)
+        self.radioButton11.setText("XAUUSD")
+        self.radioButton11.setFont(label_font)
+        self.radioButton11.resize(140, 40)
+        self.radioButton11.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        
+        self.radioButton12 = QRadioButton(self)
+        self.radioButton12.move(260, vertical_align)
+        self.radioButton12.setText("EURUSD")
+        self.radioButton12.setFont(label_font)
+        self.radioButton12.resize(140, 40)
+        self.radioButton12.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        
         # Set the initial state of the radio buttons (optional)
         # self.radioButton1.setChecked(True)
         # self.onRadioButtonToggled()
@@ -206,6 +220,8 @@ class MyWindow(QMainWindow):
         self.radioButton8.toggled.connect(self.onRadioButtonToggled)
         self.radioButton9.toggled.connect(self.onRadioButtonToggled)
         self.radioButton10.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton11.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton12.toggled.connect(self.onRadioButtonToggled)
         
         vertical_align += self.vertical_gap + self.vert_gap
         self.entry_label = QtWidgets.QLabel(self)
@@ -399,11 +415,11 @@ class MyWindow(QMainWindow):
         elif self.radioButton5.isChecked():
             self.symbol = "AUS200.cash"
             self.dollor_value = self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread_price(), 2) # 2.4
+            self.spread = round(self.get_spread_price(), 2)
         elif self.radioButton6.isChecked():
             self.symbol = "US100.cash"
             self.dollor_value = 1
-            self.spread = round(self.get_spread_price(), 2) # 1.0
+            self.spread = round(self.get_spread_price(), 2)
         elif self.radioButton7.isChecked():
             self.symbol = "AUDNZD"
             self.dollor_value = 1/self.get_mid_price()
@@ -423,6 +439,15 @@ class MyWindow(QMainWindow):
             tick_price = mean(self.get_mid_price())
             self.dollor_value = 1/tick_price
             self.spread = round(self.get_spread_price(), 3) # 1.0 # TODO Need to add USD factor
+        elif self.radioButton11.isChecked():
+            self.symbol = "XAUUSD"
+            # Added 2, Since it was picking the whole value
+            self.dollor_value = 2/self.get_exchange_price("XAUUSD")
+            self.spread = round(self.get_spread_price(), 3)
+        elif self.radioButton12.isChecked():
+            self.symbol = "EURUSD"
+            self.dollor_value = self.get_exchange_price("EURUSD")
+            self.spread = round(self.get_spread_price(), 3)
     
     def entry_long_on_bid(self):
         self.long_limit_and_bid_orders("bid_ask")
@@ -442,8 +467,13 @@ class MyWindow(QMainWindow):
         diff_price = (ask_price - bid_price)/2
         
         if self.symbol in self.currencies:
-            bid_price = round((bid_price + diff_price), 4)
-            ask_price = round((ask_price - diff_price), 4)
+            round_factor = 4
+            
+            if self.symbol in ["XAUUSD"]:
+                round_factor = 2
+            
+            bid_price = round((bid_price + diff_price), round_factor)
+            ask_price = round((ask_price - diff_price), round_factor)
         else:
             bid_price = round((bid_price + diff_price) * 10)/10
             ask_price = round((ask_price - diff_price) * 10)/10
@@ -475,11 +505,13 @@ class MyWindow(QMainWindow):
     
     def calculate_slots(self, points_in_stop):
         positions = self.risk/(points_in_stop * self.dollor_value)
-        return float(round(positions))
+        return float(positions)
         
     
     def split_positions(self, x):
         if x >= 1:
+            # Round x since we need round numbers
+            x = round(x)
             remaining = x%2
             if remaining == 0:
                 split = x/2
@@ -513,9 +545,10 @@ class MyWindow(QMainWindow):
         target_price1 = entry_price + 2*points_in_stop
         target_price2 = entry_price + points_in_stop
         
+        position1, position2 = self.split_positions(position_size)
+        
         response = self.trade_confirmation(points_in_stop, position_size, target_price1)
         
-        position1, position2 = self.split_positions(position_size)
         
         if response:
             request1 = {
@@ -580,10 +613,10 @@ class MyWindow(QMainWindow):
         target_price1 = entry_price + 2*points_in_stop
         target_price2 = entry_price + points_in_stop
         
+        position1, position2 = self.split_positions(position_size)
+        
         response = self.trade_confirmation(points_in_stop, position_size, target_price1)
         
-        position1, position2 = self.split_positions(position_size)
-
         if response:
             request1 = {
                 "action": mt.TRADE_ACTION_PENDING,
@@ -634,10 +667,9 @@ class MyWindow(QMainWindow):
         
         target_price1 = entry_price - 2*points_in_stop
         target_price2 = entry_price - points_in_stop
-
-        response = self.trade_confirmation(points_in_stop, position_size, target_price1)
         
         position1, position2 = self.split_positions(position_size)
+        response = self.trade_confirmation(points_in_stop, position_size, target_price1)
         
         if response:
             request1 = {
@@ -697,8 +729,8 @@ class MyWindow(QMainWindow):
         target_price1 = entry_price - 2*points_in_stop
         target_price2 = entry_price - points_in_stop
 
-        response = self.trade_confirmation(points_in_stop, position_size, target_price1)
         position1, position2 = self.split_positions(position_size)
+        response = self.trade_confirmation(points_in_stop, position_size, target_price1)
         
         if response:
             request1 = {
