@@ -386,19 +386,19 @@ class MyWindow(QMainWindow):
             self.spread = round(self.get_spread_price(), 2) # 1.0
         elif self.radioButton2.isChecked():
             self.symbol = "UK100.cash"
-            self.dollor_value = 0.82
+            self.dollor_value = round(1/self.get_exchange_price("GBPUSD"), 4)
             self.spread = round(self.get_spread_price(), 2) # 4.0
         elif self.radioButton3.isChecked():
             self.symbol = "HK50.cash"
-            self.dollor_value = 1/7.82295
+            self.dollor_value = round(1/self.get_exchange_price("USDHKD"), 4)
             self.spread = round(self.get_spread_price(), 2) # 10.0
         elif self.radioButton4.isChecked():
             self.symbol = "JP225.cash"
-            self.dollor_value = 1/150.2605
+            self.dollor_value = round(1/self.get_exchange_price("USDJPY"), 4)
             self.spread = round(self.get_spread_price(), 2) # 12.0
         elif self.radioButton5.isChecked():
             self.symbol = "AUS200.cash"
-            self.dollor_value = 1/1.5565
+            self.dollor_value = self.get_exchange_price("AUDUSD")
             self.spread = round(self.get_spread_price(), 2) # 2.4
         elif self.radioButton6.isChecked():
             self.symbol = "US100.cash"
@@ -410,14 +410,14 @@ class MyWindow(QMainWindow):
             self.spread = round(self.get_spread_price(), 5) # 1.0# TODO Need to add USD factor
         elif self.radioButton8.isChecked():
             self.symbol = "USDJPY"
-            tick_price = mean(self.get_mid_price())
+            tick_price = self.get_exchange_price("USDJPY")
             self.dollor_value = 1/tick_price
-            self.spread = round(self.get_spread_price(), 3) # DONE
+            self.spread = round(self.get_spread_price(), 3)
         elif self.radioButton9.isChecked():
             self.symbol = "USDCHF"
-            tick_price = mean(self.get_mid_price())
+            tick_price = self.get_exchange_price("USDCHF")
             self.dollor_value = 1/tick_price
-            self.spread = round(self.get_spread_price(), 5) # DONE
+            self.spread = round(self.get_spread_price(), 5)
         elif self.radioButton10.isChecked():
             self.symbol = "AUDJPY"
             tick_price = mean(self.get_mid_price())
@@ -450,6 +450,12 @@ class MyWindow(QMainWindow):
         
         print("BID: ", bid_price, " ASK: ", ask_price)
         return bid_price, ask_price
+    
+    def get_exchange_price(self, exchange):
+        ask_price = mt.symbol_info_tick(exchange).ask
+        bid_price = mt.symbol_info_tick(exchange).bid
+        exchange_rate = round((bid_price + ask_price)/2, 4)
+        return exchange_rate
     
     
     def get_spread_price(self):
@@ -727,7 +733,7 @@ class MyWindow(QMainWindow):
             self.order_log(res2)
 
     def trade_confirmation(self, points_in_stop, position_size, target_price1):
-        input_string = f"{self.symbol} with ${self.risk}<br>Risk ({points_in_stop})pips <br>Positions {position_size}<br> Target @ {target_price1}"
+        input_string = f"{self.symbol} with ${self.risk}<br> Dollar Value : ${self.dollor_value} <br>Risk ({points_in_stop})pips <br>Positions {position_size}<br> Target @ {target_price1}"
             
         reply = QMessageBox.question(self, 'Trade Confirmation!', input_string,
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
