@@ -116,7 +116,7 @@ class MyWindow(QMainWindow):
         self.vert_gap = 60
 
         # Set the title and windows size
-        self.setGeometry(20, 300, 380, 750)
+        self.setGeometry(600, 300, 380, 750)
 
         # Set application icon
         self.setWindowTitle("PropFirm")      
