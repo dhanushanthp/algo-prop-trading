@@ -192,12 +192,20 @@ class MyWindow(QMainWindow):
         self.radioButton10.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         # Set the initial state of the radio buttons (optional)
-        self.radioButton1.setChecked(True)
-        self.onRadioButtonToggled()
+        # self.radioButton1.setChecked(True)
+        # self.onRadioButtonToggled()
 
         # Connect a function to be called when a radio button is toggled
         self.radioButton1.toggled.connect(self.onRadioButtonToggled)
         self.radioButton2.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton3.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton4.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton5.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton6.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton7.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton8.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton9.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton10.toggled.connect(self.onRadioButtonToggled)
         
         vertical_align += self.vertical_gap + self.vert_gap
         self.entry_label = QtWidgets.QLabel(self)
@@ -341,27 +349,13 @@ class MyWindow(QMainWindow):
         self.close_trades.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.close_trades.setStyleSheet(
             "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
-        )
-        
-        # Button: Reverse Positions
-        vertical_align += self.vertical_gap + self.vert_gap
-        self.reverse_trades = QtWidgets.QPushButton(self)
-        self.reverse_trades.setText("Reverse")
-        self.reverse_trades.move(self.left_margin, vertical_align)
-        self.reverse_trades.clicked.connect(self.reverse_positions)
-        self.reverse_trades.setFont(button_font)
-        self.reverse_trades.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
-        self.reverse_trades.setIconSize(QtCore.QSize(40, 30))
-        self.reverse_trades.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.reverse_trades.setStyleSheet(
-            "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
-        )
-        
+        )        
         
         # Button: Close Single Position
+        vertical_align += self.vertical_gap + self.vert_gap
         self.close_single_position = QtWidgets.QPushButton(self)
         self.close_single_position.setText("Break Even")
-        self.close_single_position.move(self.btn_gap, vertical_align)
+        self.close_single_position.move(self.left_margin, vertical_align)
         self.close_single_position.clicked.connect(self.break_even)
         self.close_single_position.setFont(button_font)
         self.close_single_position.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
@@ -369,7 +363,20 @@ class MyWindow(QMainWindow):
         self.close_single_position.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.close_single_position.setStyleSheet(
             "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
-        )     
+        )
+        
+        # Button: Reverse Positions
+        # self.reverse_trades = QtWidgets.QPushButton(self)
+        # self.reverse_trades.setText("Reverse")
+        # self.reverse_trades.move(self.left_margin, vertical_align)
+        # self.reverse_trades.clicked.connect(self.reverse_positions)
+        # self.reverse_trades.setFont(button_font)
+        # self.reverse_trades.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
+        # self.reverse_trades.setIconSize(QtCore.QSize(40, 30))
+        # self.reverse_trades.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        # self.reverse_trades.setStyleSheet(
+        #     "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
+        # )     
     
     def onRadioButtonToggled(self):
         # Check which radio button is selected
@@ -441,6 +448,7 @@ class MyWindow(QMainWindow):
             bid_price = round((bid_price + diff_price) * 10)/10
             ask_price = round((ask_price - diff_price) * 10)/10
         
+        print("BID: ", bid_price, " ASK: ", ask_price)
         return bid_price, ask_price
     
     
@@ -469,12 +477,15 @@ class MyWindow(QMainWindow):
             remaining = x%2
             if remaining == 0:
                 split = x/2
+                print(float(split), float(split))
                 return float(split), float(split)
             if remaining == 1:
                 split = math.floor(x/2)
+                print(float(split), float(split+1))
                 return float(split), float(split+1)
         else:
             split = round(x/2, 2)
+            print(float(split), float(split))
             return float(split), float(split)
         
 
@@ -529,8 +540,16 @@ class MyWindow(QMainWindow):
                 "type_filling": mt.ORDER_FILLING_RETURN,
             }
             
-            mt.order_send(request1)
-            mt.order_send(request2)
+            res1 = mt.order_send(request1)
+            self.order_log(res1)
+            res2 = mt.order_send(request2)
+            self.order_log(res2)
+            
+    def order_log(self, result):
+        if result.retcode != mt.TRADE_RETCODE_DONE:
+            print(f"code: {result.retcode}, reason: {result.comment}")
+        else:
+            print(f"Order placed successfully!")
 
     def long_limit_and_bid_orders(self, type):
         if type == "limit":
@@ -587,8 +606,10 @@ class MyWindow(QMainWindow):
             }
             
             
-            mt.order_send(request1)
-            mt.order_send(request2)
+            res1 = mt.order_send(request1)
+            self.order_log(res1)
+            res2 = mt.order_send(request2)
+            self.order_log(res2)
     
 
     def short_stop_limit_order(self):
@@ -641,8 +662,10 @@ class MyWindow(QMainWindow):
                 "type_filling": mt.ORDER_FILLING_RETURN,
             }
 
-            mt.order_send(request1)
-            mt.order_send(request2)
+            res1 = mt.order_send(request1)
+            self.order_log(res1)
+            res2 = mt.order_send(request2)
+            self.order_log(res2)
             
 
     def short_limit_ask_orders(self, type:str):
@@ -698,11 +721,13 @@ class MyWindow(QMainWindow):
                 "type_filling": mt.ORDER_FILLING_RETURN,
             }
 
-            mt.order_send(request1)
-            mt.order_send(request2)
+            res1 = mt.order_send(request1)
+            self.order_log(res1)
+            res2 = mt.order_send(request2)
+            self.order_log(res2)
 
     def trade_confirmation(self, points_in_stop, position_size, target_price1):
-        input_string = f"{self.symbol} with ${self.risk} Risk ({points_in_stop})pips, {position_size} Positions, Target @ {target_price1}"
+        input_string = f"{self.symbol} with ${self.risk}<br>Risk ({points_in_stop})pips <br>Positions {position_size}<br> Target @ {target_price1}"
             
         reply = QMessageBox.question(self, 'Trade Confirmation!', input_string,
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -717,18 +742,19 @@ class MyWindow(QMainWindow):
 
         # Iterate through the positions and close each one
         for position in positions:
-            request = {
-                "action": mt.TRADE_ACTION_REMOVE,
-                "order": position.ticket,
-            }
+            if position.symbol == self.symbol:
+                request = {
+                    "action": mt.TRADE_ACTION_REMOVE,
+                    "order": position.ticket,
+                }
 
-            # Send the trade request
-            result = mt.order_send(request)
+                # Send the trade request
+                result = mt.order_send(request)
 
-            if result.retcode != mt.TRADE_RETCODE_DONE:
-                print(f"Failed to cancel order {position.ticket}, error code: {result.retcode}, reason: {result.comment}")
-            else:
-                print(f"Order {position.ticket} cancelled successfully.")
+                if result.retcode != mt.TRADE_RETCODE_DONE:
+                    print(f"Failed to cancel order {position.ticket}, error code: {result.retcode}, reason: {result.comment}")
+                else:
+                    print(f"Order {position.ticket} cancelled successfully.")
     
     
     def close_positions(self):
@@ -736,33 +762,34 @@ class MyWindow(QMainWindow):
         positions = mt.positions_get()
 
         for obj in positions: # we iterate through all open positions
-            if obj.type == 1: # if order type is a buy, to close we have to sell
-                order_type = mt.ORDER_TYPE_BUY
-                price = mt.symbol_info_tick(obj.symbol).bid
-            else:                   # otherwise, if order type is a sell, to close we have to buy
-                order_type = mt.ORDER_TYPE_SELL
-                price = mt.symbol_info_tick(obj.symbol).ask
-            
-            close_request = {
-                "action": mt.TRADE_ACTION_DEAL,
-                "symbol": obj.symbol,
-                "volume": obj.volume,
-                "type": order_type,
-                "position": obj.ticket,
-                "price": price,
-                "deviation": 20,
-                "magic": 234000,
-                "comment": 'Close trade',
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
-            }
-            
-            result = mt.order_send(close_request) # send order to close a position
-            
-            if result.retcode != mt.TRADE_RETCODE_DONE:
-                print("Close Order "+obj.symbol+" failed!!...Error Code: "+str(result.retcode))
-            else:
-                print("Order "+obj.symbol+" closed successfully")
+            if obj.symbol == self.symbol:
+                if obj.type == 1: # if order type is a buy, to close we have to sell
+                    order_type = mt.ORDER_TYPE_BUY
+                    price = mt.symbol_info_tick(obj.symbol).bid
+                else:                   # otherwise, if order type is a sell, to close we have to buy
+                    order_type = mt.ORDER_TYPE_SELL
+                    price = mt.symbol_info_tick(obj.symbol).ask
+                
+                close_request = {
+                    "action": mt.TRADE_ACTION_DEAL,
+                    "symbol": obj.symbol,
+                    "volume": obj.volume,
+                    "type": order_type,
+                    "position": obj.ticket,
+                    "price": price,
+                    "deviation": 20,
+                    "magic": 234000,
+                    "comment": 'Close trade',
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
+                }
+                
+                result = mt.order_send(close_request) # send order to close a position
+                
+                if result.retcode != mt.TRADE_RETCODE_DONE:
+                    print("Close Order "+obj.symbol+" failed!!...Error Code: "+str(result.retcode))
+                else:
+                    print("Order "+obj.symbol+" closed successfully")
 
     
     def break_even(self):
@@ -771,33 +798,33 @@ class MyWindow(QMainWindow):
         positions = mt.positions_get()
         
         for obj in positions:
+            if obj.symbol == self.symbol:
+                if obj.type == 1:
+                    adjusted_stop = obj.price_open - 0.25
+                else:                   
+                    adjusted_stop = obj.price_open + 0.20
             
-            if obj.type == 1:
-                adjusted_stop = obj.price_open - 0.25
-            else:                   
-                adjusted_stop = obj.price_open + 0.20
-           
-            modify_request = {
-                "action": mt.TRADE_ACTION_SLTP,
-                "symbol": obj.symbol,
-                "volume": obj.volume,
-                "type": obj.type,
-                "position": obj.ticket,
-                "sl": adjusted_stop,
-                "tp": obj.tp,
-                "comment": 'Break Even',
-                "magic": 234000,
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_FOK,
-                "ENUM_ORDER_STATE": mt.ORDER_FILLING_RETURN,
-            }
-            
-            result = mt.order_send(modify_request) # send order to close a position
-            
-            if result.retcode != mt.TRADE_RETCODE_DONE:
-                print("Close Order "+obj.symbol+" failed!!...Error Code: "+str(result.retcode))
-            else:
-                print("Order "+obj.symbol+" modified successfully")
+                modify_request = {
+                    "action": mt.TRADE_ACTION_SLTP,
+                    "symbol": obj.symbol,
+                    "volume": obj.volume,
+                    "type": obj.type,
+                    "position": obj.ticket,
+                    "sl": adjusted_stop,
+                    "tp": obj.tp,
+                    "comment": 'Break Even',
+                    "magic": 234000,
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_FOK,
+                    "ENUM_ORDER_STATE": mt.ORDER_FILLING_RETURN,
+                }
+                
+                result = mt.order_send(modify_request) # send order to close a position
+                
+                if result.retcode != mt.TRADE_RETCODE_DONE:
+                    print("Close Order "+obj.symbol+" failed!!...Error Code: "+str(result.retcode))
+                else:
+                    print("Order "+obj.symbol+" modified successfully")
         
 
     def reverse_positions(self):
