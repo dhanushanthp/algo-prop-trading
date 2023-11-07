@@ -116,10 +116,10 @@ class MyWindow(QMainWindow):
         self.vert_gap = 60
 
         # Set the title and windows size
-        self.setGeometry(20, 300, 380, 700)
+        self.setGeometry(20, 300, 380, 750)
 
         # Set application icon
-        self.setWindowTitle("FTMO")      
+        self.setWindowTitle("PropFirm")      
 
         # Radio Button
         vertical_align += self.vertical_gap + 10
@@ -541,57 +541,57 @@ class MyWindow(QMainWindow):
         stop_price = self.get_stop_price() - self.spread
         
         if stop_price > entry_price:
-            raise Exception("Long entry not valid!")
-        
-        if self.symbol in self.currencies:
-            points_in_stop = round(entry_price - stop_price, 5)
-            position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+            self.warning_message("LONG: Stop price is higher than entry price")
         else:
-            points_in_stop = round(entry_price - stop_price)
-            position_size = self.calculate_slots(points_in_stop)
         
-        
-        target_price1 = entry_price + 2*points_in_stop
-        target_price2 = entry_price + points_in_stop
-        
-        position1, position2 = self.split_positions(position_size)
-        
-        response = self.trade_confirmation(points_in_stop, position_size, target_price1)
-        
-        
-        if response:
-            request1 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position1, # FLOAT
-                "type": mt.ORDER_TYPE_BUY_STOP_LIMIT,
-                "price": entry_price,
-                "stoplimit": entry_price - self.spread,
-                "sl": stop_price, # FLOAT
-                "tp": target_price1, # FLOAT
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+            if self.symbol in self.currencies:
+                points_in_stop = round(entry_price - stop_price, 5)
+                position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+            else:
+                points_in_stop = round(entry_price - stop_price)
+                position_size = self.calculate_slots(points_in_stop)
             
-            request2 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position2, # FLOAT
-                "type": mt.ORDER_TYPE_BUY_STOP_LIMIT,
-                "price": entry_price,
-                "stoplimit": entry_price - self.spread,
-                "sl": stop_price, # FLOAT
-                "tp": target_price2, # FLOAT
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
             
-            res1 = mt.order_send(request1)
-            self.order_log(res1)
-            res2 = mt.order_send(request2)
-            self.order_log(res2)
+            target_price1 = entry_price + 2*points_in_stop
+            target_price2 = entry_price + points_in_stop
+            
+            position1, position2 = self.split_positions(position_size)
+            
+            response = self.trade_confirmation(points_in_stop, position_size, target_price1)
+            
+            if response:
+                request1 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position1, # FLOAT
+                    "type": mt.ORDER_TYPE_BUY_STOP_LIMIT,
+                    "price": entry_price,
+                    "stoplimit": entry_price - self.spread,
+                    "sl": stop_price, # FLOAT
+                    "tp": target_price1, # FLOAT
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
+                
+                request2 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position2, # FLOAT
+                    "type": mt.ORDER_TYPE_BUY_STOP_LIMIT,
+                    "price": entry_price,
+                    "stoplimit": entry_price - self.spread,
+                    "sl": stop_price, # FLOAT
+                    "tp": target_price2, # FLOAT
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
+                
+                res1 = mt.order_send(request1)
+                self.order_log(res1)
+                res2 = mt.order_send(request2)
+                self.order_log(res2)
             
     def order_log(self, result):
         if result.retcode != mt.TRADE_RETCODE_DONE:
@@ -622,54 +622,54 @@ class MyWindow(QMainWindow):
         stop_price = self.get_stop_price() - self.spread
         
         if stop_price > entry_price:
-            raise Exception("Long entry not valid!")
-        
-        if self.symbol in self.currencies:
-            points_in_stop = round(entry_price - stop_price, 5)
-            position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+            self.warning_message("LONG: Stop price is higher than entry price")
         else:
-            points_in_stop = round(entry_price - stop_price)
-            position_size = self.calculate_slots(points_in_stop)
-        
-        target_price1 = entry_price + 2*points_in_stop
-        target_price2 = entry_price + points_in_stop
-        
-        position1, position2 = self.split_positions(position_size)
-        
-        response = self.trade_confirmation(points_in_stop, position_size, target_price1)
-        
-        if response:
-            request1 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position1,
-                "type": mt.ORDER_TYPE_BUY_LIMIT,
-                "price": entry_price,
-                "sl": stop_price,
-                "tp": target_price1, # FLOAT
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+            if self.symbol in self.currencies:
+                points_in_stop = round(entry_price - stop_price, 5)
+                position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+            else:
+                points_in_stop = round(entry_price - stop_price)
+                position_size = self.calculate_slots(points_in_stop)
             
-            request2 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position2,
-                "type": mt.ORDER_TYPE_BUY_LIMIT,
-                "price": entry_price,
-                "sl": stop_price,
-                "tp": target_price2,
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+            target_price1 = entry_price + 2*points_in_stop
+            target_price2 = entry_price + points_in_stop
             
+            position1, position2 = self.split_positions(position_size)
             
-            res1 = mt.order_send(request1)
-            self.order_log(res1)
-            res2 = mt.order_send(request2)
-            self.order_log(res2)
+            response = self.trade_confirmation(points_in_stop, position_size, target_price1)
+            
+            if response:
+                request1 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position1,
+                    "type": mt.ORDER_TYPE_BUY_LIMIT,
+                    "price": entry_price,
+                    "sl": stop_price,
+                    "tp": target_price1, # FLOAT
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
+                
+                request2 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position2,
+                    "type": mt.ORDER_TYPE_BUY_LIMIT,
+                    "price": entry_price,
+                    "sl": stop_price,
+                    "tp": target_price2,
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
+                
+                
+                res1 = mt.order_send(request1)
+                self.order_log(res1)
+                res2 = mt.order_send(request2)
+                self.order_log(res2)
     
 
     def short_stop_limit_order(self):
@@ -677,54 +677,54 @@ class MyWindow(QMainWindow):
         stop_price = self.get_stop_price() + self.spread
         
         if stop_price < entry_price:
-            raise Exception("Short entry not valid!")
-        
-        if self.symbol in self.currencies:
-            points_in_stop = round(stop_price - entry_price, 5)
-            position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+            self.warning_message("Short: Stop price is higher than entry price")
         else:
-            points_in_stop = round(stop_price - entry_price)
-            position_size = self.calculate_slots(points_in_stop)
-        
-        target_price1 = entry_price - 2*points_in_stop
-        target_price2 = entry_price - points_in_stop
-        
-        position1, position2 = self.split_positions(position_size)
-        response = self.trade_confirmation(points_in_stop, position_size, target_price1)
-        
-        if response:
-            request1 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position1, # FLOAT
-                "type": mt.ORDER_TYPE_SELL_STOP_LIMIT,
-                "price": entry_price,
-                "stoplimit": entry_price + self.spread,
-                "sl": stop_price, # FLOAT
-                "tp": target_price1, # FLOAT
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+            if self.symbol in self.currencies:
+                points_in_stop = round(stop_price - entry_price, 5)
+                position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+            else:
+                points_in_stop = round(stop_price - entry_price)
+                position_size = self.calculate_slots(points_in_stop)
             
-            request2 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position2, # FLOAT
-                "type": mt.ORDER_TYPE_SELL_STOP_LIMIT,
-                "price": entry_price,
-                "stoplimit": entry_price + self.spread,
-                "sl": stop_price, # FLOAT
-                "tp": target_price2, # FLOAT
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+            target_price1 = entry_price - 2*points_in_stop
+            target_price2 = entry_price - points_in_stop
+            
+            position1, position2 = self.split_positions(position_size)
+            response = self.trade_confirmation(points_in_stop, position_size, target_price1)
+            
+            if response:
+                request1 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position1, # FLOAT
+                    "type": mt.ORDER_TYPE_SELL_STOP_LIMIT,
+                    "price": entry_price,
+                    "stoplimit": entry_price + self.spread,
+                    "sl": stop_price, # FLOAT
+                    "tp": target_price1, # FLOAT
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
+                
+                request2 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position2, # FLOAT
+                    "type": mt.ORDER_TYPE_SELL_STOP_LIMIT,
+                    "price": entry_price,
+                    "stoplimit": entry_price + self.spread,
+                    "sl": stop_price, # FLOAT
+                    "tp": target_price2, # FLOAT
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
 
-            res1 = mt.order_send(request1)
-            self.order_log(res1)
-            res2 = mt.order_send(request2)
-            self.order_log(res2)
+                res1 = mt.order_send(request1)
+                self.order_log(res1)
+                res2 = mt.order_send(request2)
+                self.order_log(res2)
             
 
     def short_limit_ask_orders(self, type:str):
@@ -738,52 +738,52 @@ class MyWindow(QMainWindow):
         stop_price = self.get_stop_price() + self.spread
         
         if stop_price < entry_price:
-            raise Exception("Short entry not valid!")
-        
-        if self.symbol in self.currencies:
-            points_in_stop = round(stop_price - entry_price, 5)
-            position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+            self.warning_message("LONG: Stop price is higher than entry price")
         else:
-            points_in_stop = round(stop_price - entry_price)
-            position_size = self.calculate_slots(points_in_stop)
-        
-        target_price1 = entry_price - 2*points_in_stop
-        target_price2 = entry_price - points_in_stop
-
-        position1, position2 = self.split_positions(position_size)
-        response = self.trade_confirmation(points_in_stop, position_size, target_price1)
-        
-        if response:
-            request1 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position1,
-                "type": mt.ORDER_TYPE_SELL_LIMIT,
-                "price": entry_price,
-                "sl": stop_price,
-                "tp": target_price1,
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+            if self.symbol in self.currencies:
+                points_in_stop = round(stop_price - entry_price, 5)
+                position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+            else:
+                points_in_stop = round(stop_price - entry_price)
+                position_size = self.calculate_slots(points_in_stop)
             
-            request2 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position2,
-                "type": mt.ORDER_TYPE_SELL_LIMIT,
-                "price": entry_price,
-                "sl": stop_price,
-                "tp": target_price2,
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+            target_price1 = entry_price - 2*points_in_stop
+            target_price2 = entry_price - points_in_stop
 
-            res1 = mt.order_send(request1)
-            self.order_log(res1)
-            res2 = mt.order_send(request2)
-            self.order_log(res2)
+            position1, position2 = self.split_positions(position_size)
+            response = self.trade_confirmation(points_in_stop, position_size, target_price1)
+            
+            if response:
+                request1 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position1,
+                    "type": mt.ORDER_TYPE_SELL_LIMIT,
+                    "price": entry_price,
+                    "sl": stop_price,
+                    "tp": target_price1,
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
+                
+                request2 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position2,
+                    "type": mt.ORDER_TYPE_SELL_LIMIT,
+                    "price": entry_price,
+                    "sl": stop_price,
+                    "tp": target_price2,
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
+
+                res1 = mt.order_send(request1)
+                self.order_log(res1)
+                res2 = mt.order_send(request2)
+                self.order_log(res2)
 
     def trade_confirmation(self, points_in_stop, position_size, target_price1):
         input_string = f"{self.symbol} with ${self.risk}<br> Dollar Value : ${self.dollor_value} <br>Risk ({points_in_stop})pips <br>Positions {position_size}<br> Target @ {target_price1}"
