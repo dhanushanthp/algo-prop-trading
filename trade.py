@@ -417,7 +417,7 @@ class MyWindow(QMainWindow):
             self.symbol = "USDCHF"
             tick_price = mean(self.get_mid_price())
             self.dollor_value = 1/tick_price
-            self.spread = round(self.get_spread_price(), 5) # TODO Need to fix this
+            self.spread = round(self.get_spread_price(), 5) # DONE
         elif self.radioButton10.isChecked():
             self.symbol = "AUDJPY"
             tick_price = mean(self.get_mid_price())
@@ -442,8 +442,8 @@ class MyWindow(QMainWindow):
         diff_price = (ask_price - bid_price)/2
         
         if self.symbol in self.currencies:
-            bid_price = round((bid_price + diff_price), 5)
-            ask_price = round((ask_price - diff_price), 5)
+            bid_price = round((bid_price + diff_price), 4)
+            ask_price = round((ask_price - diff_price), 4)
         else:
             bid_price = round((bid_price + diff_price) * 10)/10
             ask_price = round((ask_price - diff_price) * 10)/10
@@ -464,7 +464,7 @@ class MyWindow(QMainWindow):
         return limit_price
     
     def get_stop_price(self):
-        stop_price = float(self.stop_price_txt.text())
+        stop_price = round(float(self.stop_price_txt.text()), 4)
         return stop_price
     
     def calculate_slots(self, points_in_stop):
