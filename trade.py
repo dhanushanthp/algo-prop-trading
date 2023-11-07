@@ -422,12 +422,11 @@ class MyWindow(QMainWindow):
             self.spread = round(self.get_spread_price(), 2)
         elif self.radioButton7.isChecked():
             self.symbol = "AUDNZD"
-            self.dollor_value = 1/self.get_mid_price()
-            self.spread = round(self.get_spread_price(), 5) # 1.0# TODO Need to add USD factor
+            self.dollor_value = (1/self.get_exchange_price("AUDNZD")) * self.get_exchange_price("AUDUSD")
+            self.spread = round(self.get_spread_price(), 5)
         elif self.radioButton8.isChecked():
             self.symbol = "USDJPY"
-            tick_price = self.get_exchange_price("USDJPY")
-            self.dollor_value = 1/tick_price
+            self.dollor_value = 1/self.get_exchange_price("USDJPY")
             self.spread = round(self.get_spread_price(), 3)
         elif self.radioButton9.isChecked():
             self.symbol = "USDCHF"
@@ -436,9 +435,8 @@ class MyWindow(QMainWindow):
             self.spread = round(self.get_spread_price(), 5)
         elif self.radioButton10.isChecked():
             self.symbol = "AUDJPY"
-            tick_price = mean(self.get_mid_price())
-            self.dollor_value = 1/tick_price
-            self.spread = round(self.get_spread_price(), 3) # 1.0 # TODO Need to add USD factor
+            self.dollor_value = (1/self.get_exchange_price("AUDJPY")) * self.get_exchange_price("AUDUSD")
+            self.spread = round(self.get_spread_price(), 3)
         elif self.radioButton11.isChecked():
             self.symbol = "XAUUSD"
             # Added 2, Since it was picking the whole value
