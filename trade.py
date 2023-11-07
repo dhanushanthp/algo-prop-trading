@@ -84,7 +84,7 @@ class MyWindow(QMainWindow):
         
         # Value in USD
         self.risk = 50
-        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD"]
+        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD"]
         
     def initUI(self):
         # Font Initiation
@@ -204,6 +204,14 @@ class MyWindow(QMainWindow):
         self.radioButton12.setFont(label_font)
         self.radioButton12.resize(140, 40)
         self.radioButton12.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
+        vertical_align += self.vertical_gap + 40
+        self.radioButton13 = QRadioButton(self)
+        self.radioButton13.move(self.left_margin, vertical_align)
+        self.radioButton13.setText("USDCAD")
+        self.radioButton13.setFont(label_font)
+        self.radioButton13.resize(140, 40)
+        self.radioButton13.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         # Set the initial state of the radio buttons (optional)
         # self.radioButton1.setChecked(True)
@@ -222,6 +230,7 @@ class MyWindow(QMainWindow):
         self.radioButton10.toggled.connect(self.onRadioButtonToggled)
         self.radioButton11.toggled.connect(self.onRadioButtonToggled)
         self.radioButton12.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton13.toggled.connect(self.onRadioButtonToggled)
         
         vertical_align += self.vertical_gap + self.vert_gap
         self.entry_label = QtWidgets.QLabel(self)
@@ -430,8 +439,7 @@ class MyWindow(QMainWindow):
             self.spread = round(self.get_spread_price(), 3)
         elif self.radioButton9.isChecked():
             self.symbol = "USDCHF"
-            tick_price = self.get_exchange_price("USDCHF")
-            self.dollor_value = 1/tick_price
+            self.dollor_value = 1/self.get_exchange_price("USDCHF")
             self.spread = round(self.get_spread_price(), 5)
         elif self.radioButton10.isChecked():
             self.symbol = "AUDJPY"
@@ -441,11 +449,15 @@ class MyWindow(QMainWindow):
             self.symbol = "XAUUSD"
             # Added 2, Since it was picking the whole value
             self.dollor_value = 2/self.get_exchange_price("XAUUSD")
-            self.spread = round(self.get_spread_price(), 3)
+            self.spread = round(self.get_spread_price(), 5)
         elif self.radioButton12.isChecked():
             self.symbol = "EURUSD"
             self.dollor_value = self.get_exchange_price("EURUSD")
-            self.spread = round(self.get_spread_price(), 3)
+            self.spread = round(self.get_spread_price(), 5)
+        elif self.radioButton13.isChecked():
+            self.symbol = "USDCAD"
+            self.dollor_value = 1/self.get_exchange_price("USDCAD")
+            self.spread = round(self.get_spread_price(), 5)
     
     def entry_long_on_bid(self):
         self.long_limit_and_bid_orders("bid_ask")
