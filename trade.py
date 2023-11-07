@@ -492,7 +492,6 @@ class MyWindow(QMainWindow):
         spread = (ask_price - bid_price)
         return spread
     
-    
     def get_limit_price(self):
         limit_price = float(self.entry_price_txt.text())
         return limit_price
@@ -584,7 +583,11 @@ class MyWindow(QMainWindow):
             
     def order_log(self, result):
         if result.retcode != mt.TRADE_RETCODE_DONE:
-            print(f"code: {result.retcode}, reason: {result.comment}")
+            error_string = f"code: {result.retcode}, reason: {result.comment}"
+            msgBox = QMessageBox(self)
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setText(error_string)
+            msgBox.exec()
         else:
             print(f"Order placed successfully!")
 
