@@ -109,14 +109,14 @@ class MyWindow(QMainWindow):
 
         vertical_align = 5
         
-        self.btn_width = 140
+        self.btn_width = 160
         self.btn_height = 50
         self.left_margin = 15
         self.btn_gap = 200
         self.vert_gap = 60
 
         # Set the title and windows size
-        self.setGeometry(20, 300, 370, 700)
+        self.setGeometry(20, 300, 380, 700)
 
         # Set application icon
         self.setWindowTitle("FTMO")      
@@ -209,7 +209,7 @@ class MyWindow(QMainWindow):
         
         vertical_align += self.vertical_gap + self.vert_gap
         self.entry_label = QtWidgets.QLabel(self)
-        self.entry_label.setText("Entry")
+        self.entry_label.setText("ENTRY")
         self.entry_label.setFont(label_font)
         self.entry_label.adjustSize()
         self.entry_label.move(self.left_margin + 5, vertical_align+5)
@@ -226,7 +226,7 @@ class MyWindow(QMainWindow):
         
         vertical_align += self.vertical_gap + self.vert_gap
         self.stop_label = QtWidgets.QLabel(self)
-        self.stop_label.setText("Stop")
+        self.stop_label.setText("STOP")
         self.stop_label.setFont(label_font)
         self.stop_label.adjustSize()
         self.stop_label.move(self.left_margin + 5, vertical_align+5)
