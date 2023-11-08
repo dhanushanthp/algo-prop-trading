@@ -83,7 +83,9 @@ class MyWindow(QMainWindow):
         """
         
         # Value in USD
-        self.risk = 50
+        self.risk = 25
+        self.first_target = 1
+        self.second_target = 2
         self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD"]
         
     def initUI(self):
@@ -467,7 +469,7 @@ class MyWindow(QMainWindow):
             self.dollor_value = 1/self.get_exchange_price("USDCAD")
             self.spread = round(self.get_spread_price(), 5)
         elif self.radioButton14.isChecked():
-            self.symbol = "AUDUSD"
+            self.symbol = "AUDUSD" # TODO the 1.6 factor has to be changed dynamically
             self.dollor_value = 1.6 * self.get_exchange_price("AUDUSD")
             self.spread = round(self.get_spread_price(), 5)
     
@@ -564,8 +566,8 @@ class MyWindow(QMainWindow):
                 position_size = self.calculate_slots(points_in_stop)
             
             
-            target_price1 = entry_price + 2*points_in_stop
-            target_price2 = entry_price + points_in_stop
+            target_price1 = entry_price + self.first_target * points_in_stop
+            target_price2 = entry_price + self.second_target * points_in_stop
             
             position1, position2 = self.split_positions(position_size)
             
@@ -643,8 +645,8 @@ class MyWindow(QMainWindow):
                 points_in_stop = round(entry_price - stop_price)
                 position_size = self.calculate_slots(points_in_stop)
             
-            target_price1 = entry_price + 2*points_in_stop
-            target_price2 = entry_price + points_in_stop
+            target_price1 = entry_price + self.first_target * points_in_stop
+            target_price2 = entry_price + self.second_target * points_in_stop
             
             position1, position2 = self.split_positions(position_size)
             
@@ -698,8 +700,8 @@ class MyWindow(QMainWindow):
                 points_in_stop = round(stop_price - entry_price)
                 position_size = self.calculate_slots(points_in_stop)
             
-            target_price1 = entry_price - 2*points_in_stop
-            target_price2 = entry_price - points_in_stop
+            target_price1 = entry_price - self.first_target * points_in_stop
+            target_price2 = entry_price - self.second_target * points_in_stop
             
             position1, position2 = self.split_positions(position_size)
             response = self.trade_confirmation(points_in_stop, position_size, target_price1)
@@ -759,8 +761,8 @@ class MyWindow(QMainWindow):
                 points_in_stop = round(stop_price - entry_price)
                 position_size = self.calculate_slots(points_in_stop)
             
-            target_price1 = entry_price - 2*points_in_stop
-            target_price2 = entry_price - points_in_stop
+            target_price1 = entry_price - self.first_target * points_in_stop
+            target_price2 = entry_price - self.second_target * points_in_stop
 
             position1, position2 = self.split_positions(position_size)
             response = self.trade_confirmation(points_in_stop, position_size, target_price1)
