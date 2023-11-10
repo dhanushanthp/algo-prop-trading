@@ -2,11 +2,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 from statistics import mean 
 import math
-import indicators as ind
-
-from datetime import datetime, timedelta
-import pytz
-import time
 
 from PyQt5.QtWidgets import (
     QApplication,
@@ -88,9 +83,7 @@ class MyWindow(QMainWindow):
         """
         
         # Value in USD
-        ACCOUNT_SIZE, _ = ind.get_remaining_margin()
-        self.ratio = 1
-        self.risk = ACCOUNT_SIZE/100*0.25
+        self.risk = 250
         self.first_target = 1
         self.second_target = 2
         self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD", "GBPUSD"]
@@ -171,12 +164,12 @@ class MyWindow(QMainWindow):
         self.radioButton6.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         vertical_align += self.vertical_gap + 40
-        self.radioButton13 = QRadioButton(self)
-        self.radioButton13.move(self.left_margin, vertical_align)
-        self.radioButton13.setText("USDCAD")
-        self.radioButton13.setFont(label_font)
-        self.radioButton13.resize(140, 40)
-        self.radioButton13.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.radioButton7 = QRadioButton(self)
+        self.radioButton7.move(self.left_margin, vertical_align)
+        self.radioButton7.setText("AUDNZD")
+        self.radioButton7.setFont(label_font)
+        self.radioButton7.resize(140, 40)
+        self.radioButton7.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         self.radioButton8 = QRadioButton(self)
         self.radioButton8.move(140, vertical_align)
@@ -200,34 +193,34 @@ class MyWindow(QMainWindow):
         self.radioButton10.resize(140, 40)
         self.radioButton10.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
-        self.radioButton7 = QRadioButton(self)
-        self.radioButton7.move(140, vertical_align)
-        self.radioButton7.setText("AUDNZD")
-        self.radioButton7.setFont(label_font)
-        self.radioButton7.resize(140, 40)
-        self.radioButton7.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-
-        self.radioButton14 = QRadioButton(self)
-        self.radioButton14.move(260, vertical_align)
-        self.radioButton14.setText("AUDUSD")
-        self.radioButton14.setFont(label_font)
-        self.radioButton14.resize(140, 40)
-        self.radioButton14.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-
-        vertical_align += self.vertical_gap + 40
         self.radioButton11 = QRadioButton(self)
-        self.radioButton11.move(self.left_margin, vertical_align)
+        self.radioButton11.move(140, vertical_align)
         self.radioButton11.setText("XAUUSD")
         self.radioButton11.setFont(label_font)
         self.radioButton11.resize(140, 40)
         self.radioButton11.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         self.radioButton12 = QRadioButton(self)
-        self.radioButton12.move(140, vertical_align)
+        self.radioButton12.move(260, vertical_align)
         self.radioButton12.setText("EURUSD")
         self.radioButton12.setFont(label_font)
         self.radioButton12.resize(140, 40)
         self.radioButton12.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
+        vertical_align += self.vertical_gap + 40
+        self.radioButton13 = QRadioButton(self)
+        self.radioButton13.move(self.left_margin, vertical_align)
+        self.radioButton13.setText("USDCAD")
+        self.radioButton13.setFont(label_font)
+        self.radioButton13.resize(140, 40)
+        self.radioButton13.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
+        self.radioButton14 = QRadioButton(self)
+        self.radioButton14.move(140, vertical_align)
+        self.radioButton14.setText("AUDUSD")
+        self.radioButton14.setFont(label_font)
+        self.radioButton14.resize(140, 40)
+        self.radioButton14.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
         self.radioButton15 = QRadioButton(self)
         self.radioButton15.move(260, vertical_align)
@@ -258,25 +251,8 @@ class MyWindow(QMainWindow):
         self.radioButton15.toggled.connect(self.onRadioButtonToggled)
         
         vertical_align += self.vertical_gap + self.vert_gap
-        self.stop_label = QtWidgets.QLabel(self)
-        self.stop_label.setText("S-STOP")
-        self.stop_label.setFont(label_font)
-        self.stop_label.adjustSize()
-        self.stop_label.move(self.left_margin + 5, vertical_align+5)
-        
-        
-        self.stop_price_txt = QtWidgets.QLineEdit(self)
-        self.stop_price_txt.move(100, vertical_align)
-        self.stop_price_txt.setFont(text_input_font)
-        self.stop_price_txt.resize(140, 40)
-        self.stop_price_txt.setAlignment(QtCore.Qt.AlignLeft)
-        self.stop_price_txt.setStyleSheet(
-            "QLineEdit {border-radius:5px; border :1px solid black;}"
-        )
-
-        vertical_align += self.vertical_gap + self.vert_gap
         self.entry_label = QtWidgets.QLabel(self)
-        self.entry_label.setText("L-STOP")
+        self.entry_label.setText("ENTRY")
         self.entry_label.setFont(label_font)
         self.entry_label.adjustSize()
         self.entry_label.move(self.left_margin + 5, vertical_align+5)
@@ -290,68 +266,85 @@ class MyWindow(QMainWindow):
         self.entry_price_txt.setStyleSheet(
             "QLineEdit {border-radius:5px; border :1px solid black;}"
         )
-           
+        
+        vertical_align += self.vertical_gap + self.vert_gap
+        self.stop_label = QtWidgets.QLabel(self)
+        self.stop_label.setText("STOP")
+        self.stop_label.setFont(label_font)
+        self.stop_label.adjustSize()
+        self.stop_label.move(self.left_margin + 5, vertical_align+5)
+        
+        
+        self.stop_price_txt = QtWidgets.QLineEdit(self)
+        self.stop_price_txt.move(100, vertical_align)
+        self.stop_price_txt.setFont(text_input_font)
+        self.stop_price_txt.resize(140, 40)
+        self.stop_price_txt.setAlignment(QtCore.Qt.AlignLeft)
+        self.stop_price_txt.setStyleSheet(
+            "QLineEdit {border-radius:5px; border :1px solid black;}"
+        )
+        
          # Button: Long Limit Entry
-        # vertical_align += self.vertical_gap + self.vert_gap
-        # self.long_entry = QtWidgets.QPushButton(self)
-        # self.long_entry.setText("Buy LIMIT")
-        # self.long_entry.move(self.left_margin, vertical_align)
-        # self.long_entry.clicked.connect(self.entry_long_on_limit)
-        # self.long_entry.setFont(button_font)
-        # self.long_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
-        # self.long_entry.setIconSize(QtCore.QSize(40, 30))
-        # self.long_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # self.long_entry.setStyleSheet(
-        #     "QPushButton {background-color : rgb(34,139,34);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(0,255,0);}"
-        # )
+        vertical_align += self.vertical_gap + self.vert_gap
+        self.long_entry = QtWidgets.QPushButton(self)
+        self.long_entry.setText("Buy LIMIT")
+        self.long_entry.move(self.left_margin, vertical_align)
+        self.long_entry.clicked.connect(self.entry_long_on_limit)
+        self.long_entry.setFont(button_font)
+        self.long_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
+        self.long_entry.setIconSize(QtCore.QSize(40, 30))
+        self.long_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.long_entry.setStyleSheet(
+            "QPushButton {background-color : rgb(34,139,34);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(0,255,0);}"
+        )
         
         # Button: Short Limit Entry
-        # self.short_entry = QtWidgets.QPushButton(self)
-        # self.short_entry.setText("Sell LIMIT")
-        # self.short_entry.move(self.btn_gap, vertical_align)
-        # self.short_entry.clicked.connect(self.entry_short_on_limit)
-        # self.short_entry.setFont(button_font)
-        # self.short_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
-        # self.short_entry.setIconSize(QtCore.QSize(40, 30))
-        # self.short_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # self.short_entry.setStyleSheet(
-        #     "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
-        # )
+        self.short_entry = QtWidgets.QPushButton(self)
+        self.short_entry.setText("Sell LIMIT")
+        self.short_entry.move(self.btn_gap, vertical_align)
+        self.short_entry.clicked.connect(self.entry_short_on_limit)
+        self.short_entry.setFont(button_font)
+        self.short_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
+        self.short_entry.setIconSize(QtCore.QSize(40, 30))
+        self.short_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.short_entry.setStyleSheet(
+            "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
+        )
         
         # Button: Long Limit Entry
-        # vertical_align += self.vertical_gap + self.vert_gap
-        # self.long_entry = QtWidgets.QPushButton(self)
-        # self.long_entry.setText("Buy STOP")
-        # self.long_entry.move(self.left_margin, vertical_align)
-        # self.long_entry.clicked.connect(self.long_stop_limit_order)
-        # self.long_entry.setFont(button_font)
-        # self.long_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
-        # self.long_entry.setIconSize(QtCore.QSize(40, 30))
-        # self.long_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # self.long_entry.setStyleSheet(
-        #     "QPushButton {background-color : rgb(34,139,34);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(0,255,0);}"
-        # )
+        vertical_align += self.vertical_gap + self.vert_gap
+        self.long_entry = QtWidgets.QPushButton(self)
+        self.long_entry.setText("Buy STOP")
+        self.long_entry.move(self.left_margin, vertical_align)
+        self.long_entry.clicked.connect(self.long_stop_limit_order)
+        self.long_entry.setFont(button_font)
+        self.long_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
+        self.long_entry.setIconSize(QtCore.QSize(40, 30))
+        self.long_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.long_entry.setStyleSheet(
+            "QPushButton {background-color : rgb(34,139,34);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(0,255,0);}"
+        )
         
         # Button: Short Limit Entry
-        # self.short_entry = QtWidgets.QPushButton(self)
-        # self.short_entry.setText("Sell STOP")
-        # self.short_entry.move(self.btn_gap, vertical_align)
-        # self.short_entry.clicked.connect(self.short_stop_limit_order)
-        # self.short_entry.setFont(button_font)
-        # self.short_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
-        # self.short_entry.setIconSize(QtCore.QSize(40, 30))
-        # self.short_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # self.short_entry.setStyleSheet(
-        #     "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
-        # )
+        self.short_entry = QtWidgets.QPushButton(self)
+        self.short_entry.setText("Sell STOP")
+        self.short_entry.move(self.btn_gap, vertical_align)
+        self.short_entry.clicked.connect(self.short_stop_limit_order)
+        self.short_entry.setFont(button_font)
+        self.short_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
+        self.short_entry.setIconSize(QtCore.QSize(40, 30))
+        self.short_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.short_entry.setStyleSheet(
+            "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
+        )
        
        
         # Button: Long Entry
         vertical_align += self.vertical_gap + self.vert_gap
         self.long_entry = QtWidgets.QPushButton(self)
-        self.long_entry.setText("Trade")
+        self.long_entry.setText("Buy On BID")
         self.long_entry.move(self.left_margin, vertical_align)
-        self.long_entry.clicked.connect(self.random_entry)
+        self.long_entry.clicked.connect(self.entry_long_on_bid)
         self.long_entry.setFont(button_font)
         self.long_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
         self.long_entry.setIconSize(QtCore.QSize(40, 30))
@@ -361,17 +354,17 @@ class MyWindow(QMainWindow):
         )
         
         # Button: Short Entry
-        # self.short_entry = QtWidgets.QPushButton(self)
-        # self.short_entry.setText("Sell On BID")
-        # self.short_entry.move(self.btn_gap, vertical_align)
-        # self.short_entry.clicked.connect(self.entry_short_on_ask)
-        # self.short_entry.setFont(button_font)
-        # self.short_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
-        # self.short_entry.setIconSize(QtCore.QSize(40, 30))
-        # self.short_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # self.short_entry.setStyleSheet(
-        #     "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
-        # )
+        self.short_entry = QtWidgets.QPushButton(self)
+        self.short_entry.setText("Sell On BID")
+        self.short_entry.move(self.btn_gap, vertical_align)
+        self.short_entry.clicked.connect(self.entry_short_on_ask)
+        self.short_entry.setFont(button_font)
+        self.short_entry.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
+        self.short_entry.setIconSize(QtCore.QSize(40, 30))
+        self.short_entry.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.short_entry.setStyleSheet(
+            "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
+        )
         
         
         # Button: Cancel trades
@@ -402,18 +395,18 @@ class MyWindow(QMainWindow):
         )        
         
         # Button: Close Single Position
-        # vertical_align += self.vertical_gap + self.vert_gap
-        # self.close_single_position = QtWidgets.QPushButton(self)
-        # self.close_single_position.setText("Break Even")
-        # self.close_single_position.move(self.left_margin, vertical_align)
-        # self.close_single_position.clicked.connect(self.break_even)
-        # self.close_single_position.setFont(button_font)
-        # self.close_single_position.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
-        # self.close_single_position.setIconSize(QtCore.QSize(40, 30))
-        # self.close_single_position.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # self.close_single_position.setStyleSheet(
-        #     "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
-        # )
+        vertical_align += self.vertical_gap + self.vert_gap
+        self.close_single_position = QtWidgets.QPushButton(self)
+        self.close_single_position.setText("Break Even")
+        self.close_single_position.move(self.left_margin, vertical_align)
+        self.close_single_position.clicked.connect(self.break_even)
+        self.close_single_position.setFont(button_font)
+        self.close_single_position.setFixedSize(QtCore.QSize(self.btn_width, self.btn_height))
+        self.close_single_position.setIconSize(QtCore.QSize(40, 30))
+        self.close_single_position.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.close_single_position.setStyleSheet(
+            "QPushButton {background-color : rgb(220,20,60);  border-radius:10px; border :2px solid black; color: white;} QPushButton::pressed {background-color : rgb(250,128,114);}"
+        )
         
         # Button: Reverse Positions
         # self.reverse_trades = QtWidgets.QPushButton(self)
@@ -492,70 +485,6 @@ class MyWindow(QMainWindow):
             self.dollor_value = self.get_exchange_price("GBPUSD")
             self.spread = round(self.get_spread_price(), 5)
     
-    def symbol_selector(self):
-        # Check which radio button is selected
-        if self.symbol == "US500.cash":
-            self.symbol = "US500.cash"
-            self.dollor_value = 1
-            self.spread = round(self.get_spread_price(), 2) # 1.0
-        elif self.symbol == "UK100.cash":
-            self.symbol = "UK100.cash"
-            self.dollor_value = round(1/self.get_exchange_price("GBPUSD"), 4)
-            self.spread = round(self.get_spread_price(), 2) # 4.0
-        elif self.symbol == "HK50.cash":
-            self.symbol = "HK50.cash"
-            self.dollor_value = round(1/self.get_exchange_price("USDHKD"), 4)
-            self.spread = round(self.get_spread_price(), 2) # 10.0
-        elif self.symbol == "JP225.cash":
-            self.symbol = "JP225.cash"
-            self.dollor_value = round(1/self.get_exchange_price("USDJPY"), 4)
-            self.spread = round(self.get_spread_price(), 2) # 12.0
-        elif self.symbol == "AUS200.cash":
-            self.symbol = "AUS200.cash"
-            self.dollor_value = self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread_price(), 2)
-        elif self.symbol == "US100.cash":
-            self.symbol = "US100.cash"
-            self.dollor_value = 1
-            self.spread = round(self.get_spread_price(), 2)
-        elif self.symbol == "AUDNZD":
-            self.symbol = "AUDNZD"
-            self.dollor_value = (1/self.get_exchange_price("AUDNZD")) * self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread_price(), 5)
-        elif self.symbol == "USDJPY":
-            self.symbol = "USDJPY"
-            self.dollor_value = 1/self.get_exchange_price("USDJPY")
-            self.spread = round(self.get_spread_price(), 3)
-        elif self.symbol == "USDCHF":
-            self.symbol = "USDCHF"
-            self.dollor_value = 1/self.get_exchange_price("USDCHF")
-            self.spread = round(self.get_spread_price(), 5)
-        elif self.symbol == "AUDJPY":
-            self.symbol = "AUDJPY"
-            self.dollor_value = (1/self.get_exchange_price("AUDJPY")) * self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread_price(), 3)
-        elif self.symbol == "XAUUSD":
-            self.symbol = "XAUUSD"
-            # Added 2, Since it was picking the whole value
-            self.dollor_value = 2/self.get_exchange_price("XAUUSD")
-            self.spread = round(self.get_spread_price(), 5)
-        elif self.symbol == "EURUSD":
-            self.symbol = "EURUSD"
-            self.dollor_value = self.get_exchange_price("EURUSD")
-            self.spread = round(self.get_spread_price(), 5)
-        elif self.symbol == "USDCAD":
-            self.symbol = "USDCAD"
-            self.dollor_value = 1/self.get_exchange_price("USDCAD")
-            self.spread = round(self.get_spread_price(), 5)
-        elif self.symbol == "AUDUSD":
-            self.symbol = "AUDUSD" # TODO the 1.6 factor has to be changed dynamically
-            self.dollor_value = 1.6 * self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread_price(), 5)
-        elif self.symbol == "GBPUSD":
-            self.symbol = "GBPUSD"
-            self.dollor_value = self.get_exchange_price("GBPUSD")
-            self.spread = round(self.get_spread_price(), 5)
-    
     def entry_long_on_bid(self):
         self.long_limit_and_bid_orders("bid_ask")
         
@@ -569,27 +498,24 @@ class MyWindow(QMainWindow):
         self.short_limit_ask_orders("limit")
     
     def get_mid_price(self):
-        try:
-            ask_price = mt.symbol_info_tick(self.symbol).ask
-            bid_price = mt.symbol_info_tick(self.symbol).bid
-            diff_price = (ask_price - bid_price)/2
+        ask_price = mt.symbol_info_tick(self.symbol).ask
+        bid_price = mt.symbol_info_tick(self.symbol).bid
+        diff_price = (ask_price - bid_price)/2
+        
+        if self.symbol in self.currencies:
+            round_factor = 4
             
-            if self.symbol in self.currencies:
-                round_factor = 4
-                
-                if self.symbol in ["XAUUSD"]:
-                    round_factor = 2
-                
-                bid_price = round((bid_price + diff_price + 0.00001), round_factor)
-                ask_price = round((ask_price - diff_price + 0.00001), round_factor)
-            else:
-                bid_price = round((bid_price + diff_price) * 10)/10
-                ask_price = round((ask_price - diff_price) * 10)/10
+            if self.symbol in ["XAUUSD"]:
+                round_factor = 2
             
-            print("BID: ", bid_price, " ASK: ", ask_price)
-            return bid_price, ask_price
-        except Exception:
-            return None
+            bid_price = round((bid_price + diff_price), round_factor)
+            ask_price = round((ask_price - diff_price), round_factor)
+        else:
+            bid_price = round((bid_price + diff_price) * 10)/10
+            ask_price = round((ask_price - diff_price) * 10)/10
+        
+        print("BID: ", bid_price, " ASK: ", ask_price)
+        return bid_price, ask_price
     
     def get_exchange_price(self, exchange):
         ask_price = mt.symbol_info_tick(exchange).ask
@@ -604,17 +530,18 @@ class MyWindow(QMainWindow):
         spread = (ask_price - bid_price)
         return spread
     
-    def get_lstop_price(self):
+    def get_limit_price(self):
         limit_price = float(self.entry_price_txt.text())
         return limit_price
     
-    def get_sstop_price(self):
+    def get_stop_price(self):
         stop_price = round(float(self.stop_price_txt.text()), 4)
         return stop_price
     
     def calculate_slots(self, points_in_stop):
         positions = self.risk/(points_in_stop * self.dollor_value)
-        return float(positions)        
+        return float(positions)
+        
     
     def split_positions(self, x):
         if self.symbol in self.currencies:
@@ -635,8 +562,8 @@ class MyWindow(QMainWindow):
                 return float(split), float(split+1)
 
     def long_stop_limit_order(self):
-        entry_price = self.get_lstop_price()
-        stop_price = self.get_sstop_price() - self.spread
+        entry_price = self.get_limit_price()
+        stop_price = entry_price - self.spread * 10
         
         if stop_price > entry_price:
             self.warning_message("LONG: Stop price is higher than entry price")
@@ -692,18 +619,14 @@ class MyWindow(QMainWindow):
                 self.order_log(res2)
             
     def order_log(self, result):
-        if result:
-            if result.retcode != mt.TRADE_RETCODE_DONE:
-                error_string = f"code: {result.retcode}, reason: {result.comment}"
-                print(error_string)
-                # msgBox = QMessageBox(self)
-                # msgBox.setIcon(QMessageBox.Warning)
-                # msgBox.setText(error_string)
-                # msgBox.exec()
-            else:
-                print(f"Order placed successfully!")
+        if result.retcode != mt.TRADE_RETCODE_DONE:
+            error_string = f"code: {result.retcode}, reason: {result.comment}"
+            msgBox = QMessageBox(self)
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setText(error_string)
+            msgBox.exec()
         else:
-            print("Error with response!")
+            print(f"Order placed successfully!")
 
     def warning_message(self, message):
         msgBox = QMessageBox(self)
@@ -711,129 +634,72 @@ class MyWindow(QMainWindow):
         msgBox.setText(message)
         msgBox.exec()
 
-    def random_entry(self):
-        # "XAUUSD", "JP225.cash", "HK50.cash"
-        # selected_symbols = ["AUS200.cash" ,"USDCAD", "USDJPY", "USDCHF",
-        #                     "AUDJPY", "AUDNZD", "AUDUSD", "EURUSD", "GBPUSD"]
-
-        selected_symbols = ["USDJPY", "AUDJPY", "AUDNZD", "AUDUSD", "AUS200.cash", "UK100.cash", "US500.cash", "USDCHF", "EURUSD", "GBPUSD"]
-        
-        while True:
-            account_size, free_margin = ind.get_remaining_margin()
-            # ind.close_positions_with_half_profit()
-            existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-            self.cancel_all_active_orders()
-            current_datetime = datetime.now()
-            current_minute = int(current_datetime.minute)
-
-            # If margin is more than 50% of account size. then trade.S
-            if (free_margin > 0.3 * account_size):
-                print(f"\n-------  Execute @ {current_datetime.strftime('%H:%M:%S')}------------------")
-                for symbol in selected_symbols:
-                    if symbol not in existing_positions:
-                        self.symbol = symbol
-                        self.symbol_selector()
-                        signal = ind.get_last_candle_direction(self.symbol)
-                        if signal:
-                            if signal == "long":
-                                self.direction = "long"
-                                self.long_limit_and_bid_orders("bid_ask")
-                            elif signal == "short":
-                                self.direction = "short"
-                                self.short_limit_ask_orders("bid_ask")
-                        else:
-                            # self.warning_message("No valid signal found!")
-                            print(f"\tNo Signal found for {self.symbol}")
-            else:
-                print("No Trades! Active Position in place!")
-            
-            time.sleep(30)
-
-    def stop_round(self, stop_price):
-        if self.symbol in self.currencies:
-            if self.symbol in ["USDJPY", "AUDJPY"]:
-                return round(stop_price, 3)
-            return round(stop_price, 5)
-        else:
-            return round(stop_price, 2)
-
     def long_limit_and_bid_orders(self, type):
         if type == "limit":
-            entry_price = self.get_lstop_price()
+            entry_price = self.get_limit_price()
         elif type == "bid_ask":
             entry_price, _ = self.get_mid_price()
         else:
             self.warning_message("The order type not found!")
             raise Exception("Type not defined!")
             
-        if entry_price:
-            # stop_price = self.get_lstop_price() - self.spread
-            one_r = self.spread + ind.get_atr(self.symbol)
-            stop_price = entry_price - one_r
-            stop_entry = entry_price - one_r*self.ratio
-            stop_entry = self.stop_round(stop_entry)
-            
-            if stop_price > entry_price:
-                self.warning_message("LONG: Stop price is higher than entry price")
+        
+        stop_price = entry_price - self.spread * 3
+        
+        if stop_price > entry_price:
+            self.warning_message("LONG: Stop price is higher than entry price")
+        else:
+            if self.symbol in self.currencies:
+                points_in_stop = round(entry_price - stop_price, 5)
+                position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
             else:
-                if self.symbol in self.currencies:
-                    points_in_stop = round(one_r, 5)
-                    position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
-                else:
-                    points_in_stop = round(one_r)
-                    position_size = float(round(self.calculate_slots(points_in_stop)))
+                points_in_stop = round(entry_price - stop_price)
+                position_size = self.calculate_slots(points_in_stop)
+            
+            target_price1 = entry_price + self.first_target * points_in_stop
+            target_price2 = entry_price + self.second_target * points_in_stop
+            
+            position1, position2 = self.split_positions(position_size)
+            
+            response = self.trade_confirmation(points_in_stop, position_size, target_price1)
+            
+            if response:
+                request1 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position1,
+                    "type": mt.ORDER_TYPE_BUY_LIMIT,
+                    "price": entry_price,
+                    "sl": stop_price,
+                    "tp": target_price1, # FLOAT
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
                 
-                target_price1 = self.stop_round(entry_price + self.first_target * points_in_stop)
-                target_price2 = self.stop_round(entry_price + self.second_target * points_in_stop)
+                request2 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position2,
+                    "type": mt.ORDER_TYPE_BUY_LIMIT,
+                    "price": entry_price,
+                    "sl": stop_price,
+                    "tp": target_price2,
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
                 
-                position1, position2 = self.split_positions(position_size)
                 
-                response = self.trade_confirmation(points_in_stop, position_size, target_price1)
-                
-                if response:
-                    # Define the desired timezone (GMT+3)
-                    gmt3 = pytz.timezone('Etc/GMT-2') 
-
-                    # Create a datetime object for a specific date and time in GMT+3
-                    gmt3_time = datetime.now()
-
-
-                    request1 = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
-                        "volume": position1,
-                        "type": mt.ORDER_TYPE_BUY_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_entry,
-                        "tp": target_price1, # FLOAT
-                        "comment": "python script open",
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-
-                    request2 = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
-                        "volume": position2,
-                        "type": mt.ORDER_TYPE_BUY_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_price,
-                        "tp": target_price2,
-                        "comment": "python script open",
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-                    
-                    
-                    res1 = mt.order_send(request1)
-                    self.order_log(res1)
-                    res2 = mt.order_send(request2)
-                    self.order_log(res2)
+                res1 = mt.order_send(request1)
+                self.order_log(res1)
+                res2 = mt.order_send(request2)
+                self.order_log(res2)
     
 
     def short_stop_limit_order(self):
-        entry_price = self.get_lstop_price()
-        stop_price = self.get_sstop_price() + self.spread
+        entry_price = self.get_limit_price()
+        stop_price = self.get_stop_price() + self.spread
         
         if stop_price < entry_price:
             self.warning_message("Short: Stop price is higher than entry price")
@@ -846,16 +712,16 @@ class MyWindow(QMainWindow):
                 position_size = self.calculate_slots(points_in_stop)
             
             target_price1 = entry_price - self.first_target * points_in_stop
-            # target_price2 = entry_price - self.second_target * points_in_stop
+            target_price2 = entry_price - self.second_target * points_in_stop
             
-            # position1, position2 = self.split_positions(position_size)
+            position1, position2 = self.split_positions(position_size)
             response = self.trade_confirmation(points_in_stop, position_size, target_price1)
             
             if response:
                 request1 = {
                     "action": mt.TRADE_ACTION_PENDING,
                     "symbol": self.symbol,
-                    "volume": position_size, # FLOAT
+                    "volume": position1, # FLOAT
                     "type": mt.ORDER_TYPE_SELL_STOP_LIMIT,
                     "price": entry_price,
                     "stoplimit": entry_price + self.spread,
@@ -865,108 +731,94 @@ class MyWindow(QMainWindow):
                     "type_time": mt.ORDER_TIME_GTC,
                     "type_filling": mt.ORDER_FILLING_RETURN,
                 }
-
-                print(request1)
                 
-                # request2 = {
-                #     "action": mt.TRADE_ACTION_PENDING,
-                #     "symbol": self.symbol,
-                #     "volume": position2, # FLOAT
-                #     "type": mt.ORDER_TYPE_SELL_STOP_LIMIT,
-                #     "price": entry_price,
-                #     "stoplimit": entry_price + self.spread,
-                #     "sl": stop_price, # FLOAT
-                #     "tp": target_price2, # FLOAT
-                #     "comment": "python script open",
-                #     "type_time": mt.ORDER_TIME_GTC,
-                #     "type_filling": mt.ORDER_FILLING_RETURN,
-                # }
+                request2 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position2, # FLOAT
+                    "type": mt.ORDER_TYPE_SELL_STOP_LIMIT,
+                    "price": entry_price,
+                    "stoplimit": entry_price + self.spread,
+                    "sl": stop_price, # FLOAT
+                    "tp": target_price2, # FLOAT
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
 
                 res1 = mt.order_send(request1)
                 self.order_log(res1)
-                # res2 = mt.order_send(request2)
-                # self.order_log(res2)
+                res2 = mt.order_send(request2)
+                self.order_log(res2)
             
 
     def short_limit_ask_orders(self, type:str):
         if type == "limit":
-            entry_price = self.get_lstop_price()
+            entry_price = self.get_limit_price()
         elif type == "bid_ask":
             entry_price, _ = self.get_mid_price()
         else:
             raise Exception("Type not defined!")
         
-        if entry_price:
-            # stop_price = self.get_sstop_price() + self.spread
-            one_r = self.spread + ind.get_atr(self.symbol)
-            stop_price = entry_price + one_r
-            stop_entry = entry_price + one_r  *self.ratio
-            stop_entry = self.stop_round(stop_entry)
-            
-            if stop_price < entry_price:
-                self.warning_message("LONG: Stop price is higher than entry price")
+        stop_price = entry_price + self.spread * 2
+        
+        if stop_price < entry_price:
+            self.warning_message("LONG: Stop price is higher than entry price")
+        else:
+            if self.symbol in self.currencies:
+                points_in_stop = round(stop_price - entry_price, 5)
+                position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
             else:
-                if self.symbol in self.currencies:
-                    points_in_stop = round(one_r, 5)
-                    position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
-                else:
-                    points_in_stop = round(one_r)
-                    position_size = float(round(self.calculate_slots(points_in_stop)))
+                points_in_stop = round(stop_price - entry_price)
+                position_size = self.calculate_slots(points_in_stop)
+            
+            target_price1 = entry_price - self.first_target * points_in_stop
+            target_price2 = entry_price - self.second_target * points_in_stop
+
+            position1, position2 = self.split_positions(position_size)
+            response = self.trade_confirmation(points_in_stop, position_size, target_price1)
+            
+            if response:
+                request1 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position1,
+                    "type": mt.ORDER_TYPE_SELL_LIMIT,
+                    "price": entry_price,
+                    "sl": stop_price,
+                    "tp": target_price1,
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
                 
-                target_price1 = self.stop_round(entry_price - self.first_target * points_in_stop)
-                target_price2 = self.stop_round(entry_price - self.second_target * points_in_stop)
+                request2 = {
+                    "action": mt.TRADE_ACTION_PENDING,
+                    "symbol": self.symbol,
+                    "volume": position2,
+                    "type": mt.ORDER_TYPE_SELL_LIMIT,
+                    "price": entry_price,
+                    "sl": stop_price,
+                    "tp": target_price2,
+                    "comment": "python script open",
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_RETURN,
+                }
 
-                position1, position2 = self.split_positions(position_size)
-                response = self.trade_confirmation(points_in_stop, position_size, target_price1)
-                
-                if response:
-                    # Define the desired timezone (GMT+3)
-                    gmt3 = pytz.timezone('Etc/GMT-2') 
-
-                    # Create a datetime object for a specific date and time in GMT+3
-                    gmt3_time = datetime.now(gmt3) + timedelta(minutes=2)
-
-                    request1 = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
-                        "volume": position1,
-                        "type": mt.ORDER_TYPE_SELL_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_entry,
-                        "tp": target_price1,
-                        "comment": "python script open",
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-                    
-                    request2 = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
-                        "volume": position2,
-                        "type": mt.ORDER_TYPE_SELL_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_price,
-                        "tp": target_price2,
-                        "comment": "python script open",
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-
-                    res1 = mt.order_send(request1)
-                    self.order_log(res1)
-                    res2 = mt.order_send(request2)
-                    self.order_log(res2)
+                res1 = mt.order_send(request1)
+                self.order_log(res1)
+                res2 = mt.order_send(request2)
+                self.order_log(res2)
 
     def trade_confirmation(self, points_in_stop, position_size, target_price1):
-        # input_string = f"{self.direction.upper()} - {self.symbol} with ${self.risk}<br> Dollar Value : ${self.dollor_value} <br>Risk ({points_in_stop})pips <br>Positions {position_size}<br> Target @ {target_price1}"
+        input_string = f"{self.symbol} with ${self.risk}<br> Dollar Value : ${self.dollor_value} <br>Risk ({points_in_stop})pips <br>Positions {position_size}<br> Target @ {target_price1}"
             
-        # reply = QMessageBox.question(self, 'Trade Confirmation!', input_string,
-        # QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        # if reply == QMessageBox.Yes:
-        #    return True
-        # else:
-        #     return False
-        return True
+        reply = QMessageBox.question(self, 'Trade Confirmation!', input_string,
+        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+           return True
+        else:
+            return False
         
     def cancel_all_trades(self):
         # Get a list of all open positions
@@ -988,25 +840,6 @@ class MyWindow(QMainWindow):
                 else:
                     print(f"Order {position.ticket} cancelled successfully.")
     
-    def cancel_all_active_orders(self):
-        # Get a list of all open positions
-        active_orders = mt.orders_get()
-
-        # Iterate through the positions and close each one
-        for active_order in active_orders:
-            request = {
-                "action": mt.TRADE_ACTION_REMOVE,
-                "order": active_order.ticket,
-            }
-
-            # Send the trade request
-            result = mt.order_send(request)
-
-            if result.retcode != mt.TRADE_RETCODE_DONE:
-                print(f"Failed to cancel order {active_order.ticket}, error code: {result.retcode}, reason: {result.comment}")
-            else:
-                print(f"Order {active_order.ticket} cancelled successfully.")
-
     
     def close_positions(self):
         # Get open positions
@@ -1089,9 +922,8 @@ def window():
     app = QApplication(sys.argv)
     app.setApplicationName("FTMO")
     win = MyWindow()
-    win.random_entry()
-    # win.show()
-    # sys.exit(app.exec_())
+    win.show()
+    sys.exit(app.exec_())
 
 
 window()
