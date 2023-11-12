@@ -83,10 +83,11 @@ class MyWindow(QMainWindow):
         """
         
         # Value in USD
-        self.risk = 25
-        self.first_target = 1
-        self.second_target = 2
-        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD"]
+        ratio = 0.10
+        self.risk = 4500 
+        self.first_target = ratio
+        self.second_target = ratio
+        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD", "GBPUSD"]
         
     def initUI(self):
         # Font Initiation
@@ -164,12 +165,12 @@ class MyWindow(QMainWindow):
         self.radioButton6.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         vertical_align += self.vertical_gap + 40
-        self.radioButton7 = QRadioButton(self)
-        self.radioButton7.move(self.left_margin, vertical_align)
-        self.radioButton7.setText("AUDNZD")
-        self.radioButton7.setFont(label_font)
-        self.radioButton7.resize(140, 40)
-        self.radioButton7.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.radioButton13 = QRadioButton(self)
+        self.radioButton13.move(self.left_margin, vertical_align)
+        self.radioButton13.setText("USDCAD")
+        self.radioButton13.setFont(label_font)
+        self.radioButton13.resize(140, 40)
+        self.radioButton13.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         self.radioButton8 = QRadioButton(self)
         self.radioButton8.move(140, vertical_align)
@@ -193,34 +194,41 @@ class MyWindow(QMainWindow):
         self.radioButton10.resize(140, 40)
         self.radioButton10.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
+        self.radioButton7 = QRadioButton(self)
+        self.radioButton7.move(140, vertical_align)
+        self.radioButton7.setText("AUDNZD")
+        self.radioButton7.setFont(label_font)
+        self.radioButton7.resize(140, 40)
+        self.radioButton7.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
+        self.radioButton14 = QRadioButton(self)
+        self.radioButton14.move(260, vertical_align)
+        self.radioButton14.setText("AUDUSD")
+        self.radioButton14.setFont(label_font)
+        self.radioButton14.resize(140, 40)
+        self.radioButton14.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
+        vertical_align += self.vertical_gap + 40
         self.radioButton11 = QRadioButton(self)
-        self.radioButton11.move(140, vertical_align)
+        self.radioButton11.move(self.left_margin, vertical_align)
         self.radioButton11.setText("XAUUSD")
         self.radioButton11.setFont(label_font)
         self.radioButton11.resize(140, 40)
         self.radioButton11.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         self.radioButton12 = QRadioButton(self)
-        self.radioButton12.move(260, vertical_align)
+        self.radioButton12.move(140, vertical_align)
         self.radioButton12.setText("EURUSD")
         self.radioButton12.setFont(label_font)
         self.radioButton12.resize(140, 40)
         self.radioButton12.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
-        vertical_align += self.vertical_gap + 40
-        self.radioButton13 = QRadioButton(self)
-        self.radioButton13.move(self.left_margin, vertical_align)
-        self.radioButton13.setText("USDCAD")
-        self.radioButton13.setFont(label_font)
-        self.radioButton13.resize(140, 40)
-        self.radioButton13.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-
-        self.radioButton14 = QRadioButton(self)
-        self.radioButton14.move(140, vertical_align)
-        self.radioButton14.setText("AUDUSD")
-        self.radioButton14.setFont(label_font)
-        self.radioButton14.resize(140, 40)
-        self.radioButton14.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.radioButton15 = QRadioButton(self)
+        self.radioButton15.move(260, vertical_align)
+        self.radioButton15.setText("GBPUSD")
+        self.radioButton15.setFont(label_font)
+        self.radioButton15.resize(140, 40)
+        self.radioButton15.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         
         # Set the initial state of the radio buttons (optional)
         # self.radioButton1.setChecked(True)
@@ -241,6 +249,7 @@ class MyWindow(QMainWindow):
         self.radioButton12.toggled.connect(self.onRadioButtonToggled)
         self.radioButton13.toggled.connect(self.onRadioButtonToggled)
         self.radioButton14.toggled.connect(self.onRadioButtonToggled)
+        self.radioButton15.toggled.connect(self.onRadioButtonToggled)
         
         vertical_align += self.vertical_gap + self.vert_gap
         self.entry_label = QtWidgets.QLabel(self)
@@ -472,6 +481,10 @@ class MyWindow(QMainWindow):
             self.symbol = "AUDUSD" # TODO the 1.6 factor has to be changed dynamically
             self.dollor_value = 1.6 * self.get_exchange_price("AUDUSD")
             self.spread = round(self.get_spread_price(), 5)
+        elif self.radioButton15.isChecked():
+            self.symbol = "GBPUSD"
+            self.dollor_value = self.get_exchange_price("GBPUSD")
+            self.spread = round(self.get_spread_price(), 5)
     
     def entry_long_on_bid(self):
         self.long_limit_and_bid_orders("bid_ask")
@@ -532,7 +545,11 @@ class MyWindow(QMainWindow):
         
     
     def split_positions(self, x):
-        if x >= 1:
+        if self.symbol in self.currencies:
+            split = round(x/2, 2)
+            print(float(split), float(split))
+            return float(split), float(split)
+        else:
             # Round x since we need round numbers
             x = round(x)
             remaining = x%2
@@ -544,11 +561,6 @@ class MyWindow(QMainWindow):
                 split = math.floor(x/2)
                 print(float(split), float(split+1))
                 return float(split), float(split+1)
-        else:
-            split = round(x/2, 2)
-            print(float(split), float(split))
-            return float(split), float(split)
-        
 
     def long_stop_limit_order(self):
         entry_price = self.get_limit_price()
@@ -780,6 +792,8 @@ class MyWindow(QMainWindow):
                     "type_time": mt.ORDER_TIME_GTC,
                     "type_filling": mt.ORDER_FILLING_RETURN,
                 }
+
+                print(request1)
                 
                 request2 = {
                     "action": mt.TRADE_ACTION_PENDING,

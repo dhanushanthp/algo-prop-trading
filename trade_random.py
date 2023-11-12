@@ -88,7 +88,7 @@ class MyWindow(QMainWindow):
         """
         
         # Value in USD
-        ACCOUNT_SIZE, _ = ind.get_remaining_margin()
+        ACCOUNT_SIZE, _ = ind.get_account_details()
         self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*0.25
         self.first_target = 1
@@ -719,7 +719,7 @@ class MyWindow(QMainWindow):
         selected_symbols = ["USDJPY", "AUDJPY", "AUDNZD", "AUDUSD", "AUS200.cash", "UK100.cash", "US500.cash", "USDCHF", "EURUSD", "GBPUSD"]
         
         while True:
-            account_size, free_margin = ind.get_remaining_margin()
+            account_size, free_margin = ind.get_account_details()
             # ind.close_positions_with_half_profit()
             existing_positions = list(set([i.symbol for i in mt.positions_get()]))
             self.cancel_all_active_orders()
@@ -733,7 +733,7 @@ class MyWindow(QMainWindow):
                     if symbol not in existing_positions:
                         self.symbol = symbol
                         self.symbol_selector()
-                        signal = ind.get_last_candle_direction(self.symbol)
+                        signal = ind.get_candle_signal(self.symbol)
                         if signal:
                             if signal == "long":
                                 self.direction = "long"
@@ -768,7 +768,7 @@ class MyWindow(QMainWindow):
             
         if entry_price:
             # stop_price = self.get_lstop_price() - self.spread
-            one_r = self.spread + ind.get_atr(self.symbol)
+            one_r = self.spread + ind.get_stop_range(self.symbol)
             stop_price = entry_price - one_r
             stop_entry = entry_price - one_r*self.ratio
             stop_entry = self.stop_round(stop_entry)
@@ -898,7 +898,7 @@ class MyWindow(QMainWindow):
         
         if entry_price:
             # stop_price = self.get_sstop_price() + self.spread
-            one_r = self.spread + ind.get_atr(self.symbol)
+            one_r = self.spread + ind.get_stop_range(self.symbol)
             stop_price = entry_price + one_r
             stop_entry = entry_price + one_r  *self.ratio
             stop_entry = self.stop_round(stop_entry)

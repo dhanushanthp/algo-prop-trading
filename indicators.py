@@ -7,39 +7,33 @@ import numpy as np
 if not mt5.initialize():
     print("initialize() failed, error code =",mt5.last_error())
     quit()
- 
+
+def previous_candle_move(symbol):
+    h1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 1, 1)[0]
+    spread = get_spread(symbol)
+    high = h1["high"] + 3 * spread
+    low = h1["low"] - 3 * spread
+    length = round(abs(high-low), 5)
+    return high, low, length
+
+def get_stop_range(symbol):
+    high, low, length = previous_candle_move(symbol)
+    return high, low, length
 
 def get_atr(symbol):
-    # set time zone to UTC
-    timezone = pytz.timezone("Etc/UTC")
-    # create 'datetime' object in UTC time zone to avoid the implementation of a local time zone offset
-    # utc_from = datetime(2023, 11, 7, tzinfo=timezone)
-
-    # Get the current date and time in the desired time zone
-    current_datetime = datetime.now(timezone)
-
-    # Calculate two days before the current date and time
-    utc_from = current_datetime - timedelta(days=3)
-
-
-    # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
-    rates = mt5.copy_rates_from(symbol, mt5.TIMEFRAME_H4, utc_from, 100)
-
-    # Extract high, low, and close prices
+    """
+    Get ATR based on 4 hour
+    """    
+    rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H4, 0, 20)
+    
     high = np.array([x['high'] for x in rates])
     low = np.array([x['low'] for x in rates])
     close = np.array([x['close'] for x in rates])
 
-
-    # Calculate true range
     true_range = np.maximum(high[1:] - low[1:], abs(high[1:] - close[:-1]), abs(low[1:] - close[:-1]))
-
-    # Calculate 14-period ATR
     atr = np.mean(true_range[-14:])
 
     return round(atr, 5)
-
-# print(get_atr("AUS200.cash"))
 
 def get_spread(symbol):
     ask_price = mt5.symbol_info_tick(symbol).ask
@@ -47,37 +41,25 @@ def get_spread(symbol):
     spread = ask_price - bid_price
     return spread * 2
 
-def get_last_candle_direction(symbol):
-    timezone = pytz.timezone("Etc/UTC")
-    current_datetime = datetime.now(timezone)
-
-    # Calculate two days before the current date and time
-    utc_from = current_datetime - timedelta(days=1)
-
-    print(symbol)
-
+def get_candle_signal(symbol):
     # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
     h4 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H4, 0, 1)[0]
-    h4_sig=  "long" if h4[4] - h4[1] > get_spread(symbol) else "short" if abs(h4[4] - h4[1]) > get_spread(symbol) else None
+    h4_sig=  "L" if h4[4] - h4[1] > get_spread(symbol) else "S" if abs(h4[4] - h4[1]) > get_spread(symbol) else "X"
     h2 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H2, 0, 1)[0]
-    h2_sig=  "long" if h2[4] - h2[1] > get_spread(symbol) else "short" if abs(h2[4] - h2[1]) > get_spread(symbol) else None
+    h2_sig=  "L" if h2[4] - h2[1] > get_spread(symbol) else "S" if abs(h2[4] - h2[1]) > get_spread(symbol) else "X"
     h1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 0, 1)[0]
-    h1_sig=  "long" if h1[4] - h1[1] > get_spread(symbol) else "short" if abs(h1[4] - h1[1]) > get_spread(symbol) else None
+    h1_sig=  "L" if h1[4] - h1[1] > get_spread(symbol) else "S" if abs(h1[4] - h1[1]) > get_spread(symbol) else "X"
     m30 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M30, 0, 1)[0]
-    m30_sig=  "long" if m30[4] - m30[1] > get_spread(symbol) else "short" if abs(m30[4] - m30[1]) > get_spread(symbol) else None
-    m15 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M15, 0, 1)[0]
-    m15_sig=  "long" if m15[4] - m15[1] > get_spread(symbol) else "short" if abs(m15[4] - m15[1]) > get_spread(symbol) else None
-    m5 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M5, 0, 1)[0]
-    m5_sig=  "short" if m5[4] - m5[1] > get_spread(symbol) else "long" if abs(m5[4] - m5[1]) > get_spread(symbol) else None
+    m30_sig=  "L" if m30[4] - m30[1] > get_spread(symbol) else "S" if abs(m30[4] - m30[1]) > get_spread(symbol) else "X"
 
     signals = [m30_sig, h1_sig, h2_sig, h4_sig]
-    print(signals)
+    print(f"{symbol.ljust(12)}: 30M: {m30_sig.upper()}, 1H: {h1_sig.upper()}, 2H: {h2_sig.upper()}, 4H: {h4_sig.upper()}")
     
     signals = set(signals)
     if len(signals) == 1:
         return list(signals)[0]
 
-def get_remaining_margin():
+def get_account_details():
     account_info=mt5.account_info()
     if account_info!=None:
         # display trading account data 'as is'
@@ -118,13 +100,14 @@ def get_dollar_value(symbol):
         elif symbol == "USDCAD":
             return  1/get_exchange_price("USDCAD")
         elif symbol == "AUDUSD":
-            return 1.6 * get_exchange_price("AUDUSD")
+            return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
         elif symbol == "GBPUSD":
             return get_exchange_price("GBPUSD")
 
 def get_value_at_risk(symbol, price_open, stop, positions):
     difference = abs(price_open - stop)
     dollor_value = get_dollar_value(symbol)
+    
     if symbol in ["AUS200.cash", "US500.cash"]:
         risk = difference * dollor_value * positions
     else:
@@ -178,5 +161,5 @@ def close_positions_with_half_profit():
 
 # print(get_remaining_margin())
 # close_positions_with_half_profit()
-    
-
+# print(get_atr("US500.cash"))
+print(previous_candle_move("AUDUSD"))
