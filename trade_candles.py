@@ -24,7 +24,8 @@ class TradeCandle():
         self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.15%
         self.first_target = 1
         self.second_target = 1 # 1: 2, Ratio
-        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD"]
+        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD", "CHFJPY"]
+        self.indexes = ["US500.cash", "UK100.cash", "HK50.cash", "AUS200.cash", "JP225.cash"]
     
     def update_symbol_parameters(self):
         # Check which radio button is selected
@@ -43,9 +44,6 @@ class TradeCandle():
             self.spread = round(self.get_spread(), 2) # 12.0
         elif self.symbol == "AUS200.cash":
             self.dollor_value = self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread(), 2)
-        elif self.symbol == "US100.cash":
-            self.dollor_value = 1
             self.spread = round(self.get_spread(), 2)
         elif self.symbol == "AUDNZD":
             self.dollor_value = (1/self.get_exchange_price("AUDNZD")) * self.get_exchange_price("AUDUSD")
@@ -81,7 +79,10 @@ class TradeCandle():
         elif self.symbol == "EURNZD":
             self.dollor_value = (1/self.get_exchange_price("EURNZD")) * self.get_exchange_price("EURUSD")
             self.spread = round(self.get_spread(), 5)
-    
+        elif self.symbol == "CHFJPY":
+            self.dollor_value = 1/self.get_exchange_price("CHFJPY")/ self.get_exchange_price("USDCHF")
+            self.spread = round(self.get_spread(), 3)
+        
     def get_mid_price(self):
         try:
             ask_price = mt.symbol_info_tick(self.symbol).ask
@@ -156,11 +157,8 @@ class TradeCandle():
             print("Error with response!")
 
     def trade_algo(self):
-        # "XAUUSD", "JP225.cash", "HK50.cash"
-        # selected_symbols = ["AUS200.cash" ,"USDCAD", "USDJPY", "USDCHF",
-        #                     "AUDJPY", "AUDNZD", "AUDUSD", "EURUSD", "GBPUSD"]
-
-        selected_symbols = ["USDJPY", "AUDJPY", "AUDNZD", "AUDUSD", "AUS200.cash", "UK100.cash", "US500.cash", "USDCHF", "EURUSD", "GBPUSD", "EURJPY", "EURNZD", "HK50.cash"]
+        
+        selected_symbols = list(set(self.currencies + self.indexes))
         
         while True:
             account_size, free_margin = ind.get_account_details()
@@ -202,7 +200,7 @@ class TradeCandle():
         if entry_price:
             # stop_price = self.get_lstop_price() - self.spread
             # one_r = self.spread + ind.get_stop_range(self.symbol)
-            previous_bar_high, previous_bar_low, previous_bar_length = ind.get_stop_range(self.symbol)
+            _, previous_bar_low, _ = ind.get_stop_range(self.symbol)
             # stop_price = entry_price - one_r
             # stop_entry = entry_price - one_r*self.ratio
             stop_price = self.stop_round(previous_bar_low)

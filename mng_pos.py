@@ -23,8 +23,6 @@ def get_dollar_value(symbol):
             return round(1/get_exchange_price("USDJPY"), 4)
         elif symbol == "AUS200.cash":
             return get_exchange_price("AUDUSD")
-        elif symbol == "US100.cash":
-            return 1
         elif symbol == "AUDNZD":
             return (1/get_exchange_price("AUDNZD")) * get_exchange_price("AUDUSD")
         elif symbol == "USDJPY":
@@ -47,6 +45,8 @@ def get_dollar_value(symbol):
             return get_exchange_price("GBPUSD")
         elif symbol == "EURNZD":
             return (1/get_exchange_price("EURNZD")) * get_exchange_price("EURUSD")
+        elif symbol == "CHFJPY":
+            return 1/get_exchange_price("CHFJPY")/ get_exchange_price("USDCHF")
         else:
             raise "Currency Pair No defined in manage_positions.py"
 
