@@ -36,4 +36,4 @@ def is_c_pair_active(currency_pair):
     if symbol_info:
         return symbol_info.session_open, symbol_info.session_close
     
-print(is_c_pair_active("BTCUSD"))   
+print(is_c_pair_active("US500.cash"))   

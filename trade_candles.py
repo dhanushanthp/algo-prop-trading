@@ -7,6 +7,7 @@ import pytz
 import time
 
 import MetaTrader5 as mt
+import mng_pos as mp
 
 class TradeCandle():
     def __init__(self):
@@ -23,7 +24,7 @@ class TradeCandle():
         self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.15%
         self.first_target = 1
         self.second_target = 1 # 1: 2, Ratio
-        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY"]
+        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD"]
     
     def update_symbol_parameters(self):
         # Check which radio button is selected
@@ -76,6 +77,9 @@ class TradeCandle():
             self.spread = round(self.get_spread(), 5)
         elif self.symbol == "GBPUSD":
             self.dollor_value = self.get_exchange_price("GBPUSD")
+            self.spread = round(self.get_spread(), 5)
+        elif self.symbol == "EURNZD":
+            self.dollor_value = (1/self.get_exchange_price("EURNZD")) * self.get_exchange_price("EURUSD")
             self.spread = round(self.get_spread(), 5)
     
     def get_mid_price(self):
@@ -156,13 +160,14 @@ class TradeCandle():
         # selected_symbols = ["AUS200.cash" ,"USDCAD", "USDJPY", "USDCHF",
         #                     "AUDJPY", "AUDNZD", "AUDUSD", "EURUSD", "GBPUSD"]
 
-        selected_symbols = ["USDJPY", "AUDJPY", "AUDNZD", "AUDUSD", "AUS200.cash", "UK100.cash", "US500.cash", "USDCHF", "EURUSD", "GBPUSD", "EURJPY"]
+        selected_symbols = ["USDJPY", "AUDJPY", "AUDNZD", "AUDUSD", "AUS200.cash", "UK100.cash", "US500.cash", "USDCHF", "EURUSD", "GBPUSD", "EURJPY", "EURNZD", "HK50.cash"]
         
         while True:
             account_size, free_margin = ind.get_account_details()
             # ind.close_positions_with_half_profit()
             existing_positions = list(set([i.symbol for i in mt.positions_get()]))
             self.cancel_all_active_orders()
+            mp.breakeven_1R_positions()
 
             if (free_margin > 0.3 * account_size):
                 print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")

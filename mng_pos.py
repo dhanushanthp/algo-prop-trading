@@ -45,6 +45,8 @@ def get_dollar_value(symbol):
             return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
         elif symbol == "GBPUSD":
             return get_exchange_price("GBPUSD")
+        elif symbol == "EURNZD":
+            return (1/get_exchange_price("EURNZD")) * get_exchange_price("EURUSD")
         else:
             raise "Currency Pair No defined in manage_positions.py"
 
