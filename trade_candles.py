@@ -7,7 +7,7 @@ import pytz
 import time
 
 import MetaTrader5 as mt
-    
+
 class TradeCandle():
     def __init__(self):
         mt.initialize()
@@ -20,9 +20,9 @@ class TradeCandle():
         # Value in USD
         ACCOUNT_SIZE, _ = ind.get_account_details()
         self.ratio = 1
-        self.risk = ACCOUNT_SIZE/100*0.15 # Risk only 0.15%
+        self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.15%
         self.first_target = 1
-        self.second_target = 2 # 1: 2, Ratio
+        self.second_target = 1 # 1: 2, Ratio
         self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY"]
     
     def update_symbol_parameters(self):
@@ -93,8 +93,7 @@ class TradeCandle():
                 entry_price = round((mid_price), round_factor)
             else:
                 entry_price = round((mid_price) * 10)/10
-            
-            print("Entry: ", entry_price)
+
             return entry_price
         except Exception:
             return None
@@ -203,51 +202,56 @@ class TradeCandle():
             # stop_entry = entry_price - one_r*self.ratio
             stop_price = self.stop_round(previous_bar_low)
             
-            print(f"ENTRY: {entry_price} STOP: {stop_price}")
             
-            if self.symbol in self.currencies:
-                points_in_stop = round(entry_price - stop_price, 5)
-                position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
-            else:
-                points_in_stop = round(entry_price - stop_price)
-                position_size = float(round(self.calculate_slots(points_in_stop)))
-            
-            target_price1 = self.stop_round(entry_price + self.first_target * points_in_stop)
-            target_price2 = self.stop_round(entry_price + self.second_target * points_in_stop)
-            
-            position1, position2 = self.split_positions(position_size)
+            if entry_price > stop_price:
+                print(f"ENTRY: {entry_price} STOP: {stop_price}")
+                
+                try:
+                    if self.symbol in self.currencies:
+                        points_in_stop = round(entry_price - stop_price, 5)
+                        position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+                    else:
+                        points_in_stop = round(entry_price - stop_price)
+                        position_size = float(round(self.calculate_slots(points_in_stop)))
+                    
+                    target_price1 = self.stop_round(entry_price + self.first_target * points_in_stop)
+                    target_price2 = self.stop_round(entry_price + self.second_target * points_in_stop)
+                    
+                    position1, position2 = self.split_positions(position_size)
 
-            request1 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position1,
-                "type": mt.ORDER_TYPE_BUY_LIMIT,
-                "price": entry_price,
-                "sl": stop_price,
-                "tp": target_price1, # FLOAT
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+                    request1 = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": self.symbol,
+                        "volume": position1,
+                        "type": mt.ORDER_TYPE_BUY_LIMIT,
+                        "price": entry_price,
+                        "sl": stop_price,
+                        "tp": target_price1, # FLOAT
+                        "comment": "python script open",
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
 
-            request2 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position2,
-                "type": mt.ORDER_TYPE_BUY_LIMIT,
-                "price": entry_price,
-                "sl": stop_price,
-                "tp": target_price2,
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
-            
-            
-            res1 = mt.order_send(request1)
-            self.order_log(res1)
-            res2 = mt.order_send(request2)
-            self.order_log(res2)
+                    request2 = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": self.symbol,
+                        "volume": position2,
+                        "type": mt.ORDER_TYPE_BUY_LIMIT,
+                        "price": entry_price,
+                        "sl": stop_price,
+                        "tp": target_price2,
+                        "comment": "python script open",
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
+                    
+                    
+                    res1 = mt.order_send(request1)
+                    self.order_log(res1)
+                    res2 = mt.order_send(request2)
+                    self.order_log(res2)
+                except Exception as e:
+                    print(e)
             
 
     def short_entry(self):
@@ -261,50 +265,55 @@ class TradeCandle():
             # stop_entry = entry_price + one_r  *self.ratio
             stop_price = self.stop_round(previous_bar_high)
 
-            print(f"ENTRY: {entry_price} STOP: {stop_price}")
-            
-            if self.symbol in self.currencies:
-                points_in_stop = round(stop_price - entry_price, 5)
-                position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
-            else:
-                points_in_stop = round(stop_price - entry_price)
-                position_size = float(round(self.calculate_slots(points_in_stop)))
-            
-            target_price1 = self.stop_round(entry_price - self.first_target * points_in_stop)
-            target_price2 = self.stop_round(entry_price - self.second_target * points_in_stop)
+            if stop_price > entry_price:
+                
+                try:
+                    print(f"ENTRY: {entry_price} STOP: {stop_price}")
+                    
+                    if self.symbol in self.currencies:
+                        points_in_stop = round(stop_price - entry_price, 5)
+                        position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+                    else:
+                        points_in_stop = round(stop_price - entry_price)
+                        position_size = float(round(self.calculate_slots(points_in_stop)))
+                    
+                    target_price1 = self.stop_round(entry_price - self.first_target * points_in_stop)
+                    target_price2 = self.stop_round(entry_price - self.second_target * points_in_stop)
 
-            position1, position2 = self.split_positions(position_size)
+                    position1, position2 = self.split_positions(position_size)
 
-            request1 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position1,
-                "type": mt.ORDER_TYPE_SELL_LIMIT,
-                "price": entry_price,
-                "sl": stop_price,
-                "tp": target_price1,
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
-            
-            request2 = {
-                "action": mt.TRADE_ACTION_PENDING,
-                "symbol": self.symbol,
-                "volume": position2,
-                "type": mt.ORDER_TYPE_SELL_LIMIT,
-                "price": entry_price,
-                "sl": stop_price,
-                "tp": target_price2,
-                "comment": "python script open",
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_RETURN,
-            }
+                    request1 = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": self.symbol,
+                        "volume": position1,
+                        "type": mt.ORDER_TYPE_SELL_LIMIT,
+                        "price": entry_price,
+                        "sl": stop_price,
+                        "tp": target_price1,
+                        "comment": "python script open",
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request2 = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": self.symbol,
+                        "volume": position2,
+                        "type": mt.ORDER_TYPE_SELL_LIMIT,
+                        "price": entry_price,
+                        "sl": stop_price,
+                        "tp": target_price2,
+                        "comment": "python script open",
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
 
-            res1 = mt.order_send(request1)
-            self.order_log(res1)
-            res2 = mt.order_send(request2)
-            self.order_log(res2)
+                    res1 = mt.order_send(request1)
+                    self.order_log(res1)
+                    res2 = mt.order_send(request2)
+                    self.order_log(res2)
+                except Exception as e:
+                    print(e)
     
     def cancel_all_active_orders(self):
         active_orders = mt.orders_get()
