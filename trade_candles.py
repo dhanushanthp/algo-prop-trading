@@ -24,7 +24,8 @@ class TradeCandle():
         self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.15%
         self.first_target = 1
         self.second_target = 1 # 1: 2, Ratio
-        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "XAUUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD", "CHFJPY"]
+        #  "XAUUSD" This consumes more margin
+        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD", "CHFJPY"]
         self.indexes = ["US500.cash", "UK100.cash", "HK50.cash", "AUS200.cash", "JP225.cash"]
     
     def update_symbol_parameters(self):
@@ -167,7 +168,7 @@ class TradeCandle():
             self.cancel_all_active_orders()
             mp.breakeven_1R_positions()
 
-            if (free_margin > 0.3 * account_size):
+            if (free_margin > 0.1 * account_size):
                 print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
                 for symbol in selected_symbols:
                     if symbol not in existing_positions:
@@ -182,7 +183,7 @@ class TradeCandle():
                                 self.direction = "short"
                                 self.short_entry()
             else:
-                print("No Trades!Conditions not met!")
+                print("Not enough equity for new positions!")
             
             time.sleep(30)
 
