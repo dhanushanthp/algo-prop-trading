@@ -21,10 +21,10 @@ class TradeCandle():
         # Value in USD
         ACCOUNT_SIZE, _ = ind.get_account_details()
         self.ratio = 1
-        self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.15%
+        self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
         self.first_target = 1
         self.second_target = 1 # 1: 2, Ratio
-        #  "XAUUSD" This consumes more margin
+        #  "XAUUSD"
         self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD", "CHFJPY"]
         self.indexes = ["US500.cash", "UK100.cash", "HK50.cash", "AUS200.cash", "JP225.cash"]
     

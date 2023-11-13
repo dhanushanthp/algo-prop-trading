@@ -101,7 +101,7 @@ def breakeven_1R_positions():
         quantity = position.volume
         max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
         # Break even when price reach 1R
-        if (position.profit > max_loss*0.8) and (position.price_open != position.sl):
+        if (position.profit > max_loss*0.5) and (position.price_open != position.sl):
             modify_request = {
                 "action": mt5.TRADE_ACTION_SLTP,
                 "symbol": position.symbol,
