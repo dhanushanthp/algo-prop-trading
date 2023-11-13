@@ -1,4 +1,6 @@
 import MetaTrader5 as mt5
+import indicators as ind
+import currency_pairs as curr
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -91,7 +93,14 @@ def close_positions(obj):
     else:
         print("Order "+obj.symbol+" closed successfully")
 
-            
+def stop_round(symbol, stop_price):
+    if symbol in curr.currencies:
+        if symbol in ["USDJPY", "AUDJPY", "EURJPY"]:
+            return round(stop_price, 3)
+        return round(stop_price, 5)
+    else:
+        return round(stop_price, 2)
+
 def breakeven_1R_positions():
     existing_positions = mt5.positions_get()
     for position in existing_positions:
@@ -101,14 +110,33 @@ def breakeven_1R_positions():
         quantity = position.volume
         max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
         # Break even when price reach 1R
-        if (position.profit > max_loss*0.5) and (position.price_open != position.sl):
+        # if position.symbol != "GBPUSD":
+        #     continue
+
+        high, low, length = ind.previous_candle_move(symbol=position.symbol)
+        stop_price = 0
+        if position.type == 0:
+            stop_price = low
+        elif position.type == 1:
+            stop_price = high
+        
+        stop_price = stop_round(symbol=position.symbol, stop_price=stop_price)
+
+        actual_stop_pips = abs(position.tp - position.price_open)
+        current_stop_pips = abs(stop_price - position.price_open)
+
+        # Only when the stop price is not set to previous bar. Otherwise the 
+        # stop has been already moved.
+        # Don't change when 1. existing stop price equals to new calculated stop and 2. If new stop pips is higher than initial pips
+        # round(stop_price, 3) != round(position.sl, 3)
+        if (actual_stop_pips > current_stop_pips):
             modify_request = {
                 "action": mt5.TRADE_ACTION_SLTP,
                 "symbol": position.symbol,
                 "volume": position.volume,
                 "type": position.type,
                 "position": position.ticket,
-                "sl": position.price_open,
+                "sl": stop_price,
                 "tp": position.tp,
                 "comment": 'Break Even',
                 "magic": 234000,
@@ -120,4 +148,7 @@ def breakeven_1R_positions():
             result = mt5.order_send(modify_request)
             
             if result.retcode != mt5.TRADE_RETCODE_DONE:
-                print("Close Order " + mt5.symbol + " failed!!...Error: "+str(result.reason))
+                if result.comment not in ["No changes"]:
+                    print("Manage Order " + position.symbol + " failed!!...Error: "+str(result.comment))
+
+# breakeven_1R_positions()
