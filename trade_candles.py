@@ -22,7 +22,7 @@ class TradeCandle():
         ACCOUNT_SIZE, _ = ind.get_account_details()
         self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
-        self.first_target = 1
+        self.first_target = 0.5
         self.second_target = 1 # 1: 2, Ratio
         #  "XAUUSD"
         self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD", "CHFJPY"]
@@ -222,8 +222,8 @@ class TradeCandle():
                     target_price2 = self.stop_round(entry_price + self.second_target * points_in_stop)
                     
                     # TODO this can be uncomment when we go for higher margin
-                    # position1, position2 = self.split_positions(position_size)
-                    position1, position2 = position_size, 0.0
+                    position1, position2 = self.split_positions(position_size)
+                    # position1, position2 = position_size, 0.0
 
                     request1 = {
                         "action": mt.TRADE_ACTION_PENDING,
@@ -254,8 +254,8 @@ class TradeCandle():
                     
                     res1 = mt.order_send(request1)
                     self.order_log(res1)
-                    # res2 = mt.order_send(request2)
-                    # self.order_log(res2)
+                    res2 = mt.order_send(request2)
+                    self.order_log(res2)
                 except Exception as e:
                     print(e)
             
@@ -287,8 +287,8 @@ class TradeCandle():
                     target_price2 = self.stop_round(entry_price - self.second_target * points_in_stop)
 
                     # TODO this can be uncomment when we go for higher margin
-                    # position1, position2 = self.split_positions(position_size)
-                    position1, position2 = position_size, 0.0
+                    position1, position2 = self.split_positions(position_size)
+                    # position1, position2 = position_size, 0.0
 
                     request1 = {
                         "action": mt.TRADE_ACTION_PENDING,
@@ -318,8 +318,8 @@ class TradeCandle():
 
                     res1 = mt.order_send(request1)
                     self.order_log(res1)
-                    # res2 = mt.order_send(request2)
-                    # self.order_log(res2)
+                    res2 = mt.order_send(request2)
+                    self.order_log(res2)
                 except Exception as e:
                     print(e)
     

@@ -101,7 +101,7 @@ def stop_round(symbol, stop_price):
     else:
         return round(stop_price, 2)
 
-def breakeven_1R_positions():
+def breakeven_1R_positions_old():
     existing_positions = mt5.positions_get()
     for position in existing_positions:
         symbol = position.symbol
@@ -150,5 +150,35 @@ def breakeven_1R_positions():
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 if result.comment not in ["No changes"]:
                     print("Manage Order " + position.symbol + " failed!!...Error: "+str(result.comment))
+
+def breakeven_1R_positions():
+    existing_positions = mt5.positions_get()
+    for position in existing_positions:
+        symbol = position.symbol
+        entry_price = position.price_open
+        stop_loss = position.sl
+        quantity = position.volume
+        max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
+
+        if (position.profit > 0.5 * max_loss):
+            modify_request = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "symbol": position.symbol,
+                "volume": position.volume,
+                "type": position.type,
+                "position": position.ticket,
+                "sl": position.price_open,
+                "tp": position.tp,
+                "comment": 'Break Even',
+                "magic": 234000,
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_FOK,
+                "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+            }
+            
+            result = mt5.order_send(modify_request)
+            
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                print("Close Order " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 # breakeven_1R_positions()
