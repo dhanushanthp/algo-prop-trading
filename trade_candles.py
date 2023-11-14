@@ -1,6 +1,7 @@
 from statistics import mean 
 import math
 import indicators as ind
+import util as util
 
 from datetime import datetime, timedelta
 import pytz
@@ -22,8 +23,8 @@ class TradeCandle():
         ACCOUNT_SIZE, _ = ind.get_account_details()
         self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
-        self.first_target = 0.5
-        self.second_target = 1 # 1: 2, Ratio
+        self.first_target = 1
+        self.second_target = 2 # 1: 2, Ratio
         #  "XAUUSD"
         self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD", "CHFJPY"]
         self.indexes = ["US500.cash", "UK100.cash", "HK50.cash", "AUS200.cash", "JP225.cash"]
@@ -131,7 +132,7 @@ class TradeCandle():
     def split_positions(self, x):
         if self.symbol in self.currencies:
             split = round(x/2, 2)
-            print(float(split), float(split))
+            # print(float(split), float(split))
             return float(split), float(split)
         else:
             # Round x since we need round numbers
@@ -139,11 +140,11 @@ class TradeCandle():
             remaining = x%2
             if remaining == 0:
                 split = x/2
-                print(float(split), float(split))
+                # print(float(split), float(split))
                 return float(split), float(split)
             if remaining == 1:
                 split = math.floor(x/2)
-                print(float(split), float(split+1))
+                # print(float(split), float(split+1))
                 return float(split), float(split+1)
 
    
@@ -152,8 +153,8 @@ class TradeCandle():
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 error_string = f"Error: {result.comment}"
                 print(error_string)
-            else:
-                print(f"Order placed successfully!")
+            # else:
+            #     print(f"Order placed successfully!")
         else:
             print("Error with response!")
 
@@ -162,28 +163,39 @@ class TradeCandle():
         selected_symbols = list(set(self.currencies + self.indexes))
         
         while True:
-            account_size, free_margin = ind.get_account_details()
-            # ind.close_positions_with_half_profit()
-            existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-            self.cancel_all_active_orders()
-            mp.breakeven_1R_positions()
+            is_market_open, is_market_close = util.get_market_status()
 
-            if (free_margin > 0.1 * account_size):
-                print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
-                for symbol in selected_symbols:
-                    if symbol not in existing_positions:
-                        self.symbol = symbol
-                        self.update_symbol_parameters()
-                        signal = ind.get_candle_signal(self.symbol)
-                        if signal:
-                            if signal == "L":
-                                self.direction = "long"
-                                self.long_entry()
-                            elif signal == "S":
-                                self.direction = "short"
-                                self.short_entry()
-            else:
-                print("Not enough equity for new positions!")
+            if is_market_close:
+                self.close_positions()
+
+            if is_market_open:
+                account_size, free_margin = ind.get_account_details()
+                # ind.close_positions_with_half_profit()
+                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+                self.cancel_all_active_orders()
+                mp.breakeven_1R_positions()
+
+                if (free_margin > 0.1 * account_size):
+                    print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
+                    for symbol in selected_symbols:
+                        if symbol not in existing_positions:
+                            self.symbol = symbol
+                            self.enable_symbol()
+                            try:
+                                self.update_symbol_parameters()
+                                signal = ind.get_candle_signal(self.symbol)
+                                if signal:
+                                    if signal == "L":
+                                        self.direction = "long"
+                                        self.long_entry()
+                                    elif signal == "S":
+                                        self.direction = "short"
+                                        self.short_entry()
+                            except Exception as e:
+                                print(f"Error: {e}")
+                                        
+                else:
+                    print("Not enough equity for new positions!")
             
             time.sleep(30)
 
@@ -208,7 +220,7 @@ class TradeCandle():
             
             
             if entry_price > stop_price:
-                print(f"ENTRY: {entry_price} STOP: {stop_price}")
+                # print(f"ENTRY: {entry_price} STOP: {stop_price}")
                 
                 try:
                     if self.symbol in self.currencies:
@@ -274,7 +286,7 @@ class TradeCandle():
             if stop_price > entry_price:
                 
                 try:
-                    print(f"ENTRY: {entry_price} STOP: {stop_price}")
+                    # print(f"ENTRY: {entry_price} STOP: {stop_price}")
                     
                     if self.symbol in self.currencies:
                         points_in_stop = round(stop_price - entry_price, 5)
@@ -336,8 +348,6 @@ class TradeCandle():
 
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 print(f"Failed to cancel order {active_order.ticket}, error code: {result.retcode}, reason: {result.comment}")
-            else:
-                print(f"{active_order.ticket} Cancelled Successfully!")
 
     
     def close_positions(self):
@@ -369,10 +379,12 @@ class TradeCandle():
                 result = mt.order_send(close_request) # send order to close a position
                 
                 if result.retcode != mt.TRADE_RETCODE_DONE:
-                    print("Close Order "+obj.symbol+" failed!!...Error Code: "+str(result.retcode))
-                else:
-                    print(f"{obj.symbol} Closed Successfully!")
-        
+                    print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
+
+    def enable_symbol(self):
+        if not mt.symbol_select(self.symbol,True):
+            print("symbol_select({}}) failed, exit", self.symbol)
+
 def window():
     win = TradeCandle()
     win.trade_algo()

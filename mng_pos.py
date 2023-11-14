@@ -50,13 +50,13 @@ def get_dollar_value(symbol):
         elif symbol == "CHFJPY":
             return 1/get_exchange_price("CHFJPY")/ get_exchange_price("USDCHF")
         else:
-            raise "Currency Pair No defined in manage_positions.py"
+            raise Exception("Currency Pair No defined in manage_positions.py")
 
 def get_value_at_risk(symbol, price_open, stop, positions):
     difference = abs(price_open - stop)
     dollor_value = get_dollar_value(symbol)
     
-    if symbol in ["AUS200.cash", "US500.cash"]:
+    if symbol in curr.indexes:
         risk = difference * dollor_value * positions
     else:
         risk = difference * dollor_value * 100000 * positions
@@ -95,7 +95,7 @@ def close_positions(obj):
 
 def stop_round(symbol, stop_price):
     if symbol in curr.currencies:
-        if symbol in ["USDJPY", "AUDJPY", "EURJPY"]:
+        if symbol in curr.jpy_currencies:
             return round(stop_price, 3)
         return round(stop_price, 5)
     else:
@@ -159,8 +159,8 @@ def breakeven_1R_positions():
         stop_loss = position.sl
         quantity = position.volume
         max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
-
-        if (position.profit > 0.5 * max_loss):
+        # print(position.symbol, max_loss/2, position.profit)
+        if (position.profit > max_loss) and max_loss != 0:
             modify_request = {
                 "action": mt5.TRADE_ACTION_SLTP,
                 "symbol": position.symbol,
@@ -179,6 +179,7 @@ def breakeven_1R_positions():
             result = mt5.order_send(modify_request)
             
             if result.retcode != mt5.TRADE_RETCODE_DONE:
-                print("Close Order " + position.symbol + " failed!!...Error: "+str(result.comment))
+                if result.comment != "No changes":
+                    print("Close Order " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 # breakeven_1R_positions()
