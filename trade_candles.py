@@ -166,6 +166,7 @@ class TradeCandle():
             is_market_open, is_market_close = util.get_market_status()
 
             if is_market_close:
+                print("Market Close!")
                 self.close_positions()
 
             if is_market_open:
