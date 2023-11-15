@@ -190,3 +190,4 @@ def breakeven_1R_positions():
 
 # breakeven_1R_positions()
 # print(get_dollar_value("GBPJPY"))
+# print(get_exchange_price("NZDUSD"))

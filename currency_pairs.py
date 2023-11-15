@@ -6,7 +6,6 @@ currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD',
               'NZDJPY',
               'USDCAD', 'USDCHF', 'USDJPY']
 
-#  'JP225.cash',  'US500.cash' 'UK100.cash'
-indexes = ['AUS200.cash', 'HK50.cash']
+indexes = ['AUS200.cash', 'HK50.cash', 'JP225.cash',  'US500.cash', 'UK100.cash']
 
 jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY']
