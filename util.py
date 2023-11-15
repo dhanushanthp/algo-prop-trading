@@ -64,4 +64,4 @@ def is_c_pair_active(currency_pair):
     
 # print(is_c_pair_active("US500.cash"))   
 # print(get_gmt_time())
-# print(get_market_status())
+print(get_market_status())

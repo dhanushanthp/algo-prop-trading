@@ -183,7 +183,7 @@ class TradeCandle():
                 print("Market Close!")
                 self.close_positions()
 
-            if is_market_open:
+            if is_market_open and not is_market_close:
                 account_size, free_margin = ind.get_account_details()
                 # ind.close_positions_with_half_profit()
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
