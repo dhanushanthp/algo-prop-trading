@@ -96,7 +96,7 @@ def get_account_details():
     account_info=mt5.account_info()
     if account_info!=None:
         # display trading account data 'as is'
-        return account_info.equity, account_info.margin_free
+        return account_info.equity, account_info.margin_free, account_info.profit
 
 
 # print(get_remaining_margin())
@@ -104,3 +104,4 @@ def get_account_details():
 # print(get_atr("US500.cash"))
 # print(previous_candle_move("AUDUSD"))
 # print(get_candle_signal("EURJPY"))
+# print(get_account_details())

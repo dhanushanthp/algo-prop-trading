@@ -21,7 +21,7 @@ class TradeCandle():
         #######################
         """
         # Value in USD
-        ACCOUNT_SIZE, _ = ind.get_account_details()
+        ACCOUNT_SIZE, _,_ = ind.get_account_details()
         self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
         self.first_target = 1
@@ -184,8 +184,12 @@ class TradeCandle():
                 self.close_positions()
 
             if is_market_open and not is_market_close:
-                account_size, free_margin = ind.get_account_details()
-                # ind.close_positions_with_half_profit()
+                account_size, free_margin, total_profit = ind.get_account_details()
+                
+                # Close all the position, If current profit reach more than 1% and re evaluate
+                if total_profit > account_size * 1/100:
+                    self.close_positions()
+                
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 self.cancel_all_active_orders()
                 mp.breakeven_1R_positions()
