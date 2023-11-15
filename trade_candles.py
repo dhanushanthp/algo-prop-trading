@@ -2,6 +2,7 @@ from statistics import mean
 import math
 import indicators as ind
 import util as util
+import currency_pairs as curr
 
 from datetime import datetime, timedelta
 import pytz
@@ -25,30 +26,32 @@ class TradeCandle():
         self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
         self.first_target = 1
         self.second_target = 2 # 1: 2, Ratio
-        #  "XAUUSD"
-        self.currencies = ["AUDNZD", "AUDJPY", "USDJPY", "USDCHF", "EURUSD", "USDCAD", "AUDUSD", "GBPUSD", "EURJPY", "EURNZD", "CHFJPY"]
-        self.indexes = ["US500.cash", "UK100.cash", "HK50.cash", "AUS200.cash", "JP225.cash"]
+        self.currencies = curr.currencies
+        self.indexes = curr.indexes
     
     def update_symbol_parameters(self):
         # Check which radio button is selected
         if self.symbol == "US500.cash":
             self.dollor_value = 1
-            self.spread = round(self.get_spread(), 2) # 1.0
+            self.spread = round(self.get_spread(), 2)
         elif self.symbol == "UK100.cash":
             self.dollor_value = round(1/self.get_exchange_price("GBPUSD"), 4)
-            self.spread = round(self.get_spread(), 2) # 4.0
+            self.spread = round(self.get_spread(), 2)
         elif self.symbol == "HK50.cash":
             # self.dollor_value = round(1/self.get_exchange_price("USDHKD"), 4)
             self.dollor_value = round(1/7.8, 4) # Generally 7.8
-            self.spread = round(self.get_spread(), 2) # 10.0
+            self.spread = round(self.get_spread(), 2)
         elif self.symbol == "JP225.cash":
             self.dollor_value = round(1/self.get_exchange_price("USDJPY"), 4)
-            self.spread = round(self.get_spread(), 2) # 12.0
+            self.spread = round(self.get_spread(), 2)
         elif self.symbol == "AUS200.cash":
             self.dollor_value = self.get_exchange_price("AUDUSD")
             self.spread = round(self.get_spread(), 2)
         elif self.symbol == "AUDNZD":
             self.dollor_value = (1/self.get_exchange_price("AUDNZD")) * self.get_exchange_price("AUDUSD")
+            self.spread = round(self.get_spread(), 5)
+        elif self.symbol == "EURCAD":
+            self.dollor_value = (1/self.get_exchange_price("EURCAD")) * self.get_exchange_price("EURUSD")
             self.spread = round(self.get_spread(), 5)
         elif self.symbol == "USDJPY":
             self.dollor_value = 1/self.get_exchange_price("USDJPY")
@@ -59,8 +62,14 @@ class TradeCandle():
         elif self.symbol == "AUDJPY":
             self.dollor_value = (1/self.get_exchange_price("AUDJPY")) * self.get_exchange_price("AUDUSD")
             self.spread = round(self.get_spread(), 3)
+        elif self.symbol == "NZDJPY":
+            self.dollor_value = (1/self.get_exchange_price("NZDJPY")) * self.get_exchange_price("NZDUSD")
+            self.spread = round(self.get_spread(), 3)
         elif self.symbol == "EURJPY":
             self.dollor_value = (1/self.get_exchange_price("EURJPY")) * self.get_exchange_price("EURUSD")
+            self.spread = round(self.get_spread(), 3)
+        elif self.symbol == "GBPJPY":
+            self.dollor_value = (1/self.get_exchange_price("GBPJPY")) * self.get_exchange_price("GBPUSD")
             self.spread = round(self.get_spread(), 3)
         elif self.symbol == "XAUUSD":
             # Added 2, Since it was picking the whole value
@@ -84,6 +93,8 @@ class TradeCandle():
         elif self.symbol == "CHFJPY":
             self.dollor_value = 1/self.get_exchange_price("CHFJPY")/ self.get_exchange_price("USDCHF")
             self.spread = round(self.get_spread(), 3)
+        else:
+            raise Exception(f"{self.symbol} don't have conditions")
         
     def get_mid_price(self):
         try:
@@ -163,6 +174,8 @@ class TradeCandle():
         selected_symbols = list(set(self.currencies + self.indexes))
         
         while True:
+            print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
+            
             is_market_open, is_market_close = util.get_market_status()
 
             if is_market_close:
@@ -177,7 +190,6 @@ class TradeCandle():
                 mp.breakeven_1R_positions()
 
                 if (free_margin > 0.1 * account_size):
-                    print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
                     for symbol in selected_symbols:
                         if symbol not in existing_positions:
                             self.symbol = symbol

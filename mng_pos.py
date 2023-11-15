@@ -33,8 +33,14 @@ def get_dollar_value(symbol):
             return 1/get_exchange_price("USDCHF")
         elif symbol == "AUDJPY":
             return (1/get_exchange_price("AUDJPY")) * get_exchange_price("AUDUSD")
+        elif symbol == "NZDJPY":
+            return (1/get_exchange_price("NZDJPY")) * get_exchange_price("NZDUSD")
         elif symbol == "EURJPY":
             return (1/get_exchange_price("EURJPY")) * get_exchange_price("EURUSD")
+        elif symbol == "GBPJPY":
+            return (1/get_exchange_price("GBPJPY")) * get_exchange_price("GBPUSD")
+        elif symbol == "EURCAD":
+            return (1/get_exchange_price("EURCAD")) * get_exchange_price("EURUSD")
         elif symbol == "XAUUSD":
             return 2/get_exchange_price("XAUUSD")
         elif symbol == "EURUSD":
@@ -183,3 +189,4 @@ def breakeven_1R_positions():
                     print("Close Order " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 # breakeven_1R_positions()
+# print(get_dollar_value("GBPJPY"))
