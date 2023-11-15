@@ -32,17 +32,17 @@ class TradeCandle():
     def update_symbol_parameters(self):
         # Check which radio button is selected
         if self.symbol == "US500.cash":
-            self.dollor_value = 1
+            self.dollor_value = 1.0
             self.spread = round(self.get_spread(), 2)
         elif self.symbol == "UK100.cash":
-            self.dollor_value = round(1/self.get_exchange_price("GBPUSD"), 4)
+            self.dollor_value = self.get_exchange_price("GBPUSD")
             self.spread = round(self.get_spread(), 2)
         elif self.symbol == "HK50.cash":
             # self.dollor_value = round(1/self.get_exchange_price("USDHKD"), 4)
             self.dollor_value = round(1/7.8, 4) # Generally 7.8
             self.spread = round(self.get_spread(), 2)
         elif self.symbol == "JP225.cash":
-            self.dollor_value = round(1/self.get_exchange_price("USDJPY"), 4)
+            self.dollor_value = round(1/self.get_exchange_price("USDJPY"), 5)
             self.spread = round(self.get_spread(), 2)
         elif self.symbol == "AUS200.cash":
             self.dollor_value = self.get_exchange_price("AUDUSD")
@@ -141,29 +141,30 @@ class TradeCandle():
         return float(positions)        
     
     def split_positions(self, x):
-        if self.symbol in self.currencies:
-            split = round(x/2, 2)
-            # print(float(split), float(split))
-            return float(split), float(split)
-        else:
-            # Round x since we need round numbers
-            x = round(x)
-            remaining = x%2
-            if remaining == 0:
-                split = x/2
-                # print(float(split), float(split))
-                return float(split), float(split)
-            if remaining == 1:
-                split = math.floor(x/2)
-                # print(float(split), float(split+1))
-                return float(split), float(split+1)
+        # if self.symbol in self.currencies:
+        split = round(x/2, 2)
+        # print(float(split), float(split))
+        return float(split), float(split)
+        # else:
+        #     # Round x since we need round numbers
+        #     x = round(x)
+        #     remaining = x%2
+        #     if remaining == 0:
+        #         split = x/2
+        #         print(float(split), float(split))
+        #         return float(split), float(split)
+        #     if remaining == 1:
+        #         split = math.floor(x/2)
+        #         print(float(split), float(split+1))
+        #         return float(split), float(split+1)
 
    
-    def order_log(self, result):
+    def order_log(self, result, request={}):
         if result:
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 error_string = f"Error: {result.comment}"
                 print(error_string)
+                print(request)
             # else:
             #     print(f"Order placed successfully!")
         else:
@@ -192,6 +193,11 @@ class TradeCandle():
                 if (free_margin > 0.1 * account_size):
                     for symbol in selected_symbols:
                         if symbol not in existing_positions:
+
+                            if util.get_gmt_time()[1] <= 10 and symbol in ["US500.cash", "UK100.cash"]:
+                                # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
+                                continue
+
                             self.symbol = symbol
                             self.enable_symbol()
                             try:
@@ -238,10 +244,10 @@ class TradeCandle():
                 try:
                     if self.symbol in self.currencies:
                         points_in_stop = round(entry_price - stop_price, 5)
-                        position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+                        position_size = self.calculate_slots(points_in_stop)/100000
                     else:
                         points_in_stop = round(entry_price - stop_price)
-                        position_size = float(round(self.calculate_slots(points_in_stop)))
+                        position_size = self.calculate_slots(points_in_stop)
                     
                     target_price1 = self.stop_round(entry_price + self.first_target * points_in_stop)
                     target_price2 = self.stop_round(entry_price + self.second_target * points_in_stop)
@@ -278,9 +284,9 @@ class TradeCandle():
                     
                     
                     res1 = mt.order_send(request1)
-                    self.order_log(res1)
+                    self.order_log(res1, request1)
                     res2 = mt.order_send(request2)
-                    self.order_log(res2)
+                    self.order_log(res2, request2)
                 except Exception as e:
                     print(e)
             
@@ -303,10 +309,10 @@ class TradeCandle():
                     
                     if self.symbol in self.currencies:
                         points_in_stop = round(stop_price - entry_price, 5)
-                        position_size = round(self.calculate_slots(points_in_stop)/100000, 2)
+                        position_size = self.calculate_slots(points_in_stop)/100000
                     else:
                         points_in_stop = round(stop_price - entry_price)
-                        position_size = float(round(self.calculate_slots(points_in_stop)))
+                        position_size = self.calculate_slots(points_in_stop)
                     
                     target_price1 = self.stop_round(entry_price - self.first_target * points_in_stop)
                     target_price2 = self.stop_round(entry_price - self.second_target * points_in_stop)
@@ -342,9 +348,9 @@ class TradeCandle():
                     }
 
                     res1 = mt.order_send(request1)
-                    self.order_log(res1)
+                    self.order_log(res1, request1)
                     res2 = mt.order_send(request2)
-                    self.order_log(res2)
+                    self.order_log(res2, request2)
                 except Exception as e:
                     print(e)
     
