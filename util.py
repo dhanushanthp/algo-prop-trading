@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta,  time
 import pytz
 
 import MetaTrader5 as mt5
@@ -37,13 +37,11 @@ def get_gmt_time():
 
 def get_today_profit():
     tm_zone = pytz.timezone('Etc/GMT-2')
-    start_time = datetime(2023, 11, 16,tzinfo=tm_zone)
-    print(start_time)
-    end_time = datetime.now(tm_zone)
-    print(end_time)
+    start_time = datetime.combine(datetime.now(tm_zone).date(), time())  
+    end_time = datetime.now(tm_zone) + timedelta(hours=4)
     data = mt5.history_deals_get(start_time, end_time)
-    output = sum([i.profit - i.commission for i in data])
-    print(output)
+    output = round(sum([i.profit + i.commission for i in data]))
+    return output
 
 def get_market_status():
     market_open = False
@@ -76,4 +74,4 @@ def is_c_pair_active(currency_pair):
 # print(is_c_pair_active("US500.cash"))   
 # print(get_gmt_time())
 # print(get_market_status())
-# get_today_profit()
+# print(get_today_profit())

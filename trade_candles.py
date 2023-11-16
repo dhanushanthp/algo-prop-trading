@@ -3,6 +3,7 @@ import math
 import indicators as ind
 import util as util
 import currency_pairs as curr
+import sys
 
 from datetime import datetime, timedelta
 import pytz
@@ -181,7 +182,7 @@ class TradeCandle():
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
             
-            is_market_open, is_market_close = util.get_market_status()
+            is_market_open, is_market_close = util.get_market_status()            
 
             if is_market_close:
                 print("Market Close!")
@@ -191,8 +192,13 @@ class TradeCandle():
                 account_size, free_margin, total_profit = ind.get_account_details()
                 
                 # Close all the position, If current profit reach more than 1% and re evaluate
+                # Total profit based on active positions
                 if total_profit > account_size * 1/100:
                     self.close_positions()
+                    
+                    # If closed positions profit is more than 2% then exit the app. Done for today!
+                    if util.get_today_profit() > account_size * 2/100:
+                        sys.exit()
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 self.exist_on_initial_plan_changed()
