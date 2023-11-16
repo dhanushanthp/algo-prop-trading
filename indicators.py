@@ -59,7 +59,7 @@ def get_spread(symbol):
     spread = ask_price - bid_price
     return spread
 
-def get_candle_signal(symbol):
+def get_candle_signal(symbol, verb=True):
     # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
     h4 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H4, 0, 1)[0]
     h4_sig=  "L" if h4['close'] - h4['open'] > 2 * get_spread(symbol) else "S" if abs(h4['open'] - h4['close']) > 2 * get_spread(symbol) else "X"
@@ -86,7 +86,9 @@ def get_candle_signal(symbol):
     m30_strong_candle = m30_wick < m30_body # Body should be larger than the wicks
 
     signals = [h4_sig, h2_sig, h1_sig, m30_sig]
-    print(f"{symbol.ljust(12)}: {''.join(signals)} : {int(h4_strong_candle)}{int(h2_strong_candle)}{int(h1_strong_candle)}{int(m30_strong_candle)}")
+    
+    if verb:
+        print(f"{symbol.ljust(12)}: {''.join(signals)} : {int(h4_strong_candle)}{int(h2_strong_candle)}{int(h1_strong_candle)}{int(m30_strong_candle)}")
     
     signals = set(signals)
     if len(signals) == 1 and h4_strong_candle and h2_strong_candle and h1_strong_candle and m30_strong_candle:
