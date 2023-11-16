@@ -194,12 +194,14 @@ class TradeCandle():
                 mp.breakeven_1R_positions()
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-
-                if (free_margin > 0.1 * account_size):
+                _, current_hour, current_minute = util.get_gmt_time()
+                
+                # Limit the trade entry by minute, since that's where the price make huge moves to hit any stops
+                if (free_margin > 0.1 * account_size) and (current_minute > 5 and current_minute < 55):
                     for symbol in selected_symbols:
                         if symbol not in existing_positions:
 
-                            if util.get_gmt_time()[1] <= 10 and symbol in ["US500.cash", "UK100.cash"]:
+                            if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
                                 # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
                                 continue
 
@@ -401,8 +403,8 @@ class TradeCandle():
         positions = mt.positions_get()
 
         for obj in positions:
-            # If the current position size is less than the half of the stop
-            if obj.profit < -1 * self.half_risk:
+            # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
+            if (obj.profit < -1 * self.half_risk) or (obj.profit > 2 * self.half_risk):
                 signal = ind.get_candle_signal(obj.symbol, verb=False)
                     
                 if signal:                
