@@ -60,6 +60,12 @@ def get_spread(symbol):
     return spread
 
 def get_candle_signal(symbol, verb=True):
+    h6 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H6, 0, 1)[0]
+    h6_sig=  "L" if h6['close'] - h6['open'] > 2 * get_spread(symbol) else "S" if abs(h6['open'] - h6['close']) > 2 * get_spread(symbol) else "X"
+    h6_body = abs(h6['open'] - h6['close'])
+    h6_wick = abs(h6['high'] - h6['low']) - h6_body
+    h6_strong_candle = h6_wick < h6_body # Body should be larger than the wicks
+    
     # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
     h4 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H4, 0, 1)[0]
     h4_sig=  "L" if h4['close'] - h4['open'] > 2 * get_spread(symbol) else "S" if abs(h4['open'] - h4['close']) > 2 * get_spread(symbol) else "X"
@@ -85,13 +91,13 @@ def get_candle_signal(symbol, verb=True):
     m30_wick = abs(m30['high'] - m30['low']) - m30_body
     m30_strong_candle = m30_wick < m30_body # Body should be larger than the wicks
 
-    signals = [h4_sig, h2_sig, h1_sig, m30_sig]
+    signals = [h6_sig, h4_sig, h2_sig, h1_sig, m30_sig]
     
     if verb:
-        print(f"{symbol.ljust(12)}: {''.join(signals)} : {int(h4_strong_candle)}{int(h2_strong_candle)}{int(h1_strong_candle)}{int(m30_strong_candle)}")
+        print(f"{symbol.ljust(12)}: {''.join(signals)} : {int(h6_strong_candle)}{int(h4_strong_candle)}{int(h2_strong_candle)}{int(h1_strong_candle)}{int(m30_strong_candle)}")
     
     signals = set(signals)
-    if len(signals) == 1 and h4_strong_candle and h2_strong_candle and h1_strong_candle and m30_strong_candle:
+    if len(signals) == 1 and h6_strong_candle and h4_strong_candle and h2_strong_candle and h1_strong_candle and m30_strong_candle:
         return list(signals)[0]
 
 def get_account_details():
