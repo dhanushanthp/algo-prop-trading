@@ -37,7 +37,7 @@ def get_gmt_time():
 
 def get_today_profit():
     tm_zone = pytz.timezone('Etc/GMT-2')
-    start_time = datetime.combine(datetime.now(tm_zone).date(), time())  
+    start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone)
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
     data = mt5.history_deals_get(start_time, end_time)
     output = round(sum([i.profit + i.commission for i in data]))
@@ -51,9 +51,11 @@ def get_market_status():
 
     if day not in ["Saturday","Sunday"]:
         # Once market open become disabled, No new trades
-        if (hour >= 0 and minute >= 30) or (hour < 23):
+        # We give first 1 hour and last 1 hour as non-trading time
+        if (hour >= 1 and hour <= 22):
             market_open = True
     
+    # Close all the position 30 minute before the market close
     if (day in ["Saturday","Sunday"]) or (hour >= 23 and minute >= 30):
         market_about_to_close = True
 
@@ -70,8 +72,9 @@ def is_c_pair_active(currency_pair):
     mt5.symbol_select(currency_pair, True)
     if symbol_info:
         return symbol_info.session_open, symbol_info.session_close
-    
-# print(is_c_pair_active("US500.cash"))   
-# print(get_gmt_time())
-# print(get_market_status())
-# print(get_today_profit())
+
+if __name__ == "__main__":
+    # print(is_c_pair_active("US500.cash"))   
+    # print(get_gmt_time())
+    print(get_market_status())
+    print(get_today_profit())

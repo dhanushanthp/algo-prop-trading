@@ -106,10 +106,9 @@ def get_account_details():
         # display trading account data 'as is'
         return account_info.equity, account_info.margin_free, account_info.profit
 
-
-# print(get_remaining_margin())
-# close_positions_with_half_profit()
-# print(get_atr("US500.cash"))
-# print(previous_candle_move("AUDUSD"))
-# print(get_candle_signal("EURJPY"))
-# print(get_account_details())
+if __name__ == "__main__":
+    # close_positions_with_half_profit()
+    # print(get_atr("US500.cash"))
+    # print(previous_candle_move("AUDUSD"))
+    # print(get_candle_signal("EURJPY"))
+    print(get_account_details())

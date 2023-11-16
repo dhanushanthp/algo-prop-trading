@@ -146,22 +146,8 @@ class TradeCandle():
         return float(positions)        
     
     def split_positions(self, x):
-        # if self.symbol in self.currencies:
         split = round(x/2, 2)
-        # print(float(split), float(split))
-        return float(split), float(split)
-        # else:
-        #     # Round x since we need round numbers
-        #     x = round(x)
-        #     remaining = x%2
-        #     if remaining == 0:
-        #         split = x/2
-        #         print(float(split), float(split))
-        #         return float(split), float(split)
-        #     if remaining == 1:
-        #         split = math.floor(x/2)
-        #         print(float(split), float(split+1))
-        #         return float(split), float(split+1)
+        return float(split)
 
    
     def order_log(self, result, request={}):
@@ -199,11 +185,15 @@ class TradeCandle():
                     # If closed positions profit is more than 2% then exit the app. Done for today!
                     if util.get_today_profit() > account_size * 2/100:
                         sys.exit()
+                    
+                    # Take break once after the 1% goal reached
+                    time.sleep(60*60)
                 
-                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 self.exist_on_initial_plan_changed()
                 self.cancel_all_pending_orders()
                 mp.breakeven_1R_positions()
+                
+                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
                 if (free_margin > 0.1 * account_size):
                     for symbol in selected_symbols:
@@ -215,15 +205,14 @@ class TradeCandle():
 
                             self.symbol = symbol
                             self.enable_symbol()
+                            
                             try:
                                 self.update_symbol_parameters()
                                 signal = ind.get_candle_signal(self.symbol)
                                 if signal:
                                     if signal == "L":
-                                        self.direction = "long"
                                         self.long_entry()
                                     elif signal == "S":
-                                        self.direction = "short"
                                         self.short_entry()
                             except Exception as e:
                                 print(f"{symbol} Error: {e}")
@@ -252,10 +241,7 @@ class TradeCandle():
             # stop_entry = entry_price - one_r*self.ratio
             stop_price = self.stop_round(previous_bar_low)
             
-            
-            if entry_price > stop_price:
-                # print(f"ENTRY: {entry_price} STOP: {stop_price}")
-                
+            if entry_price > stop_price:                
                 try:
                     if self.symbol in self.currencies:
                         points_in_stop = round(entry_price - stop_price, 5)
@@ -267,14 +253,12 @@ class TradeCandle():
                     target_price1 = self.stop_round(entry_price + self.first_target * points_in_stop)
                     target_price2 = self.stop_round(entry_price + self.second_target * points_in_stop)
                     
-                    # TODO this can be uncomment when we go for higher margin
-                    position1, position2 = self.split_positions(position_size)
-                    # position1, position2 = position_size, 0.0
+                    lots =  round(position_size/2, 2)
 
                     request1 = {
                         "action": mt.TRADE_ACTION_PENDING,
                         "symbol": self.symbol,
-                        "volume": position1,
+                        "volume": lots,
                         "type": mt.ORDER_TYPE_BUY_LIMIT,
                         "price": entry_price,
                         "sl": stop_price,
@@ -287,7 +271,7 @@ class TradeCandle():
                     request2 = {
                         "action": mt.TRADE_ACTION_PENDING,
                         "symbol": self.symbol,
-                        "volume": position2,
+                        "volume": lots,
                         "type": mt.ORDER_TYPE_BUY_LIMIT,
                         "price": entry_price,
                         "sl": stop_price,
@@ -329,17 +313,16 @@ class TradeCandle():
                         points_in_stop = round(stop_price - entry_price)
                         position_size = self.calculate_slots(points_in_stop)
                     
+                    
                     target_price1 = self.stop_round(entry_price - self.first_target * points_in_stop)
                     target_price2 = self.stop_round(entry_price - self.second_target * points_in_stop)
 
-                    # TODO this can be uncomment when we go for higher margin
-                    position1, position2 = self.split_positions(position_size)
-                    # position1, position2 = position_size, 0.0
+                    lots =  round(position_size/2, 2)
 
                     request1 = {
                         "action": mt.TRADE_ACTION_PENDING,
                         "symbol": self.symbol,
-                        "volume": position1,
+                        "volume": lots,
                         "type": mt.ORDER_TYPE_SELL_LIMIT,
                         "price": entry_price,
                         "sl": stop_price,
@@ -352,7 +335,7 @@ class TradeCandle():
                     request2 = {
                         "action": mt.TRADE_ACTION_PENDING,
                         "symbol": self.symbol,
-                        "volume": position2,
+                        "volume": lots,
                         "type": mt.ORDER_TYPE_SELL_LIMIT,
                         "price": entry_price,
                         "sl": stop_price,
