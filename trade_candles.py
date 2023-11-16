@@ -413,39 +413,41 @@ class TradeCandle():
     def exist_on_initial_plan_changed(self):
         positions = mt.positions_get()
 
-        for obj in positions:                
-            signal = ind.get_candle_signal(obj.symbol, verb=False)
-                
-            if signal:                
-                # when entry was Long but current signal is Short or if entry was short and the current signal is Long
-                if (obj.type == 0 and signal == "S") or (obj.type == 1 and signal == "L"):
-                    print(f"Close Postion: {obj.symbol}: {signal}")
+        for obj in positions:
+            # If the current position size is less than the half of the stop
+            if obj.profit < -1 * self.half_risk:
+                signal = ind.get_candle_signal(obj.symbol, verb=False)
+                    
+                if signal:                
+                    # when entry was Long but current signal is Short or if entry was short and the current signal is Long
+                    if (obj.type == 0 and signal == "S") or (obj.type == 1 and signal == "L"):
+                        print(f"Close Postion: {obj.symbol}: {signal}")
 
-                    if obj.type == 1: 
-                        order_type = mt.ORDER_TYPE_BUY
-                        price = mt.symbol_info_tick(obj.symbol).bid
-                    else:
-                        order_type = mt.ORDER_TYPE_SELL
-                        price = mt.symbol_info_tick(obj.symbol).ask
-                    
-                    close_request = {
-                        "action": mt.TRADE_ACTION_DEAL,
-                        "symbol": obj.symbol,
-                        "volume": obj.volume,
-                        "type": order_type,
-                        "position": obj.ticket,
-                        "price": price,
-                        "deviation": 20,
-                        "magic": 234000,
-                        "comment": 'Close trade',
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
-                    }
-                    
-                    result = mt.order_send(close_request) # send order to close a position
-                    
-                    if result.retcode != mt.TRADE_RETCODE_DONE:
-                        print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
+                        if obj.type == 1: 
+                            order_type = mt.ORDER_TYPE_BUY
+                            price = mt.symbol_info_tick(obj.symbol).bid
+                        else:
+                            order_type = mt.ORDER_TYPE_SELL
+                            price = mt.symbol_info_tick(obj.symbol).ask
+                        
+                        close_request = {
+                            "action": mt.TRADE_ACTION_DEAL,
+                            "symbol": obj.symbol,
+                            "volume": obj.volume,
+                            "type": order_type,
+                            "position": obj.ticket,
+                            "price": price,
+                            "deviation": 20,
+                            "magic": 234000,
+                            "comment": 'Close trade',
+                            "type_time": mt.ORDER_TIME_GTC,
+                            "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
+                        }
+                        
+                        result = mt.order_send(close_request) # send order to close a position
+                        
+                        if result.retcode != mt.TRADE_RETCODE_DONE:
+                            print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
 
     def enable_symbol(self):
         if not mt.symbol_select(self.symbol,True):
