@@ -24,6 +24,7 @@ class TradeCandle():
         ACCOUNT_SIZE, _,_ = ind.get_account_details()
         self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
+        self.half_risk = self.risk/2/2
         self.first_target = 1
         self.second_target = 2 # 1: 2, Ratio
         self.currencies = curr.currencies
@@ -192,8 +193,11 @@ class TradeCandle():
                 # Close all the position, If current profit reach more than 1% and re evaluate
                 if total_profit > account_size * 1/100:
                     self.close_positions()
+                    # Wait for 30 minutes
+                    time.sleep(30*60)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+                self.close_half_pass_positions()
                 self.cancel_all_active_orders()
                 mp.breakeven_1R_positions()
 
@@ -405,6 +409,38 @@ class TradeCandle():
             
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
+                
+    def close_half_pass_positions(self):
+        positions = mt.positions_get()
+
+        for obj in positions: 
+            if obj.profit < -self.half_risk:
+                print(f"Closing half positions! {obj.symbol}")
+                if obj.type == 1: 
+                    order_type = mt.ORDER_TYPE_BUY
+                    price = mt.symbol_info_tick(obj.symbol).bid
+                else:
+                    order_type = mt.ORDER_TYPE_SELL
+                    price = mt.symbol_info_tick(obj.symbol).ask
+                
+                close_request = {
+                    "action": mt.TRADE_ACTION_DEAL,
+                    "symbol": obj.symbol,
+                    "volume": obj.volume,
+                    "type": order_type,
+                    "position": obj.ticket,
+                    "price": price,
+                    "deviation": 20,
+                    "magic": 234000,
+                    "comment": 'Close trade',
+                    "type_time": mt.ORDER_TIME_GTC,
+                    "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
+                }
+                
+                result = mt.order_send(close_request) # send order to close a position
+                
+                if result.retcode != mt.TRADE_RETCODE_DONE:
+                    print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
 
     def enable_symbol(self):
         if not mt.symbol_select(self.symbol,True):
