@@ -35,6 +35,16 @@ def get_gmt_time():
     return day_of_week, hour, minute
 
 
+def get_today_profit():
+    tm_zone = pytz.timezone('Etc/GMT-2')
+    start_time = datetime(2023, 11, 16,tzinfo=tm_zone)
+    print(start_time)
+    end_time = datetime.now(tm_zone)
+    print(end_time)
+    data = mt5.history_deals_get(start_time, end_time)
+    output = sum([i.profit - i.commission for i in data])
+    print(output)
+
 def get_market_status():
     market_open = False
     market_about_to_close= False
@@ -65,4 +75,5 @@ def is_c_pair_active(currency_pair):
     
 # print(is_c_pair_active("US500.cash"))   
 # print(get_gmt_time())
-print(get_market_status())
+# print(get_market_status())
+# get_today_profit()
