@@ -193,8 +193,6 @@ class TradeCandle():
                 # Close all the position, If current profit reach more than 1% and re evaluate
                 if total_profit > account_size * 1/100:
                     self.close_positions()
-                    # Wait for 30 minutes
-                    time.sleep(30*60)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 self.exist_on_initial_plan_changed()
