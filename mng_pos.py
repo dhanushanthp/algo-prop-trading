@@ -41,6 +41,8 @@ def get_dollar_value(symbol):
             return (1/get_exchange_price("GBPJPY")) * get_exchange_price("GBPUSD")
         elif symbol == "EURCAD":
             return (1/get_exchange_price("EURCAD")) * get_exchange_price("EURUSD")
+        elif symbol == "NZDCAD":
+            return (1/get_exchange_price("NZDCAD")) * get_exchange_price("NZDUSD")
         elif symbol == "XAUUSD":
             return 2/get_exchange_price("XAUUSD")
         elif symbol == "EURUSD":

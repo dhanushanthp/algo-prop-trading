@@ -53,6 +53,9 @@ class TradeCandle():
         elif self.symbol == "EURCAD":
             self.dollor_value = (1/self.get_exchange_price("EURCAD")) * self.get_exchange_price("EURUSD")
             self.spread = round(self.get_spread(), 5)
+        elif self.symbol == "NZDCAD":
+            self.dollor_value = (1/self.get_exchange_price("NZDCAD")) * self.get_exchange_price("NZDUSD")
+            self.spread = round(self.get_spread(), 5)
         elif self.symbol == "USDJPY":
             self.dollor_value = 1/self.get_exchange_price("USDJPY")
             self.spread = round(self.get_spread(), 3)
