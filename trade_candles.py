@@ -197,8 +197,8 @@ class TradeCandle():
                     time.sleep(30*60)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                self.close_half_pass_positions()
-                self.cancel_all_active_orders()
+                self.exist_on_initial_plan_changed()
+                self.cancel_all_pending_orders()
                 mp.breakeven_1R_positions()
 
                 if (free_margin > 0.1 * account_size):
@@ -365,7 +365,7 @@ class TradeCandle():
                 except Exception as e:
                     print(e)
     
-    def cancel_all_active_orders(self):
+    def cancel_all_pending_orders(self):
         active_orders = mt.orders_get()
 
         for active_order in active_orders:
@@ -410,7 +410,7 @@ class TradeCandle():
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
                 
-    def close_half_pass_positions(self):
+    def exist_on_initial_plan_changed(self):
         positions = mt.positions_get()
 
         for obj in positions:                
