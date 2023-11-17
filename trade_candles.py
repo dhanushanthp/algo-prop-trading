@@ -12,7 +12,7 @@ import time
 import MetaTrader5 as mt
 import mng_pos as mp
 
-class TradeCandle():
+class AlgoTrader():
     def __init__(self):
         mt.initialize()
         
@@ -23,6 +23,7 @@ class TradeCandle():
         """
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
+        self.trial_risk = 4 # $4 as trial risk
         self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*0.16 # Risk only 0.25%
         self.half_risk = self.risk/2/2
@@ -30,6 +31,8 @@ class TradeCandle():
         self.second_target = 2 # 1: 2, Ratio
         self.currencies = curr.currencies
         self.indexes = curr.indexes
+        self.tag_trial = "trial_entry"
+        self.tag_real = "real_entry"
     
     def update_symbol_parameters(self):
         # Check which radio button is selected
@@ -143,6 +146,11 @@ class TradeCandle():
     
     def calculate_slots(self, points_in_stop):
         positions = self.risk/(points_in_stop * self.dollor_value)
+        return float(positions) 
+    
+    def calculate_trial_slots(self, points_in_stop):
+        # We are having seperate lot calculator to have trail risk seperate from real risk
+        positions = self.trial_risk/(points_in_stop * self.dollor_value)
         return float(positions)        
     
     def split_positions(self, x):
@@ -150,18 +158,16 @@ class TradeCandle():
         return float(split)
 
    
-    def order_log(self, result, request={}):
+    def print_order_log(self, result, request={}):
         if result:
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 error_string = f"Error: {result.comment}"
                 print(error_string)
                 print(request)
-            # else:
-            #     print(f"Order placed successfully!")
         else:
             print("Error with response!")
 
-    def trade_algo(self):
+    def main(self):
         
         selected_symbols = list(set(self.currencies + self.indexes))
         
@@ -170,14 +176,16 @@ class TradeCandle():
             
             is_market_open, is_market_close = util.get_market_status()            
             
-            # Fail Safe
+            
             account_size, equity, free_margin, total_active_profit = ind.get_account_details()
+            account_1_percent = account_size * 1/100
+            account_2_percent = account_size * 2/100
 
             # We need to take the 2% of the balance as daily max loss
-            #TODO balance=10231.93
-            if equity <= 10000:
-                self.close_positions()
-                sys.exit()
+            # Fail Safe
+            # if equity <= account_size + (account_2_percent):
+            #     self.close_positions()
+            #     sys.exit()
 
             if is_market_close:
                 print("Market Close!")
@@ -185,71 +193,106 @@ class TradeCandle():
 
             if is_market_open and not is_market_close:                
                 # Close all the position, If current profit reach more than 1% and re evaluate
-                # Total profit based on active positions
-                # TODO the account size should be changed with balance.
-                if total_active_profit > account_size * 1/100:
+                if total_active_profit > account_1_percent:
                     self.close_positions()
                     
                     # If closed positions profit is more than 2% then exit the app. Done for today!
-                    if util.get_today_profit() > account_size * 2/100:
+                    if util.get_today_profit() > account_2_percent:
                         sys.exit()
-                    
-                    # Take break once after the 1% goal reached
-                    # time.sleep(60*60)
                 
                 self.exist_on_initial_plan_changed()
                 self.cancel_all_pending_orders()
                 mp.breakeven_1R_positions()
                 
+                """
+                Check all the existing positions
+                1. Case 1: Only initial trial trade exist
+                2. Case 2: Only real trade exist
+                3. Case 3: Both trail and real trade exist
+                Exist considered as symbols which are not exist in trail or real (any)
+                """
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                _, current_hour, current_minute = util.get_gmt_time()
                 
-                # Limit the trade entry by minute, since that's where the price make huge moves to hit any stops
-                if (free_margin > 0.1 * account_size):
-                    for symbol in selected_symbols:
-                        if symbol not in existing_positions:
+                _, current_hour, _ = util.get_gmt_time()
+                
+                for symbol in selected_symbols:
+                    if symbol not in existing_positions:
+                
+                        # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
+                        if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
+                            continue
 
-                            if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
-                                # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
-                                continue
-
-                            self.symbol = symbol
-                            self.enable_symbol()
+                        self.symbol = symbol
+                        self.enable_symbol()
+                        
+                        try:
+                            self.update_symbol_parameters()
+                            signal = ind.get_candle_signal(self.symbol)
                             
-                            try:
-                                self.update_symbol_parameters()
-                                signal = ind.get_candle_signal(self.symbol)
-                                if signal:
-                                    if signal == "L":
-                                        self.long_entry()
-                                    elif signal == "S":
-                                        self.short_entry()
-                            except Exception as e:
-                                print(f"{symbol} Error: {e}")
-                                        
-                else:
-                    print("Not enough equity for new positions!")
+                            if signal:
+                                if signal == "L":
+                                    self.long_trial_entry()
+                                elif signal == "S":
+                                    self.short_trial_entry()
+                        except Exception as e:
+                            print(f"{symbol} Error: {e}")
+
+                self.real_trade_entry()
             
             time.sleep(2*60)
 
-    def stop_round(self, stop_price):
+    def round_price_value(self, stop_price):
         if self.symbol in self.currencies:
-            if self.symbol in ["USDJPY", "AUDJPY", "EURJPY"]:
+            if self.symbol in curr.jpy_currencies:
                 return round(stop_price, 3)
             return round(stop_price, 5)
         else:
             return round(stop_price, 2)
 
-    def long_entry(self):
+    def long_trial_entry(self):
         entry_price = self.get_mid_price()
             
         if entry_price:
-            # stop_price = self.get_lstop_price() - self.spread
-            # one_r = self.spread + ind.get_stop_range(self.symbol)
             _, previous_bar_low, _ = ind.get_stop_range(self.symbol)
-            # stop_price = entry_price - one_r
-            # stop_entry = entry_price - one_r*self.ratio
-            stop_price = self.stop_round(previous_bar_low)
+            stop_price = self.round_price_value(previous_bar_low)
+            
+            if entry_price > stop_price:                
+                try:
+                    if self.symbol in self.currencies:
+                        points_in_stop = round(entry_price - stop_price, 5)
+                        position_size = self.calculate_trial_slots(points_in_stop)/100000
+                    else:
+                        points_in_stop = round(entry_price - stop_price)
+                        position_size = self.calculate_trial_slots(points_in_stop)
+                    
+                    lots =  round(position_size, 2)
+
+                    target_price = self.round_price_value(entry_price +  2 * points_in_stop)
+                    
+                    order_request = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": self.symbol,
+                        "volume": lots,
+                        "type": mt.ORDER_TYPE_BUY_LIMIT,
+                        "price": entry_price,
+                        "sl": stop_price,
+                        "tp": target_price,
+                        "comment": self.tag_trial,
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request_log = mt.order_send(order_request)
+                    self.print_order_log(request_log, order_request)
+                except Exception as e:
+                    print(e)
+    
+    def long_real_entry(self):
+        entry_price = self.get_mid_price()
+            
+        if entry_price:
+            _, previous_bar_low, _ = ind.get_stop_range(self.symbol)
+            stop_price = self.round_price_value(previous_bar_low)
             
             if entry_price > stop_price:                
                 try:
@@ -260,8 +303,8 @@ class TradeCandle():
                         points_in_stop = round(entry_price - stop_price)
                         position_size = self.calculate_slots(points_in_stop)
                     
-                    target_price1 = self.stop_round(entry_price + self.first_target * points_in_stop)
-                    target_price2 = self.stop_round(entry_price + self.second_target * points_in_stop)
+                    target_price1 = self.round_price_value(entry_price + self.first_target * points_in_stop)
+                    target_price2 = self.round_price_value(entry_price + self.second_target * points_in_stop)
                     
                     lots =  round(position_size/2, 2)
 
@@ -273,7 +316,7 @@ class TradeCandle():
                         "price": entry_price,
                         "sl": stop_price,
                         "tp": target_price1, # FLOAT
-                        "comment": "python script open",
+                        "comment": self.tag_real,
                         "type_time": mt.ORDER_TIME_GTC,
                         "type_filling": mt.ORDER_FILLING_RETURN,
                     }
@@ -286,30 +329,64 @@ class TradeCandle():
                         "price": entry_price,
                         "sl": stop_price,
                         "tp": target_price2,
-                        "comment": "python script open",
+                        "comment": self.tag_real,
                         "type_time": mt.ORDER_TIME_GTC,
                         "type_filling": mt.ORDER_FILLING_RETURN,
                     }
                     
                     
                     res1 = mt.order_send(request1)
-                    self.order_log(res1, request1)
+                    self.print_order_log(res1, request1)
                     res2 = mt.order_send(request2)
-                    self.order_log(res2, request2)
+                    self.print_order_log(res2, request2)
                 except Exception as e:
-                    print(e)
+                    print(f"Long entry exception: {e}")
             
-
-    def short_entry(self):
+    def short_trial_entry(self):
         entry_price = self.get_mid_price()
         
         if entry_price:
-            # stop_price = self.get_sstop_price() + self.spread
-            previous_bar_high, previous_bar_low, previous_bar_length = ind.get_stop_range(self.symbol)
-            # one_r = self.spread + ind.get_stop_range(self.symbol)
-            # stop_price = entry_price + one_r
-            # stop_entry = entry_price + one_r  *self.ratio
-            stop_price = self.stop_round(previous_bar_high)
+            previous_bar_high, _, _ = ind.get_stop_range(self.symbol)
+            stop_price = self.round_price_value(previous_bar_high)
+
+            if stop_price > entry_price:
+                try:
+                    if self.symbol in self.currencies:
+                        points_in_stop = round(stop_price - entry_price, 5)
+                        position_size = self.calculate_trial_slots(points_in_stop)/100000
+                    else:
+                        points_in_stop = round(stop_price - entry_price)
+                        position_size = self.calculate_trial_slots(points_in_stop)
+                    
+                    
+                    target_price = self.round_price_value(entry_price -  2 * points_in_stop)
+
+                    lots =  round(position_size, 2)
+
+                    order_request = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": self.symbol,
+                        "volume": lots,
+                        "type": mt.ORDER_TYPE_SELL_LIMIT,
+                        "price": entry_price,
+                        "sl": stop_price,
+                        "tp": target_price,
+                        "comment": self.tag_trial,
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request_log = mt.order_send(order_request)
+                    self.print_order_log(request_log, order_request)
+                except Exception as e:
+                    print(e)
+
+    def short_real_entry(self):
+        entry_price = self.get_mid_price()
+        
+        if entry_price:
+            previous_bar_high, _, _ = ind.get_stop_range(self.symbol)
+            stop_price = self.round_price_value(previous_bar_high)
 
             if stop_price > entry_price:
                 
@@ -324,8 +401,8 @@ class TradeCandle():
                         position_size = self.calculate_slots(points_in_stop)
                     
                     
-                    target_price1 = self.stop_round(entry_price - self.first_target * points_in_stop)
-                    target_price2 = self.stop_round(entry_price - self.second_target * points_in_stop)
+                    target_price1 = self.round_price_value(entry_price - self.first_target * points_in_stop)
+                    target_price2 = self.round_price_value(entry_price - self.second_target * points_in_stop)
 
                     lots =  round(position_size/2, 2)
 
@@ -337,7 +414,7 @@ class TradeCandle():
                         "price": entry_price,
                         "sl": stop_price,
                         "tp": target_price1,
-                        "comment": "python script open",
+                        "comment": self.tag_real,
                         "type_time": mt.ORDER_TIME_GTC,
                         "type_filling": mt.ORDER_FILLING_RETURN,
                     }
@@ -350,21 +427,22 @@ class TradeCandle():
                         "price": entry_price,
                         "sl": stop_price,
                         "tp": target_price2,
-                        "comment": "python script open",
+                        "comment": self.tag_real,
                         "type_time": mt.ORDER_TIME_GTC,
                         "type_filling": mt.ORDER_FILLING_RETURN,
                     }
 
                     res1 = mt.order_send(request1)
-                    self.order_log(res1, request1)
+                    self.print_order_log(res1, request1)
                     res2 = mt.order_send(request2)
-                    self.order_log(res2, request2)
+                    self.print_order_log(res2, request2)
                 except Exception as e:
                     print(e)
     
     def cancel_all_pending_orders(self):
         active_orders = mt.orders_get()
 
+        # Cancell all pending orders regadless of trial or real
         for active_order in active_orders:
             request = {
                 "action": mt.TRADE_ACTION_REMOVE,
@@ -374,7 +452,7 @@ class TradeCandle():
             result = mt.order_send(request)
 
             if result.retcode != mt.TRADE_RETCODE_DONE:
-                print(f"Failed to cancel order {active_order.ticket}, error code: {result.retcode}, reason: {result.comment}")
+                print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
 
     
     def close_positions(self):
@@ -406,10 +484,34 @@ class TradeCandle():
             
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
+    
+    def close_single_position(self, obj):        
+        order_type = mt.ORDER_TYPE_BUY if obj.type == 1 else mt.ORDER_TYPE_SELL
+        exist_price = mt.symbol_info_tick(obj.symbol).bid if obj.type == 1 else mt.symbol_info_tick(obj.symbol).ask
+        
+        close_request = {
+            "action": mt.TRADE_ACTION_DEAL,
+            "symbol": obj.symbol,
+            "volume": obj.volume,
+            "type": order_type,
+            "position": obj.ticket,
+            "price": exist_price,
+            "deviation": 20,
+            "magic": 234000,
+            "comment": 'close_trail_version',
+            "type_time": mt.ORDER_TIME_GTC,
+            "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
+        }
+        
+        result = mt.order_send(close_request) # send order to close a position
+        
+        if result.retcode != mt.TRADE_RETCODE_DONE:
+            print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
                 
     def exist_on_initial_plan_changed(self):
         positions = mt.positions_get()
 
+        # Takeout all the positions regardless of Trail or Real If the inital plan is changed
         for obj in positions:
             # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
             if (obj.profit < 0):
@@ -418,43 +520,45 @@ class TradeCandle():
                 if signal:                
                     # when entry was Long but current signal is Short or if entry was short and the current signal is Long
                     if (obj.type == 0 and signal == "S") or (obj.type == 1 and signal == "L"):
-                        print(f"Close Postion: {obj.symbol}: {signal}")
+                        self.close_single_position(obj)
 
-                        if obj.type == 1: 
-                            order_type = mt.ORDER_TYPE_BUY
-                            price = mt.symbol_info_tick(obj.symbol).bid
-                        else:
-                            order_type = mt.ORDER_TYPE_SELL
-                            price = mt.symbol_info_tick(obj.symbol).ask
+    def real_trade_entry(self):
+        print(f"\n-------  Real entry check -------------")
+        
+        positions = mt.positions_get()
+        # check existing real orders
+        existing_real_orders = list(set([i.symbol for i in mt.positions_get() if i.comment == self.tag_real]))
+        
+        for obj in positions:
+            # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
+            # Also check the current one don't have any real orders
+            if (obj.comment == self.tag_trial) and (obj.symbol not in existing_real_orders):
+                # If profit pass 1/2 of the stop or 0.5R, considered as valid entry
+                if obj.profit > self.trial_risk/2:        
+                    try:
+                        # Set trade symbol object
+                        self.symbol = obj.symbol
+                        self.enable_symbol()
+                        self.update_symbol_parameters()
+                        if obj.type == 0:
+                            self.long_real_entry()
+                        if obj.type == 1:
+                            self.short_real_entry()
+                    except Exception as e:
+                        print(f"Validated entry Error: {obj.symbol} {e}")
                         
-                        close_request = {
-                            "action": mt.TRADE_ACTION_DEAL,
-                            "symbol": obj.symbol,
-                            "volume": obj.volume,
-                            "type": order_type,
-                            "position": obj.ticket,
-                            "price": price,
-                            "deviation": 20,
-                            "magic": 234000,
-                            "comment": 'Close trade',
-                            "type_time": mt.ORDER_TIME_GTC,
-                            "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
-                        }
-                        
-                        result = mt.order_send(close_request) # send order to close a position
-                        
-                        if result.retcode != mt.TRADE_RETCODE_DONE:
-                            print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
-
+                
     def enable_symbol(self):
         if not mt.symbol_select(self.symbol,True):
             print("symbol_select({}}) failed, exit", self.symbol)
 
 if __name__ == "__main__":
-    win = TradeCandle()
-    win.trade_algo()
-    # win.symbol = "XAUUSD"
+    win = AlgoTrader()
+    win.main()
+    # win.symbol = "AUDJPY"
     # win.update_symbol_parameters()
+    # win.long_entry_test()
+    # win.scale_out_positions()
     # print(win.calculate_slots(3.89)/100000)
     
 

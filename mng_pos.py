@@ -177,7 +177,7 @@ def breakeven_1R_positions():
                 "position": position.ticket,
                 "sl": position.price_open,
                 "tp": position.tp,
-                "comment": 'Break Even',
+                "comment": 'break_even',
                 "magic": 234000,
                 "type_time": mt5.ORDER_TIME_GTC,
                 "type_filling": mt5.ORDER_FILLING_FOK,
@@ -188,7 +188,7 @@ def breakeven_1R_positions():
             
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 if result.comment != "No changes":
-                    print("Close Order " + position.symbol + " failed!!...Error: "+str(result.comment))
+                    print("Modify Order " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 # breakeven_1R_positions()
 # print(get_dollar_value("GBPJPY"))

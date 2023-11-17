@@ -9,8 +9,8 @@ if not mt5.initialize():
     quit()
 
 def previous_candle_move(symbol):
-    h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H2, 1, 1)[0]
-    h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H2, 0, 1)[0]
+    h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 1, 1)[0]
+    h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 0, 1)[0]
     spread = get_spread(symbol)
     
     # Previous bar high/low
