@@ -187,7 +187,7 @@ class TradeCandle():
                         sys.exit()
                     
                     # Take break once after the 1% goal reached
-                    time.sleep(60*60)
+                    # time.sleep(60*60)
                 
                 self.exist_on_initial_plan_changed()
                 self.cancel_all_pending_orders()
@@ -197,7 +197,7 @@ class TradeCandle():
                 _, current_hour, current_minute = util.get_gmt_time()
                 
                 # Limit the trade entry by minute, since that's where the price make huge moves to hit any stops
-                if (free_margin > 0.1 * account_size) and (current_minute > 5 and current_minute < 55):
+                if (free_margin > 0.1 * account_size):
                     for symbol in selected_symbols:
                         if symbol not in existing_positions:
 
@@ -222,7 +222,7 @@ class TradeCandle():
                 else:
                     print("Not enough equity for new positions!")
             
-            time.sleep(30)
+            time.sleep(2*60)
 
     def stop_round(self, stop_price):
         if self.symbol in self.currencies:
