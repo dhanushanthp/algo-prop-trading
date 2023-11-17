@@ -222,7 +222,7 @@ class TradeCandle():
                 else:
                     print("Not enough equity for new positions!")
             
-            time.sleep(1*60)
+            time.sleep(2*60)
 
     def stop_round(self, stop_price):
         if self.symbol in self.currencies:
