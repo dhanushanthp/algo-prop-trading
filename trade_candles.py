@@ -169,14 +169,21 @@ class TradeCandle():
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
             
             is_market_open, is_market_close = util.get_market_status()            
+            
+            # Fail Safe
+            account_size, free_margin, total_profit = ind.get_account_details()
+
+            # We need to take the 2% of the balance as daily max loss
+            # balance=10231.93
+            if account_size <= 10000:
+                self.close_positions()
+                sys.exit()
 
             if is_market_close:
                 print("Market Close!")
                 self.close_positions()
 
-            if is_market_open and not is_market_close:
-                account_size, free_margin, total_profit = ind.get_account_details()
-                
+            if is_market_open and not is_market_close:                
                 # Close all the position, If current profit reach more than 1% and re evaluate
                 # Total profit based on active positions
                 if total_profit > account_size * 1/100:
