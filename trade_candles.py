@@ -174,7 +174,7 @@ class TradeCandle():
             account_size, free_margin, total_profit = ind.get_account_details()
 
             # We need to take the 2% of the balance as daily max loss
-            # balance=10231.93
+            #TODO balance=10231.93
             if account_size <= 10000:
                 self.close_positions()
                 sys.exit()
@@ -186,6 +186,7 @@ class TradeCandle():
             if is_market_open and not is_market_close:                
                 # Close all the position, If current profit reach more than 1% and re evaluate
                 # Total profit based on active positions
+                # TODO the account size should be changed with balance.
                 if total_profit > account_size * 1/100:
                     self.close_positions()
                     
@@ -411,7 +412,7 @@ class TradeCandle():
 
         for obj in positions:
             # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
-            if (obj.profit < -1 * self.half_risk) or (obj.profit > 2 * self.half_risk):
+            if (obj.profit < 0):
                 signal = ind.get_candle_signal(obj.symbol, verb=False)
                     
                 if signal:                
