@@ -24,7 +24,7 @@ class TradeCandle():
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.ratio = 1
-        self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
+        self.risk = ACCOUNT_SIZE/100*0.16 # Risk only 0.25%
         self.half_risk = self.risk/2/2
         self.first_target = 1
         self.second_target = 2 # 1: 2, Ratio
