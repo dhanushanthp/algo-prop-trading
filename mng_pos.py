@@ -44,7 +44,7 @@ def get_dollar_value(symbol):
         elif symbol == "NZDCAD":
             return (1/get_exchange_price("NZDCAD")) * get_exchange_price("NZDUSD")
         elif symbol == "XAUUSD":
-            return 2/get_exchange_price("XAUUSD")
+            return get_exchange_price("XAUUSD")
         elif symbol == "EURUSD":
             return get_exchange_price("EURUSD")
         elif symbol == "USDCAD":

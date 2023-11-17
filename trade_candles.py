@@ -78,7 +78,7 @@ class TradeCandle():
             self.spread = round(self.get_spread(), 3)
         elif self.symbol == "XAUUSD":
             # Added 2, Since it was picking the whole value
-            self.dollor_value = 2/self.get_exchange_price("XAUUSD")
+            self.dollor_value = self.get_exchange_price("XAUUSD")
             self.spread = round(self.get_spread(), 5)
         elif self.symbol == "EURUSD":
             self.dollor_value = self.get_exchange_price("EURUSD")
@@ -442,12 +442,12 @@ class TradeCandle():
         if not mt.symbol_select(self.symbol,True):
             print("symbol_select({}}) failed, exit", self.symbol)
 
-def window():
+if __name__ == "__main__":
     win = TradeCandle()
     win.trade_algo()
-    # win.symbol = "AUDUSD"
+    # win.symbol = "XAUUSD"
     # win.update_symbol_parameters()
-    # win.short_entry()
+    # print(win.calculate_slots(3.89))
+    
 
 
-window()
