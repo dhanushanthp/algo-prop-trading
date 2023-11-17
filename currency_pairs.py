@@ -13,7 +13,7 @@ indexes = ['AUS200.cash', 'HK50.cash', 'JP225.cash',  'US500.cash', 'UK100.cash'
 
 jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY']
 
-support_pairs = ["NZDUSD"]
+support_pairs = ["NZDUSD", "USDHKD"]
 
 for pair in (currencies + indexes + support_pairs):
     mt.symbol_select(pair, True)
