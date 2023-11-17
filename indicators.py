@@ -104,7 +104,7 @@ def get_account_details():
     account_info=mt5.account_info()
     if account_info!=None:
         # display trading account data 'as is'
-        return account_info.equity, account_info.margin_free, account_info.profit
+        return account_info.balance, account_info.equity, account_info.margin_free, account_info.profit
 
 if __name__ == "__main__":
     # close_positions_with_half_profit()
