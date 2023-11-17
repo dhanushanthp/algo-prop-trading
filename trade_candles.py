@@ -78,7 +78,7 @@ class TradeCandle():
             self.spread = round(self.get_spread(), 3)
         elif self.symbol == "XAUUSD":
             # Added 2, Since it was picking the whole value
-            self.dollor_value = self.get_exchange_price("XAUUSD")
+            self.dollor_value = 2/self.get_exchange_price("XAUUSD")
             self.spread = round(self.get_spread(), 5)
         elif self.symbol == "EURUSD":
             self.dollor_value = self.get_exchange_price("EURUSD")
@@ -222,7 +222,7 @@ class TradeCandle():
                 else:
                     print("Not enough equity for new positions!")
             
-            time.sleep(2*60)
+            time.sleep(1*60)
 
     def stop_round(self, stop_price):
         if self.symbol in self.currencies:
@@ -447,7 +447,7 @@ if __name__ == "__main__":
     win.trade_algo()
     # win.symbol = "XAUUSD"
     # win.update_symbol_parameters()
-    # print(win.calculate_slots(3.89))
+    # print(win.calculate_slots(3.89)/100000)
     
 
 
