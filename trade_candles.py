@@ -125,7 +125,7 @@ class AlgoTrader():
                     print(e)
     
     def long_real_entry(self, symbol):
-        entry_price = self.get_mid_price(symbol= symbol)
+        entry_price = self.get_mid_price(symbol=symbol)
             
         if entry_price:
             _, previous_bar_low, _ = ind.get_stop_range(symbol)
