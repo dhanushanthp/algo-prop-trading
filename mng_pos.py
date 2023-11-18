@@ -1,6 +1,8 @@
 import MetaTrader5 as mt5
 import indicators as ind
 import currency_pairs as curr
+import client
+import numpy as np
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -218,7 +220,20 @@ def close_all_positions():
     positions = mt5.positions_get()
     for obj in positions: 
         close_single_position(obj=obj)
+        
 
+def close_slave_positions():
+    """
+    If the positions is already filled in master, then no need for slave position in local
+    """
+    existing_positions = list(set([i.symbol for i in mt5.positions_get()]))
+    server_positions = client.get_active_positions()
+    co_exisiting_positions = np.intersect1d(existing_positions, server_positions)
+    if len(co_exisiting_positions) > 0:
+        for obj in mt5.positions_get():
+            if obj.symbol in co_exisiting_positions:
+                close_single_position(obj=obj)
+    
 def exist_on_initial_plan_changed():
     positions = mt5.positions_get()
     # Takeout all the positions regardless of Trail or Real If the inital plan is changed
