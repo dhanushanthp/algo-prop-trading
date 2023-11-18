@@ -1,6 +1,6 @@
 import requests
 import threading
-server_url = 'http://0.0.0.0:5000'
+server_url = 'http://192.168.20.15:5000'
 headers = {'Content-Type': 'application/json'}
 
 def trigger_order_entry(symbol, direction):    

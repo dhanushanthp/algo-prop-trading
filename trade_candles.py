@@ -290,11 +290,12 @@ class AlgoTrader():
                 Exist considered as symbols which are not exist in trail or real (any)
                 """
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+                server_posisions = client.get_active_positions()
                 
                 _, current_hour, _ = util.get_gmt_time()
                 
                 for symbol in selected_symbols:
-                    if symbol not in existing_positions:
+                    if symbol not in (existing_positions + server_posisions):
                 
                         # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
                         if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
