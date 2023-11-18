@@ -15,17 +15,14 @@ import mng_pos as mp
 class AlgoTrader():
     def __init__(self):
         mt.initialize()
-        
-        """
-        ########################
-        Login Credentials 
-        #######################
-        """
+
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.trial_risk = 4 # $4 as trial risk
         self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*0.16 # Risk only 0.25%
+        self.account_1_percent = ACCOUNT_SIZE * 1/100
+        self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.half_risk = self.risk/2/2
         self.first_target = 1
         self.second_target = 2 # 1: 2, Ratio
@@ -391,28 +388,24 @@ class AlgoTrader():
             
             is_market_open, is_market_close = util.get_market_status()            
             
-            
             account_size, equity, free_margin, total_active_profit = ind.get_account_details()
-            account_1_percent = account_size * 1/100
-            account_2_percent = account_size * 2/100
 
-            # We need to take the 2% of the balance as daily max loss
             # Fail Safe
-            # if equity <= account_size + (account_2_percent):
-            #     mp.close_positions()
-            #     sys.exit()
+            if equity <= account_size - self.account_2_percent:
+                mp.close_all_positions()
+                sys.exit()
 
             if is_market_close:
                 print("Market Close!")
-                mp.close_positions()
+                mp.close_all_positions()
 
             if is_market_open and not is_market_close:                
                 # Close all the position, If current profit reach more than 1% and re evaluate
-                if total_active_profit > account_1_percent:
-                    mp.close_positions()
+                if total_active_profit > self.account_1_percent:
+                    mp.close_all_positions()
                     
                     # If closed positions profit is more than 2% then exit the app. Done for today!
-                    if util.get_today_profit() > account_2_percent:
+                    if util.get_today_profit() > self.account_2_percent:
                         sys.exit()
                 
                 mp.exist_on_initial_plan_changed()

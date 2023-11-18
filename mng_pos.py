@@ -197,7 +197,7 @@ def close_single_position(obj):
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
 
-def close_positions():
+def close_all_positions():
     positions = mt5.positions_get()
     for obj in positions: 
         close_single_position(obj=obj)
