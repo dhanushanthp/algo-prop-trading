@@ -38,16 +38,16 @@ class AlgoTrader():
         exchange_rate = round((bid_price + ask_price)/2, 5)
         return exchange_rate
         
-    def get_mid_price(self):
+    def get_mid_price(self, symbol):
         try:
-            ask_price = mt.symbol_info_tick(self.symbol).ask
-            bid_price = mt.symbol_info_tick(self.symbol).bid
+            ask_price = mt.symbol_info_tick(symbol).ask
+            bid_price = mt.symbol_info_tick(symbol).bid
             mid_price = (ask_price + bid_price)/2
             
-            if self.symbol in self.currencies:
+            if symbol in self.currencies:
                 round_factor = 5
                 
-                if self.symbol in ["XAUUSD"]:
+                if symbol in ["XAUUSD"]:
                     round_factor = 2
                 
                 entry_price = round((mid_price), round_factor)
@@ -58,15 +58,15 @@ class AlgoTrader():
         except Exception:
             return None
     
-    def calculate_lots(self, entry_price, stop_price, real=True):
+    def calculate_lots(self, symbol, entry_price, stop_price, real=True):
         risk = self.risk if real else self.trial_risk
-        dollor_value = mp.get_dollar_value(self.symbol)
+        dollor_value = mp.get_dollar_value(symbol)
         
         points_in_stop = abs(entry_price-stop_price)
         
         lots = risk/(points_in_stop * dollor_value)
         
-        if self.symbol in self.currencies:
+        if symbol in self.currencies:
             points_in_stop = round(points_in_stop, 5)
             lots = lots/10**5
         
@@ -82,33 +82,33 @@ class AlgoTrader():
         else:
             print("Error with response!")
 
-    def round_price_value(self, stop_price):
-        if self.symbol in self.currencies:
-            if self.symbol in curr.jpy_currencies:
+    def round_price_value(self, symbol, stop_price):
+        if symbol in self.currencies:
+            if symbol in curr.jpy_currencies:
                 return round(stop_price, 3)
             return round(stop_price, 5)
         else:
             return round(stop_price, 2)
 
-    def long_trial_entry(self):
-        entry_price = self.get_mid_price()
+    def long_trial_entry(self, symbol):
+        entry_price = self.get_mid_price(symbol)
             
         if entry_price:
-            _, previous_bar_low, _ = ind.get_stop_range(self.symbol)
-            stop_price = self.round_price_value(previous_bar_low)
+            _, previous_bar_low, _ = ind.get_stop_range(symbol)
+            stop_price = self.round_price_value(symbol, previous_bar_low)
             
             if entry_price > stop_price:                
                 try:
                                             
-                    points_in_stop, lots = self.calculate_lots(entry_price=entry_price, stop_price=stop_price, real=False)
-                    target_price = self.round_price_value(entry_price +  2 * points_in_stop)
+                    points_in_stop, lots = self.calculate_lots(symbol= symbol, entry_price=entry_price, stop_price=stop_price, real=False)
+                    target_price = self.round_price_value(symbol, entry_price +  2 * points_in_stop)
                     
                     # any lots in 2 decimal value
                     lots = round(lots, 2)
                     
                     order_request = {
                         "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
+                        "symbol": symbol,
                         "volume": lots,
                         "type": mt.ORDER_TYPE_BUY_LIMIT,
                         "price": entry_price,
@@ -124,17 +124,17 @@ class AlgoTrader():
                 except Exception as e:
                     print(e)
     
-    def long_real_entry(self):
-        entry_price = self.get_mid_price()
+    def long_real_entry(self, symbol):
+        entry_price = self.get_mid_price(symbol= symbol)
             
         if entry_price:
-            _, previous_bar_low, _ = ind.get_stop_range(self.symbol)
-            stop_price = self.round_price_value(previous_bar_low)
+            _, previous_bar_low, _ = ind.get_stop_range(symbol)
+            stop_price = self.round_price_value(symbol, previous_bar_low)
             
             if entry_price > stop_price:                
                 try:
                                       
-                    points_in_stop, lots = self.calculate_lots(entry_price=entry_price, stop_price=stop_price, real=True)
+                    points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price, real=True)
                     
                     # target_price1 = self.round_price_value(entry_price + self.first_target * points_in_stop)
                     # target_price2 = self.round_price_value(entry_price + self.second_target * points_in_stop)
@@ -144,12 +144,12 @@ class AlgoTrader():
                     for r_r in range(1, self.r_r + 1):
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
-                            "symbol": self.symbol,
+                            "symbol": symbol,
                             "volume": lots,
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
                             "sl": stop_price,
-                            "tp": self.round_price_value(entry_price + r_r * points_in_stop),
+                            "tp": self.round_price_value(symbol, entry_price + r_r * points_in_stop),
                             "comment": self.tag_real,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
@@ -160,24 +160,24 @@ class AlgoTrader():
                 except Exception as e:
                     print(f"Long entry exception: {e}")
             
-    def short_trial_entry(self):
-        entry_price = self.get_mid_price()
+    def short_trial_entry(self, symbol):
+        entry_price = self.get_mid_price(symbol)
         
         if entry_price:
-            previous_bar_high, _, _ = ind.get_stop_range(self.symbol)
-            stop_price = self.round_price_value(previous_bar_high)
+            previous_bar_high, _, _ = ind.get_stop_range(symbol)
+            stop_price = self.round_price_value(symbol, previous_bar_high)
 
             if stop_price > entry_price:
                 try:                 
-                    points_in_stop, lots = self.calculate_lots(entry_price=entry_price, stop_price=stop_price, real=False)
+                    points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price, real=False)
                     # any lots in 2 decimal value
                     lots = round(lots, 2)
                     
-                    target_price = self.round_price_value(entry_price -  2 * points_in_stop)
+                    target_price = self.round_price_value(symbol, entry_price -  2 * points_in_stop)
                     
                     order_request = {
                         "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
+                        "symbol": symbol,
                         "volume": lots,
                         "type": mt.ORDER_TYPE_SELL_LIMIT,
                         "price": entry_price,
@@ -193,16 +193,16 @@ class AlgoTrader():
                 except Exception as e:
                     print(e)
 
-    def short_real_entry(self):
-        entry_price = self.get_mid_price()
+    def short_real_entry(self, symbol):
+        entry_price = self.get_mid_price(symbol)
         
         if entry_price:
-            previous_bar_high, _, _ = ind.get_stop_range(self.symbol)
-            stop_price = self.round_price_value(previous_bar_high)
+            previous_bar_high, _, _ = ind.get_stop_range(symbol)
+            stop_price = self.round_price_value(symbol, previous_bar_high)
 
             if stop_price > entry_price:
                 try:                    
-                    points_in_stop, lots = self.calculate_lots(entry_price=entry_price, stop_price=stop_price, real=True)
+                    points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price, real=True)
                     
                     # target_price1 = self.round_price_value(entry_price - self.first_target * points_in_stop)
                     # target_price2 = self.round_price_value(entry_price - self.second_target * points_in_stop)
@@ -212,12 +212,12 @@ class AlgoTrader():
                     for r_r in range(1, self.r_r + 1):
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
-                            "symbol": self.symbol,
+                            "symbol": symbol,
                             "volume": lots,
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
                             "sl": stop_price,
-                            "tp": self.round_price_value(entry_price - r_r * points_in_stop),
+                            "tp": self.round_price_value(symbol, entry_price - r_r * points_in_stop),
                             "comment": self.tag_real,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
@@ -242,21 +242,12 @@ class AlgoTrader():
                 # If profit pass 1/2 of the stop or 0.5R, considered as valid entry
                 if obj.profit > self.trial_risk/2:        
                     try:
-                        # Set trade symbol object
-                        self.symbol = obj.symbol
-                        self.enable_symbol()
-                        
                         if obj.type == 0:
-                            self.long_real_entry()
+                            self.long_real_entry(symbol=obj.symbol)
                         if obj.type == 1:
-                            self.short_real_entry()
+                            self.short_real_entry(symbol=obj.symbol)
                     except Exception as e:
                         print(f"Validated entry Error: {obj.symbol} {e}")
-                        
-                
-    def enable_symbol(self):
-        if not mt.symbol_select(self.symbol,True):
-            print("symbol_select({}}) failed, exit", self.symbol)
 
     def main(self):
         selected_symbols = list(set(self.currencies + self.indexes))
@@ -307,18 +298,15 @@ class AlgoTrader():
                         # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
                         if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
                             continue
-
-                        self.symbol = symbol
-                        self.enable_symbol()
                         
                         try:
-                            signal = ind.get_candle_signal(self.symbol)
+                            signal = ind.get_candle_signal(symbol)
                             
                             if signal:
                                 if signal == "L":
-                                    self.long_trial_entry()
+                                    self.long_trial_entry(symbol=symbol)
                                 elif signal == "S":
-                                    self.short_trial_entry()
+                                    self.short_trial_entry(symbol=symbol)
                         except Exception as e:
                             print(f"{symbol} Error: {e}")
 
@@ -328,8 +316,12 @@ class AlgoTrader():
     
 if __name__ == "__main__":
     win = AlgoTrader()
-    win.main()
-    # win.symbol = "AUDJPY"
+    # win.main()
+    symbol = "AUDJPY"
+    win.long_trial_entry(symbol=symbol)
+    win.long_real_entry(symbol=symbol)
+    win.short_trial_entry(symbol=symbol)
+    win.short_real_entry(symbol=symbol)
     # win.update_symbol_parameters()
     # win.long_entry_test()
     # win.scale_out_positions()

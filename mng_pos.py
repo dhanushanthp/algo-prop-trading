@@ -212,6 +212,7 @@ def exist_on_initial_plan_changed():
                 
             if signal:                
                 # when entry was Long but current signal is Short or if entry was short and the current signal is Long
+                # 0 for long, 1 for short positions
                 if (obj.type == 0 and signal == "S") or (obj.type == 1 and signal == "L"):
                     close_single_position(obj)
 
