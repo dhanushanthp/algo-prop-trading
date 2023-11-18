@@ -10,7 +10,7 @@ def trigger_order_entry(symbol, direction):
 
 def get_active_positions():
     response = requests.get(f"{server_url}/active_orders", headers=headers)
-    return response.json()
+    return list(response.json())
 
 def async_trigger_order_entry(symbol, direction):
     thread = threading.Thread(target=trigger_order_entry, args=(symbol, direction))
