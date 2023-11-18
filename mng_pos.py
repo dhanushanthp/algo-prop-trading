@@ -128,6 +128,23 @@ def breakeven_1R_positions_old():
                 if result.comment not in ["No changes"]:
                     print("Manage Order " + position.symbol + " failed!!...Error: "+str(result.comment))
 
+
+def cancel_specific_pending_order(symbol):
+    active_orders = mt5.orders_get()
+
+    # Cancell all pending orders regadless of trial or real
+    for active_order in active_orders:        
+        if active_order.symbol == symbol:
+            request = {
+                "action": mt5.TRADE_ACTION_REMOVE,
+                "order": active_order.ticket,
+            }
+
+            result = mt5.order_send(request)
+
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
+
 def cancel_all_pending_orders():
     active_orders = mt5.orders_get()
 
