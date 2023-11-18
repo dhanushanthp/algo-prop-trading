@@ -316,12 +316,12 @@ class AlgoTrader():
     
 if __name__ == "__main__":
     win = AlgoTrader()
-    # win.main()
-    symbol = "AUDJPY"
-    win.long_trial_entry(symbol=symbol)
-    win.long_real_entry(symbol=symbol)
-    win.short_trial_entry(symbol=symbol)
-    win.short_real_entry(symbol=symbol)
+    win.main()
+    # symbol = "AUDJPY"
+    # win.long_trial_entry(symbol=symbol)
+    # win.long_real_entry(symbol=symbol)
+    # win.short_trial_entry(symbol=symbol)
+    # win.short_real_entry(symbol=symbol)
     # win.update_symbol_parameters()
     # win.long_entry_test()
     # win.scale_out_positions()
