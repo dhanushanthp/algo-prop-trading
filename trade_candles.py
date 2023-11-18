@@ -19,17 +19,18 @@ class AlgoTrader():
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.trial_risk = 4 # $4 as trial risk
-        self.ratio = 1
+        # self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*0.16 # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.half_risk = self.risk/2/2
-        self.first_target = 1
-        self.second_target = 2 # 1: 2, Ratio
+        # self.first_target = 1
+        # self.second_target = 2 # 1: 2, Ratio
         self.currencies = curr.currencies
         self.indexes = curr.indexes
         self.tag_trial = "trial_entry"
         self.tag_real = "real_entry"
+        self.r_r = 2
     
     def get_exchange_price(self, exchange):
         ask_price = mt.symbol_info_tick(exchange).ask
@@ -214,42 +215,27 @@ class AlgoTrader():
                         points_in_stop = round(entry_price - stop_price)
                         position_size = self.calculate_slots(points_in_stop)
                     
-                    target_price1 = self.round_price_value(entry_price + self.first_target * points_in_stop)
-                    target_price2 = self.round_price_value(entry_price + self.second_target * points_in_stop)
+                    # target_price1 = self.round_price_value(entry_price + self.first_target * points_in_stop)
+                    # target_price2 = self.round_price_value(entry_price + self.second_target * points_in_stop)
                     
-                    lots =  round(position_size/2, 2)
-
-                    request1 = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
-                        "volume": lots,
-                        "type": mt.ORDER_TYPE_BUY_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_price,
-                        "tp": target_price1, # FLOAT
-                        "comment": self.tag_real,
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-
-                    request2 = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
-                        "volume": lots,
-                        "type": mt.ORDER_TYPE_BUY_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_price,
-                        "tp": target_price2,
-                        "comment": self.tag_real,
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
+                    lots =  round(position_size/self.r_r, 2)
                     
-                    
-                    res1 = mt.order_send(request1)
-                    self.print_order_log(res1, request1)
-                    res2 = mt.order_send(request2)
-                    self.print_order_log(res2, request2)
+                    for r_r in range(1, self.r_r + 1):
+                        order_request = {
+                            "action": mt.TRADE_ACTION_PENDING,
+                            "symbol": self.symbol,
+                            "volume": lots,
+                            "type": mt.ORDER_TYPE_BUY_LIMIT,
+                            "price": entry_price,
+                            "sl": stop_price,
+                            "tp": self.round_price_value(entry_price + r_r * points_in_stop),
+                            "comment": self.tag_real,
+                            "type_time": mt.ORDER_TIME_GTC,
+                            "type_filling": mt.ORDER_FILLING_RETURN,
+                        }
+                        
+                        request_log = mt.order_send(order_request)
+                        self.print_order_log(request_log, order_request)
                 except Exception as e:
                     print(f"Long entry exception: {e}")
             
@@ -312,41 +298,27 @@ class AlgoTrader():
                         position_size = self.calculate_slots(points_in_stop)
                     
                     
-                    target_price1 = self.round_price_value(entry_price - self.first_target * points_in_stop)
-                    target_price2 = self.round_price_value(entry_price - self.second_target * points_in_stop)
+                    # target_price1 = self.round_price_value(entry_price - self.first_target * points_in_stop)
+                    # target_price2 = self.round_price_value(entry_price - self.second_target * points_in_stop)
 
-                    lots =  round(position_size/2, 2)
+                    lots =  round(position_size/self.r_r, 2)
 
-                    request1 = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
-                        "volume": lots,
-                        "type": mt.ORDER_TYPE_SELL_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_price,
-                        "tp": target_price1,
-                        "comment": self.tag_real,
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-                    
-                    request2 = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": self.symbol,
-                        "volume": lots,
-                        "type": mt.ORDER_TYPE_SELL_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_price,
-                        "tp": target_price2,
-                        "comment": self.tag_real,
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-
-                    res1 = mt.order_send(request1)
-                    self.print_order_log(res1, request1)
-                    res2 = mt.order_send(request2)
-                    self.print_order_log(res2, request2)
+                    for r_r in range(1, self.r_r + 1):
+                        order_request = {
+                            "action": mt.TRADE_ACTION_PENDING,
+                            "symbol": self.symbol,
+                            "volume": lots,
+                            "type": mt.ORDER_TYPE_SELL_LIMIT,
+                            "price": entry_price,
+                            "sl": stop_price,
+                            "tp": self.round_price_value(entry_price - r_r * points_in_stop),
+                            "comment": self.tag_real,
+                            "type_time": mt.ORDER_TIME_GTC,
+                            "type_filling": mt.ORDER_FILLING_RETURN,
+                        }
+                        
+                        request_log = mt.order_send(order_request)
+                        self.print_order_log(request_log, order_request)
                 except Exception as e:
                     print(e)
 
