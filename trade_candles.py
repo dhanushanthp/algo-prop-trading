@@ -37,82 +37,6 @@ class AlgoTrader():
         bid_price = mt.symbol_info_tick(exchange).bid
         exchange_rate = round((bid_price + ask_price)/2, 5)
         return exchange_rate
-    
-    def get_spread(self):
-        ask_price = mt.symbol_info_tick(self.symbol).ask
-        bid_price = mt.symbol_info_tick(self.symbol).bid
-        spread = (ask_price - bid_price)
-        return spread
-    
-    def update_symbol_parameters(self):
-        # Check which radio button is selected
-        if self.symbol == "US500.cash":
-            self.dollor_value = 1.0
-            self.spread = round(self.get_spread(), 2)
-        elif self.symbol == "UK100.cash":
-            self.dollor_value = self.get_exchange_price("GBPUSD")
-            self.spread = round(self.get_spread(), 2)
-        elif self.symbol == "HK50.cash":
-            # self.dollor_value = round(1/self.get_exchange_price("USDHKD"), 4)
-            self.dollor_value = round(1/7.8, 4) # Generally 7.8
-            self.spread = round(self.get_spread(), 2)
-        elif self.symbol == "JP225.cash":
-            self.dollor_value = round(1/self.get_exchange_price("USDJPY"), 5)
-            self.spread = round(self.get_spread(), 2)
-        elif self.symbol == "AUS200.cash":
-            self.dollor_value = self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread(), 2)
-        elif self.symbol == "AUDNZD":
-            self.dollor_value = (1/self.get_exchange_price("AUDNZD")) * self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "EURCAD":
-            self.dollor_value = (1/self.get_exchange_price("EURCAD")) * self.get_exchange_price("EURUSD")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "NZDCAD":
-            self.dollor_value = (1/self.get_exchange_price("NZDCAD")) * self.get_exchange_price("NZDUSD")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "USDJPY":
-            self.dollor_value = 1/self.get_exchange_price("USDJPY")
-            self.spread = round(self.get_spread(), 3)
-        elif self.symbol == "USDCHF":
-            self.dollor_value = 1/self.get_exchange_price("USDCHF")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "AUDJPY":
-            self.dollor_value = (1/self.get_exchange_price("AUDJPY")) * self.get_exchange_price("AUDUSD")
-            self.spread = round(self.get_spread(), 3)
-        elif self.symbol == "NZDJPY":
-            self.dollor_value = (1/self.get_exchange_price("NZDJPY")) * self.get_exchange_price("NZDUSD")
-            self.spread = round(self.get_spread(), 3)
-        elif self.symbol == "EURJPY":
-            self.dollor_value = (1/self.get_exchange_price("EURJPY")) * self.get_exchange_price("EURUSD")
-            self.spread = round(self.get_spread(), 3)
-        elif self.symbol == "GBPJPY":
-            self.dollor_value = (1/self.get_exchange_price("GBPJPY")) * self.get_exchange_price("GBPUSD")
-            self.spread = round(self.get_spread(), 3)
-        elif self.symbol == "XAUUSD":
-            # Added 2, Since it was picking the whole value
-            self.dollor_value = 2/self.get_exchange_price("XAUUSD")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "EURUSD":
-            self.dollor_value = self.get_exchange_price("EURUSD")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "USDCAD":
-            self.dollor_value = 1/self.get_exchange_price("USDCAD")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "AUDUSD": 
-            self.dollor_value = 1.6 * self.get_exchange_price("AUDUSD")# TODO the 1.6 factor has to be changed dynamically
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "GBPUSD":
-            self.dollor_value = self.get_exchange_price("GBPUSD")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "EURNZD":
-            self.dollor_value = (1/self.get_exchange_price("EURNZD")) * self.get_exchange_price("EURUSD")
-            self.spread = round(self.get_spread(), 5)
-        elif self.symbol == "CHFJPY":
-            self.dollor_value = 1/self.get_exchange_price("CHFJPY")/ self.get_exchange_price("USDCHF")
-            self.spread = round(self.get_spread(), 3)
-        else:
-            raise Exception(f"{self.symbol} don't have conditions")
         
     def get_mid_price(self):
         try:
@@ -134,14 +58,19 @@ class AlgoTrader():
         except Exception:
             return None
     
-    def calculate_slots(self, points_in_stop):
-        positions = self.risk/(points_in_stop * self.dollor_value)
-        return float(positions) 
-    
-    def calculate_trial_slots(self, points_in_stop):
-        # We are having seperate lot calculator to have trail risk seperate from real risk
-        positions = self.trial_risk/(points_in_stop * self.dollor_value)
-        return float(positions)
+    def calculate_lots(self, entry_price, stop_price, real=True):
+        risk = self.risk if real else self.trial_risk
+        dollor_value = mp.get_dollar_value(self.symbol)
+        
+        points_in_stop = abs(entry_price-stop_price)
+        
+        lots = risk/(points_in_stop * dollor_value)
+        
+        if self.symbol in self.currencies:
+            points_in_stop = round(points_in_stop, 5)
+            lots = lots/10**5
+        
+        return points_in_stop, lots
 
    
     def print_order_log(self, result, request={}):
@@ -170,16 +99,12 @@ class AlgoTrader():
             
             if entry_price > stop_price:                
                 try:
-                    if self.symbol in self.currencies:
-                        points_in_stop = round(entry_price - stop_price, 5)
-                        position_size = self.calculate_trial_slots(points_in_stop)/100000
-                    else:
-                        points_in_stop = round(entry_price - stop_price)
-                        position_size = self.calculate_trial_slots(points_in_stop)
-                    
-                    lots =  round(position_size, 2)
-
+                                            
+                    points_in_stop, lots = self.calculate_lots(entry_price=entry_price, stop_price=stop_price, real=False)
                     target_price = self.round_price_value(entry_price +  2 * points_in_stop)
+                    
+                    # any lots in 2 decimal value
+                    lots = round(lots, 2)
                     
                     order_request = {
                         "action": mt.TRADE_ACTION_PENDING,
@@ -208,17 +133,13 @@ class AlgoTrader():
             
             if entry_price > stop_price:                
                 try:
-                    if self.symbol in self.currencies:
-                        points_in_stop = round(entry_price - stop_price, 5)
-                        position_size = self.calculate_slots(points_in_stop)/100000
-                    else:
-                        points_in_stop = round(entry_price - stop_price)
-                        position_size = self.calculate_slots(points_in_stop)
+                                      
+                    points_in_stop, lots = self.calculate_lots(entry_price=entry_price, stop_price=stop_price, real=True)
                     
                     # target_price1 = self.round_price_value(entry_price + self.first_target * points_in_stop)
                     # target_price2 = self.round_price_value(entry_price + self.second_target * points_in_stop)
                     
-                    lots =  round(position_size/self.r_r, 2)
+                    lots =  round(lots/self.r_r, 2)
                     
                     for r_r in range(1, self.r_r + 1):
                         order_request = {
@@ -247,19 +168,13 @@ class AlgoTrader():
             stop_price = self.round_price_value(previous_bar_high)
 
             if stop_price > entry_price:
-                try:
-                    if self.symbol in self.currencies:
-                        points_in_stop = round(stop_price - entry_price, 5)
-                        position_size = self.calculate_trial_slots(points_in_stop)/100000
-                    else:
-                        points_in_stop = round(stop_price - entry_price)
-                        position_size = self.calculate_trial_slots(points_in_stop)
-                    
+                try:                 
+                    points_in_stop, lots = self.calculate_lots(entry_price=entry_price, stop_price=stop_price, real=False)
+                    # any lots in 2 decimal value
+                    lots = round(lots, 2)
                     
                     target_price = self.round_price_value(entry_price -  2 * points_in_stop)
-
-                    lots =  round(position_size, 2)
-
+                    
                     order_request = {
                         "action": mt.TRADE_ACTION_PENDING,
                         "symbol": self.symbol,
@@ -286,22 +201,13 @@ class AlgoTrader():
             stop_price = self.round_price_value(previous_bar_high)
 
             if stop_price > entry_price:
-                
-                try:
-                    # print(f"ENTRY: {entry_price} STOP: {stop_price}")
-                    
-                    if self.symbol in self.currencies:
-                        points_in_stop = round(stop_price - entry_price, 5)
-                        position_size = self.calculate_slots(points_in_stop)/100000
-                    else:
-                        points_in_stop = round(stop_price - entry_price)
-                        position_size = self.calculate_slots(points_in_stop)
-                    
+                try:                    
+                    points_in_stop, lots = self.calculate_lots(entry_price=entry_price, stop_price=stop_price, real=True)
                     
                     # target_price1 = self.round_price_value(entry_price - self.first_target * points_in_stop)
                     # target_price2 = self.round_price_value(entry_price - self.second_target * points_in_stop)
 
-                    lots =  round(position_size/self.r_r, 2)
+                    lots =  round(lots/self.r_r, 2)
 
                     for r_r in range(1, self.r_r + 1):
                         order_request = {
@@ -339,7 +245,7 @@ class AlgoTrader():
                         # Set trade symbol object
                         self.symbol = obj.symbol
                         self.enable_symbol()
-                        self.update_symbol_parameters()
+                        
                         if obj.type == 0:
                             self.long_real_entry()
                         if obj.type == 1:
@@ -406,7 +312,6 @@ class AlgoTrader():
                         self.enable_symbol()
                         
                         try:
-                            self.update_symbol_parameters()
                             signal = ind.get_candle_signal(self.symbol)
                             
                             if signal:
