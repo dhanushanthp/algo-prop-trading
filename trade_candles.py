@@ -4,6 +4,7 @@ import indicators as ind
 import util as util
 import currency_pairs as curr
 import sys
+import client
 
 from datetime import datetime, timedelta
 import pytz
@@ -305,8 +306,10 @@ class AlgoTrader():
                             if signal:
                                 if signal == "L":
                                     self.long_trial_entry(symbol=symbol)
+                                    # client.async_trigger_order_entry(symbol=symbol, direction="L")
                                 elif signal == "S":
                                     self.short_trial_entry(symbol=symbol)
+                                    # client.async_trigger_order_entry(symbol=symbol, direction="S")
                         except Exception as e:
                             print(f"{symbol} Error: {e}")
 
