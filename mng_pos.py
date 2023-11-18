@@ -70,37 +70,6 @@ def get_value_at_risk(symbol, price_open, stop, positions):
         risk = difference * dollor_value * 100000 * positions
     return round(risk, 2)
 
-def close_positions(obj):
-    # Get open positions
-
-    if obj.type == 1: # if order type is a buy, to close we have to sell
-        order_type = mt5.ORDER_TYPE_BUY
-        price = mt5.symbol_info_tick(obj.symbol).bid
-    else:                   # otherwise, if order type is a sell, to close we have to buy
-        order_type = mt5.ORDER_TYPE_SELL
-        price = mt5.symbol_info_tick(obj.symbol).ask
-    
-    close_request = {
-        "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": obj.symbol,
-        "volume": obj.volume,
-        "type": order_type,
-        "position": obj.ticket,
-        "price": price,
-        "deviation": 20,
-        "magic": 234000,
-        "comment": 'Close trade',
-        "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
-    }
-    
-    result = mt5.order_send(close_request) # send order to close a position
-    
-    if result.retcode != mt5.TRADE_RETCODE_DONE:
-        print("Close Order "+obj.symbol+" failed!!...Error Code: "+str(result.retcode))
-    else:
-        print("Order "+obj.symbol+" closed successfully")
-
 def stop_round(symbol, stop_price):
     if symbol in curr.currencies:
         if symbol in curr.jpy_currencies:
@@ -159,6 +128,21 @@ def breakeven_1R_positions_old():
                 if result.comment not in ["No changes"]:
                     print("Manage Order " + position.symbol + " failed!!...Error: "+str(result.comment))
 
+def cancel_all_pending_orders():
+    active_orders = mt5.orders_get()
+
+    # Cancell all pending orders regadless of trial or real
+    for active_order in active_orders:
+        request = {
+            "action": mt5.TRADE_ACTION_REMOVE,
+            "order": active_order.ticket,
+        }
+
+        result = mt5.order_send(request)
+
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
+
 def breakeven_1R_positions():
     existing_positions = mt5.positions_get()
     for position in existing_positions:
@@ -189,6 +173,47 @@ def breakeven_1R_positions():
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 if result.comment != "No changes":
                     print("Modify Order " + position.symbol + " failed!!...Error: "+str(result.comment))
+
+def close_single_position(obj):        
+    order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
+    exist_price = mt5.symbol_info_tick(obj.symbol).bid if obj.type == 1 else mt5.symbol_info_tick(obj.symbol).ask
+    
+    close_request = {
+        "action": mt5.TRADE_ACTION_DEAL,
+        "symbol": obj.symbol,
+        "volume": obj.volume,
+        "type": order_type,
+        "position": obj.ticket,
+        "price": exist_price,
+        "deviation": 20,
+        "magic": 234000,
+        "comment": 'close_trail_version',
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
+    }
+    
+    result = mt5.order_send(close_request) # send order to close a position
+    
+    if result.retcode != mt5.TRADE_RETCODE_DONE:
+        print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
+
+def close_positions():
+    positions = mt5.positions_get()
+    for obj in positions: 
+        close_single_position(obj=obj)
+
+def exist_on_initial_plan_changed():
+    positions = mt5.positions_get()
+    # Takeout all the positions regardless of Trail or Real If the inital plan is changed
+    for obj in positions:
+        # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
+        if (obj.profit < 0):
+            signal = ind.get_candle_signal(obj.symbol, verb=False)
+                
+            if signal:                
+                # when entry was Long but current signal is Short or if entry was short and the current signal is Long
+                if (obj.type == 0 and signal == "S") or (obj.type == 1 and signal == "L"):
+                    close_single_position(obj)
 
 # breakeven_1R_positions()
 # print(get_dollar_value("GBPJPY"))

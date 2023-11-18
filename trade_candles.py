@@ -34,6 +34,18 @@ class AlgoTrader():
         self.tag_trial = "trial_entry"
         self.tag_real = "real_entry"
     
+    def get_exchange_price(self, exchange):
+        ask_price = mt.symbol_info_tick(exchange).ask
+        bid_price = mt.symbol_info_tick(exchange).bid
+        exchange_rate = round((bid_price + ask_price)/2, 5)
+        return exchange_rate
+    
+    def get_spread(self):
+        ask_price = mt.symbol_info_tick(self.symbol).ask
+        bid_price = mt.symbol_info_tick(self.symbol).bid
+        spread = (ask_price - bid_price)
+        return spread
+    
     def update_symbol_parameters(self):
         # Check which radio button is selected
         if self.symbol == "US500.cash":
@@ -124,26 +136,6 @@ class AlgoTrader():
         except Exception:
             return None
     
-    def get_exchange_price(self, exchange):
-        ask_price = mt.symbol_info_tick(exchange).ask
-        bid_price = mt.symbol_info_tick(exchange).bid
-        exchange_rate = round((bid_price + ask_price)/2, 5)
-        return exchange_rate
-    
-    def get_spread(self):
-        ask_price = mt.symbol_info_tick(self.symbol).ask
-        bid_price = mt.symbol_info_tick(self.symbol).bid
-        spread = (ask_price - bid_price)
-        return spread
-    
-    def get_lstop_price(self):
-        limit_price = float(self.entry_price_txt.text())
-        return limit_price
-    
-    def get_sstop_price(self):
-        stop_price = round(float(self.stop_price_txt.text()), 4)
-        return stop_price
-    
     def calculate_slots(self, points_in_stop):
         positions = self.risk/(points_in_stop * self.dollor_value)
         return float(positions) 
@@ -151,11 +143,7 @@ class AlgoTrader():
     def calculate_trial_slots(self, points_in_stop):
         # We are having seperate lot calculator to have trail risk seperate from real risk
         positions = self.trial_risk/(points_in_stop * self.dollor_value)
-        return float(positions)        
-    
-    def split_positions(self, x):
-        split = round(x/2, 2)
-        return float(split)
+        return float(positions)
 
    
     def print_order_log(self, result, request={}):
@@ -166,80 +154,6 @@ class AlgoTrader():
                 print(request)
         else:
             print("Error with response!")
-
-    def main(self):
-        
-        selected_symbols = list(set(self.currencies + self.indexes))
-        
-        while True:
-            print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
-            
-            is_market_open, is_market_close = util.get_market_status()            
-            
-            
-            account_size, equity, free_margin, total_active_profit = ind.get_account_details()
-            account_1_percent = account_size * 1/100
-            account_2_percent = account_size * 2/100
-
-            # We need to take the 2% of the balance as daily max loss
-            # Fail Safe
-            # if equity <= account_size + (account_2_percent):
-            #     self.close_positions()
-            #     sys.exit()
-
-            if is_market_close:
-                print("Market Close!")
-                self.close_positions()
-
-            if is_market_open and not is_market_close:                
-                # Close all the position, If current profit reach more than 1% and re evaluate
-                if total_active_profit > account_1_percent:
-                    self.close_positions()
-                    
-                    # If closed positions profit is more than 2% then exit the app. Done for today!
-                    if util.get_today_profit() > account_2_percent:
-                        sys.exit()
-                
-                self.exist_on_initial_plan_changed()
-                self.cancel_all_pending_orders()
-                mp.breakeven_1R_positions()
-                
-                """
-                Check all the existing positions
-                1. Case 1: Only initial trial trade exist
-                2. Case 2: Only real trade exist
-                3. Case 3: Both trail and real trade exist
-                Exist considered as symbols which are not exist in trail or real (any)
-                """
-                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                
-                _, current_hour, _ = util.get_gmt_time()
-                
-                for symbol in selected_symbols:
-                    if symbol not in existing_positions:
-                
-                        # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
-                        if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
-                            continue
-
-                        self.symbol = symbol
-                        self.enable_symbol()
-                        
-                        try:
-                            self.update_symbol_parameters()
-                            signal = ind.get_candle_signal(self.symbol)
-                            
-                            if signal:
-                                if signal == "L":
-                                    self.long_trial_entry()
-                                elif signal == "S":
-                                    self.short_trial_entry()
-                        except Exception as e:
-                            print(f"{symbol} Error: {e}")
-
-                self.real_trade_entry()
-            
-            time.sleep(2*60)
 
     def round_price_value(self, stop_price):
         if self.symbol in self.currencies:
@@ -438,89 +352,6 @@ class AlgoTrader():
                     self.print_order_log(res2, request2)
                 except Exception as e:
                     print(e)
-    
-    def cancel_all_pending_orders(self):
-        active_orders = mt.orders_get()
-
-        # Cancell all pending orders regadless of trial or real
-        for active_order in active_orders:
-            request = {
-                "action": mt.TRADE_ACTION_REMOVE,
-                "order": active_order.ticket,
-            }
-
-            result = mt.order_send(request)
-
-            if result.retcode != mt.TRADE_RETCODE_DONE:
-                print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
-
-    
-    def close_positions(self):
-        positions = mt.positions_get()
-
-        for obj in positions: 
-            if obj.type == 1: 
-                order_type = mt.ORDER_TYPE_BUY
-                price = mt.symbol_info_tick(obj.symbol).bid
-            else:
-                order_type = mt.ORDER_TYPE_SELL
-                price = mt.symbol_info_tick(obj.symbol).ask
-            
-            close_request = {
-                "action": mt.TRADE_ACTION_DEAL,
-                "symbol": obj.symbol,
-                "volume": obj.volume,
-                "type": order_type,
-                "position": obj.ticket,
-                "price": price,
-                "deviation": 20,
-                "magic": 234000,
-                "comment": 'Close trade',
-                "type_time": mt.ORDER_TIME_GTC,
-                "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
-            }
-            
-            result = mt.order_send(close_request) # send order to close a position
-            
-            if result.retcode != mt.TRADE_RETCODE_DONE:
-                print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
-    
-    def close_single_position(self, obj):        
-        order_type = mt.ORDER_TYPE_BUY if obj.type == 1 else mt.ORDER_TYPE_SELL
-        exist_price = mt.symbol_info_tick(obj.symbol).bid if obj.type == 1 else mt.symbol_info_tick(obj.symbol).ask
-        
-        close_request = {
-            "action": mt.TRADE_ACTION_DEAL,
-            "symbol": obj.symbol,
-            "volume": obj.volume,
-            "type": order_type,
-            "position": obj.ticket,
-            "price": exist_price,
-            "deviation": 20,
-            "magic": 234000,
-            "comment": 'close_trail_version',
-            "type_time": mt.ORDER_TIME_GTC,
-            "type_filling": mt.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
-        }
-        
-        result = mt.order_send(close_request) # send order to close a position
-        
-        if result.retcode != mt.TRADE_RETCODE_DONE:
-            print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
-                
-    def exist_on_initial_plan_changed(self):
-        positions = mt.positions_get()
-
-        # Takeout all the positions regardless of Trail or Real If the inital plan is changed
-        for obj in positions:
-            # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
-            if (obj.profit < 0):
-                signal = ind.get_candle_signal(obj.symbol, verb=False)
-                    
-                if signal:                
-                    # when entry was Long but current signal is Short or if entry was short and the current signal is Long
-                    if (obj.type == 0 and signal == "S") or (obj.type == 1 and signal == "L"):
-                        self.close_single_position(obj)
 
     def real_trade_entry(self):
         print(f"\n-------  Real entry check -------------")
@@ -552,6 +383,79 @@ class AlgoTrader():
         if not mt.symbol_select(self.symbol,True):
             print("symbol_select({}}) failed, exit", self.symbol)
 
+    def main(self):
+        selected_symbols = list(set(self.currencies + self.indexes))
+        
+        while True:
+            print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
+            
+            is_market_open, is_market_close = util.get_market_status()            
+            
+            
+            account_size, equity, free_margin, total_active_profit = ind.get_account_details()
+            account_1_percent = account_size * 1/100
+            account_2_percent = account_size * 2/100
+
+            # We need to take the 2% of the balance as daily max loss
+            # Fail Safe
+            # if equity <= account_size + (account_2_percent):
+            #     mp.close_positions()
+            #     sys.exit()
+
+            if is_market_close:
+                print("Market Close!")
+                mp.close_positions()
+
+            if is_market_open and not is_market_close:                
+                # Close all the position, If current profit reach more than 1% and re evaluate
+                if total_active_profit > account_1_percent:
+                    mp.close_positions()
+                    
+                    # If closed positions profit is more than 2% then exit the app. Done for today!
+                    if util.get_today_profit() > account_2_percent:
+                        sys.exit()
+                
+                mp.exist_on_initial_plan_changed()
+                mp.cancel_all_pending_orders()
+                mp.breakeven_1R_positions()
+                
+                """
+                Check all the existing positions
+                1. Case 1: Only initial trial trade exist
+                2. Case 2: Only real trade exist
+                3. Case 3: Both trail and real trade exist
+                Exist considered as symbols which are not exist in trail or real (any)
+                """
+                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+                
+                _, current_hour, _ = util.get_gmt_time()
+                
+                for symbol in selected_symbols:
+                    if symbol not in existing_positions:
+                
+                        # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
+                        if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
+                            continue
+
+                        self.symbol = symbol
+                        self.enable_symbol()
+                        
+                        try:
+                            self.update_symbol_parameters()
+                            signal = ind.get_candle_signal(self.symbol)
+                            
+                            if signal:
+                                if signal == "L":
+                                    self.long_trial_entry()
+                                elif signal == "S":
+                                    self.short_trial_entry()
+                        except Exception as e:
+                            print(f"{symbol} Error: {e}")
+
+                self.real_trade_entry()
+            
+            time.sleep(2*60)
+    
 if __name__ == "__main__":
     win = AlgoTrader()
     win.main()
