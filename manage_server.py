@@ -1,7 +1,14 @@
 import time
 import mng_pos as mp
+import indicators as ind
+import sys
 
 import MetaTrader5 as mt
+
+
+account_size, equity, free_margin, total_active_profit = ind.get_account_details()
+
+
 
 # establish connection to MetaTrader 5 terminal
 if not mt.initialize():
@@ -9,6 +16,11 @@ if not mt.initialize():
     quit()
 
 while True:
+    # Fail Safe
+    if equity <= account_size - account_size * 2/100:
+        mp.close_all_positions()
+        sys.exit()
+    
     # mp.exist_on_initial_plan_changed()
     mp.breakeven_1R_positions()
     time.sleep(60)

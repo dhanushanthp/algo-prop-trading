@@ -233,20 +233,26 @@ class AlgoTrader():
         print(f"\n-------  Real entry check -------------")
         
         positions = mt.positions_get()
+        
         # check existing real orders
-        existing_real_orders = list(set([i.symbol for i in mt.positions_get() if i.comment == self.tag_real]))
+        # existing_real_orders = list(set([i.symbol for i in mt.positions_get() if i.comment == self.tag_real]))
         
         for obj in positions:
             # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
             # Also check the current one don't have any real orders
-            if (obj.comment == self.tag_trial) and (obj.symbol not in existing_real_orders):
+            if (obj.comment == self.tag_trial):
                 # If profit pass 1/2 of the stop or 0.5R, considered as valid entry
                 if obj.profit > self.trial_risk/2:        
                     try:
-                        if obj.type == 0:
-                            self.long_real_entry(symbol=obj.symbol)
-                        if obj.type == 1:
-                            self.short_real_entry(symbol=obj.symbol)
+                        # Only trade when we don't have any filled or pending orders in the server
+                        # This is a second level filter to avoid duplicate entries
+                        if obj.symbol not in client.get_all_positions():
+                            if obj.type == 0:
+                                # self.long_real_entry(symbol=obj.symbol)
+                                client.async_trigger_order_entry(symbol=obj.symbol, direction="L")
+                            if obj.type == 1:
+                                # self.short_real_entry(symbol=obj.symbol)
+                                client.async_trigger_order_entry(symbol=obj.symbol, direction="S")
                     except Exception as e:
                         print(f"Validated entry Error: {obj.symbol} {e}")
 
@@ -261,22 +267,23 @@ class AlgoTrader():
             account_size, equity, free_margin, total_active_profit = ind.get_account_details()
 
             # Fail Safe
-            if equity <= account_size - self.account_2_percent:
-                mp.close_all_positions()
-                sys.exit()
+            # if equity <= account_size - self.account_2_percent:
+            #     mp.close_all_positions()
+            #     sys.exit()
 
             if is_market_close:
                 print("Market Close!")
                 mp.close_all_positions()
+                client.close_all_positions() # Close all the positions in the server
 
             if is_market_open and not is_market_close:                
                 # Close all the position, If current profit reach more than 1% and re evaluate
-                if total_active_profit > self.account_1_percent:
-                    mp.close_all_positions()
+                # if total_active_profit > self.account_1_percent:
+                #     mp.close_all_positions()
                     
                     # If closed positions profit is more than 2% then exit the app. Done for today!
-                    if util.get_today_profit() > self.account_2_percent:
-                        sys.exit()
+                    # if util.get_today_profit() > self.account_2_percent:
+                    #     sys.exit()
                 
                 mp.exist_on_initial_plan_changed()
                 mp.cancel_all_pending_orders()
@@ -305,13 +312,11 @@ class AlgoTrader():
                         try:
                             signal = ind.get_candle_signal(symbol)
                             
-                            if signal and (symbol not in client.get_all_positions()):
+                            if signal:
                                 if signal == "L":
-                                    # self.long_trial_entry(symbol=symbol)
-                                    client.async_trigger_order_entry(symbol=symbol, direction="L")
+                                    self.long_trial_entry(symbol=symbol)
                                 elif signal == "S":
-                                    # self.short_trial_entry(symbol=symbol)
-                                    client.async_trigger_order_entry(symbol=symbol, direction="S")
+                                    self.short_trial_entry(symbol=symbol)
                         except Exception as e:
                             print(f"{symbol} Error: {e}")
 
