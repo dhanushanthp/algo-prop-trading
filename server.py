@@ -37,6 +37,9 @@ def index():
                 time.sleep(2*60)
             else:
                 break
+        
+        # Cancel the order after 3 tries. It still exist in active order
+        mp.cancel_specific_pending_order(symbol=symbol)
             
     return "Success", 200
 
