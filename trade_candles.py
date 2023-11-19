@@ -305,13 +305,13 @@ class AlgoTrader():
                         try:
                             signal = ind.get_candle_signal(symbol)
                             
-                            if signal:
+                            if signal and (symbol not in client.get_all_positions()):
                                 if signal == "L":
-                                    self.long_trial_entry(symbol=symbol)
-                                    # client.async_trigger_order_entry(symbol=symbol, direction="L")
+                                    # self.long_trial_entry(symbol=symbol)
+                                    client.async_trigger_order_entry(symbol=symbol, direction="L")
                                 elif signal == "S":
-                                    self.short_trial_entry(symbol=symbol)
-                                    # client.async_trigger_order_entry(symbol=symbol, direction="S")
+                                    # self.short_trial_entry(symbol=symbol)
+                                    client.async_trigger_order_entry(symbol=symbol, direction="S")
                         except Exception as e:
                             print(f"{symbol} Error: {e}")
 

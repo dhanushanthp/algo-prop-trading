@@ -36,5 +36,13 @@ def get_active_orders():
     existing_positions = list(set([i.symbol for i in mt.positions_get()]))
     return jsonify(existing_positions)
 
+@app.route('/active_positions', methods=['GET'])
+def get_all_orders():
+    existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+    active_orders = list(set([i.symbol for i in mt.orders_get()]))
+    all_symbols = list(set(existing_positions + active_orders))
+    return jsonify(all_symbols)
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
