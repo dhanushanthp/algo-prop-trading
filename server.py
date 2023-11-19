@@ -10,7 +10,6 @@ logging.basicConfig(level=logging.DEBUG,
 
 logger = logging.getLogger(__name__)
 
-
 app = Flask(__name__)
 tc_ref = tc.AlgoTrader()
 
