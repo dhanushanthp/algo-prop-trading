@@ -16,6 +16,7 @@ if not mt.initialize():
     quit()
 
 while True:
+    print("Checkig main server positions!")
     # Fail Safe
     if equity <= account_size - account_size * 2/100:
         mp.close_all_positions()
