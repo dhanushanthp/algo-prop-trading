@@ -20,12 +20,11 @@ def async_trigger_order_entry(symbol, direction):
     thread.start()
 
 def close_all_positions():
-    response = requests.get(f"{server_url}/close_all_positions", headers=headers)
-    return list(response.json())
+    requests.get(f"{server_url}/close_all_positions", headers=headers)
 
 if __name__ == '__main__':
-    async_trigger_order_entry("AUDUSD", "L")
-    async_trigger_order_entry("AUDUSD", "S")
+    # async_trigger_order_entry("AUDUSD", "L")
+    # async_trigger_order_entry("AUDUSD", "S")
     print(get_active_positions())
     print(get_all_positions())
-    # close_all_positions()
+    close_all_positions()
