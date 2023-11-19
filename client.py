@@ -25,7 +25,7 @@ def close_all_positions():
 
 if __name__ == '__main__':
     async_trigger_order_entry("AUDUSD", "L")
-    # async_trigger_order_entry("AUDUSD", "S")
-    # print(get_active_positions())
-    # print(get_all_positions())
+    async_trigger_order_entry("AUDUSD", "S")
+    print(get_active_positions())
+    print(get_all_positions())
     # close_all_positions()
