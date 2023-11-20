@@ -180,6 +180,7 @@ class AlgoTrader():
                 # Take 2R
                 if total_active_profit > 2 * self.risk:
                     mp.close_all_positions()
+                    time.sleep(15*60) # Cooldown time 15 minutes
                     
                     # If closed positions profit is more than 2% then exit the app. Done for today!
                     if util.get_today_profit() > self.account_2_percent:
