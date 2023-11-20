@@ -4,7 +4,6 @@ import indicators as ind
 import util as util
 import currency_pairs as curr
 import sys
-import client
 
 from datetime import datetime, timedelta
 import account as acc
@@ -20,7 +19,6 @@ class AlgoTrader():
 
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
-        self.trial_risk = acc.risk_dollor_trail # $4 as trial risk
         self.risk = ACCOUNT_SIZE/100*acc.risk_percentage_real # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
@@ -57,13 +55,10 @@ class AlgoTrader():
         except Exception:
             return None
     
-    def calculate_lots(self, symbol, entry_price, stop_price, real=True):
-        risk = self.risk if real else self.trial_risk
+    def calculate_lots(self, symbol, entry_price, stop_price):        
         dollor_value = mp.get_dollar_value(symbol)
-        
         points_in_stop = abs(entry_price-stop_price)
-        
-        lots = risk/(points_in_stop * dollor_value)
+        lots = self.risk/(points_in_stop * dollor_value)
         
         if symbol in self.currencies:
             points_in_stop = round(points_in_stop, 5)
@@ -88,40 +83,6 @@ class AlgoTrader():
             return round(stop_price, 5)
         else:
             return round(stop_price, 2)
-
-    def long_trial_entry(self, symbol):
-        entry_price = self.get_mid_price(symbol)
-            
-        if entry_price:
-            _, previous_bar_low, _ = ind.get_stop_range(symbol)
-            stop_price = self.round_price_value(symbol, previous_bar_low)
-            
-            if entry_price > stop_price:                
-                try:
-                                            
-                    points_in_stop, lots = self.calculate_lots(symbol= symbol, entry_price=entry_price, stop_price=stop_price, real=False)
-                    target_price = self.round_price_value(symbol, entry_price +  2 * points_in_stop)
-                    
-                    # any lots in 2 decimal value
-                    lots = round(lots, 2)
-                    
-                    order_request = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": symbol,
-                        "volume": lots,
-                        "type": mt.ORDER_TYPE_BUY_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_price,
-                        "tp": target_price,
-                        "comment": self.tag_trial,
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-                    
-                    request_log = mt.order_send(order_request)
-                    self.print_order_log(request_log, order_request)
-                except Exception as e:
-                    print(e)
     
     def long_real_entry(self, symbol, distance=None):
         entry_price = self.get_mid_price(symbol=symbol)
@@ -136,7 +97,7 @@ class AlgoTrader():
             if entry_price > stop_price:                
                 try:
                                       
-                    points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price, real=True)
+                    points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                     
                     # target_price1 = self.round_price_value(entry_price + self.first_target * points_in_stop)
                     # target_price2 = self.round_price_value(entry_price + self.second_target * points_in_stop)
@@ -161,39 +122,6 @@ class AlgoTrader():
                         self.print_order_log(request_log, order_request)
                 except Exception as e:
                     print(f"Long entry exception: {e}")
-            
-    def short_trial_entry(self, symbol):
-        entry_price = self.get_mid_price(symbol)
-        
-        if entry_price:
-            previous_bar_high, _, _ = ind.get_stop_range(symbol)
-            stop_price = self.round_price_value(symbol, previous_bar_high)
-
-            if stop_price > entry_price:
-                try:                 
-                    points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price, real=False)
-                    # any lots in 2 decimal value
-                    lots = round(lots, 2)
-                    
-                    target_price = self.round_price_value(symbol, entry_price -  2 * points_in_stop)
-                    
-                    order_request = {
-                        "action": mt.TRADE_ACTION_PENDING,
-                        "symbol": symbol,
-                        "volume": lots,
-                        "type": mt.ORDER_TYPE_SELL_LIMIT,
-                        "price": entry_price,
-                        "sl": stop_price,
-                        "tp": target_price,
-                        "comment": self.tag_trial,
-                        "type_time": mt.ORDER_TIME_GTC,
-                        "type_filling": mt.ORDER_FILLING_RETURN,
-                    }
-                    
-                    request_log = mt.order_send(order_request)
-                    self.print_order_log(request_log, order_request)
-                except Exception as e:
-                    print(e)
 
     def short_real_entry(self, symbol, distance=None):
         entry_price = self.get_mid_price(symbol)
@@ -208,7 +136,7 @@ class AlgoTrader():
 
             if stop_price > entry_price:
                 try:                    
-                    points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price, real=True)
+                    points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
 
                     lots =  round(lots/self.r_r, 2)
 
@@ -230,20 +158,6 @@ class AlgoTrader():
                         self.print_order_log(request_log, order_request)
                 except Exception as e:
                     print(e)
-
-    def reverse_positions(self):
-        existing_positions = mt.positions_get()
-        for position in existing_positions:
-            if position.profit < - self.half_risk/2:
-                # entry_price = position.price_open
-                # stop_loss = position.sl
-                # distance = abs(stop_loss-entry_price)
-                mp.close_single_position(obj=position)
-                                
-                # if position.type == 0:
-                #     self.short_real_entry(symbol=position.symbol, distance=distance)
-                # if position.type == 1:
-                #     self.long_real_entry(symbol=position.symbol, distance=distance)
     
     def main(self):
         selected_symbols = list(set(self.currencies + self.indexes))
@@ -263,17 +177,16 @@ class AlgoTrader():
             if is_market_close:
                 print("Market Close!")
                 mp.close_all_positions()
-                # client.close_all_positions() # Close all the positions in the server
             
             if is_market_open and not is_market_close:               
-                # Close all the position, If current profit reach more than 1% and re evaluate
-                if total_active_profit > self.account_1_percent/2:
+                # 2R
+                if total_active_profit > 2 * self.risk:
                     mp.close_all_positions()
                     # print("1 Percent Exceeded!")
                     
                     # If closed positions profit is more than 2% then exit the app. Done for today!
-                    # if util.get_today_profit() > self.account_2_percent:
-                    #     sys.exit()                
+                    if util.get_today_profit() > self.account_2_percent:
+                        sys.exit()                
 
                 mp.exist_on_initial_plan_changed()
                 mp.cancel_all_pending_orders()
@@ -288,7 +201,6 @@ class AlgoTrader():
                 Exist considered as symbols which are not exist in trail or real (any)
                 """
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                # server_positions = client.get_active_positions()
                 
                 _, current_hour, _ = util.get_gmt_time()
                 
