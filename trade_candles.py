@@ -99,9 +99,6 @@ class AlgoTrader():
                                       
                     points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                     
-                    # target_price1 = self.round_price_value(entry_price + self.first_target * points_in_stop)
-                    # target_price2 = self.round_price_value(entry_price + self.second_target * points_in_stop)
-                    
                     lots =  round(lots/self.r_r, 2)
                     
                     for r_r in range(1, self.r_r + 1):
@@ -179,10 +176,10 @@ class AlgoTrader():
                 mp.close_all_positions()
             
             if is_market_open and not is_market_close:               
-                # 2R
+                
+                # Take 2R
                 if total_active_profit > 2 * self.risk:
                     mp.close_all_positions()
-                    # print("1 Percent Exceeded!")
                     
                     # If closed positions profit is more than 2% then exit the app. Done for today!
                     if util.get_today_profit() > self.account_2_percent:
@@ -191,7 +188,6 @@ class AlgoTrader():
                 mp.exist_on_initial_plan_changed()
                 mp.cancel_all_pending_orders()
                 mp.breakeven_1R_positions()
-                # self.reverse_positions()
                 
                 """
                 Check all the existing positions
