@@ -19,6 +19,7 @@ def index():
     if data:
         symbol = data["symbol"]
         direction = data["direction"]
+        distance = float(data["distance"])
         
         for _ in range(3):
             mp.cancel_specific_pending_order(symbol=symbol)
@@ -29,10 +30,10 @@ def index():
             if symbol not in combined_symbols:
                 if direction == "L":
                     logger.info(f"long entry request: {symbol}")
-                    tc_ref.long_real_entry(symbol=symbol)
+                    tc_ref.long_real_entry(symbol=symbol, distance=distance)
                 elif direction == "S":
                     logger.info(f"short entry request: {symbol}")
-                    tc_ref.short_real_entry(symbol=symbol)
+                    tc_ref.short_real_entry(symbol=symbol, distance=distance)
                 
                 time.sleep(1*60)
             else:

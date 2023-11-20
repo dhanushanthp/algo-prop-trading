@@ -8,6 +8,15 @@ if not mt5.initialize():
     print("initialize() failed, error code =",mt5.last_error())
     quit()
 
+def calculate_current_position_stop(symbol):
+    existing_positions = mt5.positions_get()
+    for position in existing_positions:
+        if symbol == position.symbol:
+            entry_price = position.price_open
+            stop_loss = position.sl
+            distance = abs(stop_loss-entry_price)
+            return round(distance, 5)
+
 def previous_candle_move(symbol):
     h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 1, 1)[0]
     h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 0, 1)[0]
@@ -105,6 +114,6 @@ def get_account_details():
 if __name__ == "__main__":
     # close_positions_with_half_profit()
     # print(get_atr("US500.cash"))
-    [print(round(i, 5)) for i in list(get_stop_range("CHFJPY"))]
+    [print(round(i, 5)) for i in list(get_stop_range("AUDNZD"))]
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
