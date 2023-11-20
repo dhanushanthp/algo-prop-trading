@@ -29,8 +29,9 @@ def previous_candle_move(symbol):
     
     length = round(abs(high-low), 5)
     
-    high = high + 3 * spread
-    low = low - 3 * spread
+    # Since I'm taking valided entries. I may not need this condition
+    # high = high + 3 * spread
+    # low = low - 3 * spread
     
     return high, low, length
 
