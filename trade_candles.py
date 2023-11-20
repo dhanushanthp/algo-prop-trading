@@ -243,7 +243,7 @@ class AlgoTrader():
             # Also check the current one don't have any real orders
             if (obj.comment == self.tag_trial):
                 # If profit pass 1/2 of the stop or 0.5R, considered as valid entry
-                if obj.profit > self.trial_risk/3:        
+                if obj.profit > self.trial_risk/2:        
                     try:
                         # Only trade when we don't have any filled or pending orders in the server
                         # This is a second level filter to avoid duplicate entries
