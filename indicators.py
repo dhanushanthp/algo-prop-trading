@@ -17,6 +17,13 @@ def calculate_current_position_stop(symbol):
             distance = abs(stop_loss-entry_price)
             return round(distance, 5)
 
+
+def get_mid_price(symbol):
+    ask_price = mt5.symbol_info_tick(symbol).ask
+    bid_price = mt5.symbol_info_tick(symbol).bid
+    mid_price = (ask_price + bid_price)/2
+    return mid_price
+
 def previous_candle_move(symbol):
     h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 1, 1)[0]
     h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 0, 1)[0]
@@ -38,9 +45,20 @@ def previous_candle_move(symbol):
     
     length = round(abs(high-low), 5)
     
-    # Since I'm taking valided entries. I may not need this condition
-    high = high + 2 * spread
-    low = low - 2 * spread
+    high = high + 3 * spread
+    low = low - 3 * spread
+    
+    mid_price = get_mid_price(symbol)
+    
+    distance_from_high = abs(high-mid_price)
+    distance_from_low = abs(low-mid_price)
+    
+    # Balance the stop incase if stop is too close
+    if distance_from_high > distance_from_low:
+        low = mid_price - distance_from_high
+    
+    if distance_from_low > distance_from_high:
+        high = mid_price + distance_from_low
     
     return high, low, length
 

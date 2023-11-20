@@ -126,11 +126,14 @@ class AlgoTrader():
                 except Exception as e:
                     print(e)
     
-    def long_real_entry(self, symbol):
+    def long_real_entry(self, symbol, distance=None):
         entry_price = self.get_mid_price(symbol=symbol)
-            
+
         if entry_price:
-            _, previous_bar_low, _ = ind.get_stop_range(symbol)
+            if distance:
+                previous_bar_low = entry_price - distance
+            else:
+                _, previous_bar_low, _ = ind.get_stop_range(symbol)
             stop_price = self.round_price_value(symbol, previous_bar_low)
             
             if entry_price > stop_price:                
@@ -195,11 +198,15 @@ class AlgoTrader():
                 except Exception as e:
                     print(e)
 
-    def short_real_entry(self, symbol):
+    def short_real_entry(self, symbol, distance=None):
         entry_price = self.get_mid_price(symbol)
         
         if entry_price:
-            previous_bar_high, _, _ = ind.get_stop_range(symbol)
+            if distance:
+                previous_bar_high = entry_price + distance
+            else:
+                previous_bar_high, _, _ = ind.get_stop_range(symbol)
+                
             stop_price = self.round_price_value(symbol, previous_bar_high)
 
             if stop_price > entry_price:
@@ -257,6 +264,20 @@ class AlgoTrader():
                     except Exception as e:
                         print(f"Validated entry Error: {obj.symbol} {e}")
 
+    def reverse_positions(self):
+        existing_positions = mt.positions_get()
+        for position in existing_positions:
+            if position.profit < - self.half_risk/2:
+                # entry_price = position.price_open
+                # stop_loss = position.sl
+                # distance = abs(stop_loss-entry_price)
+                mp.close_single_position(obj=position)
+                                
+                # if position.type == 0:
+                #     self.short_real_entry(symbol=position.symbol, distance=distance)
+                # if position.type == 1:
+                #     self.long_real_entry(symbol=position.symbol, distance=distance)
+    
     def main(self):
         selected_symbols = list(set(self.currencies + self.indexes))
         
@@ -268,16 +289,22 @@ class AlgoTrader():
             account_size, equity, free_margin, total_active_profit = ind.get_account_details()
 
             # Fail Safe
-            # if equity <= account_size - self.account_2_percent:
-            #     mp.close_all_positions()
-            #     sys.exit()
+            if equity <= account_size - self.account_2_percent:
+                mp.close_all_positions()
+                sys.exit()
 
             if is_market_close:
                 print("Market Close!")
                 mp.close_all_positions()
-                client.close_all_positions() # Close all the positions in the server
+                # client.close_all_positions() # Close all the positions in the server
+            
+            if is_market_open and not is_market_close:               
+                # if total_active_profit > 2 * self.risk:
+                #     mp.close_all_positions()
+                    
+                # if total_active_profit < -self.risk:
+                #     mp.close_all_positions()
 
-            if is_market_open and not is_market_close:                
                 # Close all the position, If current profit reach more than 1% and re evaluate
                 # if total_active_profit > self.account_1_percent:
                 #     mp.close_all_positions()
@@ -289,7 +316,8 @@ class AlgoTrader():
                 mp.exist_on_initial_plan_changed()
                 mp.cancel_all_pending_orders()
                 mp.breakeven_1R_positions()
-                mp.close_slave_positions()
+                # self.reverse_positions()
+                # mp.close_slave_positions()
                 
                 """
                 Check all the existing positions
@@ -299,12 +327,12 @@ class AlgoTrader():
                 Exist considered as symbols which are not exist in trail or real (any)
                 """
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                server_positions = client.get_active_positions()
+                # server_positions = client.get_active_positions()
                 
                 _, current_hour, _ = util.get_gmt_time()
                 
                 for symbol in selected_symbols:
-                    if symbol not in (existing_positions + server_positions):
+                    if symbol not in (existing_positions):
                 
                         # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
                         if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
@@ -315,13 +343,13 @@ class AlgoTrader():
                             
                             if signal:
                                 if signal == "L":
-                                    self.long_trial_entry(symbol=symbol)
+                                    self.long_real_entry(symbol=symbol)
                                 elif signal == "S":
-                                    self.short_trial_entry(symbol=symbol)
+                                    self.short_real_entry(symbol=symbol)
                         except Exception as e:
                             print(f"{symbol} Error: {e}")
 
-                self.real_trade_entry()
+                # self.real_trade_entry()
             
             time.sleep(2*60)
     
