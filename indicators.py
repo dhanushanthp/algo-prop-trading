@@ -9,8 +9,8 @@ if not mt5.initialize():
     quit()
 
 def previous_candle_move(symbol):
-    h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 1, 1)[0]
-    h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 0, 1)[0]
+    h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M30, 1, 1)[0]
+    h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M30, 0, 1)[0]
     spread = get_spread(symbol)
     
     # Previous bar high/low
@@ -30,8 +30,8 @@ def previous_candle_move(symbol):
     length = round(abs(high-low), 5)
     
     # Since I'm taking valided entries. I may not need this condition
-    # high = high + 3 * spread
-    # low = low - 3 * spread
+    high = high + 2 * spread
+    low = low - 2 * spread
     
     return high, low, length
 
@@ -98,7 +98,7 @@ def get_candle_signal(symbol, verb=True):
         print(f"{symbol.ljust(12)}: {''.join(signals)} : {int(h6_strong_candle)}{int(h4_strong_candle)}{int(h2_strong_candle)}{int(h1_strong_candle)}{int(m30_strong_candle)}")
     
     signals = set(signals)
-    if len(signals) == 1 and h6_strong_candle and h4_strong_candle and h2_strong_candle and h1_strong_candle and m30_strong_candle:
+    if len(signals) == 1:
         return list(signals)[0]
 
 def get_account_details():

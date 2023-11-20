@@ -34,7 +34,7 @@ def index():
                     logger.info(f"short entry request: {symbol}")
                     tc_ref.short_real_entry(symbol=symbol)
                 
-                time.sleep(2*60)
+                time.sleep(1*60)
             else:
                 break
         

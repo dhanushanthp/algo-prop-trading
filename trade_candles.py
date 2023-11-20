@@ -21,7 +21,7 @@ class AlgoTrader():
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.trial_risk = 4 # $4 as trial risk
         # self.ratio = 1
-        self.risk = ACCOUNT_SIZE/100*0.16 # Risk only 0.25%
+        self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.half_risk = self.risk/2/2
@@ -242,7 +242,7 @@ class AlgoTrader():
             # Also check the current one don't have any real orders
             if (obj.comment == self.tag_trial):
                 # If profit pass 1/2 of the stop or 0.5R, considered as valid entry
-                if obj.profit > self.trial_risk/2:        
+                if obj.profit > self.trial_risk/3:        
                     try:
                         # Only trade when we don't have any filled or pending orders in the server
                         # This is a second level filter to avoid duplicate entries

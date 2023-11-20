@@ -23,8 +23,8 @@ def close_all_positions():
     requests.get(f"{server_url}/close_all_positions", headers=headers)
 
 if __name__ == '__main__':
-    # async_trigger_order_entry("AUDUSD", "L")
-    # async_trigger_order_entry("EURUSD", "S")
+    async_trigger_order_entry("JP225.cash", "L")
+    # async_trigger_order_entry("AUDUSD", "S")
     print(get_active_positions())
     print(get_all_positions())
     # close_all_positions()
