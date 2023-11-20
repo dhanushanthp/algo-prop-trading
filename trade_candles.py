@@ -267,7 +267,7 @@ class AlgoTrader():
             
             if is_market_open and not is_market_close:               
                 # Close all the position, If current profit reach more than 1% and re evaluate
-                if total_active_profit > self.account_1_percent:
+                if total_active_profit > self.account_1_percent/2:
                     mp.close_all_positions()
                     # print("1 Percent Exceeded!")
                     
