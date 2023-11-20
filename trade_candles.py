@@ -21,13 +21,10 @@ class AlgoTrader():
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.trial_risk = acc.risk_dollor_trail # $4 as trial risk
-        # self.ratio = 1
         self.risk = ACCOUNT_SIZE/100*acc.risk_percentage_real # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.half_risk = self.risk/2/2
-        # self.first_target = 1
-        # self.second_target = 2 # 1: 2, Ratio
         self.currencies = curr.currencies
         self.indexes = curr.indexes
         self.tag_trial = "trial_entry"
@@ -212,9 +209,6 @@ class AlgoTrader():
             if stop_price > entry_price:
                 try:                    
                     points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price, real=True)
-                    
-                    # target_price1 = self.round_price_value(entry_price - self.first_target * points_in_stop)
-                    # target_price2 = self.round_price_value(entry_price - self.second_target * points_in_stop)
 
                     lots =  round(lots/self.r_r, 2)
 
@@ -236,33 +230,6 @@ class AlgoTrader():
                         self.print_order_log(request_log, order_request)
                 except Exception as e:
                     print(e)
-
-    def real_trade_entry(self):
-        print(f"\n-------  Real entry check -------------")
-        
-        positions = mt.positions_get()
-        
-        # check existing real orders
-        # existing_real_orders = list(set([i.symbol for i in mt.positions_get() if i.comment == self.tag_real]))
-        
-        for obj in positions:
-            # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
-            # Also check the current one don't have any real orders
-            if (obj.comment == self.tag_trial):
-                # If profit pass 1/2 of the stop or 0.5R, considered as valid entry
-                if obj.profit > self.trial_risk/2:        
-                    try:
-                        # Only trade when we don't have any filled or pending orders in the server
-                        # This is a second level filter to avoid duplicate entries
-                        if obj.symbol not in client.get_all_positions():
-                            if obj.type == 0:
-                                # self.long_real_entry(symbol=obj.symbol)
-                                client.async_trigger_order_entry(symbol=obj.symbol, direction="L")
-                            if obj.type == 1:
-                                # self.short_real_entry(symbol=obj.symbol)
-                                client.async_trigger_order_entry(symbol=obj.symbol, direction="S")
-                    except Exception as e:
-                        print(f"Validated entry Error: {obj.symbol} {e}")
 
     def reverse_positions(self):
         existing_positions = mt.positions_get()
@@ -299,25 +266,19 @@ class AlgoTrader():
                 # client.close_all_positions() # Close all the positions in the server
             
             if is_market_open and not is_market_close:               
-                # if total_active_profit > 2 * self.risk:
-                #     mp.close_all_positions()
-                    
-                # if total_active_profit < -self.risk:
-                #     mp.close_all_positions()
-
                 # Close all the position, If current profit reach more than 1% and re evaluate
-                # if total_active_profit > self.account_1_percent:
-                #     mp.close_all_positions()
+                if total_active_profit > self.account_1_percent:
+                    mp.close_all_positions()
+                    # print("1 Percent Exceeded!")
                     
                     # If closed positions profit is more than 2% then exit the app. Done for today!
                     # if util.get_today_profit() > self.account_2_percent:
-                    #     sys.exit()
-                
+                    #     sys.exit()                
+
                 mp.exist_on_initial_plan_changed()
                 mp.cancel_all_pending_orders()
                 mp.breakeven_1R_positions()
                 # self.reverse_positions()
-                # mp.close_slave_positions()
                 
                 """
                 Check all the existing positions
@@ -348,8 +309,6 @@ class AlgoTrader():
                                     self.short_real_entry(symbol=symbol)
                         except Exception as e:
                             print(f"{symbol} Error: {e}")
-
-                # self.real_trade_entry()
             
             time.sleep(2*60)
     
