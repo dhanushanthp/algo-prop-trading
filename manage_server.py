@@ -6,9 +6,7 @@ from datetime import datetime
 import MetaTrader5 as mt
 
 
-account_size, equity, free_margin, total_active_profit = ind.get_account_details()
-
-
+account_size, _, _, _ = ind.get_account_details()
 
 # establish connection to MetaTrader 5 terminal
 if not mt.initialize():
@@ -18,6 +16,8 @@ if not mt.initialize():
 while True:
     print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
     # Fail Safe
+    _, equity, _, _ = ind.get_account_details()
+    print(f"Equity: {equity}, account_size: {account_size - account_size * 2/100}")
     if equity <= account_size - account_size * 2/100:
         mp.close_all_positions()
         sys.exit()
