@@ -7,6 +7,7 @@ import sys
 import client
 
 from datetime import datetime, timedelta
+import account as acc
 import pytz
 import time
 
@@ -19,9 +20,9 @@ class AlgoTrader():
 
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
-        self.trial_risk = 4 # $4 as trial risk
+        self.trial_risk = acc.risk_dollor_trail # $4 as trial risk
         # self.ratio = 1
-        self.risk = ACCOUNT_SIZE/100*0.25 # Risk only 0.25%
+        self.risk = ACCOUNT_SIZE/100*acc.risk_percentage_real # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.half_risk = self.risk/2/2
