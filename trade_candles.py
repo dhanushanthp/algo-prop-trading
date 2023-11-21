@@ -103,7 +103,7 @@ class AlgoTrader():
                         
                         lots =  round(lots/self.r_r, 2)
                         
-                        for r_r in [1,3]:
+                        for r_r in [1, 2]:
                             order_request = {
                                 "action": mt.TRADE_ACTION_PENDING,
                                 "symbol": symbol,
@@ -142,7 +142,7 @@ class AlgoTrader():
 
                         lots =  round(lots/self.r_r, 2)
 
-                        for r_r in [1,3]:
+                        for r_r in [1, 2]:
                             order_request = {
                                 "action": mt.TRADE_ACTION_PENDING,
                                 "symbol": symbol,
