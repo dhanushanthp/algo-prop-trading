@@ -33,6 +33,16 @@ def previous_candle_move(symbol):
     high = h1_1["high"]
     low = h1_1["low"]
     
+    close = h1_1["close"]
+    open = h1_1["open"]
+    
+    previous_candle = None
+    if abs(open-close) > 3 * spread:
+        if close > open:
+            previous_candle = "L"
+        else:
+            previous_candle = "S"
+    
     # Some cases current bar low could be lower than the previous hour bar and current bar high higher than previous high
     high_0 = h1_0["high"]
     low_0 = h1_0["low"]
@@ -42,8 +52,6 @@ def previous_candle_move(symbol):
     
     if low_0 < low:
         low = low_0
-    
-    length = round(abs(high-low), 5)
     
     high = high + 3 * spread
     low = low - 3 * spread
@@ -60,11 +68,11 @@ def previous_candle_move(symbol):
     if distance_from_low > distance_from_high:
         high = mid_price + distance_from_low
     
-    return high, low, length
+    return high, low, previous_candle
 
 def get_stop_range(symbol):
-    high, low, length = previous_candle_move(symbol)
-    return high, low, length
+    high, low, previous_candle = previous_candle_move(symbol)
+    return high, low, previous_candle
 
 def get_atr(symbol):
     """
