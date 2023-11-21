@@ -121,6 +121,8 @@ class AlgoTrader():
                             self.print_order_log(request_log, order_request)
                     except Exception as e:
                         print(f"Long entry exception: {e}")
+            else:
+                print(f"{symbol} ignored!")
 
     def short_real_entry(self, symbol, distance=None):
         entry_price = self.get_mid_price(symbol)
@@ -158,6 +160,8 @@ class AlgoTrader():
                             self.print_order_log(request_log, order_request)
                     except Exception as e:
                         print(e)
+            else:
+                print(f"{symbol} ignored!")
     
     def main(self):
         selected_symbols = list(set(self.currencies + self.indexes))
@@ -216,7 +220,7 @@ class AlgoTrader():
                         except Exception as e:
                             print(f"{symbol} Error: {e}")
             
-            time.sleep(2*60)
+            time.sleep(1*60)
     
 if __name__ == "__main__":
     win = AlgoTrader()
