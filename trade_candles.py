@@ -164,7 +164,7 @@ class AlgoTrader():
             
             is_market_open, is_market_close = util.get_market_status()            
             
-            account_size, equity, free_margin, total_active_profit = ind.get_account_details()
+            account_size, equity, _, total_active_profit = ind.get_account_details()
 
             # Fail Safe
             if equity <= account_size - self.account_2_percent:
