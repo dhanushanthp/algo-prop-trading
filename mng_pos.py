@@ -88,8 +88,8 @@ def get_order_history():
     start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=4)
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
     order_history = [i for i in mt5.history_deals_get(start_time,  end_time) if i.profit != 0]
-    check_negative_profit = [i.profit < 0 for i in order_history][-4:-1]
-    last_held_positions = [i.symbol for i in order_history][-4:-1]
+    check_negative_profit = [i.profit < 0 for i in order_history][-2:]
+    last_held_positions = [i.symbol for i in order_history][-2:]
     # If we have continues loss then, return the held positions
     if all(check_negative_profit):
         return last_held_positions
