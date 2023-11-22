@@ -3,6 +3,8 @@ import indicators as ind
 import currency_pairs as curr
 import client
 import numpy as np
+import pytz
+from datetime import datetime, timedelta, time
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -79,6 +81,29 @@ def stop_round(symbol, stop_price):
         return round(stop_price, 5)
     else:
         return round(stop_price, 2)
+
+
+def get_order_history():
+    tm_zone = pytz.timezone('Etc/GMT-2')
+    start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=4)
+    end_time = datetime.now(tm_zone) + timedelta(hours=4)
+    order_history = [i for i in mt5.history_deals_get(start_time,  end_time) if i.profit != 0]
+    check_negative_profit = [i.profit < 0 for i in order_history][-4:-1]
+    last_held_positions = [i.symbol for i in order_history][-4:-1]
+    # If we have continues loss then, return the held positions
+    if all(check_negative_profit):
+        return last_held_positions
+    return None
+
+
+def get_symbol_entry_price(symbol):
+    sym_positions = mt5.positions_get(symbol=symbol)
+    if len(sym_positions) > 0:
+        sym_position = sym_positions[0]
+        stop_range = abs(sym_position.price_open - sym_position.sl)/ 2
+        return sym_position.price_open, stop_range
+
+    return None, None
 
 def breakeven_1R_positions_old():
     existing_positions = mt5.positions_get()
@@ -251,3 +276,4 @@ def exist_on_initial_plan_changed():
 # breakeven_1R_positions()
 # print(get_dollar_value("GBPJPY"))
 # print(get_exchange_price("NZDUSD"))
+print(get_order_history())
