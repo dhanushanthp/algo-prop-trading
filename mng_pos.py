@@ -279,7 +279,8 @@ def exist_on_initial_plan_changed():
                 if (obj.type == 0 and signal == "S") or (obj.type == 1 and signal == "L"):
                     close_single_position(obj)
 
-# breakeven_1R_positions()
-# print(get_dollar_value("GBPJPY"))
-# print(get_exchange_price("NZDUSD"))
-print(strategy_selector())
+if __name__ == "__main__":
+    # breakeven_1R_positions()
+    # print(get_dollar_value("GBPJPY"))
+    # print(get_exchange_price("NZDUSD"))
+    print(strategy_selector())
