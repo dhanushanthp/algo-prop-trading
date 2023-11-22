@@ -92,18 +92,19 @@ class AlgoTrader():
                 previous_bar_low = entry_price - distance
             else:
                 _, previous_bar_low, previous_candle = ind.get_stop_range(symbol)
-                
-            if previous_candle and previous_candle == "L":
+            
+            # The idea is reverse and quick profit!
+            if previous_candle and previous_candle == "S":
                 stop_price = self.round_price_value(symbol, previous_bar_low)
                 
                 if entry_price > stop_price:                
                     try:
-                                        
+                        print(f"{symbol}: LONG")        
                         points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         lots =  round(lots/self.r_r, 2)
                         
-                        for r_r in [1, 2]:
+                        for r_r in [0.5, 0.5]:
                             order_request = {
                                 "action": mt.TRADE_ACTION_PENDING,
                                 "symbol": symbol,
@@ -133,16 +134,17 @@ class AlgoTrader():
             else:
                 previous_bar_high, _, previous_candle = ind.get_stop_range(symbol)
             
-            if previous_candle and previous_candle == "S":
+            if previous_candle and previous_candle == "L":
                 stop_price = self.round_price_value(symbol, previous_bar_high)
 
                 if stop_price > entry_price:
-                    try:                    
+                    try:            
+                        print(f"{symbol}: SHORT")        
                         points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
 
                         lots =  round(lots/self.r_r, 2)
 
-                        for r_r in [1, 2]:
+                        for r_r in [0.5, 0.5]:
                             order_request = {
                                 "action": mt.TRADE_ACTION_PENDING,
                                 "symbol": symbol,
@@ -214,9 +216,9 @@ class AlgoTrader():
                             
                             if signal:
                                 if signal == "L":
-                                    self.long_real_entry(symbol=symbol)
-                                elif signal == "S":
                                     self.short_real_entry(symbol=symbol)
+                                elif signal == "S":
+                                    self.long_real_entry(symbol=symbol)
                         except Exception as e:
                             print(f"{symbol} Error: {e}")
             
