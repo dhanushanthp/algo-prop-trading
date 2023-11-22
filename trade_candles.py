@@ -28,7 +28,7 @@ class AlgoTrader():
         self.tag_trial = "trial_entry"
         self.tag_real = "real_entry"
         self.r_r = 2
-        self.num_of_parallel_trades = 1
+        self.num_of_parallel_trades = 2
     
     def get_exchange_price(self, exchange):
         ask_price = mt.symbol_info_tick(exchange).ask
@@ -92,7 +92,8 @@ class AlgoTrader():
             _, previous_bar_low, previous_candle = ind.get_stop_range(symbol)
             
             # The idea is reverse and quick profit!
-            if previous_candle and previous_candle == "S":
+            if previous_candle:
+                magic_number = 0 if previous_candle == "L" else 1
                 stop_price = self.round_price_value(symbol, previous_bar_low)
                 
                 if entry_price > stop_price:                
@@ -114,6 +115,7 @@ class AlgoTrader():
                             "sl": stop_price,
                             "tp": self.round_price_value(symbol, entry_price + points_in_stop),
                             "comment": comment,
+                            "magic":magic_number,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
                         }
@@ -133,7 +135,8 @@ class AlgoTrader():
         if entry_price:
             previous_bar_high, _, previous_candle = ind.get_stop_range(symbol)
             
-            if previous_candle and previous_candle == "L":
+            if previous_candle:
+                magic_number = 0 if previous_candle == "L" else 1
                 stop_price = self.round_price_value(symbol, previous_bar_high)
 
                 if stop_price > entry_price:
@@ -154,6 +157,7 @@ class AlgoTrader():
                             "sl": stop_price,
                             "tp": self.round_price_value(symbol, entry_price - points_in_stop),
                             "comment": comment,
+                            "magic":magic_number,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
                         }
