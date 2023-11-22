@@ -5,6 +5,7 @@ import client
 import numpy as np
 import pytz
 from datetime import datetime, timedelta, time
+import config
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -119,9 +120,9 @@ def strategy_selector():
     
     if previous_strategy != "":
         if previous_profit > 0:
-            return "trend" if previous_strategy == "trend" else "reverse"
+            return config.TREND if previous_strategy == config.TREND else config.REVERSAL
         elif previous_profit < 0:
-            return "trend" if previous_strategy == "reverse" else "reverse"
+            return config.TREND if previous_strategy == config.REVERSAL else config.REVERSAL
 
 
 def get_symbol_entry_price(symbol):

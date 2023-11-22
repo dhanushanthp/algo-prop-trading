@@ -6,7 +6,7 @@ import currency_pairs as curr
 import sys
 
 from datetime import datetime, timedelta
-import account as acc
+import config
 import pytz
 import time
 
@@ -19,7 +19,7 @@ class AlgoTrader():
 
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
-        self.risk = ACCOUNT_SIZE/100*acc.risk_percentage_real # Risk only 0.25%
+        self.risk = ACCOUNT_SIZE/100*config.risk_percentage # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.currencies = curr.currencies
@@ -87,7 +87,8 @@ class AlgoTrader():
             _, previous_bar_low, previous_candle = ind.get_stop_range(symbol)
             
             # The idea is reverse and quick profit!
-            if previous_candle and previous_candle == "S":
+            #  and previous_candle == "S"
+            if previous_candle:
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self.round_price_value(symbol, previous_bar_low)
                 
@@ -129,8 +130,8 @@ class AlgoTrader():
         
         if entry_price:
             previous_bar_high, _, previous_candle = ind.get_stop_range(symbol)
-            
-            if previous_candle and previous_candle == "L":
+            # and previous_candle == "L"
+            if previous_candle:
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self.round_price_value(symbol, previous_bar_high)
 
@@ -218,22 +219,22 @@ class AlgoTrader():
                                 
                                 # Only enter 1 order at a time along with the signal
                                 if signal and active_orders < 1:
-                                    if selected_strategy == "reverse":                                    
+                                    if selected_strategy == config.REVERSAL:                                    
                                         if signal == "L":
-                                            if self.short_real_entry(symbol=symbol, comment="reverse"):
+                                            if self.short_real_entry(symbol=symbol, comment=config.REVERSAL):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.long_real_entry(symbol=symbol, comment="reverse"):
+                                            if self.long_real_entry(symbol=symbol, comment=config.REVERSAL):
                                                 # Make sure we make only 1 trade at a time
                                                 break
-                                    elif selected_strategy == "trend":  
+                                    elif selected_strategy == config.TREND:  
                                         if signal == "L":
-                                            if self.long_real_entry(symbol=symbol, comment="trend"):
+                                            if self.long_real_entry(symbol=symbol, comment=config.TREND):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.short_real_entry(symbol=symbol, comment="trend"):
+                                            if self.short_real_entry(symbol=symbol, comment=config.TREND):
                                                 # Make sure we make only 1 trade at a time
                                                 break
                                     else:
