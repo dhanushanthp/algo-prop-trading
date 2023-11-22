@@ -24,7 +24,6 @@ class AlgoTrader():
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.currencies = curr.currencies
         self.indexes = curr.indexes
-        self.num_of_parallel_trades = 2
     
     def get_exchange_price(self, exchange):
         ask_price = mt.symbol_info_tick(exchange).ask
@@ -197,11 +196,12 @@ class AlgoTrader():
                 mp.breakeven_1R_positions()
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                print(f"Current Positions: {existing_positions}")
+                paralle_trades = mp.get_parallel_position_recommendation()
+                print(f"Current Positions: {existing_positions},  PARALLEL: {paralle_trades}")
                 
                 _, current_hour, _ = util.get_gmt_time()
-                # Only take 4 trades at a time. So we can track the performance of the startegy
-                if len(existing_positions) < self.num_of_parallel_trades:
+                
+                if len(existing_positions) < paralle_trades:
                     selected_strategy = mp.strategy_selector()
                     print(f"STRATEGY: {selected_strategy.upper()}")
                     

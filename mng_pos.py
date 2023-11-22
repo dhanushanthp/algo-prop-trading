@@ -82,6 +82,28 @@ def stop_round(symbol, stop_price):
     else:
         return round(stop_price, 2)
 
+def get_parallel_position_recommendation():
+    tm_zone = pytz.timezone('Etc/GMT-2')
+    start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=4)
+    end_time = datetime.now(tm_zone) + timedelta(hours=4)
+    win_positions = [i.profit > 0 for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1][-10:]
+    win_positions.reverse()
+    
+    # If last trade is win
+    if win_positions[0]:
+        count_wins = 1
+        for i in range(len(win_positions)):
+            if win_positions[i] == win_positions[i+1]:
+                count_wins += 1
+            else:
+                break
+        
+        return count_wins
+    else:
+        # Default is one trade, To take more the algo should earn by winning more
+        return 1
+        
+    
 
 def strategy_selector():
     tm_zone = pytz.timezone('Etc/GMT-2')
@@ -282,4 +304,5 @@ if __name__ == "__main__":
     # breakeven_1R_positions()
     # print(get_dollar_value("GBPJPY"))
     # print(get_exchange_price("NZDUSD"))
-    print(strategy_selector())
+    # print(strategy_selector())
+    print(get_parallel_position_recommendation())
