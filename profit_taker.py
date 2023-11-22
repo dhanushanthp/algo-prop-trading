@@ -10,7 +10,7 @@ while True:
         print(f"Profit taking hit @ {datetime.now().strftime('%H:%M:%S')}")
         mp.close_all_positions()
     
-    # if equity < account_size-100:
-    #     mp.close_all_positions()
+    if equity < account_size-100:
+        mp.close_all_positions()
     
     
