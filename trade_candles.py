@@ -24,10 +24,7 @@ class AlgoTrader():
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.currencies = curr.currencies
         self.indexes = curr.indexes
-        self.tag_trial = "trial_entry"
-        self.tag_real = "real_entry"
-        self.r_r = 2
-        self.num_of_parallel_trades = 3
+        self.num_of_parallel_trades = 2
     
     def get_exchange_price(self, exchange):
         ask_price = mt.symbol_info_tick(exchange).ask
@@ -57,7 +54,7 @@ class AlgoTrader():
     
     def calculate_lots(self, symbol, entry_price, stop_price):        
         dollor_value = mp.get_dollar_value(symbol)
-        points_in_stop = abs(entry_price-stop_price)/2
+        points_in_stop = abs(entry_price-stop_price)
         lots = self.risk/(points_in_stop * dollor_value)
         
         if symbol in self.currencies:
@@ -103,7 +100,7 @@ class AlgoTrader():
                         lots =  round(lots, 2)
                         
                         # Re evaluate the stop distance
-                        stop_price = self.round_price_value(symbol, stop_price + points_in_stop)
+                        # stop_price = self.round_price_value(symbol, stop_price + points_in_stop)
                         
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
@@ -112,7 +109,7 @@ class AlgoTrader():
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
                             "sl": stop_price,
-                            "tp": self.round_price_value(symbol, entry_price + points_in_stop),
+                            "tp": self.round_price_value(symbol, entry_price + 2*points_in_stop),
                             "comment": comment,
                             "magic":magic_number,
                             "type_time": mt.ORDER_TIME_GTC,
@@ -144,7 +141,7 @@ class AlgoTrader():
                         points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         # Re evaluate the stop distance
-                        stop_price = self.round_price_value(symbol, stop_price-points_in_stop)
+                        # stop_price = self.round_price_value(symbol, stop_price-points_in_stop)
                         lots =  round(lots, 2)
 
                         order_request = {
@@ -154,7 +151,7 @@ class AlgoTrader():
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
                             "sl": stop_price,
-                            "tp": self.round_price_value(symbol, entry_price - points_in_stop),
+                            "tp": self.round_price_value(symbol, entry_price - 2*points_in_stop),
                             "comment": comment,
                             "magic":magic_number,
                             "type_time": mt.ORDER_TIME_GTC,
@@ -197,6 +194,7 @@ class AlgoTrader():
 
                 # mp.exist_on_initial_plan_changed()
                 mp.cancel_all_pending_orders()
+                mp.breakeven_1R_positions()
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 print(f"Current Positions: {existing_positions}")
