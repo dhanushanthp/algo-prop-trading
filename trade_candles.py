@@ -22,13 +22,12 @@ class AlgoTrader():
         self.risk = ACCOUNT_SIZE/100*acc.risk_percentage_real # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
-        self.half_risk = self.risk/2/2
         self.currencies = curr.currencies
         self.indexes = curr.indexes
         self.tag_trial = "trial_entry"
         self.tag_real = "real_entry"
         self.r_r = 2
-        self.num_of_parallel_trades = 2
+        self.num_of_parallel_trades = 3
     
     def get_exchange_price(self, exchange):
         ask_price = mt.symbol_info_tick(exchange).ask
@@ -93,7 +92,7 @@ class AlgoTrader():
             
             # The idea is reverse and quick profit!
             if previous_candle:
-                magic_number = 0 if previous_candle == "L" else 1
+                magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self.round_price_value(symbol, previous_bar_low)
                 
                 if entry_price > stop_price:                
@@ -136,7 +135,7 @@ class AlgoTrader():
             previous_bar_high, _, previous_candle = ind.get_stop_range(symbol)
             
             if previous_candle:
-                magic_number = 0 if previous_candle == "L" else 1
+                magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self.round_price_value(symbol, previous_bar_high)
 
                 if stop_price > entry_price:
