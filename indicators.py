@@ -2,6 +2,7 @@ from datetime import datetime,  timedelta
 import MetaTrader5 as mt5
 import pytz
 import numpy as np
+import currency_pairs as curr
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -23,6 +24,22 @@ def get_mid_price(symbol):
     bid_price = mt5.symbol_info_tick(symbol).bid
     mid_price = (ask_price + bid_price)/2
     return mid_price
+
+
+def get_ordered_symbols():
+    ticks = (curr.currencies + curr.indexes)
+    symbol_change = []    
+    for tick in ticks:
+        symbol_info = mt5.symbol_info(tick)
+        symbol_change.append((tick, abs(symbol_info.price_change)))
+        
+    # Sorting the list based on the second element of each tuple in descending order
+    sorted_list_desc = sorted(symbol_change, key=lambda x: x[1], reverse=True)
+
+    # Extracting the first values from the sorted list
+    sorted_list = [item[0] for item in sorted_list_desc]
+    
+    return sorted_list
 
 def previous_candle_move(symbol):
     h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M30, 1, 1)[0]
@@ -140,6 +157,7 @@ def get_account_details():
 if __name__ == "__main__":
     # close_positions_with_half_profit()
     # print(get_atr("US500.cash"))
-    [print(round(i, 5)) for i in list(get_stop_range("AUDNZD"))]
+    # [print(round(i, 5)) for i in list(get_stop_range("AUDNZD"))]
+    get_ordered_symbols()
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())

@@ -142,7 +142,7 @@ class AlgoTrader():
                 return False
     
     def main(self):
-        selected_symbols = list(set(curr.currencies + curr.indexes))
+        selected_symbols = ind.get_ordered_symbols()
         
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
