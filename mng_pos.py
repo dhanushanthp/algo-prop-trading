@@ -97,7 +97,7 @@ def strategy_selector():
     
     if previous_strategy != "":
         if previous_profit > 0:
-            return "previous_strategy"
+            return previous_strategy
         elif previous_profit < 0:
             return "trend" if previous_strategy == "reverse" else "reverse"
 
