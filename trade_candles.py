@@ -91,7 +91,7 @@ class AlgoTrader():
             _, previous_bar_low, previous_candle = ind.get_stop_range(symbol)
             
             # The idea is reverse and quick profit!
-            if previous_candle:
+            if previous_candle and previous_candle == "S":
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self.round_price_value(symbol, previous_bar_low)
                 
@@ -134,7 +134,7 @@ class AlgoTrader():
         if entry_price:
             previous_bar_high, _, previous_candle = ind.get_stop_range(symbol)
             
-            if previous_candle:
+            if previous_candle and previous_candle == "L":
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self.round_price_value(symbol, previous_bar_high)
 
