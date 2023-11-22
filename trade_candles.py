@@ -22,41 +22,28 @@ class AlgoTrader():
         self.risk = ACCOUNT_SIZE/100*config.risk_percentage # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
-        self.currencies = curr.currencies
-        self.indexes = curr.indexes
     
-    def get_exchange_price(self, exchange):
-        ask_price = mt.symbol_info_tick(exchange).ask
-        bid_price = mt.symbol_info_tick(exchange).bid
-        exchange_rate = round((bid_price + ask_price)/2, 5)
-        return exchange_rate
-        
-    def get_mid_price(self, symbol):
+    def _round(self, symbol, price):
+        round_factor = 5 if symbol in curr.currencies else 2
+        round_factor = 2 if symbol == "XAUUSD" else round_factor
+        round_factor = 3 if symbol in curr.jpy_currencies else round_factor
+        return round(price, round_factor)
+            
+    def get_entry_price(self, symbol):
         try:
             ask_price = mt.symbol_info_tick(symbol).ask
             bid_price = mt.symbol_info_tick(symbol).bid
             mid_price = (ask_price + bid_price)/2
-            
-            if symbol in self.currencies:
-                round_factor = 5
-                
-                if symbol in ["XAUUSD"]:
-                    round_factor = 2
-                
-                entry_price = round((mid_price), round_factor)
-            else:
-                entry_price = round((mid_price) * 10)/10
-
-            return entry_price
+            return self._round(symbol=symbol, price=mid_price)
         except Exception:
             return None
     
-    def calculate_lots(self, symbol, entry_price, stop_price):        
+    def get_lot_size(self, symbol, entry_price, stop_price):        
         dollor_value = mp.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price)
         lots = self.risk/(points_in_stop * dollor_value)
         
-        if symbol in self.currencies:
+        if symbol in curr.currencies:
             points_in_stop = round(points_in_stop, 5)
             lots = lots/10**5
         
@@ -72,35 +59,23 @@ class AlgoTrader():
         else:
             print("Error with response!")
 
-    def round_price_value(self, symbol, stop_price):
-        if symbol in self.currencies:
-            if symbol in curr.jpy_currencies:
-                return round(stop_price, 3)
-            return round(stop_price, 5)
-        else:
-            return round(stop_price, 2)
-    
     def long_real_entry(self, symbol, comment="NA"):
-        entry_price = self.get_mid_price(symbol=symbol)
+        entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, previous_bar_low, previous_candle = ind.get_stop_range(symbol)
+            _, stop_price, prev_can_dir = ind.get_stop_range(symbol)
             
-            # The idea is reverse and quick profit!
             #  and previous_candle == "S"
-            if previous_candle:
-                magic_number = 1 if previous_candle == "L" else 2
-                stop_price = self.round_price_value(symbol, previous_bar_low)
+            if prev_can_dir:
+                magic_number = 1 if prev_can_dir == "L" else 2
+                stop_price = self._round(symbol, stop_price)
                 
                 if entry_price > stop_price:                
                     try:
-                        print(f"{symbol}: LONG")        
-                        points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                        print(f"{''.ljust(12)}: LONG")        
+                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         lots =  round(lots, 2)
-                        
-                        # Re evaluate the stop distance
-                        # stop_price = self.round_price_value(symbol, stop_price + points_in_stop)
                         
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
@@ -109,7 +84,7 @@ class AlgoTrader():
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
                             "sl": stop_price,
-                            "tp": self.round_price_value(symbol, entry_price + points_in_stop),
+                            "tp": self._round(symbol, entry_price + points_in_stop),
                             "comment": comment,
                             "magic":magic_number,
                             "type_time": mt.ORDER_TIME_GTC,
@@ -126,22 +101,21 @@ class AlgoTrader():
                 return False
 
     def short_real_entry(self, symbol, comment="NA"):
-        entry_price = self.get_mid_price(symbol)
+        entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            previous_bar_high, _, previous_candle = ind.get_stop_range(symbol)
+            stop_price, _, previous_candle = ind.get_stop_range(symbol)
+            
             # and previous_candle == "L"
             if previous_candle:
                 magic_number = 1 if previous_candle == "L" else 2
-                stop_price = self.round_price_value(symbol, previous_bar_high)
+                stop_price = self._round(symbol, stop_price)
 
                 if stop_price > entry_price:
-                    try:            
-                        print(f"{symbol}: SHORT")        
-                        points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                    try:
+                        print(f"{''.ljust(12)}: SHORT")      
+                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
-                        # Re evaluate the stop distance
-                        # stop_price = self.round_price_value(symbol, stop_price-points_in_stop)
                         lots =  round(lots, 2)
 
                         order_request = {
@@ -151,7 +125,7 @@ class AlgoTrader():
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
                             "sl": stop_price,
-                            "tp": self.round_price_value(symbol, entry_price - points_in_stop),
+                            "tp": self._round(symbol, entry_price - points_in_stop),
                             "comment": comment,
                             "magic":magic_number,
                             "type_time": mt.ORDER_TIME_GTC,
@@ -168,7 +142,7 @@ class AlgoTrader():
                 return False
     
     def main(self):
-        selected_symbols = list(set(self.currencies + self.indexes))
+        selected_symbols = list(set(curr.currencies + curr.indexes))
         
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
@@ -197,13 +171,13 @@ class AlgoTrader():
                 mp.breakeven_1R_positions()
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                paralle_trades = mp.get_parallel_position_recommendation()
+                paralle_trades = mp.num_of_parallel_tickers()
                 print(f"Current Positions: {existing_positions},  PARALLEL: {paralle_trades}")
                 
                 _, current_hour, _ = util.get_gmt_time()
                 
                 if len(existing_positions) < paralle_trades:
-                    selected_strategy = mp.strategy_selector()
+                    selected_strategy = mp.get_recommended_strategy()
                     print(f"STRATEGY: {selected_strategy.upper()}")
                     
                     for symbol in selected_symbols:
@@ -247,7 +221,16 @@ class AlgoTrader():
 if __name__ == "__main__":
     win = AlgoTrader()
     win.main()
-    # symbol = "AUDJPY"
+    
+    
+    """
+    ENTRY PRICE TEST
+    """
+    # for i in (curr.currencies + curr.indexes):
+    #     entry_price = win.get_entry_price(symbol=i)
+    #     print(f"{i}: {entry_price}")
+        
+        
     # win.long_trial_entry(symbol=symbol)
     # win.long_real_entry(symbol=symbol)
     # win.short_trial_entry(symbol=symbol)
