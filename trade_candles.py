@@ -28,6 +28,7 @@ class AlgoTrader():
         self.tag_trial = "trial_entry"
         self.tag_real = "real_entry"
         self.r_r = 2
+        self.num_of_parallel_trades = 1
     
     def get_exchange_price(self, exchange):
         ask_price = mt.symbol_info_tick(exchange).ask
@@ -123,7 +124,7 @@ class AlgoTrader():
                     except Exception as e:
                         print(f"Long entry exception: {e}")
             else:
-                print(f"{symbol} ignored!")
+                print(f"{''.ljust(12)}: Skipped!")
                 return False
 
     def short_real_entry(self, symbol, comment="NA"):
@@ -163,7 +164,7 @@ class AlgoTrader():
                     except Exception as e:
                         print(e)
             else:
-                print(f"{symbol} ignored!")
+                print(f"{''.ljust(12)}: Skipped!")
                 return False
     
     def main(self):
@@ -188,32 +189,25 @@ class AlgoTrader():
             if is_market_open and not is_market_close:
                     
                 # If closed positions profit is more than 2% then exit the app. Done for today!
-                if util.get_today_profit() > self.account_2_percent:
-                    sys.exit()                
+                # if util.get_today_profit() > self.account_2_percent:
+                #     sys.exit()                
 
                 # mp.exist_on_initial_plan_changed()
                 mp.cancel_all_pending_orders()
                 
-                """
-                Check all the existing positions
-                1. Case 1: Only initial trial trade exist
-                2. Case 2: Only real trade exist
-                3. Case 3: Both trail and real trade exist
-                Exist considered as symbols which are not exist in trail or real (any)
-                """
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 print(f"Current Positions: {existing_positions}")
                 
                 _, current_hour, _ = util.get_gmt_time()
                 # Only take 4 trades at a time. So we can track the performance of the startegy
-                if len(existing_positions) < 4:
+                if len(existing_positions) < self.num_of_parallel_trades:
                     selected_strategy = mp.strategy_selector()
-                    print(selected_strategy)
+                    print(f"STRATEGY: {selected_strategy.upper()}")
                     
                     for symbol in selected_symbols:
                         # This helps to manage one order at a time rather sending bulk order to server
                         active_orders = len(mt.orders_get())
-                        if symbol not in (existing_positions):
+                        if symbol not in existing_positions:
                             # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
                             if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
                                 continue
@@ -221,29 +215,30 @@ class AlgoTrader():
                             try:
                                 signal = ind.get_candle_signal(symbol)
                                 
+                                # Only enter 1 order at a time along with the signal
                                 if signal and active_orders < 1:
                                     if selected_strategy == "reverse":                                    
                                         if signal == "L":
-                                            success = self.short_real_entry(symbol=symbol, comment="reverse")
-                                            if success:
+                                            if self.short_real_entry(symbol=symbol, comment="reverse"):
+                                                # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            succes = self.long_real_entry(symbol=symbol, comment="reverse")
-                                            if succes:
+                                            if self.long_real_entry(symbol=symbol, comment="reverse"):
+                                                # Make sure we make only 1 trade at a time
                                                 break
                                     elif selected_strategy == "trend":  
                                         if signal == "L":
-                                            succes = self.long_real_entry(symbol=symbol, comment="trend")
-                                            if success:
+                                            if self.long_real_entry(symbol=symbol, comment="trend"):
+                                                # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            success = self.short_real_entry(symbol=symbol, comment="trend")
-                                            if succes:
+                                            if self.short_real_entry(symbol=symbol, comment="trend"):
+                                                # Make sure we make only 1 trade at a time
                                                 break
                                     else:
                                         print("No confirmation from trend!")
                             except Exception as e:
-                                print(f"{symbol} Error: {e}")
+                                print(f"{symbol.ljust(12)} Error: {e}")
             
             time.sleep(30)
     
