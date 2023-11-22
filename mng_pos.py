@@ -83,17 +83,23 @@ def stop_round(symbol, stop_price):
         return round(stop_price, 2)
 
 
-def get_order_history():
+def strategy_selector():
     tm_zone = pytz.timezone('Etc/GMT-2')
     start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=4)
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
-    order_history = [i for i in mt5.history_deals_get(start_time,  end_time) if i.profit != 0]
-    check_negative_profit = [i.profit < 0 for i in order_history][-2:]
-    last_held_positions = [i.symbol for i in order_history][-2:]
-    # If we have continues loss then, return the held positions
-    if all(check_negative_profit):
-        return last_held_positions
-    return None
+    
+    # Get the last exit trade, Which will not have the "comment". So we need to find the entry for this one
+    exit_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1][-1]
+    entry_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==0 and i.position_id == exit_object.position_id][-1]
+    
+    previous_strategy = entry_object.comment
+    previous_profit = exit_object.profit
+    
+    if previous_strategy != "":
+        if previous_profit > 0:
+            return "previous_strategy"
+        elif previous_profit < 0:
+            return "trend" if previous_strategy == "reverse" else "reverse"
 
 
 def get_symbol_entry_price(symbol):
@@ -276,4 +282,4 @@ def exist_on_initial_plan_changed():
 # breakeven_1R_positions()
 # print(get_dollar_value("GBPJPY"))
 # print(get_exchange_price("NZDUSD"))
-print(get_order_history())
+print(strategy_selector())

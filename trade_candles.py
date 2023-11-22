@@ -57,7 +57,7 @@ class AlgoTrader():
     
     def calculate_lots(self, symbol, entry_price, stop_price):        
         dollor_value = mp.get_dollar_value(symbol)
-        points_in_stop = abs(entry_price-stop_price)
+        points_in_stop = abs(entry_price-stop_price)/2
         lots = self.risk/(points_in_stop * dollor_value)
         
         if symbol in self.currencies:
@@ -84,14 +84,11 @@ class AlgoTrader():
         else:
             return round(stop_price, 2)
     
-    def long_real_entry(self, symbol, distance=None):
+    def long_real_entry(self, symbol, comment="NA"):
         entry_price = self.get_mid_price(symbol=symbol)
 
         if entry_price:
-            if distance:
-                previous_bar_low = entry_price - distance
-            else:
-                _, previous_bar_low, previous_candle = ind.get_stop_range(symbol)
+            _, previous_bar_low, previous_candle = ind.get_stop_range(symbol)
             
             # The idea is reverse and quick profit!
             if previous_candle and previous_candle == "S":
@@ -102,37 +99,38 @@ class AlgoTrader():
                         print(f"{symbol}: LONG")        
                         points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
-                        lots =  round(lots/self.r_r, 2)
+                        lots =  round(lots, 2)
                         
-                        for r_r in [0.5, 0.5]:
-                            order_request = {
-                                "action": mt.TRADE_ACTION_PENDING,
-                                "symbol": symbol,
-                                "volume": lots,
-                                "type": mt.ORDER_TYPE_BUY_LIMIT,
-                                "price": entry_price,
-                                "sl": stop_price,
-                                "tp": self.round_price_value(symbol, entry_price + r_r * points_in_stop),
-                                "comment": self.tag_real,
-                                "type_time": mt.ORDER_TIME_GTC,
-                                "type_filling": mt.ORDER_FILLING_RETURN,
-                            }
-                            
-                            request_log = mt.order_send(order_request)
-                            self.print_order_log(request_log, order_request)
+                        # Re evaluate the stop distance
+                        stop_price = self.round_price_value(symbol, stop_price + points_in_stop)
+                        
+                        order_request = {
+                            "action": mt.TRADE_ACTION_PENDING,
+                            "symbol": symbol,
+                            "volume": lots,
+                            "type": mt.ORDER_TYPE_BUY_LIMIT,
+                            "price": entry_price,
+                            "sl": stop_price,
+                            "tp": self.round_price_value(symbol, entry_price + points_in_stop),
+                            "comment": comment,
+                            "type_time": mt.ORDER_TIME_GTC,
+                            "type_filling": mt.ORDER_FILLING_RETURN,
+                        }
+                        
+                        request_log = mt.order_send(order_request)
+                        self.print_order_log(request_log, order_request)
+                        return True
                     except Exception as e:
                         print(f"Long entry exception: {e}")
             else:
                 print(f"{symbol} ignored!")
+                return False
 
-    def short_real_entry(self, symbol, distance=None):
+    def short_real_entry(self, symbol, comment="NA"):
         entry_price = self.get_mid_price(symbol)
         
         if entry_price:
-            if distance:
-                previous_bar_high = entry_price + distance
-            else:
-                previous_bar_high, _, previous_candle = ind.get_stop_range(symbol)
+            previous_bar_high, _, previous_candle = ind.get_stop_range(symbol)
             
             if previous_candle and previous_candle == "L":
                 stop_price = self.round_price_value(symbol, previous_bar_high)
@@ -141,29 +139,32 @@ class AlgoTrader():
                     try:            
                         print(f"{symbol}: SHORT")        
                         points_in_stop, lots = self.calculate_lots(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                        
+                        # Re evaluate the stop distance
+                        stop_price = self.round_price_value(symbol, stop_price-points_in_stop)
+                        lots =  round(lots, 2)
 
-                        lots =  round(lots/self.r_r, 2)
-
-                        for r_r in [0.5, 0.5]:
-                            order_request = {
-                                "action": mt.TRADE_ACTION_PENDING,
-                                "symbol": symbol,
-                                "volume": lots,
-                                "type": mt.ORDER_TYPE_SELL_LIMIT,
-                                "price": entry_price,
-                                "sl": stop_price,
-                                "tp": self.round_price_value(symbol, entry_price - r_r * points_in_stop),
-                                "comment": self.tag_real,
-                                "type_time": mt.ORDER_TIME_GTC,
-                                "type_filling": mt.ORDER_FILLING_RETURN,
-                            }
-                            
-                            request_log = mt.order_send(order_request)
-                            self.print_order_log(request_log, order_request)
+                        order_request = {
+                            "action": mt.TRADE_ACTION_PENDING,
+                            "symbol": symbol,
+                            "volume": lots,
+                            "type": mt.ORDER_TYPE_SELL_LIMIT,
+                            "price": entry_price,
+                            "sl": stop_price,
+                            "tp": self.round_price_value(symbol, entry_price - points_in_stop),
+                            "comment": comment,
+                            "type_time": mt.ORDER_TIME_GTC,
+                            "type_filling": mt.ORDER_FILLING_RETURN,
+                        }
+                        
+                        request_log = mt.order_send(order_request)
+                        self.print_order_log(request_log, order_request)
+                        return True
                     except Exception as e:
                         print(e)
             else:
                 print(f"{symbol} ignored!")
+                return False
     
     def main(self):
         selected_symbols = list(set(self.currencies + self.indexes))
@@ -201,28 +202,50 @@ class AlgoTrader():
                 Exist considered as symbols which are not exist in trail or real (any)
                 """
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+                print(f"Current Positions: {existing_positions}")
                 
                 _, current_hour, _ = util.get_gmt_time()
-                
-                for symbol in selected_symbols:
-                    if symbol not in (existing_positions):
-                
-                        # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
-                        if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
-                            continue
-                        
-                        try:
-                            signal = ind.get_candle_signal(symbol)
+                # Only take 4 trades at a time. So we can track the performance of the startegy
+                if len(existing_positions) < 4:
+                    selected_strategy = mp.strategy_selector()
+                    print(selected_strategy)
+                    
+                    for symbol in selected_symbols:
+                        # This helps to manage one order at a time rather sending bulk order to server
+                        active_orders = len(mt.orders_get())
+                        if symbol not in (existing_positions):
+                            # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
+                            if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
+                                continue
                             
-                            if signal:
-                                if signal == "L":
-                                    self.short_real_entry(symbol=symbol)
-                                elif signal == "S":
-                                    self.long_real_entry(symbol=symbol)
-                        except Exception as e:
-                            print(f"{symbol} Error: {e}")
+                            try:
+                                signal = ind.get_candle_signal(symbol)
+                                
+                                if signal and active_orders < 1:
+                                    if selected_strategy == "reverse":                                    
+                                        if signal == "L":
+                                            success = self.short_real_entry(symbol=symbol, comment="reverse")
+                                            if success:
+                                                break 
+                                        elif signal == "S":
+                                            succes = self.long_real_entry(symbol=symbol, comment="reverse")
+                                            if succes:
+                                                break
+                                    elif selected_strategy == "trend":  
+                                        if signal == "L":
+                                            succes = self.long_real_entry(symbol=symbol, comment="trend")
+                                            if success:
+                                                break 
+                                        elif signal == "S":
+                                            success = self.short_real_entry(symbol=symbol, comment="trend")
+                                            if succes:
+                                                break
+                                    else:
+                                        print("No confirmation from trend!")
+                            except Exception as e:
+                                print(f"{symbol} Error: {e}")
             
-            time.sleep(1*60)
+            time.sleep(30)
     
 if __name__ == "__main__":
     win = AlgoTrader()
