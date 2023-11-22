@@ -1,1 +1,1 @@
-risk_percentage_real = 0.25 # Value in %
+risk_percentage_real = 0.15 # Value in %
