@@ -4,6 +4,7 @@ import indicators as ind
 import util as util
 import currency_pairs as curr
 import sys
+import risk_manager
 
 from datetime import datetime, timedelta
 import config
@@ -19,11 +20,12 @@ class AlgoTrader():
 
         # Value in USD
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
-        self.risk = ACCOUNT_SIZE/100*config.risk_percentage # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.trading_timeframe = 15 # Default to 15 min
         self.target_ratio = 1 # Default 1:1 Ratio
+        self.risk_manager = risk_manager.RiskManager()
+        self.updated_risk = "Initial Risk"
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -43,7 +45,8 @@ class AlgoTrader():
     def get_lot_size(self, symbol, entry_price, stop_price):        
         dollor_value = mp.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price)
-        lots = self.risk/(points_in_stop * dollor_value)
+        self.updated_risk = self.risk_manager.update_risk()
+        lots = self.updated_risk/(points_in_stop * dollor_value)
         
         if symbol in curr.currencies:
             points_in_stop = round(points_in_stop, 5)
@@ -148,6 +151,7 @@ class AlgoTrader():
         
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
+            print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
             
             is_market_open, is_market_close = util.get_market_status()            
             
@@ -174,13 +178,13 @@ class AlgoTrader():
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 paralle_trades = mp.num_of_parallel_tickers()
-                print(f"Current Positions: {existing_positions},  PARALLEL: {paralle_trades}")
+                print(f"{'Available Slots'.ljust(20)}: {paralle_trades - len(existing_positions)}")
                 
                 _, current_hour, _ = util.get_gmt_time()
                 
                 if len(existing_positions) < paralle_trades:
                     selected_strategy = mp.get_recommended_strategy()
-                    print(f"STRATEGY: {selected_strategy.upper()}")
+                    print(f"{'Strategy '.ljust(20)}: {selected_strategy.upper()}")
                     
                     for symbol in selected_symbols:
                         # This helps to manage one order at a time rather sending bulk order to server
