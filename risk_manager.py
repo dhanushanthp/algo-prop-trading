@@ -13,6 +13,11 @@ class RiskManager:
         self.updated_risk = self.initial_risk
         self.previous_time = None
     
+    def reset_risk(self):
+        print("-------Reset to initial risk!-----")
+        ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
+        self.updated_risk = ACCOUNT_SIZE/100*config.risk_percentage
+    
     def update_risk(self):
         tm_zone = pytz.timezone('Etc/GMT-2')
         start_time = datetime.datetime.combine(datetime.datetime.now(tm_zone).date(), datetime.time()).replace(tzinfo=tm_zone)
@@ -23,11 +28,11 @@ class RiskManager:
             last_traded_time = last_traded_obj.time
             
             if self.previous_time is None:
-                print("-------Set to Inital Risk!-----")
+                print("-------Set to inital Risk!-----")
                 self.previous_time = last_traded_time
                 
             if last_traded_time > self.previous_time:
-                print("-------Risk Updated!-----")
+                print("-------Risk updated!-----")
                 # Set the last traded time as previous traded time
                 self.previous_time = last_traded_time
             
@@ -35,13 +40,17 @@ class RiskManager:
                 
                 ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
                 risk_delta = ACCOUNT_SIZE/100*0.10 # Increase/Decrease by 0.1 Percentage
-                 
+                
+                max_risk = ACCOUNT_SIZE/100*1 # Max 1% of risk at anytime.
+                
                 if last_profit_loss > 0:
                     # Increase the risk
                     self.updated_risk += risk_delta
+                    self.updated_risk = min(max_risk, self.updated_risk)
                 else:
                     # Decrease the risk
                     self.updated_risk -= risk_delta
+                    self.updated_risk = max(self.initial_risk, self.updated_risk)
             
             return round(self.updated_risk, 2)
             

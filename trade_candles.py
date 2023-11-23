@@ -164,6 +164,8 @@ class AlgoTrader():
 
             if is_market_close:
                 print("Market Close!")
+                # Reset the risk for the day
+                self.risk_manager.reset_risk()
                 mp.close_all_positions()
             
             if is_market_open and not is_market_close:
@@ -195,7 +197,7 @@ class AlgoTrader():
                                 continue
                             
                             try:
-                                signal = ind.get_candle_signal(symbol)
+                                signal = ind.get_candle_signal(symbol, verb=False)
                                 
                                 # Only enter 1 order at a time along with the signal
                                 if signal and active_orders < 1:
