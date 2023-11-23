@@ -99,10 +99,12 @@ def num_of_parallel_tickers():
             else:
                 break
         
+        if count_wins < 4:
+            return 4
         return count_wins
     else:
         # Default is one trade, To take more the algo should earn by winning more
-        return 1
+        return 4
         
 
 def get_recommended_strategy():

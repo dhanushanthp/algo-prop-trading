@@ -65,8 +65,7 @@ class AlgoTrader():
         if entry_price:
             _, stop_price, prev_can_dir = ind.get_stop_range(symbol)
             
-            #  and previous_candle == "S"
-            if prev_can_dir:
+            if prev_can_dir and prev_can_dir == "S":
                 magic_number = 1 if prev_can_dir == "L" else 2
                 stop_price = self._round(symbol, stop_price)
                 
@@ -106,8 +105,8 @@ class AlgoTrader():
         if entry_price:
             stop_price, _, previous_candle = ind.get_stop_range(symbol)
             
-            # and previous_candle == "L"
-            if previous_candle:
+            
+            if previous_candle and previous_candle == "L":
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self._round(symbol, stop_price)
 

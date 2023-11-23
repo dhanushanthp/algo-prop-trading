@@ -42,8 +42,8 @@ def get_ordered_symbols():
     return sorted_list
 
 def previous_candle_move(symbol):
-    h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M30, 1, 1)[0]
-    h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M30, 0, 1)[0]
+    h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M15, 1, 1)[0]
+    h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M15, 0, 1)[0]
     spread = get_spread(symbol)
     
     # Previous bar high/low
