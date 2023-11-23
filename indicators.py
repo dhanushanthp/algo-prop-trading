@@ -41,9 +41,21 @@ def get_ordered_symbols():
     
     return sorted_list
 
-def previous_candle_move(symbol):
-    h1_1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M15, 1, 1)[0]
-    h1_0 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M15, 0, 1)[0]
+def previous_candle_move(symbol, timeframe):
+    
+    if timeframe == 15:
+        selected_time = mt5.TIMEFRAME_M15
+    if timeframe == 30:
+        selected_time = mt5.TIMEFRAME_M30
+    elif timeframe == 1:
+        selected_time = mt5.TIMEFRAME_H1
+    elif timeframe == 2:
+        selected_time = mt5.TIMEFRAME_H2
+    else:
+        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+    
+    h1_1 = mt5.copy_rates_from_pos(symbol, selected_time, 1, 1)[0]
+    h1_0 = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
     spread = get_spread(symbol)
     
     # Previous bar high/low
@@ -87,8 +99,8 @@ def previous_candle_move(symbol):
     
     return high, low, previous_candle
 
-def get_stop_range(symbol):
-    high, low, previous_candle = previous_candle_move(symbol)
+def get_stop_range(symbol, timeframe):
+    high, low, previous_candle = previous_candle_move(symbol, timeframe)
     return high, low, previous_candle
 
 def get_atr(symbol):

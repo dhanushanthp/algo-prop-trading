@@ -91,7 +91,7 @@ def num_of_parallel_tickers():
     traded_win_loss.reverse()
     
     # If last trade is win
-    if len(traded_win_loss) > 0:
+    if len(traded_win_loss) > 1:
         count_wins = 1
         for i in range(len(traded_win_loss)):
             if traded_win_loss[i] == traded_win_loss[i+1]:

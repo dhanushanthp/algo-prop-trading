@@ -22,6 +22,8 @@ class AlgoTrader():
         self.risk = ACCOUNT_SIZE/100*config.risk_percentage # Risk only 0.25%
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
+        self.trading_timeframe = 15 # Default to 15 min
+        self.target_ratio = 1 # Default 1:1 Ratio
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -63,9 +65,10 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, stop_price, prev_can_dir = ind.get_stop_range(symbol)
+            _, stop_price, prev_can_dir = ind.get_stop_range(symbol, self.trading_timeframe)
             
-            if prev_can_dir and prev_can_dir == "S":
+            # and prev_can_dir == "S"
+            if prev_can_dir:
                 magic_number = 1 if prev_can_dir == "L" else 2
                 stop_price = self._round(symbol, stop_price)
                 
@@ -83,7 +86,7 @@ class AlgoTrader():
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
                             "sl": stop_price,
-                            "tp": self._round(symbol, entry_price + points_in_stop),
+                            "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
                             "comment": comment,
                             "magic":magic_number,
                             "type_time": mt.ORDER_TIME_GTC,
@@ -103,10 +106,10 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, previous_candle = ind.get_stop_range(symbol)
+            stop_price, _, previous_candle = ind.get_stop_range(symbol, self.trading_timeframe)
             
-            
-            if previous_candle and previous_candle == "L":
+            # and previous_candle == "L"
+            if previous_candle :
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self._round(symbol, stop_price)
 
@@ -219,6 +222,12 @@ class AlgoTrader():
     
 if __name__ == "__main__":
     win = AlgoTrader()
+    
+    if len(sys.argv) > 1:
+        win.trading_timeframe = sys.argv[1]
+        win.target_ratio = sys.argv[2]
+    
+    print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : 1: {win.target_ratio}")
     win.main()
     
     
