@@ -34,14 +34,14 @@ class RiskManager:
                 last_profit_loss = last_traded_obj.profit
                 
                 ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
-                risk_delta = ACCOUNT_SIZE/100*0.05 # Increase/Decrease by 0.5 Percentage
+                risk_delta = ACCOUNT_SIZE/100*0.10 # Increase/Decrease by 0.1 Percentage
                  
                 if last_profit_loss > 0:
                     # Increase the risk
-                    self.updated_risk = self.updated_risk + risk_delta
+                    self.updated_risk += risk_delta
                 else:
                     # Decrease the risk
-                    self.updated_risk = self.updated_risk - risk_delta
+                    self.updated_risk -= risk_delta
             
             return round(self.updated_risk, 2)
             
