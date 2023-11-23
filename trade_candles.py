@@ -127,7 +127,7 @@ class AlgoTrader():
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
                             "sl": stop_price,
-                            "tp": self._round(symbol, entry_price - points_in_stop),
+                            "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
                             "comment": comment,
                             "magic":magic_number,
                             "type_time": mt.ORDER_TIME_GTC,
