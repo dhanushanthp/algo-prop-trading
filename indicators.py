@@ -42,10 +42,9 @@ def get_ordered_symbols():
     return sorted_list
 
 def previous_candle_move(symbol, timeframe):
-    
     if timeframe == 15:
         selected_time = mt5.TIMEFRAME_M15
-    if timeframe == 30:
+    elif timeframe == 30:
         selected_time = mt5.TIMEFRAME_M30
     elif timeframe == 1:
         selected_time = mt5.TIMEFRAME_H1

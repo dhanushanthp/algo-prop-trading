@@ -224,10 +224,12 @@ if __name__ == "__main__":
     win = AlgoTrader()
     
     if len(sys.argv) > 1:
-        win.trading_timeframe = sys.argv[1]
-        win.target_ratio = sys.argv[2]
+        win.trading_timeframe = int(sys.argv[1])
+        win.target_ratio = float(sys.argv[2])
     
-    print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : 1: {win.target_ratio}")
+    print("\n------------------------------------------------")
+    print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : 1:{win.target_ratio}")
+    print("------------------------------------------------")
     win.main()
     
     
