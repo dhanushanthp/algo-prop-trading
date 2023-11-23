@@ -87,14 +87,14 @@ def num_of_parallel_tickers():
     tm_zone = pytz.timezone('Etc/GMT-2')
     start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone)
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
-    win_positions = [i.profit > 0 for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1][-10:]
-    win_positions.reverse()
+    traded_win_loss = [i.profit > 0 for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1][-10:]
+    traded_win_loss.reverse()
     
     # If last trade is win
-    if win_positions[0]:
+    if len(traded_win_loss) > 0:
         count_wins = 1
-        for i in range(len(win_positions)):
-            if win_positions[i] == win_positions[i+1]:
+        for i in range(len(traded_win_loss)):
+            if traded_win_loss[i] == traded_win_loss[i+1]:
                 count_wins += 1
             else:
                 break
@@ -113,17 +113,23 @@ def get_recommended_strategy():
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
     
     # Get the last exit trade, Which will not have the "comment". So we need to find the entry for this one
-    exit_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1][-1]
-    entry_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==0 and i.position_id == exit_object.position_id][-1]
+    exit_objects = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1]
     
-    previous_strategy = entry_object.comment
-    previous_profit = exit_object.profit
-    
-    if previous_strategy != "":
-        if previous_profit > 0:
-            return config.TREND if previous_strategy == config.TREND else config.REVERSAL
-        elif previous_profit < 0:
-            return config.TREND if previous_strategy == config.REVERSAL else config.REVERSAL
+    # If it's a fresh then there won't be any existing orders. So we set default to reverse starategy
+    if len(exit_objects) > 0:
+        exit_object = exit_objects[-1]
+        entry_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==0 and i.position_id == exit_object.position_id][-1]
+        
+        previous_strategy = entry_object.comment
+        previous_profit = exit_object.profit
+        
+        if previous_strategy != "":
+            if previous_profit > 0:
+                return config.TREND if previous_strategy == config.TREND else config.REVERSAL
+            elif previous_profit < 0:
+                return config.TREND if previous_strategy == config.REVERSAL else config.REVERSAL
+    else:
+        return config.REVERSAL
 
 
 def get_symbol_entry_price(symbol):
