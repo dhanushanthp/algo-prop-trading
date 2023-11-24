@@ -130,25 +130,25 @@ def get_candle_signal(symbol, verb=True):
     
     # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
     h4 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H4, 0, 1)[0]
-    h4_sig=  "L" if h4['close'] - h4['open'] > 2 * get_spread(symbol) else "S" if abs(h4['open'] - h4['close']) > 2 * get_spread(symbol) else "X"
+    h4_sig=  "L" if h4['close'] - h4['open'] > 3 * get_spread(symbol) else "S" if abs(h4['open'] - h4['close']) > 3 * get_spread(symbol) else "X"
     h4_body = abs(h4['open'] - h4['close'])
     h4_wick = abs(h4['high'] - h4['low']) - h4_body
     h4_strong_candle = h4_wick < h4_body # Body should be double the length than the wicks
 
     h2 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H2, 0, 1)[0]
-    h2_sig=  "L" if h2['close'] - h2['open'] > 2 * get_spread(symbol) else "S" if abs(h2['open'] - h2['close']) > 2 * get_spread(symbol) else "X"
+    h2_sig=  "L" if h2['close'] - h2['open'] > 3 * get_spread(symbol) else "S" if abs(h2['open'] - h2['close']) > 3 * get_spread(symbol) else "X"
     h2_body = abs(h2['open'] - h2['close'])
     h2_wick = abs(h2['high'] - h2['low']) - h2_body
     h2_strong_candle = h2_wick < h2_body # Body should be double the length than the wicks
 
     h1 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 0, 1)[0]
-    h1_sig=  "L" if h1['close'] - h1['open'] > 2 * get_spread(symbol) else "S" if abs(h1['open'] - h1['close']) > 2 * get_spread(symbol) else "X"
+    h1_sig=  "L" if h1['close'] - h1['open'] > 3 * get_spread(symbol) else "S" if abs(h1['open'] - h1['close']) > 3 * get_spread(symbol) else "X"
     h1_body = abs(h1['open'] - h1['close'])
     h1_wick = abs(h1['high'] - h1['low']) - h1_body
     h1_strong_candle = h1_wick < h1_body # Body should be double the length than the wicks
     
     m30 = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M30, 0, 1)[0]
-    m30_sig=  "L" if m30['close'] - m30['open'] > 2 * get_spread(symbol) else "S" if abs(m30['open'] - m30['close']) > 2 * get_spread(symbol) else "X"
+    m30_sig=  "L" if m30['close'] - m30['open'] > 3 * get_spread(symbol) else "S" if abs(m30['open'] - m30['close']) > 3 * get_spread(symbol) else "X"
     m30_body = abs(m30['open'] - m30['close'])
     m30_wick = abs(m30['high'] - m30['low']) - m30_body
     m30_strong_candle = m30_wick < m30_body # Body should be double the length than the wicks
