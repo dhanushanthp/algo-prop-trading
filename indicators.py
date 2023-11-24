@@ -61,6 +61,7 @@ def previous_candle_move(symbol, timeframe):
 
     spread = get_spread(symbol)
 
+    # We should implment this logics here, since we are trading based on the selected timeframe
     previous_candle_signal = None
     """
     1. Previous candle should atleaat 3 times more than the spread (Avoid ranging behaviour)

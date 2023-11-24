@@ -23,9 +23,10 @@ class AlgoTrader():
         self.account_1_percent = ACCOUNT_SIZE * 1/100
         self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.trading_timeframe = 15 # Default to 15 min
-        self.target_ratio = 1 # Default 1:1 Ratio
+        self.target_ratio = 0.5 # Default 1:0.5 Ratio
         self.risk_manager = risk_manager.RiskManager()
         self.updated_risk = "Initial Risk"
+        self.strategy = config.REVERSAL
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -68,7 +69,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, stop_price, prev_can_dir,strong_current_candle = ind.get_stop_range(symbol, self.trading_timeframe)
+            _, stop_price, prev_can_dir = ind.get_stop_range(symbol, self.trading_timeframe)
             
             # and prev_can_dir == "S"
             if prev_can_dir:
@@ -109,10 +110,10 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, previous_candle,strong_current_candle = ind.get_stop_range(symbol, self.trading_timeframe)
+            stop_price, _, previous_candle = ind.get_stop_range(symbol, self.trading_timeframe)
             
             # and previous_candle == "L"
-            if previous_candle :
+            if previous_candle:
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self._round(symbol, stop_price)
 
@@ -185,8 +186,8 @@ class AlgoTrader():
                 _, current_hour, _ = util.get_gmt_time()
                 
                 if len(existing_positions) < paralle_trades:
-                    selected_strategy = mp.get_recommended_strategy()
-                    print(f"{'Strategy '.ljust(20)}: {selected_strategy.upper()}")
+                    # self.strategy = mp.get_recommended_strategy()
+                    print(f"{'Strategy '.ljust(20)}: {self.strategy.upper()}")
                     
                     for symbol in selected_symbols:
                         # This helps to manage one order at a time rather sending bulk order to server
@@ -201,22 +202,22 @@ class AlgoTrader():
                                 
                                 # Only enter 1 order at a time along with the signal
                                 if signal and active_orders < 1:
-                                    if selected_strategy == config.REVERSAL:                                    
+                                    if self.strategy == config.REVERSAL:                                    
                                         if signal == "L":
-                                            if self.short_real_entry(symbol=symbol, comment=selected_strategy):
+                                            if self.short_real_entry(symbol=symbol, comment=self.strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.long_real_entry(symbol=symbol, comment=selected_strategy):
+                                            if self.long_real_entry(symbol=symbol, comment=self.strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break
-                                    elif selected_strategy == config.TREND:  
+                                    elif self.strategy == config.TREND:  
                                         if signal == "L":
-                                            if self.long_real_entry(symbol=symbol, comment=selected_strategy):
+                                            if self.long_real_entry(symbol=symbol, comment=self.strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.short_real_entry(symbol=symbol, comment=selected_strategy):
+                                            if self.short_real_entry(symbol=symbol, comment=self.strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break
                                     else:
@@ -232,9 +233,13 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         win.trading_timeframe = int(sys.argv[1])
         win.target_ratio = float(sys.argv[2])
+        if sys.argv[3] == "reversal":
+            win.strategy = config.REVERSAL
+        else:
+            win.strategy = config.TREND
     
     print("\n------------------------------------------------")
-    print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : 1:{win.target_ratio}")
+    print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : 1:{win.target_ratio} & Strategy: {win.strategy}" )
     print("------------------------------------------------")
     win.main()
     
