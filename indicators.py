@@ -53,48 +53,35 @@ def previous_candle_move(symbol, timeframe):
     else:
         raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
     
-    h1_1 = mt5.copy_rates_from_pos(symbol, selected_time, 1, 1)[0]
-    h1_0 = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
+    previous_candle = mt5.copy_rates_from_pos(symbol, selected_time, 1, 1)[0]
+    current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
+
+    current_candle_body = abs(current_candle["close"] - current_candle["open"])
+    previous_candle_body = abs(previous_candle["close"] - previous_candle["open"])
+
     spread = get_spread(symbol)
+
+    previous_candle_signal = None
+    """
+    1. Previous candle should atleaat 3 times more than the spread (Avoid ranging behaviour)
+        1.1 The 3 time spread for a valid current candle has been added in signal idenfication.
+    2. Current candle body should be larger than the previous candle body to be valid entry
+    """
+    if (previous_candle_body > 3 * spread) and (current_candle_body > previous_candle_body):
+        if previous_candle["close"] > previous_candle["open"]:
+            previous_candle_signal = "L"
+        else:
+            previous_candle_signal = "S"
     
     # Previous bar high/low
-    previous_high = h1_1["high"]
-    previous_low = h1_1["low"]
+    previous_high = previous_candle["high"]
+    previous_low = previous_candle["low"]
+
+    if current_candle["high"] > previous_high:
+        previous_high = current_candle["high"]
     
-    previous_close = h1_1["close"]
-    previous_open = h1_1["open"]
-
-    current_close = h1_1["close"]
-    current_open = h1_1["open"]
-
-    current_candle_length = abs(current_close - current_open)
-    previous_candle_length = abs(previous_close - previous_open)
-
-    previous_candle_total_length = abs(previous_high-previous_low)
-    total_wick_size = previous_candle_total_length - previous_candle_length
-
-    strong_current_candle = False
-    # Current candle body should be higher than previous candle
-    # Previous candle should have stronger body w.r.t to the wick.
-    if (current_candle_length > previous_candle_length) and (previous_candle_length > total_wick_size):
-        strong_current_candle = True
-
-    previous_candle = None
-    if (previous_candle_length > total_wick_size):
-        if previous_close > previous_open:
-            previous_candle = "L"
-        else:
-            previous_candle = "S"
-    
-    # Some cases current bar low could be lower than the previous hour bar and current bar high higher than previous high
-    high_0 = h1_0["high"]
-    low_0 = h1_0["low"]
-    
-    if high_0 > previous_high:
-        previous_high = high_0
-    
-    if low_0 < previous_low:
-        previous_low = low_0
+    if current_candle["low"] < previous_low:
+        previous_low = current_candle["low"]
     
     previous_high = previous_high + 3 * spread
     previous_low = previous_low - 3 * spread
@@ -111,7 +98,7 @@ def previous_candle_move(symbol, timeframe):
     if distance_from_low > distance_from_high:
         previous_high = mid_price + distance_from_low
     
-    return previous_high, previous_low, previous_candle, strong_current_candle
+    return previous_high, previous_low, previous_candle_signal
 
 def get_stop_range(symbol, timeframe):
     high, low, previous_candle, strong_current_candle = previous_candle_move(symbol, timeframe)
