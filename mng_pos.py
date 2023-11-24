@@ -94,7 +94,7 @@ def num_of_parallel_tickers():
     if len(traded_win_loss) > 1:
         count_wins = 1
         for i in range(len(traded_win_loss) - 1):
-            if traded_win_loss[i] == traded_win_loss[i+1]:
+            if (traded_win_loss[i] == traded_win_loss[i+1]) and traded_win_loss[i]:
                 count_wins += 1
             else:
                 break
