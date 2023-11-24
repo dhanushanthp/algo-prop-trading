@@ -68,10 +68,10 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, stop_price, prev_can_dir = ind.get_stop_range(symbol, self.trading_timeframe)
+            _, stop_price, prev_can_dir,strong_current_candle = ind.get_stop_range(symbol, self.trading_timeframe)
             
             # and prev_can_dir == "S"
-            if prev_can_dir:
+            if prev_can_dir and strong_current_candle:
                 magic_number = 1 if prev_can_dir == "L" else 2
                 stop_price = self._round(symbol, stop_price)
                 
@@ -109,10 +109,10 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, previous_candle = ind.get_stop_range(symbol, self.trading_timeframe)
+            stop_price, _, previous_candle,strong_current_candle = ind.get_stop_range(symbol, self.trading_timeframe)
             
             # and previous_candle == "L"
-            if previous_candle :
+            if previous_candle and strong_current_candle:
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self._round(symbol, stop_price)
 
@@ -185,7 +185,8 @@ class AlgoTrader():
                 _, current_hour, _ = util.get_gmt_time()
                 
                 if len(existing_positions) < paralle_trades:
-                    selected_strategy = mp.get_recommended_strategy()
+                    # always reversal
+                    selected_strategy = config.REVERSAL # mp.get_recommended_strategy()
                     print(f"{'Strategy '.ljust(20)}: {selected_strategy.upper()}")
                     
                     for symbol in selected_symbols:
@@ -203,20 +204,20 @@ class AlgoTrader():
                                 if signal and active_orders < 1:
                                     if selected_strategy == config.REVERSAL:                                    
                                         if signal == "L":
+                                            if self.short_real_entry(symbol=symbol, comment=selected_strategy):
+                                                # Make sure we make only 1 trade at a time
+                                                break 
+                                        elif signal == "S":
+                                            if self.long_real_entry(symbol=symbol, comment=selected_strategy):
+                                                # Make sure we make only 1 trade at a time
+                                                break
+                                    elif selected_strategy == config.TREND:  
+                                        if signal == "L":
                                             if self.long_real_entry(symbol=symbol, comment=selected_strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
                                             if self.short_real_entry(symbol=symbol, comment=selected_strategy):
-                                                # Make sure we make only 1 trade at a time
-                                                break
-                                    elif selected_strategy == config.TREND:
-                                        if signal == "L":
-                                            if self.short_real_entry(symbol=symbol, comment=selected_strategy):
-                                                # Make sure we make only 1 trade at a time
-                                                break 
-                                        elif signal == "S":
-                                            if self.long_real_entry(symbol=symbol, comment=cselected_strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break
                                     else:
