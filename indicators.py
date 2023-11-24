@@ -58,15 +58,30 @@ def previous_candle_move(symbol, timeframe):
     spread = get_spread(symbol)
     
     # Previous bar high/low
-    high = h1_1["high"]
-    low = h1_1["low"]
+    previous_high = h1_1["high"]
+    previous_low = h1_1["low"]
     
-    close = h1_1["close"]
-    open = h1_1["open"]
-    
+    previous_close = h1_1["close"]
+    previous_open = h1_1["open"]
+
+    current_close = h1_1["close"]
+    current_open = h1_1["open"]
+
+    current_candle_length = abs(current_close - current_open)
+    previous_candle_length = abs(previous_close - previous_open)
+
+    previous_candle_total_length = abs(previous_high-previous_low)
+    total_wick_size = previous_candle_total_length - previous_candle_length
+
+    strong_current_candle = False
+    # Current candle body should be higher than previous candle
+    # Previous candle should have stronger body w.r.t to the wick.
+    if (current_candle_length > previous_candle_length) and (previous_candle_length > total_wick_size):
+        strong_current_candle = True
+
     previous_candle = None
-    if abs(open-close) > 3 * spread:
-        if close > open:
+    if (previous_candle_length > total_wick_size):
+        if previous_close > previous_open:
             previous_candle = "L"
         else:
             previous_candle = "S"
@@ -75,32 +90,32 @@ def previous_candle_move(symbol, timeframe):
     high_0 = h1_0["high"]
     low_0 = h1_0["low"]
     
-    if high_0 > high:
-        high = high_0
+    if high_0 > previous_high:
+        previous_high = high_0
     
-    if low_0 < low:
-        low = low_0
+    if low_0 < previous_low:
+        previous_low = low_0
     
-    high = high + 3 * spread
-    low = low - 3 * spread
+    previous_high = previous_high + 3 * spread
+    previous_low = previous_low - 3 * spread
     
     mid_price = get_mid_price(symbol)
     
-    distance_from_high = abs(high-mid_price)
-    distance_from_low = abs(low-mid_price)
+    distance_from_high = abs(previous_high-mid_price)
+    distance_from_low = abs(previous_low-mid_price)
     
     # Balance the stop incase if stop is too close
     if distance_from_high > distance_from_low:
-        low = mid_price - distance_from_high
+        previous_low = mid_price - distance_from_high
     
     if distance_from_low > distance_from_high:
-        high = mid_price + distance_from_low
+        previous_high = mid_price + distance_from_low
     
-    return high, low, previous_candle
+    return previous_high, previous_low, previous_candle, strong_current_candle
 
 def get_stop_range(symbol, timeframe):
-    high, low, previous_candle = previous_candle_move(symbol, timeframe)
-    return high, low, previous_candle
+    high, low, previous_candle, strong_current_candle = previous_candle_move(symbol, timeframe)
+    return high, low, previous_candle, strong_current_candle
 
 def get_atr(symbol):
     """
