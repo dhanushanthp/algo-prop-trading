@@ -158,9 +158,9 @@ class AlgoTrader():
             account_size, equity, _, total_active_profit = ind.get_account_details()
 
             # Fail Safe
-            if equity <= account_size - self.account_2_percent:
-                mp.close_all_positions()
-                sys.exit()
+            # if equity <= account_size - self.account_2_percent:
+            #     mp.close_all_positions()
+            #     sys.exit()
 
             if is_market_close:
                 print("Market Close!")
