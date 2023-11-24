@@ -83,7 +83,8 @@ def stop_round(symbol, stop_price):
     else:
         return round(stop_price, 2)
 
-def num_of_parallel_tickers():
+
+def get_continues_wins():
     tm_zone = pytz.timezone('Etc/GMT-2')
     start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone)
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
@@ -91,20 +92,31 @@ def num_of_parallel_tickers():
     traded_win_loss.reverse()
     
     # If last trade is win
+    count_wins = 1
+
     if len(traded_win_loss) > 1:
-        count_wins = 1
+        
+        # If last one is loss then return 0 wins
+        if not traded_win_loss[0]:
+            return 0
+
         for i in range(len(traded_win_loss) - 1):
             if (traded_win_loss[i] == traded_win_loss[i+1]) and traded_win_loss[i]:
                 count_wins += 1
             else:
                 break
+    
+    return count_wins
+    
+
+def num_of_parallel_tickers():
         
-        if count_wins < 4:
-            return 4
+    count_wins = get_continues_wins()
+    if count_wins > 4:
         return count_wins
-    else:
-        # Default is one trade, To take more the algo should earn by winning more
-        return 4
+    
+    # Default is one trade, To take more the algo should earn by winning more
+    return 4
         
 
 def get_recommended_strategy():
@@ -313,4 +325,5 @@ if __name__ == "__main__":
     # print(get_dollar_value("GBPJPY"))
     # print(get_exchange_price("NZDUSD"))
     # print(strategy_selector())
-    print(num_of_parallel_tickers())
+    # print(num_of_parallel_tickers())
+    print(get_continues_wins())

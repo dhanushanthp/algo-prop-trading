@@ -4,6 +4,7 @@ import pytz
 import datetime
 import time
 import MetaTrader5 as mt5
+import mng_pos as mp
 
 class RiskManager:
     def __init__(self) -> None:
@@ -23,27 +24,31 @@ class RiskManager:
         start_time = datetime.datetime.combine(datetime.datetime.now(tm_zone).date(), datetime.time()).replace(tzinfo=tm_zone)
         end_time = datetime.datetime.now(tm_zone) + datetime.timedelta(hours=4)
         traded_win_loss = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1]
+
         if len(traded_win_loss) > 0:
             last_traded_obj = traded_win_loss[-1]
             last_traded_time = last_traded_obj.time
             
             if self.previous_time is None:
-                print("-------Set to inital Risk!-----")
+                print("------- Set to inital Risk! -----")
                 self.previous_time = last_traded_time
                 
             if last_traded_time > self.previous_time:
-                print("-------Risk updated!-----")
+                print("------- Risk updated! -----")
                 # Set the last traded time as previous traded time
                 self.previous_time = last_traded_time
             
                 last_profit_loss = last_traded_obj.profit
+
+                continues_wins = mp.get_continues_wins()
                 
                 ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
                 risk_delta = ACCOUNT_SIZE/100*0.10 # Increase/Decrease by 0.1 Percentage
                 
                 max_risk = ACCOUNT_SIZE/100*1 # Max 1% of risk at anytime.
                 
-                if last_profit_loss > 0:
+                # If 2 or more wins in parallel, then increase the risk
+                if continues_wins >= 2:
                     # Increase the risk
                     self.updated_risk += risk_delta
                     self.updated_risk = min(max_risk, self.updated_risk)
