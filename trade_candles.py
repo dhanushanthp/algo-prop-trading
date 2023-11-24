@@ -207,7 +207,7 @@ class AlgoTrader():
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.long_real_entry(symbol=symbol, comment=selected_strategy:
+                                            if self.long_real_entry(symbol=symbol, comment=selected_strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break
                                     elif selected_strategy == config.TREND:  
