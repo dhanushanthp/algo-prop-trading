@@ -203,20 +203,20 @@ class AlgoTrader():
                                 if signal and active_orders < 1:
                                     if selected_strategy == config.REVERSAL:                                    
                                         if signal == "L":
-                                            if self.short_real_entry(symbol=symbol, comment=config.REVERSAL):
+                                            if self.short_real_entry(symbol=symbol, comment=selected_strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.long_real_entry(symbol=symbol, comment=config.REVERSAL):
+                                            if self.long_real_entry(symbol=symbol, comment=selected_strategy:
                                                 # Make sure we make only 1 trade at a time
                                                 break
                                     elif selected_strategy == config.TREND:  
                                         if signal == "L":
-                                            if self.long_real_entry(symbol=symbol, comment=config.TREND):
+                                            if self.long_real_entry(symbol=symbol, comment=selected_strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.short_real_entry(symbol=symbol, comment=config.TREND):
+                                            if self.short_real_entry(symbol=symbol, comment=selected_strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break
                                     else:
