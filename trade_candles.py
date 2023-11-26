@@ -150,12 +150,10 @@ class AlgoTrader():
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
             print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
             
-            is_market_open, is_market_close = util.get_market_status()            
-            
-            account_size, equity, _, total_active_profit = ind.get_account_details()
+            is_market_open, is_market_close = util.get_market_status()
 
             # Max Loss
-            if equity <= account_size - self.risk_manager.max_loss:
+            if self.risk_manager.is_dly_max_risk_reached():
                 print("Max loss reached! Closing all positions!")
                 mp.close_all_positions()
                 sys.exit()
