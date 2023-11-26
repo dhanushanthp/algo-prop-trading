@@ -1,1 +1,1 @@
-python trade_candles.py 5 1 reversal
+python trade_candles.py 15 0.5 reversal
