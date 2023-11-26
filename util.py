@@ -56,7 +56,7 @@ def get_market_status():
             market_open = True
     
     # Close all the position 30 minute before the market close
-    if (day in ["Saturday","Sunday"]) or (hour >= 23 and minute >= 30):
+    if (day in ["Saturday","Sunday"]) or (hour >= 23 and minute >= 20):
         market_about_to_close = True
 
     return market_open, market_about_to_close
