@@ -20,6 +20,7 @@ class AlgoTrader():
 
         self.trading_timeframe = 15 # Default to 15 min
         self.target_ratio = 0.5 # Default 1:0.5 Ratio
+        self.stop_ratio = 1.0
         self.risk_manager = risk_manager.RiskManager()
         self.updated_risk = self.risk_manager.initial_risk
         self.strategy = config.REVERSAL
@@ -85,7 +86,7 @@ class AlgoTrader():
                             "volume": lots,
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
-                            "sl": stop_price,
+                            "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
                             "comment": comment,
                             "magic":magic_number,
@@ -126,7 +127,7 @@ class AlgoTrader():
                             "volume": lots,
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
-                            "sl": stop_price,
+                            "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
                             "comment": comment,
                             "magic":magic_number,
@@ -228,19 +229,37 @@ class AlgoTrader():
             
             time.sleep(30)
     
+
+    def parse_cmd_args(self):
+        import argparse
+        parser = argparse.ArgumentParser(description='Process some command line arguments')
+        parser.add_argument('--timeframe', type=str, help='Description of arg1')
+        parser.add_argument('--stopratio', type=int, help='Description of arg2')
+        parser.add_argument('--targetratio', type=float, help='Description of arg3')
+        parser.add_argument('--strategy', type=float, help='Description of arg3')
+        # Add more arguments as needed
+
+        args = parser.parse_args()
+
+        # Convert argparse.Namespace to dictionary
+        args_dict = vars(args)
+
+        return args_dict
+    
 if __name__ == "__main__":
     win = AlgoTrader()
     
     if len(sys.argv) > 1:
         win.trading_timeframe = int(sys.argv[1])
-        win.target_ratio = float(sys.argv[2])
-        if sys.argv[3] == "trend":
+        win.stop_ratio = float(sys.argv[2])
+        win.target_ratio = float(sys.argv[3])
+        if sys.argv[4] == "trend":
             win.strategy = config.TREND
         else:
             win.strategy = config.REVERSAL
     
     print("\n------------------------------------------------")
-    print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : 1:{win.target_ratio} & Strategy: {win.strategy}" )
+    print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : {win.stop_ratio}:{win.target_ratio} & Strategy: {win.strategy}" )
     print("------------------------------------------------")
     win.main()
     
