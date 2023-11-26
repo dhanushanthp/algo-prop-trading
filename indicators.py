@@ -102,8 +102,8 @@ def previous_candle_move(symbol, timeframe):
     return previous_high, previous_low, previous_candle_signal
 
 def get_stop_range(symbol, timeframe):
-    high, low, previous_candle, strong_current_candle = previous_candle_move(symbol, timeframe)
-    return high, low, previous_candle, strong_current_candle
+    high, low, previous_candle = previous_candle_move(symbol, timeframe)
+    return high, low, previous_candle
 
 def get_atr(symbol):
     """
