@@ -105,6 +105,35 @@ def previous_candle_move(symbol, timeframe):
     
     return previous_high, previous_low, previous_candle_signal
 
+
+def find_resistance_support(symbol, timeframe):
+    if timeframe == 5:
+        selected_time = mt5.TIMEFRAME_M5
+    elif timeframe == 15:
+        selected_time = mt5.TIMEFRAME_M15
+    elif timeframe == 30:
+        selected_time = mt5.TIMEFRAME_M30
+    elif timeframe == 1:
+        selected_time = mt5.TIMEFRAME_H1
+    elif timeframe == 2:
+        selected_time = mt5.TIMEFRAME_H2
+    else:
+        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+    
+    # If does the mid values intersect with previous 5 bars
+    # get past 5 candles and start from prevous second candle
+    past_candles = mt5.copy_rates_from_pos(symbol, selected_time, 1, 5)
+    past_candles.reverse()
+    mid_price = get_mid_price(symbol)
+    for candle in past_candles:
+        if is_number_between(mid_price, candle["low"], candle["high"]):
+            return True
+        
+    return False
+    
+def is_number_between(number, lower_limit, upper_limit):
+    return lower_limit <= number <= upper_limit
+
 def get_stop_range(symbol, timeframe):
     high, low, previous_candle = previous_candle_move(symbol, timeframe)
     return high, low, previous_candle
