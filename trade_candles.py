@@ -18,14 +18,10 @@ class AlgoTrader():
     def __init__(self):
         mt.initialize()
 
-        # Value in USD
-        ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
-        self.account_1_percent = ACCOUNT_SIZE * 1/100
-        self.account_2_percent = ACCOUNT_SIZE * 2/100
         self.trading_timeframe = 15 # Default to 15 min
         self.target_ratio = 0.5 # Default 1:0.5 Ratio
         self.risk_manager = risk_manager.RiskManager()
-        self.updated_risk = "Initial Risk"
+        self.updated_risk = self.risk_manager.initial_risk
         self.strategy = config.REVERSAL
     
     def _round(self, symbol, price):
@@ -158,8 +154,15 @@ class AlgoTrader():
             
             account_size, equity, _, total_active_profit = ind.get_account_details()
 
-            # Fail Safe
-            # if equity <= account_size - self.account_2_percent:
+            # Max Loss
+            if equity <= account_size - self.risk_manager.max_loss:
+                print("Max loss reached! Closing all positions!")
+                mp.close_all_positions()
+                sys.exit()
+
+            # Max Profit 
+            # if equity >= account_size + self.risk_manager.max_loss:
+            #     print("Max profit reached! Closing all positions!")
             #     mp.close_all_positions()
             #     sys.exit()
 
@@ -233,10 +236,10 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         win.trading_timeframe = int(sys.argv[1])
         win.target_ratio = float(sys.argv[2])
-        if sys.argv[3] == "reversal":
-            win.strategy = config.REVERSAL
-        else:
+        if sys.argv[3] == "trend":
             win.strategy = config.TREND
+        else:
+            win.strategy = config.REVERSAL
     
     print("\n------------------------------------------------")
     print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : 1:{win.target_ratio} & Strategy: {win.strategy}" )
