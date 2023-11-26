@@ -77,7 +77,25 @@ class AlgoTrader():
                         print(f"{''.ljust(12)}: LONG")        
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
-                        lots =  round(lots, 2)
+                        lots =  round(lots/2, 2)
+
+                        order_request = {
+                            "action": mt.TRADE_ACTION_PENDING,
+                            "symbol": symbol,
+                            "volume": lots,
+                            "type": mt.ORDER_TYPE_BUY_LIMIT,
+                            "price": entry_price,
+                            "sl": stop_price,
+                            "tp": self._round(symbol, entry_price + points_in_stop),
+                            "comment": comment,
+                            "magic":magic_number,
+                            "type_time": mt.ORDER_TIME_GTC,
+                            "type_filling": mt.ORDER_FILLING_RETURN,
+                        }
+                        
+                        request_log = mt.order_send(order_request)
+                        self.print_order_log(request_log, order_request)
+
                         
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
@@ -118,7 +136,25 @@ class AlgoTrader():
                         print(f"{''.ljust(12)}: SHORT")      
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
-                        lots =  round(lots, 2)
+                        lots =  round(lots/2, 2)
+
+                        order_request = {
+                            "action": mt.TRADE_ACTION_PENDING,
+                            "symbol": symbol,
+                            "volume": lots,
+                            "type": mt.ORDER_TYPE_SELL_LIMIT,
+                            "price": entry_price,
+                            "sl": stop_price,
+                            "tp": self._round(symbol, entry_price - points_in_stop),
+                            "comment": comment,
+                            "magic":magic_number,
+                            "type_time": mt.ORDER_TIME_GTC,
+                            "type_filling": mt.ORDER_FILLING_RETURN,
+                        }
+                        
+                        request_log = mt.order_send(order_request)
+                        self.print_order_log(request_log, order_request)
+
 
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
