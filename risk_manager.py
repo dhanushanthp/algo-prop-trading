@@ -20,7 +20,7 @@ class RiskManager:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.updated_risk = ACCOUNT_SIZE/100*config.risk_percentage
     
-    def is_dly_max_risk_reached(risk_percentage=2):
+    def is_dly_max_risk_reached(self, risk_percentage=2):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
         if equity < ACCOUNT_SIZE - (ACCOUNT_SIZE * risk_percentage/100):
             return True
