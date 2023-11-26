@@ -204,13 +204,15 @@ class AlgoTrader():
                                 # Only enter 1 order at a time along with the signal
                                 if signal and active_orders < 1:
                                     
-                                    check_resistance = ind.find_resistance_support(symbol=symbol, timeframe=self.trading_timeframe)
-
-                                    # This check is there any support or resistance
-                                    if check_resistance:
-                                        self.strategy = config.REVERSAL
-                                    else:
-                                        self.strategy = config.TREND
+                                    if self.strategy == config.AUTO:
+                                        check_resistance = ind.find_resistance_support(symbol=symbol, timeframe=self.trading_timeframe)
+                                        # This check is there any support or resistance
+                                        if check_resistance:
+                                            self.strategy = config.REVERSAL
+                                        else:
+                                            self.strategy = config.TREND
+                                    
+                                    # Other wise choose the default strategy given the application
                                     
                                     # print(f"{'Strategy '.ljust(20)}: {self.strategy.upper()}")
 
@@ -263,10 +265,7 @@ if __name__ == "__main__":
         win.trading_timeframe = int(sys.argv[1])
         win.stop_ratio = float(sys.argv[2])
         win.target_ratio = float(sys.argv[3])
-        if sys.argv[4] == "trend":
-            win.strategy = config.TREND
-        else:
-            win.strategy = config.REVERSAL
+        win.strategy =sys.argv[4]
     
     print("\n------------------------------------------------")
     print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : {win.stop_ratio}:{win.target_ratio} & Strategy: {win.strategy}" )
