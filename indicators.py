@@ -91,8 +91,10 @@ def previous_candle_move(symbol, timeframe):
     
     mid_price = get_mid_price(symbol)
     
-    distance_from_high = abs(previous_high-mid_price)
-    distance_from_low = abs(previous_low-mid_price)
+    atr = get_atr(symbol, selected_time)
+
+    distance_from_high = max(atr, abs(previous_high-mid_price))
+    distance_from_low = max(atr, abs(previous_low-mid_price))
     
     # Balance the stop incase if stop is too close
     if distance_from_high > distance_from_low:
@@ -107,11 +109,11 @@ def get_stop_range(symbol, timeframe):
     high, low, previous_candle = previous_candle_move(symbol, timeframe)
     return high, low, previous_candle
 
-def get_atr(symbol):
+def get_atr(symbol, selected_time):
     """
     Get ATR based on 4 hour
     """    
-    rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H4, 0, 20)
+    rates = mt5.copy_rates_from_pos(symbol, selected_time, 0, 20)
     
     high = np.array([x['high'] for x in rates])
     low = np.array([x['low'] for x in rates])
