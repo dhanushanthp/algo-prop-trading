@@ -122,7 +122,7 @@ def find_resistance_support(symbol, timeframe):
     
     # If does the mid values intersect with previous 5 bars
     # get past 5 candles and start from prevous second candle
-    past_candles = mt5.copy_rates_from_pos(symbol, selected_time, 1, 5)
+    past_candles = mt5.copy_rates_from_pos(symbol, selected_time, 1, 3)
     past_candles.reverse()
     mid_price = get_mid_price(symbol)
     for candle in past_candles:

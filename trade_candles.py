@@ -189,7 +189,6 @@ class AlgoTrader():
                 
                 if len(existing_positions) < paralle_trades:
                     # self.strategy = mp.get_recommended_strategy()
-                    print(f"{'Strategy '.ljust(20)}: {self.strategy.upper()}")
                     
                     for symbol in selected_symbols:
                         # This helps to manage one order at a time rather sending bulk order to server
@@ -204,6 +203,17 @@ class AlgoTrader():
                                 
                                 # Only enter 1 order at a time along with the signal
                                 if signal and active_orders < 1:
+                                    
+                                    check_resistance = ind.find_resistance_support(symbol=symbol, timeframe=self.trading_timeframe)
+
+                                    # This check is there any support or resistance
+                                    if check_resistance:
+                                        self.strategy = config.REVERSAL
+                                    else:
+                                        self.strategy = config.TREND
+                                    
+                                    # print(f"{'Strategy '.ljust(20)}: {self.strategy.upper()}")
+
                                     if self.strategy == config.REVERSAL:                                    
                                         if signal == "L":
                                             if self.short_real_entry(symbol=symbol, comment=self.strategy):
