@@ -1,1 +1,1 @@
-python trade_candles.py 15 0.5 trend
+python trade_candles.py 15 3 reversal
