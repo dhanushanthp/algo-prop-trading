@@ -153,17 +153,11 @@ class AlgoTrader():
             
             is_market_open, is_market_close = util.get_market_status()
 
-            # Max Loss
-            if self.risk_manager.is_dly_max_risk_reached():
-                print("Max loss reached! Closing all positions!")
+            # Max profit or loss
+            if self.risk_manager.is_dly_max_risk_reached() or self.risk_manager.is_dly_max_profit_reached():
+                print("Max loss/profit reached! Closing all positions!")
                 mp.close_all_positions()
                 sys.exit()
-
-            # Max Profit 
-            # if equity >= account_size + self.risk_manager.max_loss:
-            #     print("Max profit reached! Closing all positions!")
-            #     mp.close_all_positions()
-            #     sys.exit()
 
             if is_market_close:
                 print("Market Close!")

@@ -27,6 +27,13 @@ class RiskManager:
 
         return False
     
+    def is_dly_max_profit_reached(self, risk_percentage=2):
+        ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
+        if equity > ACCOUNT_SIZE + (ACCOUNT_SIZE * risk_percentage/100):
+            return True
+
+        return False
+    
     def update_risk(self):
         tm_zone = pytz.timezone('Etc/GMT-2')
         start_time = datetime.datetime.combine(datetime.datetime.now(tm_zone).date(), datetime.time()).replace(tzinfo=tm_zone)
