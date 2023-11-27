@@ -171,7 +171,7 @@ class AlgoTrader():
                 # if util.get_today_profit() > self.account_2_percent:
                 #     sys.exit()                
 
-                # mp.exist_on_initial_plan_changed()
+                mp.exist_on_initial_plan_changed_ema()
                 mp.cancel_all_pending_orders()
                 mp.breakeven_1R_positions()
                 
