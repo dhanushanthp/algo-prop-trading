@@ -176,13 +176,16 @@ def is_ema_cross(symbol, timeframe):
 
     # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
     window_size = 21
-    candle = mt5.copy_rates_from_pos(symbol, selected_time, 1, window_size)
+    candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, window_size)
     candle_close = [i["close"] for i in candle]
     sma  = np.average(candle_close)
 
-    if (candle[-1]["close"] > candle[-1]["open"]) and is_number_between(sma, candle[-1]["open"], candle[-1]["close"]):
+    ask_price = mt5.symbol_info_tick(symbol).ask
+    bid_price = mt5.symbol_info_tick(symbol).bid
+
+    if (candle[-1]["close"] > candle[-1]["open"]) and is_number_between(sma, candle[-1]["open"], bid_price):
         return "L"
-    elif (candle[-1]["close"] < candle[-1]["open"]) and is_number_between(sma, candle[-1]["close"], candle[-1]["open"]):
+    elif (candle[-1]["close"] < candle[-1]["open"]) and is_number_between(sma, ask_price, candle[-1]["open"]):
         return "S"
     
     return

@@ -112,11 +112,11 @@ def get_continues_wins():
 def num_of_parallel_tickers():
         
     count_wins = get_continues_wins()
-    if count_wins > 4:
+    if count_wins > 8:
         return count_wins
     
     # Default is one trade, To take more the algo should earn by winning more
-    return 4
+    return 8
         
 
 def get_recommended_strategy():
