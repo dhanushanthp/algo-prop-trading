@@ -9,7 +9,7 @@ import mng_pos as mp
 class RiskManager:
     def __init__(self) -> None:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
-        self.initial_risk = ACCOUNT_SIZE/100*config.risk_percentage # Risk only 0.25%
+        self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage) # Risk only 0.25%
         self.max_loss = ACCOUNT_SIZE * 2/100
         
         self.updated_risk = self.initial_risk
@@ -53,7 +53,7 @@ class RiskManager:
                 ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
                 risk_delta = ACCOUNT_SIZE/100*0.10 # Increase/Decrease by 0.1 Percentage
                 
-                max_risk = ACCOUNT_SIZE/100*1 # Max 1% of risk at anytime.
+                max_risk = ACCOUNT_SIZE/100*0.5 # Max 1% of risk at anytime.
                 
                 # If 2 or more wins in parallel, then increase the risk
                 if continues_wins >= 4:
