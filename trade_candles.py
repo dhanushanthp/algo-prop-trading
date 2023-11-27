@@ -199,7 +199,7 @@ class AlgoTrader():
                                 continue
                             
                             try:
-                                signal = ind.get_candle_signal(symbol, verb=False)
+                                signal = ind.get_candle_signal(symbol, verb=True)
                                 
                                 # Only enter 1 order at a time along with the signal
                                 if signal and active_orders < 1:
@@ -208,30 +208,32 @@ class AlgoTrader():
                                         check_resistance = ind.find_resistance_support(symbol=symbol, timeframe=self.trading_timeframe)
                                         # This check is there any support or resistance
                                         if check_resistance:
-                                            self.strategy = config.REVERSAL
+                                            strategy = config.REVERSAL
                                         else:
-                                            self.strategy = config.TREND
+                                            strategy = config.TREND
+                                    else:
+                                        strategy = self.strategy
                                     
                                     # Other wise choose the default strategy given the application
                                     
                                     # print(f"{'Strategy '.ljust(20)}: {self.strategy.upper()}")
 
-                                    if self.strategy == config.REVERSAL:                                    
+                                    if strategy == config.REVERSAL:                                    
                                         if signal == "L":
-                                            if self.short_real_entry(symbol=symbol, comment=self.strategy):
+                                            if self.short_real_entry(symbol=symbol, comment=strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.long_real_entry(symbol=symbol, comment=self.strategy):
+                                            if self.long_real_entry(symbol=symbol, comment=strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break
-                                    elif self.strategy == config.TREND:  
+                                    elif strategy == config.TREND:  
                                         if signal == "L":
-                                            if self.long_real_entry(symbol=symbol, comment=self.strategy):
+                                            if self.long_real_entry(symbol=symbol, comment=strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break 
                                         elif signal == "S":
-                                            if self.short_real_entry(symbol=symbol, comment=self.strategy):
+                                            if self.short_real_entry(symbol=symbol, comment=strategy):
                                                 # Make sure we make only 1 trade at a time
                                                 break
                                     else:

@@ -70,7 +70,8 @@ def previous_candle_move(symbol, timeframe):
         1.1 The 3 time spread for a valid current candle has been added in signal idenfication.
     2. Current candle body should be larger than the previous candle body to be valid entry
     """
-    if (previous_candle_body > 3 * spread) and (current_candle_body > previous_candle_body):
+    # and (current_candle_body > previous_candle_body)
+    if (previous_candle_body > 3 * spread) :
         if previous_candle["close"] > previous_candle["open"]:
             previous_candle_signal = "L"
         else:
@@ -122,7 +123,7 @@ def find_resistance_support(symbol, timeframe):
     
     # If does the mid values intersect with previous 5 bars
     # get past 5 candles and start from prevous second candle
-    past_candles = mt5.copy_rates_from_pos(symbol, selected_time, 1, 3)
+    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 1, 3))
     past_candles.reverse()
     mid_price = get_mid_price(symbol)
     for candle in past_candles:
