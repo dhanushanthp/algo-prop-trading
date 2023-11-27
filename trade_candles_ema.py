@@ -66,7 +66,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, stop_price, prev_can_dir = ind.get_stop_range(symbol, self.trading_timeframe)
+            _, stop_price, prev_can_dir = ind.get_stop_range(symbol, int(comment))
             
             # and prev_can_dir == "S"
             if prev_can_dir:
@@ -107,7 +107,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, previous_candle = ind.get_stop_range(symbol, self.trading_timeframe)
+            stop_price, _, previous_candle = ind.get_stop_range(symbol, int(comment))
             
             # and previous_candle == "L"
             if previous_candle:
