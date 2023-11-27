@@ -194,11 +194,11 @@ class AlgoTrader():
                                     continue
                                 
                                 try:
-                                    signal = ind.is_ema_cross(symbol=symbol, timeframe=trading_time)
+                                    signal, sma = ind.is_ema_cross(symbol=symbol, timeframe=trading_time)
                                     
                                     # Only enter 1 order at a time along with the signal
                                     if signal and active_orders < 1:
-                                        print("-------", symbol, signal)
+                                        print("-------", symbol, signal, trading_time, round(sma, 5))
                                         if signal == "L":
                                             if self.long_real_entry(symbol=symbol, comment=str(trading_time)):
                                                 # Make sure we make only 1 trade at a time

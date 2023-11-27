@@ -311,7 +311,7 @@ def exist_on_initial_plan_changed_ema():
     # Takeout all the positions regardless of Trail or Real If the inital plan is changed
     for obj in positions:
         # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
-        signal = ind.is_ema_cross(obj.symbol, int(obj.comment))
+        signal, sma = ind.is_ema_cross(obj.symbol, int(obj.comment))
 
         if signal:
             # when entry was Long but current signal is Short or if entry was short and the current signal is Long

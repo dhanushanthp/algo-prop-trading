@@ -184,11 +184,11 @@ def is_ema_cross(symbol, timeframe):
     bid_price = mt5.symbol_info_tick(symbol).bid
 
     if (candle[-1]["close"] > candle[-1]["open"]) and is_number_between(sma, candle[-1]["open"], bid_price):
-        return "L"
+        return "L", sma
     elif (candle[-1]["close"] < candle[-1]["open"]) and is_number_between(sma, ask_price, candle[-1]["open"]):
-        return "S"
+        return "S", sma
     
-    return
+    return None, None
 
 def get_candle_signal(symbol, verb=True):
     
