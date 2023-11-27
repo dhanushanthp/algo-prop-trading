@@ -1,1 +1,1 @@
-python trade_candles.py 15 0.5 0.5 AUTO
+python trade_candles.py 15 1 1 AUTO
