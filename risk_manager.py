@@ -56,7 +56,7 @@ class RiskManager:
                 max_risk = ACCOUNT_SIZE/100*1 # Max 1% of risk at anytime.
                 
                 # If 2 or more wins in parallel, then increase the risk
-                if continues_wins >= 2:
+                if continues_wins >= 4:
                     # Increase the risk
                     self.updated_risk += risk_delta
                     self.updated_risk = min(max_risk, self.updated_risk)
