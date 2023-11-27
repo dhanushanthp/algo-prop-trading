@@ -54,7 +54,6 @@ class RiskManager:
                 risk_delta = ACCOUNT_SIZE/100*0.10 # Increase/Decrease by 0.1 Percentage
                 
                 max_risk = ACCOUNT_SIZE/100*1 # Max 1% of risk at anytime.
-                min_risk = ACCOUNT_SIZE/100*0.0625 # Max 1% of risk at anytime.
                 
                 # If 2 or more wins in parallel, then increase the risk
                 if continues_wins >= 4:
@@ -64,7 +63,7 @@ class RiskManager:
                 else:
                     # Decrease the risk
                     self.updated_risk -= risk_delta
-                    self.updated_risk = max(min_risk, self.updated_risk)
+                    self.updated_risk = max(self.initial_risk, self.updated_risk)
             
             return round(self.updated_risk, 2)
             
