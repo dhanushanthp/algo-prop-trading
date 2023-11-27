@@ -305,7 +305,21 @@ def close_slave_positions():
         for obj in mt5.positions_get():
             if obj.symbol in co_exisiting_positions:
                 close_single_position(obj=obj)
-    
+
+def exist_on_initial_plan_changed_ema():
+    positions = mt5.positions_get()
+    # Takeout all the positions regardless of Trail or Real If the inital plan is changed
+    for obj in positions:
+        # If the current position size is less than the half of the stop, Also once after the 1R hit, If the initial plan changed! exit!
+        signal = ind.is_ema_cross(obj.symbol, int(obj.comment))
+
+        if signal:
+            # when entry was Long but current signal is Short or if entry was short and the current signal is Long
+            # 0 for long, 1 for short positions
+            if (obj.type == 0 and signal == "S") or (obj.type == 1 and signal == "L"):
+                close_single_position(obj)
+
+
 def exist_on_initial_plan_changed():
     positions = mt5.positions_get()
     # Takeout all the positions regardless of Trail or Real If the inital plan is changed
@@ -326,4 +340,5 @@ if __name__ == "__main__":
     # print(get_exchange_price("NZDUSD"))
     # print(strategy_selector())
     # print(num_of_parallel_tickers())
-    print(get_continues_wins())
+    # print(get_continues_wins())
+    print(exist_on_initial_plan_changed_ema())

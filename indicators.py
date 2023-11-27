@@ -160,6 +160,33 @@ def get_spread(symbol):
     spread = ask_price - bid_price
     return spread
 
+def is_ema_cross(symbol, timeframe):
+    if timeframe == 5:
+        selected_time = mt5.TIMEFRAME_M5
+    elif timeframe == 15:
+        selected_time = mt5.TIMEFRAME_M15
+    elif timeframe == 30:
+        selected_time = mt5.TIMEFRAME_M30
+    elif timeframe == 1:
+        selected_time = mt5.TIMEFRAME_H1
+    elif timeframe == 2:
+        selected_time = mt5.TIMEFRAME_H2
+    else:
+        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+
+    # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
+    window_size = 21
+    candle = mt5.copy_rates_from_pos(symbol, selected_time, 1, window_size)
+    candle_close = [i["close"] for i in candle]
+    sma  = np.average(candle_close)
+
+    if (candle[-1]["close"] > candle[-1]["open"]) and is_number_between(sma, candle[-1]["open"], candle[-1]["close"]):
+        return "L"
+    elif (candle[-1]["close"] < candle[-1]["open"]) and is_number_between(sma, candle[-1]["close"], candle[-1]["open"]):
+        return "S"
+    
+    return
+
 def get_candle_signal(symbol, verb=True):
     
     # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone

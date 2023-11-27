@@ -1,1 +1,1 @@
-python trade_candles.py 15 1 1 REVERSAL
+python trade_candles.py 15 1 1 AUTO
