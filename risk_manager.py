@@ -35,6 +35,9 @@ class RiskManager:
         return False
     
     def update_risk(self):
+        return round(self.initial_risk, 2)
+
+    def update_risk_old(self):
         tm_zone = pytz.timezone('Etc/GMT-2')
         start_time = datetime.datetime.combine(datetime.datetime.now(tm_zone).date(), datetime.time()).replace(tzinfo=tm_zone)
         end_time = datetime.datetime.now(tm_zone) + datetime.timedelta(hours=4)
