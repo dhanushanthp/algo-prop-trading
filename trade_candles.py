@@ -69,7 +69,7 @@ class AlgoTrader():
             _, stop_price, prev_can_dir = ind.get_stop_range(symbol, self.trading_timeframe)
             
             # and prev_can_dir == "S"
-            if prev_can_dir and mp.get_last_trades_position(symbol):
+            if prev_can_dir and mp.get_last_trades_position(symbol, self.trading_timeframe):
                 magic_number = 1 if prev_can_dir == "L" else 2
                 stop_price = self._round(symbol, stop_price)
                 
@@ -110,7 +110,7 @@ class AlgoTrader():
             stop_price, _, previous_candle = ind.get_stop_range(symbol, self.trading_timeframe)
             
             # and previous_candle == "L"
-            if previous_candle and mp.get_last_trades_position(symbol):
+            if previous_candle and mp.get_last_trades_position(symbol, self.trading_timeframe):
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self._round(symbol, stop_price)
 
