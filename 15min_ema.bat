@@ -1,1 +1,0 @@
-python trade_candles_ema.py 15 1 1 AUTO
