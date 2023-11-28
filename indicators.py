@@ -61,6 +61,8 @@ def previous_candle_move(symbol, timeframe):
     current_candle_body = abs(current_candle["close"] - current_candle["open"])
     previous_candle_body = abs(previous_candle["close"] - previous_candle["open"])
 
+    previous_candle_total_length = abs(previous_candle["high"] - previous_candle["low"])
+
     spread = get_spread(symbol)
 
     # We should implment this logics here, since we are trading based on the selected timeframe
@@ -70,8 +72,8 @@ def previous_candle_move(symbol, timeframe):
         1.1 The 3 time spread for a valid current candle has been added in signal idenfication.
     2. Current candle body should be larger than the previous candle body to be valid entry
     """
-    # and (current_candle_body > previous_candle_body)
-    if (previous_candle_body > 3 * spread)  and (current_candle_body > 3 * spread):
+    
+    if (current_candle_body > 3 * spread) and (current_candle_body < previous_candle_total_length):
         if previous_candle["close"] > previous_candle["open"]:
             previous_candle_signal = "L"
         else:
@@ -163,14 +165,19 @@ def get_spread(symbol):
 def is_ema_cross(symbol, timeframe):
     if timeframe == 5:
         selected_time = mt5.TIMEFRAME_M5
+        upper_time = mt5.TIMEFRAME_M20
     elif timeframe == 15:
         selected_time = mt5.TIMEFRAME_M15
+        upper_time = mt5.TIMEFRAME_H1
     elif timeframe == 30:
         selected_time = mt5.TIMEFRAME_M30
+        upper_time = mt5.TIMEFRAME_H2
     elif timeframe == 1:
         selected_time = mt5.TIMEFRAME_H1
+        upper_time = mt5.TIMEFRAME_H4
     elif timeframe == 2:
         selected_time = mt5.TIMEFRAME_H2
+        upper_time = mt5.TIMEFRAME_H8
     else:
         raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
 
@@ -180,12 +187,19 @@ def is_ema_cross(symbol, timeframe):
     candle_close = [i["close"] for i in candle]
     sma  = np.average(candle_close)
 
+    # Upper Time SMA
+    upper_candle = mt5.copy_rates_from_pos(symbol, upper_time, 0, window_size)
+    upper_candle_close = [i["close"] for i in upper_candle]
+    upper_sma  = np.average(upper_candle_close)
+
+
     ask_price = mt5.symbol_info_tick(symbol).ask
     bid_price = mt5.symbol_info_tick(symbol).bid
 
-    if (candle[-1]["close"] > candle[-1]["open"]) and is_number_between(sma, candle[-1]["open"], bid_price):
+    # Also confirm higher timeframe in the same trend as lower time frame
+    if (candle[-1]["close"] > candle[-1]["open"]) and is_number_between(sma, candle[-1]["open"], bid_price) and (upper_sma < upper_candle[-1]["close"]):
         return "L", sma
-    elif (candle[-1]["close"] < candle[-1]["open"]) and is_number_between(sma, ask_price, candle[-1]["open"]):
+    elif (candle[-1]["close"] < candle[-1]["open"]) and is_number_between(sma, ask_price, candle[-1]["open"]) and (upper_sma > upper_candle[-1]["close"]):
         return "S", sma
     
     return None, None

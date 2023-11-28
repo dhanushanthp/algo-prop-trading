@@ -84,6 +84,31 @@ def stop_round(symbol, stop_price):
         return round(stop_price, 2)
 
 
+def get_last_trades_position(symbol):
+    """
+    If you already have made some money. Then don't entry this for another 1 hour
+    """
+    tm_zone = pytz.timezone('Etc/GMT-2')
+    start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=2)
+    end_time = datetime.now(tm_zone) + timedelta(hours=4)
+    traded_positions = [i for i in mt5.history_deals_get(start_time,  end_time) if i.symbol== symbol]
+
+    if len(traded_positions) > 0:
+        last_traded_time = traded_positions[-1].time
+        last_tradeed_profit = traded_positions[-1].profit
+        current_time_epoch = (datetime.now(tm_zone) + timedelta(hours=2)).timestamp()
+
+        time_difference = (current_time_epoch - last_traded_time)/60
+
+        # print(last_tradeed_profit, time_difference)
+
+        if last_tradeed_profit > 0 and time_difference < 60:
+            print(f"Skip for another {60 - round(time_difference)} minutes!")
+            return False
+
+    return True
+
+
 def get_continues_wins():
     tm_zone = pytz.timezone('Etc/GMT-2')
     start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone)
@@ -341,4 +366,5 @@ if __name__ == "__main__":
     # print(strategy_selector())
     # print(num_of_parallel_tickers())
     # print(get_continues_wins())
-    print(exist_on_initial_plan_changed_ema())
+    # print(exist_on_initial_plan_changed_ema())
+    print(get_last_trades_position("GBPUSD"))
