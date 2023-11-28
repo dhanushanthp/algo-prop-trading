@@ -270,6 +270,17 @@ def cancel_all_pending_orders():
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
 
+def exit_one_r():
+    existing_positions = mt5.positions_get()
+    for position in existing_positions:
+        symbol = position.symbol
+        entry_price = position.price_open
+        stop_loss = position.sl
+        quantity = position.volume
+        max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
+        if (position.profit > max_loss):
+            close_single_position(position)
+
 def breakeven_1R_positions():
     existing_positions = mt5.positions_get()
     for position in existing_positions:

@@ -167,7 +167,7 @@ class AlgoTrader():
             
             if is_market_open and not is_market_close:
                 mp.cancel_all_pending_orders()
-                mp.breakeven_1R_positions()
+                mp.exit_one_r()               
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 parallel_trades = mp.num_of_parallel_tickers()
