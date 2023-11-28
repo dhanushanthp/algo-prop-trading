@@ -1,0 +1,1 @@
+python trade_candles.py 15 1 0.5 REVERSAL
