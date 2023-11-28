@@ -72,8 +72,8 @@ def previous_candle_move(symbol, timeframe):
         1.1 The 3 time spread for a valid current candle has been added in signal idenfication.
     2. Current candle body should be larger than the previous candle body to be valid entry
     """
-    
-    if (current_candle_body > 3 * spread) and (current_candle_body < previous_candle_total_length):
+    # and (current_candle_body < previous_candle_total_length)
+    if (current_candle_body > 3 * spread) :
         if previous_candle["close"] > previous_candle["open"]:
             previous_candle_signal = "L"
         else:
