@@ -69,7 +69,7 @@ class AlgoTrader():
             _, stop_price, prev_can_dir = ind.get_stop_range(symbol, self.trading_timeframe)
             
             # and prev_can_dir == "S"
-            if prev_can_dir:
+            if prev_can_dir and mp.get_last_trades_position(symbol):
                 magic_number = 1 if prev_can_dir == "L" else 2
                 stop_price = self._round(symbol, stop_price)
                 
@@ -110,7 +110,7 @@ class AlgoTrader():
             stop_price, _, previous_candle = ind.get_stop_range(symbol, self.trading_timeframe)
             
             # and previous_candle == "L"
-            if previous_candle:
+            if previous_candle and mp.get_last_trades_position(symbol):
                 magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self._round(symbol, stop_price)
 
@@ -166,22 +166,16 @@ class AlgoTrader():
                 mp.close_all_positions()
             
             if is_market_open and not is_market_close:
-                    
-                # If closed positions profit is more than 2% then exit the app. Done for today!
-                # if util.get_today_profit() > self.account_2_percent:
-                #     sys.exit()                
-
-                # mp.exist_on_initial_plan_changed()
                 mp.cancel_all_pending_orders()
                 mp.breakeven_1R_positions()
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                paralle_trades = mp.num_of_parallel_tickers()
-                print(f"{'Available Slots'.ljust(20)}: {paralle_trades - len(existing_positions)}")
+                parallel_trades = mp.num_of_parallel_tickers()
+                print(f"{'Available Slots'.ljust(20)}: {parallel_trades - len(existing_positions)}")
                 
                 _, current_hour, _ = util.get_gmt_time()
                 
-                if len(existing_positions) < paralle_trades:
+                if len(existing_positions) < parallel_trades:
                     # self.strategy = mp.get_recommended_strategy()
                     
                     for symbol in selected_symbols:
@@ -206,11 +200,8 @@ class AlgoTrader():
                                         else:
                                             strategy = config.TREND
                                     else:
+                                        # Other wise choose the default strategy given the application
                                         strategy = self.strategy
-                                    
-                                    # Other wise choose the default strategy given the application
-                                    
-                                    # print(f"{'Strategy '.ljust(20)}: {self.strategy.upper()}")
 
                                     if strategy == config.REVERSAL:                                    
                                         if signal == "L":

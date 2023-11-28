@@ -101,8 +101,8 @@ def get_last_trades_position(symbol):
         time_difference = (current_time_epoch - last_traded_time)/60
 
         # print(last_tradeed_profit, time_difference)
-
-        if last_tradeed_profit > 0 and time_difference < 60:
+        # last_tradeed_profit > 0 and 
+        if time_difference < 60:
             print(f"Skip for another {60 - round(time_difference)} minutes!")
             return False
 
@@ -137,11 +137,11 @@ def get_continues_wins():
 def num_of_parallel_tickers():
         
     count_wins = get_continues_wins()
-    if count_wins > 8:
+    if count_wins > 4:
         return count_wins
     
     # Default is one trade, To take more the algo should earn by winning more
-    return 8
+    return 4
         
 
 def get_recommended_strategy():
