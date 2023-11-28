@@ -1,9 +1,11 @@
 from flask import Flask, request,jsonify
 import time
-import trade_candles as tc
+import trade_candles_server as tc
 import mng_pos as mp
 import MetaTrader5 as mt
 import logging
+mt.initialize()
+import currency_pairs
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -12,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 tc_ref = tc.AlgoTrader()
+tc_ref.trading_timeframe = 15
+tc_ref.stop_ratio = 1
+tc_ref.target_ratio = 1
 
 @app.route('/', methods=['POST'])
 def index():
@@ -19,7 +24,7 @@ def index():
     if data:
         symbol = data["symbol"]
         direction = data["direction"]
-        distance = float(data["distance"])
+        comment = data["comment"]
         
         for _ in range(3):
             mp.cancel_specific_pending_order(symbol=symbol)
@@ -30,10 +35,10 @@ def index():
             if symbol not in combined_symbols:
                 if direction == "L":
                     logger.info(f"long entry request: {symbol}")
-                    tc_ref.long_real_entry(symbol=symbol, distance=distance)
+                    tc_ref.long_real_entry(symbol=symbol, comment=comment)
                 elif direction == "S":
                     logger.info(f"short entry request: {symbol}")
-                    tc_ref.short_real_entry(symbol=symbol, distance=distance)
+                    tc_ref.short_real_entry(symbol=symbol, comment=comment)
                 
                 time.sleep(1*60)
             else:

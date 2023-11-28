@@ -1,6 +1,6 @@
 
 import MetaTrader5 as mt
-
+mt.initialize()
 currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 
               'CHFJPY', 
               'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD',
