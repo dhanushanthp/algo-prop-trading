@@ -169,7 +169,7 @@ class AlgoTrader():
                 mp.cancel_all_pending_orders()
                 mp.exit_one_r()               
                 
-                parallel_trades = mp.num_of_parallel_tickers()
+                parallel_trades = 8 # mp.num_of_parallel_tickers()
                                 
                 _, current_hour, _ = util.get_gmt_time()
                 
