@@ -278,7 +278,7 @@ def exit_one_r():
         stop_loss = position.sl
         quantity = position.volume
         max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
-        if (position.profit > max_loss):
+        if (position.profit > max_loss * 0.9):
             close_single_position(position)
 
 def breakeven_1R_positions():
