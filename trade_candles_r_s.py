@@ -69,8 +69,6 @@ class AlgoTrader():
             _, stop_price, prev_can_dir = ind.get_stop_range(symbol, timeframe)
             
             if prev_can_dir and mp.get_last_trades_position(symbol, timeframe):
-                # and prev_can_dir == "S"
-                magic_number = 1 if prev_can_dir == "L" else 2
                 stop_price = self._round(symbol, stop_price)
                 
                 if entry_price > stop_price:                
@@ -89,7 +87,7 @@ class AlgoTrader():
                             "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
                             "comment": comment,
-                            "magic":magic_number,
+                            "magic":timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
                         }
@@ -110,8 +108,6 @@ class AlgoTrader():
             stop_price, _, previous_candle = ind.get_stop_range(symbol, timeframe)
             
             if previous_candle and mp.get_last_trades_position(symbol, timeframe):
-                # and previous_candle == "L"
-                magic_number = 1 if previous_candle == "L" else 2
                 stop_price = self._round(symbol, stop_price)
 
                 if stop_price > entry_price:
@@ -130,7 +126,7 @@ class AlgoTrader():
                             "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
                             "comment": comment,
-                            "magic":magic_number,
+                            "magic":timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
                         }
@@ -196,13 +192,13 @@ class AlgoTrader():
                                 for res in resistances:
                                     current_candle = mt.copy_rates_from_pos(symbol, timeframe, 0, 1)[-1]
                                     if current_candle["open"] > res and current_candle["close"] < res:
-                                        if self.short_real_entry(symbol=symbol, comment=f"RES,{timeframe},{res}", timeframe=timeframe):
+                                        if self.short_real_entry(symbol=symbol, comment=f"RES: {res}", timeframe=timeframe):
                                             break
 
                                 for supp in support:
                                     current_candle = mt.copy_rates_from_pos(symbol, timeframe, 0, 1)[-1]
                                     if current_candle["open"] < supp and current_candle["close"] > supp:
-                                        if self.long_real_entry(symbol=symbol, comment=f"SUP,{timeframe},{supp}", timeframe=timeframe):
+                                        if self.long_real_entry(symbol=symbol, comment=f"SUP: {supp}", timeframe=timeframe):
                                             break
             
             time.sleep(30)
