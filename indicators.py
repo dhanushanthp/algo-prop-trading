@@ -109,6 +109,42 @@ def previous_candle_move(symbol, timeframe):
     return previous_high, previous_low, previous_candle_signal
 
 
+def find_r_s(symbol, timeframe):
+    if timeframe == 5:
+        selected_time = mt5.TIMEFRAME_M5
+    elif timeframe == 15:
+        selected_time = mt5.TIMEFRAME_M15
+    elif timeframe == 30:
+        selected_time = mt5.TIMEFRAME_M30
+    elif timeframe == 1:
+        selected_time = mt5.TIMEFRAME_H1
+    elif timeframe == 2:
+        selected_time = mt5.TIMEFRAME_H2
+    else:
+        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+    
+    # If does the mid values intersect with previous 5 bars
+    # get past 5 candles and start from prevous second candle
+    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 1, 20))
+    past_candles.reverse()
+
+    resistance_levels = []
+    suport_levels = []
+
+    for i in range(len(past_candles) - 2):
+        end_candle = past_candles[i]
+        middle_candle = past_candles[i+1]
+        start_candle = past_candles[i+2]
+
+        if end_candle["high"] < middle_candle['high'] and start_candle["high"] < middle_candle['high']:
+            resistance_levels.append(middle_candle["high"])
+        
+        if end_candle["low"] > middle_candle['low'] and start_candle["low"] > middle_candle['low']:
+            suport_levels.append(middle_candle["low"])
+
+    return {"support": suport_levels, "resistance": resistance_levels}
+
+
 def find_resistance_support(symbol, timeframe):
     """
     Find resistance and suppot based on 4X timeframe based on current time frame
@@ -248,6 +284,6 @@ if __name__ == "__main__":
     # close_positions_with_half_profit()
     # print(get_atr("US500.cash"))
     # [print(round(i, 5)) for i in list(get_stop_range("AUDNZD"))]
-    get_ordered_symbols()
+    print(find_r_s("EURUSD", 1))
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
