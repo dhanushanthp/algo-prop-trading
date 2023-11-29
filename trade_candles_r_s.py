@@ -19,7 +19,7 @@ class AlgoTrader():
         mt.initialize()
 
         self.trading_timeframe = 15 # Default to 15 min
-        self.target_ratio = 0.5 # Default 1:0.5 Ratio
+        self.target_ratio = 1.0 # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.risk_manager = risk_manager.RiskManager()
         self.updated_risk = self.risk_manager.initial_risk
@@ -182,8 +182,6 @@ class AlgoTrader():
                             
                             active_orders = len(mt.orders_get())
 
-                            
-
                             if  (symbol not in existing_positions) and active_orders < 1:
                                 
                                 # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
@@ -191,20 +189,20 @@ class AlgoTrader():
                                     continue
 
                                 levels = ind.find_r_s(symbol, timeframe)
-                                print(symbol, levels)
+                                # print(symbol, levels)
                                 resistances = levels["resistance"]
                                 support = levels["support"]
 
                                 for res in resistances:
                                     current_candle = mt.copy_rates_from_pos(symbol, timeframe, 0, 1)[-1]
                                     if current_candle["open"] > res and current_candle["close"] < res:
-                                        if self.short_real_entry(symbol=symbol, comment=f"RES,{timeframe},{res}", timeframe):
+                                        if self.short_real_entry(symbol=symbol, comment=f"RES,{timeframe},{res}", timeframe=timeframe):
                                             break
 
                                 for supp in support:
                                     current_candle = mt.copy_rates_from_pos(symbol, timeframe, 0, 1)[-1]
                                     if current_candle["open"] < supp and current_candle["close"] > supp:
-                                        if self.long_real_entry(symbol=symbol, comment=f"SUP,{timeframe},{supp}", timeframe):
+                                        if self.long_real_entry(symbol=symbol, comment=f"SUP,{timeframe},{supp}", timeframe=timeframe):
                                             break
             
             time.sleep(30)
