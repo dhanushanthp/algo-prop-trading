@@ -185,7 +185,7 @@ class AlgoTrader():
                                     continue
 
                                 levels = ind.find_r_s(symbol, timeframe)
-                                # print(symbol, levels)
+                                # print(f"{symbol.ljust(12)}:", levels)
                                 resistances = levels["resistance"]
                                 support = levels["support"]
 

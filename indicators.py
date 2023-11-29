@@ -136,10 +136,10 @@ def find_r_s(symbol, timeframe):
         middle_candle = past_candles[i+1]
         start_candle = past_candles[i+2]
 
-        if end_candle["high"] < middle_candle['high'] and start_candle["high"] < middle_candle['high']:
+        if ((middle_candle['high'] - end_candle["high"]) > 3 * get_spread(symbol))  and ((middle_candle['high'] - start_candle["high"]) > 3 * get_spread(symbol)) :
             resistance_levels[i] =  middle_candle["high"]
         
-        if end_candle["low"] > middle_candle['low'] and start_candle["low"] > middle_candle['low']:
+        if ((end_candle["low"] - middle_candle['low']) > 3 * get_spread(symbol)) and ((start_candle["low"] - middle_candle['low']) > 3 * get_spread(symbol)):
             suport_levels[i] = middle_candle["low"]
 
 

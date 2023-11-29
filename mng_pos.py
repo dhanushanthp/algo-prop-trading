@@ -110,10 +110,11 @@ def get_last_trades_position(symbol, timeframe):
 
         time_difference = (current_time_epoch - last_traded_time)/60
 
+        if time_difference < timeframe:
         # print(last_tradeed_profit, time_difference)
         # last_tradeed_profit > 0 and 
-        if next_possible_open_window > current_time_epoch:
-            print(f"{''.ljust(12)}: Wait Time {round((next_possible_open_window - current_time_epoch)/60)} Minutes!")
+        # if next_possible_open_window > current_time_epoch:
+            print(f"{symbol.ljust(12)}: Wait Time {round(timeframe - time_difference)} Minutes!")
             return False
 
     return True
