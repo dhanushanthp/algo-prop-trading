@@ -169,7 +169,7 @@ class AlgoTrader():
                 mp.cancel_all_pending_orders()
                 mp.exit_one_r()               
                 
-                parallel_trades = 8 # mp.num_of_parallel_tickers()
+                parallel_trades = len(selected_symbols) # mp.num_of_parallel_tickers()
                                 
                 _, current_hour, _ = util.get_gmt_time()
                 
@@ -177,7 +177,7 @@ class AlgoTrader():
                 for timeframe in [1, 30, 15]:
                     existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                     print(f"{'Available Slots'.ljust(20)}: {parallel_trades - len(existing_positions)}")
-                    if len(existing_positions) < 8:                    
+                    if len(existing_positions) < len(selected_symbols):                    
                         for symbol in selected_symbols:
                             
                             active_orders = len(mt.orders_get())
