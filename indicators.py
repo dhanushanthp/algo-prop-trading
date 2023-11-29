@@ -125,11 +125,11 @@ def find_r_s(symbol, timeframe):
     
     # If does the mid values intersect with previous 5 bars
     # get past 5 candles and start from prevous second candle
-    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 1, 20))
+    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 2, 30))
     past_candles.reverse()
 
-    resistance_levels = []
-    suport_levels = []
+    resistance_levels = {}
+    suport_levels = {}
 
     for i in range(len(past_candles) - 2):
         end_candle = past_candles[i]
@@ -137,12 +137,44 @@ def find_r_s(symbol, timeframe):
         start_candle = past_candles[i+2]
 
         if end_candle["high"] < middle_candle['high'] and start_candle["high"] < middle_candle['high']:
-            resistance_levels.append(middle_candle["high"])
+            resistance_levels[i] =  middle_candle["high"]
         
         if end_candle["low"] > middle_candle['low'] and start_candle["low"] > middle_candle['low']:
-            suport_levels.append(middle_candle["low"])
+            suport_levels[i] = middle_candle["low"]
 
-    return {"support": suport_levels, "resistance": resistance_levels}
+
+    # Filter resistance levels, The levels should not intersect with any previous candle
+    breaked_resistances = []
+    breaked_supprots = []
+
+    for res in resistance_levels.keys():
+        res_level = resistance_levels[res]
+        upcoming_candles = past_candles[:res]
+        overrided = False
+        for candle in upcoming_candles:
+            if is_number_between(res_level, candle["low"], candle["high"]):
+                overrided = True
+                breaked_resistances.append(res_level)
+                break
+        # print(res, res_level, overrided)
+
+    for supp in suport_levels.keys():
+        supp_level = suport_levels[supp]
+        upcoming_candles = past_candles[:supp]
+        overrided = False
+        for candle in upcoming_candles:
+            if is_number_between(supp_level, candle["low"], candle["high"]):
+                overrided = True
+                breaked_supprots.append(supp_level)
+                break
+        # print(supp, supp_level, overrided)
+
+            # all the candles after the resistance candle
+    
+    clean_resistance = [i for i in resistance_levels.values() if i not in breaked_resistances]
+    clean_support = [i for i in suport_levels.values() if i not in breaked_supprots]
+
+    return {"support": clean_support, "resistance": clean_resistance}
 
 
 def find_resistance_support(symbol, timeframe):
@@ -174,7 +206,10 @@ def find_resistance_support(symbol, timeframe):
     return False
     
 def is_number_between(number, lower_limit, upper_limit):
-    return lower_limit <= number <= upper_limit
+    if lower_limit > upper_limit:
+        return lower_limit > number > upper_limit
+    else:
+        return lower_limit < number < upper_limit
 
 def get_stop_range(symbol, timeframe):
     high, low, previous_candle = previous_candle_move(symbol, timeframe)
@@ -284,6 +319,6 @@ if __name__ == "__main__":
     # close_positions_with_half_profit()
     # print(get_atr("US500.cash"))
     # [print(round(i, 5)) for i in list(get_stop_range("AUDNZD"))]
-    print(find_r_s("EURUSD", 1))
+    print(find_r_s("XAUUSD", 15))
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
