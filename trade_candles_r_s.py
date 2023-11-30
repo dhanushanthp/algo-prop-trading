@@ -201,7 +201,7 @@ class AlgoTrader():
                                     current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
                                     if current_candle["open"] > resistance_level and current_candle["close"] < resistance_level:
                                         if self.short_real_entry(symbol=symbol, 
-                                                                 comment=f"RES>{self.entry_timeframe}>{entry_check_timeframe}>{resistance_level}", 
+                                                                 comment=f"{entry_check_timeframe}>{resistance_level}", 
                                                                  r_s_timeframe=r_s_timeframe, 
                                                                  entry_timeframe=entry_check_timeframe):
                                             break
@@ -210,7 +210,7 @@ class AlgoTrader():
                                     current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
                                     if current_candle["open"] < support_level and current_candle["close"] > support_level:
                                         if self.long_real_entry(symbol=symbol, 
-                                                                comment=f"SUP>{self.entry_timeframe}>{entry_check_timeframe}>{support_level}", 
+                                                                comment=f"{entry_check_timeframe}>{support_level}", 
                                                                 r_s_timeframe=r_s_timeframe, 
                                                                 entry_timeframe=entry_check_timeframe):
                                             break
