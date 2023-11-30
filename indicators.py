@@ -205,6 +205,18 @@ def get_spread(symbol):
     spread = ask_price - bid_price
     return spread
 
+
+def correlate_entry_timeframe(timeframe):
+    if timeframe in [15, 30, 60]:
+        return 15
+    elif timeframe == 120:
+        return 30
+    elif timeframe == 240:
+        return 60
+    else:
+        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+
+
 def match_timeframe(timeframe):
     if timeframe == 5:
         selected_time = mt5.TIMEFRAME_M5
