@@ -42,7 +42,7 @@ class AlgoTrader():
     
     def get_lot_size(self, symbol, entry_price, stop_price):        
         dollor_value = mp.get_dollar_value(symbol)
-        points_in_stop = abs(entry_price-stop_price)
+        points_in_stop = abs(entry_price-stop_price) * 1.5
         self.updated_risk = self.risk_manager.update_risk()
         lots = self.updated_risk/(points_in_stop * dollor_value)
         
