@@ -196,9 +196,12 @@ class AlgoTrader():
                                 If it's auto then all the levels check and trade entry will be in same time frame
                                 """
                                 entry_check_timeframe = r_s_timeframe if self.entry_timeframe == "auto" else 15
+                                # If it's a fixed time, then check the previous closed candle positions.
+                                # If it'a auto then always check the current active candle
+                                candle_reference = 0 if self.entry_timeframe == "auto" else 1
                                 
                                 for resistance_level in resistances:
-                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
+                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), candle_reference, 1)[-1]
                                     if current_candle["open"] > resistance_level and current_candle["close"] < resistance_level:
                                         if self.short_real_entry(symbol=symbol, 
                                                                  comment=f"{entry_check_timeframe}>{resistance_level}", 
@@ -207,7 +210,7 @@ class AlgoTrader():
                                             break
 
                                 for support_level in support:
-                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
+                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), candle_reference, 1)[-1]
                                     if current_candle["open"] < support_level and current_candle["close"] > support_level:
                                         if self.long_real_entry(symbol=symbol, 
                                                                 comment=f"{entry_check_timeframe}>{support_level}", 
