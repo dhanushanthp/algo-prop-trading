@@ -170,7 +170,7 @@ class AlgoTrader():
                 _, current_hour, _ = util.get_gmt_time()
                 
                 
-                for timeframe in [1, 30, 15]:
+                for timeframe in [60, 30, 15]:
                     existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                     print(f"{f'{timeframe}: Available Slots'.ljust(20)}: {parallel_trades - len(existing_positions)}")
                     if len(existing_positions) < len(selected_symbols):                    
@@ -190,13 +190,13 @@ class AlgoTrader():
                                 support = levels["support"]
 
                                 for res in resistances:
-                                    current_candle = mt.copy_rates_from_pos(symbol, timeframe, 0, 1)[-1]
+                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(timeframe), 0, 1)[-1]
                                     if current_candle["open"] > res and current_candle["close"] < res:
                                         if self.short_real_entry(symbol=symbol, comment=f"RES: {res}", timeframe=timeframe):
                                             break
 
                                 for supp in support:
-                                    current_candle = mt.copy_rates_from_pos(symbol, timeframe, 0, 1)[-1]
+                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(timeframe), 0, 1)[-1]
                                     if current_candle["open"] < supp and current_candle["close"] > supp:
                                         if self.long_real_entry(symbol=symbol, comment=f"SUP: {supp}", timeframe=timeframe):
                                             break

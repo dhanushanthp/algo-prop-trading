@@ -89,9 +89,6 @@ def get_last_trades_position(symbol, timeframe):
     If you already have made some money. Then don't entry this for another 1 hour
     """
 
-    if timeframe == 1:
-        timeframe=60
-
     tm_zone = pytz.timezone('Etc/GMT-2')
     start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=2)
     end_time = datetime.now(tm_zone) + timedelta(hours=4)

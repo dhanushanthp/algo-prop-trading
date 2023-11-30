@@ -42,18 +42,8 @@ def get_ordered_symbols():
     return sorted_list
 
 def previous_candle_move(symbol, timeframe):
-    if timeframe == 5:
-        selected_time = mt5.TIMEFRAME_M5
-    elif timeframe == 15:
-        selected_time = mt5.TIMEFRAME_M15
-    elif timeframe == 30:
-        selected_time = mt5.TIMEFRAME_M30
-    elif timeframe == 1:
-        selected_time = mt5.TIMEFRAME_H1
-    elif timeframe == 2:
-        selected_time = mt5.TIMEFRAME_H2
-    else:
-        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+    
+    selected_time = match_timeframe(timeframe)
     
     previous_candle = mt5.copy_rates_from_pos(symbol, selected_time, 1, 1)[0]
     current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
@@ -110,18 +100,8 @@ def previous_candle_move(symbol, timeframe):
 
 
 def find_r_s(symbol, timeframe):
-    if timeframe == 5:
-        selected_time = mt5.TIMEFRAME_M5
-    elif timeframe == 15:
-        selected_time = mt5.TIMEFRAME_M15
-    elif timeframe == 30:
-        selected_time = mt5.TIMEFRAME_M30
-    elif timeframe == 1:
-        selected_time = mt5.TIMEFRAME_H1
-    elif timeframe == 2:
-        selected_time = mt5.TIMEFRAME_H2
-    else:
-        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+
+    selected_time = match_timeframe(timeframe)
     
     # If does the mid values intersect with previous 5 bars
     # get past 5 candles and start from prevous second candle
@@ -181,18 +161,7 @@ def find_resistance_support(symbol, timeframe):
     """
     Find resistance and suppot based on 4X timeframe based on current time frame
     """
-    if timeframe == 5:
-        selected_time = mt5.TIMEFRAME_M20
-    elif timeframe == 15:
-        selected_time = mt5.TIMEFRAME_H1
-    elif timeframe == 30:
-        selected_time = mt5.TIMEFRAME_H2
-    elif timeframe == 1:
-        selected_time = mt5.TIMEFRAME_H4
-    elif timeframe == 2:
-        selected_time = mt5.TIMEFRAME_H8
-    else:
-        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+    selected_time = match_timeframe(timeframe)
     
     # If does the mid values intersect with previous 5 bars
     # get past 5 candles and start from prevous second candle
@@ -235,6 +204,22 @@ def get_spread(symbol):
     bid_price = mt5.symbol_info_tick(symbol).bid
     spread = ask_price - bid_price
     return spread
+
+def match_timeframe(timeframe):
+    if timeframe == 5:
+        selected_time = mt5.TIMEFRAME_M5
+    elif timeframe == 15:
+        selected_time = mt5.TIMEFRAME_M15
+    elif timeframe == 30:
+        selected_time = mt5.TIMEFRAME_M30
+    elif timeframe == 60:
+        selected_time = mt5.TIMEFRAME_H1
+    elif timeframe == 120:
+        selected_time = mt5.TIMEFRAME_H2
+    else:
+        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+    return selected_time
+                    
 
 def is_ema_cross(symbol, timeframe):
     if timeframe == 5:
@@ -319,6 +304,12 @@ if __name__ == "__main__":
     # close_positions_with_half_profit()
     # print(get_atr("US500.cash"))
     # [print(round(i, 5)) for i in list(get_stop_range("AUDNZD"))]
-    print(find_r_s("XAUUSD", 15))
+    # print(find_r_s("XAUUSD", 15))
+    # print(match_timeframe(15))
+    # print(match_timeframe(30))
+    # print(match_timeframe(60))
+    # print(mt5.TIMEFRAME_H2)
+    # print(mt5.TIMEFRAME_H1)
+    print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
