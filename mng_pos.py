@@ -96,22 +96,17 @@ def get_last_trades_position(symbol, timeframe):
 
     if len(traded_positions) > 0:
         last_traded_time = traded_positions[-1].time
-        last_tradeed_profit = traded_positions[-1].profit
+        last_traded_timeframe = int(traded_positions[-1].magic) # in minutes
         current_time = (datetime.now(tm_zone) + timedelta(hours=2))
-        current_minute = current_time.time().minute
-
-        remaining_minutes = (timeframe-current_minute%timeframe)
-        next_possible_open_window = last_traded_time + remaining_minutes*60
 
         current_time_epoch = current_time.timestamp()
-
         time_difference = (current_time_epoch - last_traded_time)/60
 
-        if time_difference < timeframe:
+        if time_difference < last_traded_timeframe:
         # print(last_tradeed_profit, time_difference)
         # last_tradeed_profit > 0 and 
         # if next_possible_open_window > current_time_epoch:
-            print(f"{symbol.ljust(12)}: Wait Time {round(timeframe - time_difference)} Minutes!")
+            print(f"{symbol.ljust(12)}: Last Traded TF: {last_traded_timeframe} > Wait Time {round(last_traded_timeframe - time_difference)} Minutes!")
             return False
 
     return True
