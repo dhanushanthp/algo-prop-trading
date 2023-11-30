@@ -23,7 +23,7 @@ def get_dollar_value(symbol):
         if symbol == "US500.cash":
             return 1
         elif symbol == "UK100.cash":
-            return round(1/get_exchange_price("GBPUSD"), 4)
+            return get_exchange_price("GBPUSD")
         elif symbol == "HK50.cash":
             return round(1/get_exchange_price("USDHKD"), 4)
         elif symbol == "JP225.cash":
