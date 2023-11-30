@@ -18,7 +18,7 @@ class AlgoTrader():
     def __init__(self):
         mt.initialize()
 
-        self.trading_timeframe = 15 # Default to 15 min
+        self.entry_timeframe = None # Default to 15 min
         self.target_ratio = 1.0 # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.risk_manager = risk_manager.RiskManager()
@@ -62,13 +62,13 @@ class AlgoTrader():
         else:
             print("Error with response!")
 
-    def long_real_entry(self, symbol, comment="NA", timeframe=0):
+    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, stop_price, prev_can_dir = ind.get_stop_range(symbol, timeframe)
+            _, stop_price, prev_can_dir = ind.get_stop_range(symbol, entry_timeframe)
             
-            if prev_can_dir and mp.get_last_trades_position(symbol, timeframe):
+            if prev_can_dir and mp.get_last_trades_position(symbol, entry_timeframe):
                 stop_price = self._round(symbol, stop_price)
                 
                 if entry_price > stop_price:                
@@ -87,7 +87,7 @@ class AlgoTrader():
                             "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
                             "comment": comment,
-                            "magic":timeframe,
+                            "magic":r_s_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
                         }
@@ -101,13 +101,13 @@ class AlgoTrader():
                 print(f"{symbol.ljust(12)}: Skipped!")
                 return False
 
-    def short_real_entry(self, symbol, comment="NA", timeframe=0):
+    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, previous_candle = ind.get_stop_range(symbol, timeframe)
+            stop_price, _, previous_candle = ind.get_stop_range(symbol, entry_timeframe)
             
-            if previous_candle and mp.get_last_trades_position(symbol, timeframe):
+            if previous_candle and mp.get_last_trades_position(symbol, entry_timeframe):
                 stop_price = self._round(symbol, stop_price)
 
                 if stop_price > entry_price:
@@ -126,7 +126,7 @@ class AlgoTrader():
                             "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
                             "comment": comment,
-                            "magic":timeframe,
+                            "magic":r_s_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
                         }
@@ -169,11 +169,10 @@ class AlgoTrader():
                                 
                 _, current_hour, _ = util.get_gmt_time()
                 
-                
-                for timeframe in [60, 30, 15]:
+                for r_s_timeframe in [60, 30, 15]:
                     existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                    print(f"{f'{timeframe}: Available Slots'.ljust(20)}: {parallel_trades - len(existing_positions)}")
-                    if len(existing_positions) < len(selected_symbols):                    
+                    print(f"{f'{r_s_timeframe}: Available Slots'.ljust(20)}: {parallel_trades - len(existing_positions)}")
+                    if len(existing_positions) < len(selected_symbols):
                         for symbol in selected_symbols:
                             
                             active_orders = len(mt.orders_get())
@@ -184,21 +183,36 @@ class AlgoTrader():
                                 if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
                                     continue
 
-                                levels = ind.find_r_s(symbol, timeframe)
+                                levels = ind.find_r_s(symbol, r_s_timeframe)
                                 # print(f"{symbol.ljust(12)}:", levels)
                                 resistances = levels["resistance"]
                                 support = levels["support"]
 
-                                for res in resistances:
-                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(timeframe), 0, 1)[-1]
-                                    if current_candle["open"] > res and current_candle["close"] < res:
-                                        if self.short_real_entry(symbol=symbol, comment=f"RES: {res}", timeframe=timeframe):
+
+                                """
+                                If it's a fixed timeframe, then the 15 minute candle will be checked for entry along with higer timeframe.
+                                Also the stop will be decided based on 15 minutes time frame.
+
+                                If it's auto then all the levels check and trade entry will be in same time frame
+                                """
+                                entry_check_timeframe = r_s_timeframe if self.entry_timeframe == "auto" else 15
+                                
+                                for resistance_level in resistances:
+                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
+                                    if current_candle["open"] > resistance_level and current_candle["close"] < resistance_level:
+                                        if self.short_real_entry(symbol=symbol, 
+                                                                 comment=f"RES>{self.entry_timeframe}>{entry_check_timeframe}>{resistance_level}", 
+                                                                 r_s_timeframe=r_s_timeframe, 
+                                                                 entry_timeframe=entry_check_timeframe):
                                             break
 
-                                for supp in support:
-                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(timeframe), 0, 1)[-1]
-                                    if current_candle["open"] < supp and current_candle["close"] > supp:
-                                        if self.long_real_entry(symbol=symbol, comment=f"SUP: {supp}", timeframe=timeframe):
+                                for support_level in support:
+                                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
+                                    if current_candle["open"] < support_level and current_candle["close"] > support_level:
+                                        if self.long_real_entry(symbol=symbol, 
+                                                                comment=f"SUP>{self.entry_timeframe}>{entry_check_timeframe}>{support_level}", 
+                                                                r_s_timeframe=r_s_timeframe, 
+                                                                entry_timeframe=entry_check_timeframe):
                                             break
             
             time.sleep(30)
@@ -224,13 +238,16 @@ if __name__ == "__main__":
     win = AlgoTrader()
     
     if len(sys.argv) > 1:
-        win.trading_timeframe = int(sys.argv[1])
-        win.stop_ratio = float(sys.argv[2])
-        win.target_ratio = float(sys.argv[3])
-        win.strategy =sys.argv[4]
+        win.entry_timeframe = sys.argv[1]
+        if win.entry_timeframe not in ["fixed", "auto"]:
+            raise Exception("Please enter fixed or auto entry time check!")
+    else:
+        # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
+        win.entry_timeframe = "auto"
+        
     
     print("\n------------------------------------------------")
-    print(f"SELECTED TIMEFRAME {win.trading_timeframe} & Risk:Reward : {win.stop_ratio}:{win.target_ratio} & Strategy: {win.strategy}" )
+    print(f"SELECTED TIMEFRAME {win.entry_timeframe}" )
     print("------------------------------------------------")
     win.main()
     
