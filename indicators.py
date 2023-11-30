@@ -222,18 +222,7 @@ def match_timeframe(timeframe):
                     
 
 def is_ema_cross(symbol, timeframe):
-    if timeframe == 5:
-        selected_time = mt5.TIMEFRAME_M5
-    elif timeframe == 15:
-        selected_time = mt5.TIMEFRAME_M15
-    elif timeframe == 30:
-        selected_time = mt5.TIMEFRAME_M30
-    elif timeframe == 1:
-        selected_time = mt5.TIMEFRAME_H1
-    elif timeframe == 2:
-        selected_time = mt5.TIMEFRAME_H2
-    else:
-        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+    selected_time = match_timeframe(timeframe)
 
     # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
     window_size = 21

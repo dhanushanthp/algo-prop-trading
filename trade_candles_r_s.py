@@ -169,7 +169,7 @@ class AlgoTrader():
                                 
                 _, current_hour, _ = util.get_gmt_time()
                 
-                for r_s_timeframe in [60, 30, 15]:
+                for r_s_timeframe in [120, 60, 30, 15]:
                     existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                     print(f"{f'{r_s_timeframe}: Available Slots'.ljust(20)}: {parallel_trades - len(existing_positions)}")
                     if len(existing_positions) < len(selected_symbols):
