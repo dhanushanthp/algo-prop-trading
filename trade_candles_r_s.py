@@ -150,10 +150,10 @@ class AlgoTrader():
             is_market_open, is_market_close = util.get_market_status()
 
             # Max profit or loss
-            if self.risk_manager.is_dly_max_risk_reached() or self.risk_manager.is_dly_max_profit_reached():
-                print("Max loss/profit reached! Closing all positions!")
-                mp.close_all_positions()
-                sys.exit()
+            # if self.risk_manager.is_dly_max_risk_reached() or self.risk_manager.is_dly_max_profit_reached():
+            #     print("Max loss/profit reached! Closing all positions!")
+            #     mp.close_all_positions()
+            #     sys.exit()
 
             if is_market_close:
                 print("Market Close!")
@@ -169,7 +169,7 @@ class AlgoTrader():
                                 
                 _, current_hour, _ = util.get_gmt_time()
                 
-                for r_s_timeframe in [120, 60, 30, 15]:
+                for r_s_timeframe in [240, 120, 60, 30, 15]:
                     existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                     print(f"{f'{r_s_timeframe}: Available Slots'.ljust(20)}: {parallel_trades - len(existing_positions)}")
                     if len(existing_positions) < len(selected_symbols):

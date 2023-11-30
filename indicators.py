@@ -216,6 +216,8 @@ def match_timeframe(timeframe):
         selected_time = mt5.TIMEFRAME_H1
     elif timeframe == 120:
         selected_time = mt5.TIMEFRAME_H2
+    elif timeframe == 240:
+        selected_time = mt5.TIMEFRAME_H4
     else:
         raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
     return selected_time
