@@ -213,13 +213,8 @@ class AlgoTrader():
                             total_resistance_tf = set(combinbed_resistance[symbol])
                             total_support_tf = set(combined_support[symbol])
 
-                            if len(total_support_tf) >= 2:
-                                print(f"{symbol}: Support: {','.join(map(str,total_support_tf))}")
-                            
-                            if len(total_resistance_tf) >= 2:
-                                print(f"{symbol}: Resistance: {','.join(map(str,total_resistance_tf))}")
-
                             if len(total_resistance_tf) >= 2 and (len(total_resistance_tf) > len(total_support_tf)):
+                                print(f"{symbol}: Resistance: {','.join(map(str,total_resistance_tf))}")
                                 if self.short_real_entry(symbol=symbol, 
                                                          comment='|'.join(map(str, total_resistance_tf)), 
                                                          r_s_timeframe=max(total_resistance_tf), 
@@ -227,6 +222,7 @@ class AlgoTrader():
                                     break
 
                             if len(total_support_tf) >= 2 and (len(total_support_tf) > len(total_resistance_tf)):
+                                print(f"{symbol}: Support: {','.join(map(str,total_support_tf))}")
                                 if self.long_real_entry(symbol=symbol, 
                                                          comment='|'.join(map(str, total_support_tf)), 
                                                          r_s_timeframe=max(total_support_tf), 
