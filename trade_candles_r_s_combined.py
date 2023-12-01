@@ -207,8 +207,8 @@ class AlgoTrader():
                         if (symbol not in existing_positions) and active_orders < 1:
 
                             # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
-                            if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
-                                continue
+                            # if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
+                            #     continue
                             
                             total_resistance_tf = set(combinbed_resistance[symbol])
                             total_support_tf = set(combined_support[symbol])
