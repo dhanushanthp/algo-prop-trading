@@ -3,6 +3,7 @@ import pytz
 
 import MetaTrader5 as mt5
 mt5.initialize()
+import currency_pairs as curr
 
 def get_local_time(city):
     # Create a dictionary to map cities to their respective time zones
@@ -34,6 +35,11 @@ def get_gmt_time():
     minute = int(local_time.strftime('%M'))
     return day_of_week, hour, minute
 
+def curr_round(symbol, price):
+    round_factor = 5 if symbol in curr.currencies else 2
+    round_factor = 2 if symbol == "XAUUSD" else round_factor
+    round_factor = 3 if symbol in curr.jpy_currencies else round_factor
+    return round(price, round_factor)
 
 def get_today_profit():
     tm_zone = pytz.timezone('Etc/GMT-2')

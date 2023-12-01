@@ -251,33 +251,23 @@ class AlgoTrader():
                                 else:
                                     for resistance_level in resistances:
                                         resistance_level += (3 * ind.get_spread(symbol))
-                                        previous_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 1, 1)[-1]
                                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
-                                        if previous_candle["open"] > resistance_level and previous_candle["close"] < resistance_level:
-                                            # I should have this condition, Incase if the previous candle is too long.
-                                            if current_candle["close"] > resistance_level:
-                                                if self.short_real_entry(symbol=symbol, 
-                                                                        comment=f"{entry_check_timeframe}>{round(resistance_level, 5)}", 
-                                                                        r_s_timeframe=r_s_timeframe, 
-                                                                        entry_timeframe=entry_check_timeframe):
-                                                    break
-                                            else:
-                                                print(f"{symbol.ljust(12)}: Waiting Price To Go Above {round(resistance_level, 5)}!")
+                                        if current_candle["open"] > resistance_level and current_candle["close"] < resistance_level:
+                                           if self.long_real_entry(symbol=symbol, 
+                                                                    comment=f"{entry_check_timeframe}>{round(resistance_level, 5)}", 
+                                                                    r_s_timeframe=r_s_timeframe, 
+                                                                    entry_timeframe=entry_check_timeframe):
+                                                break
 
                                     for support_level in support:
                                         support_level -= (3 * ind.get_spread(symbol))
-                                        previous_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 1, 1)[-1]
                                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
-                                        if previous_candle["open"] < support_level and previous_candle["close"] > support_level:
-                                            # I should have this condition, Incase if the previous candle is too long.
-                                            if current_candle["close"] < support_level:
-                                                if self.long_real_entry(symbol=symbol, 
-                                                                        comment=f"{entry_check_timeframe}>{round(support_level, 5)}", 
-                                                                        r_s_timeframe=r_s_timeframe, 
-                                                                        entry_timeframe=entry_check_timeframe):
-                                                    break
-                                            else:
-                                                print(f"{symbol.ljust(12)}: Waiting Price To Go Below {round(support_level, 5)}!")
+                                        if current_candle["open"] < support_level and current_candle["close"] > support_level:
+                                            if self.short_real_entry(symbol=symbol, 
+                                                                    comment=f"{entry_check_timeframe}>{round(support_level, 5)}", 
+                                                                    r_s_timeframe=r_s_timeframe, 
+                                                                    entry_timeframe=entry_check_timeframe):
+                                                break
             
             time.sleep(30)
     

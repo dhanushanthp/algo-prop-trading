@@ -1,5 +1,6 @@
 import MetaTrader5 as mt5
 import indicators as ind
+import util
 import currency_pairs as curr
 import client
 import numpy as np
@@ -276,6 +277,47 @@ def exit_one_r():
         max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
         if (position.profit > max_loss * 0.9):
             close_single_position(position)
+
+
+def trail_stop_half_points():
+    existing_positions = mt5.positions_get()
+    for position in existing_positions:
+        symbol = position.symbol
+        entry_price = position.price_open
+        stop_loss = position.sl
+        quantity = position.volume
+        max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
+        price_movement = abs(position.tp - ind.get_mid_price(symbol=position.symbol))
+        
+        if position.type == 0:
+            new_stop_point = util.curr_round(position.symbol, (entry_price + price_movement/2))
+        else:
+            new_stop_point = util.curr_round(position.symbol, (entry_price - price_movement/2))
+        
+
+        if (position.profit > max_loss/2) and max_loss != 0:
+            print(f"{position.symbol}")
+
+            # modify_request = {
+            #     "action": mt5.TRADE_ACTION_SLTP,
+            #     "symbol": position.symbol,
+            #     "volume": position.volume,
+            #     "type": position.type,
+            #     "position": position.ticket,
+            #     "sl": position.price_open,
+            #     "tp": position.tp,
+            #     "comment": 'break_even',
+            #     "magic": 234000,
+            #     "type_time": mt5.ORDER_TIME_GTC,
+            #     "type_filling": mt5.ORDER_FILLING_FOK,
+            #     "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+            # }
+            
+            # result = mt5.order_send(modify_request)
+            
+            # if result.retcode != mt5.TRADE_RETCODE_DONE:
+            #     if result.comment != "No changes":
+            #         print("Modify Order " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 def breakeven_1R_positions():
     existing_positions = mt5.positions_get()
