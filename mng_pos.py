@@ -327,7 +327,7 @@ def breakeven_1R_positions():
         stop_loss = position.sl
         quantity = position.volume
         max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
-        if (position.profit > max_loss) and max_loss != 0:
+        if (position.profit > max_loss/4) and max_loss != 0:
             modify_request = {
                 "action": mt5.TRADE_ACTION_SLTP,
                 "symbol": position.symbol,
