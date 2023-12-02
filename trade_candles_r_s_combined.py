@@ -20,7 +20,7 @@ class AlgoTrader():
 
         self.entry_timeframe = None # Default to 15 min
         self.target_ratio = 1.0 # Default 1:0.5 Ratio
-        self.stop_ratio = 1.0
+        self.stop_ratio = 2.0
         self.risk_manager = risk_manager.RiskManager()
         self.updated_risk = self.risk_manager.initial_risk
         self.strategy = config.REVERSAL
@@ -171,7 +171,7 @@ class AlgoTrader():
             
             if is_market_open and not is_market_close:
                 mp.cancel_all_pending_orders()
-                mp.breakeven_1R_positions()
+                mp.trail_stop_half_points(self.target_ratio)
                 # mp.exit_one_r()
                 
                 parallel_trades = len(selected_symbols) # mp.num_of_parallel_tickers()
@@ -216,19 +216,39 @@ class AlgoTrader():
 
                             if len(total_resistance_tf) >= 2 and (len(total_resistance_tf) > len(total_support_tf)):
                                 print(f"{symbol}: Resistance: {','.join(map(str,total_resistance_tf))}")
-                                if self.short_real_entry(symbol=symbol, 
-                                                         comment='|'.join(map(str, total_resistance_tf)), 
-                                                         r_s_timeframe=max(total_resistance_tf), 
-                                                         entry_timeframe=max(total_resistance_tf)):
-                                    break
+
+                                if self.entry_timeframe == "break":
+                                    if self.long_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_resistance_tf)), 
+                                                            r_s_timeframe=max(total_resistance_tf), 
+                                                            entry_timeframe=max(total_resistance_tf)):
+                                        break
+                                elif self.entry_timeframe == "reverse":
+                                    if self.short_real_entry(symbol=symbol,
+                                                            comment='|'.join(map(str, total_resistance_tf)), 
+                                                            r_s_timeframe=max(total_resistance_tf), 
+                                                            entry_timeframe=max(total_resistance_tf)):
+                                        break
+                                else:
+                                    raise Exception("Strategy not defined!")
+
 
                             if len(total_support_tf) >= 2 and (len(total_support_tf) > len(total_resistance_tf)):
                                 print(f"{symbol}: Support: {','.join(map(str,total_support_tf))}")
-                                if self.long_real_entry(symbol=symbol, 
-                                                         comment='|'.join(map(str, total_support_tf)), 
-                                                         r_s_timeframe=max(total_support_tf), 
-                                                         entry_timeframe=max(total_support_tf)):
-                                    break
+                                if self.entry_timeframe == "break":
+                                    if self.short_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_support_tf)), 
+                                                            r_s_timeframe=max(total_support_tf), 
+                                                            entry_timeframe=max(total_support_tf)):
+                                        break
+                                elif self.entry_timeframe == "reverse":
+                                    if self.long_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_support_tf)), 
+                                                            r_s_timeframe=max(total_support_tf), 
+                                                            entry_timeframe=max(total_support_tf)):
+                                        break
+                                else:
+                                    raise Exception("Strategy not defined!")
 
 
 
@@ -350,7 +370,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         win.entry_timeframe = sys.argv[1]
-        if win.entry_timeframe not in ["fixed", "auto", "break"]:
+        if win.entry_timeframe not in ["reverse", "break"]:
             raise Exception("Please enter fixed or auto entry time check!")
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default

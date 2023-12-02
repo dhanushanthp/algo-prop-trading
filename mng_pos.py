@@ -76,6 +76,15 @@ def get_value_at_risk(symbol, price_open, stop, positions):
         risk = difference * dollor_value * 100000 * positions
     return round(risk, 2)
 
+def get_value_at_risk_by_points(symbol, difference, positions):
+    dollor_value = get_dollar_value(symbol)
+    
+    if symbol in curr.indexes:
+        risk = difference * dollor_value * positions
+    else:
+        risk = difference * dollor_value * 100000 * positions
+    return round(risk, 2)
+
 def stop_round(symbol, stop_price):
     if symbol in curr.currencies:
         if symbol in curr.jpy_currencies:
@@ -279,45 +288,53 @@ def exit_one_r():
             close_single_position(position)
 
 
-def trail_stop_half_points():
+def trail_stop_half_points(profit_ratio):
     existing_positions = mt5.positions_get()
     for position in existing_positions:
         symbol = position.symbol
         entry_price = position.price_open
-        stop_loss = position.sl
+        stop_price = position.sl
+        target_price = position.tp
         quantity = position.volume
-        max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
-        price_movement = abs(position.tp - ind.get_mid_price(symbol=position.symbol))
+        
+        max_loss = get_value_at_risk_by_points(symbol=symbol, 
+                                               difference=abs(entry_price-target_price)/profit_ratio,  
+                                               positions=quantity)
+        
+        trailing_points = abs(entry_price-target_price)/profit_ratio/2 # Trailning 0.5R
         
         if position.type == 0:
-            new_stop_point = util.curr_round(position.symbol, (entry_price + price_movement/2))
+            new_stop_point = util.curr_round(position.symbol, (entry_price - trailing_points))
+            trail_stop = max(stop_price, new_stop_point)
         else:
-            new_stop_point = util.curr_round(position.symbol, (entry_price - price_movement/2))
-        
+            new_stop_point = util.curr_round(position.symbol, (entry_price + trailing_points))
+            trail_stop = min(stop_price, new_stop_point)
 
-        if (position.profit > max_loss/2) and max_loss != 0:
+        # If the stop is already equal to existing stop, then no need to change it!
+        # Enable trailning once price moved 1/4 of the stop
+        if (position.profit > max_loss/4) and trail_stop != stop_price:
             print(f"{position.symbol}")
 
-            # modify_request = {
-            #     "action": mt5.TRADE_ACTION_SLTP,
-            #     "symbol": position.symbol,
-            #     "volume": position.volume,
-            #     "type": position.type,
-            #     "position": position.ticket,
-            #     "sl": position.price_open,
-            #     "tp": position.tp,
-            #     "comment": 'break_even',
-            #     "magic": 234000,
-            #     "type_time": mt5.ORDER_TIME_GTC,
-            #     "type_filling": mt5.ORDER_FILLING_FOK,
-            #     "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
-            # }
+            modify_request = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "symbol": position.symbol,
+                "volume": position.volume,
+                "type": position.type,
+                "position": position.ticket,
+                "sl": trail_stop,
+                "tp": position.tp,
+                "comment": position.comment,
+                "magic": position.magic,
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_FOK,
+                "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+            }
             
-            # result = mt5.order_send(modify_request)
+            result = mt5.order_send(modify_request)
             
-            # if result.retcode != mt5.TRADE_RETCODE_DONE:
-            #     if result.comment != "No changes":
-            #         print("Modify Order " + position.symbol + " failed!!...Error: "+str(result.comment))
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                if result.comment != "No changes":
+                    print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 def breakeven_1R_positions():
     existing_positions = mt5.positions_get()
