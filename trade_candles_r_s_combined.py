@@ -161,23 +161,16 @@ class AlgoTrader():
                 print("Max loss/profit reached! Closing all positions!")
                 mp.close_all_positions()
                 self.immidiate_exit = True
-                sys.exit()
 
             if is_market_close:
                 print("Market Close!")
-                # Reset the risk for the day
-                self.risk_manager.reset_risk()
+                self.risk_manager.reset_risk() # Reset the risk for the day
                 mp.close_all_positions()
                 self.immidiate_exit = False
             
             if is_market_open and not is_market_close and not self.immidiate_exit:
                 mp.cancel_all_pending_orders()
                 mp.trail_stop_previous_candle(self.risk_manager.initial_risk)
-                # mp.exit_one_r()
-                
-                parallel_trades = len(selected_symbols) # mp.num_of_parallel_tickers()
-
-                _, current_hour, _ = util.get_gmt_time()
 
                 combinbed_resistance_long = {}
                 combined_support_long = {}
@@ -190,10 +183,8 @@ class AlgoTrader():
                     combined_support_short[symbol] = []
                     combinbed_resistance_short[symbol] = []
 
-                    # print(symbol)
                     for r_s_timeframe in [240, 120, 60, 30, 15]:
                         levels = ind.find_r_s(symbol, r_s_timeframe)
-                        # print("\t", r_s_timeframe, levels)
                         resistances = levels["resistance"]
                         support = levels["support"]
 
@@ -262,23 +253,6 @@ class AlgoTrader():
             
             time.sleep(30)
     
-
-    def parse_cmd_args(self):
-        import argparse
-        parser = argparse.ArgumentParser(description='Process some command line arguments')
-        parser.add_argument('--timeframe', type=str, help='Description of arg1')
-        parser.add_argument('--stopratio', type=int, help='Description of arg2')
-        parser.add_argument('--targetratio', type=float, help='Description of arg3')
-        parser.add_argument('--strategy', type=float, help='Description of arg3')
-        # Add more arguments as needed
-
-        args = parser.parse_args()
-
-        # Convert argparse.Namespace to dictionary
-        args_dict = vars(args)
-
-        return args_dict
-    
 if __name__ == "__main__":
     win = AlgoTrader()
     
@@ -295,24 +269,4 @@ if __name__ == "__main__":
     print(f"SELECTED TIMEFRAME {win.entry_timeframe}" )
     print("------------------------------------------------")
     win.main()
-    
-    
-    """
-    ENTRY PRICE TEST
-    """
-    # for i in (curr.currencies + curr.indexes):
-    #     entry_price = win.get_entry_price(symbol=i)
-    #     print(f"{i}: {entry_price}")
-        
-        
-    # win.long_trial_entry(symbol=symbol)
-    # win.long_real_entry(symbol=symbol)
-    # win.short_trial_entry(symbol=symbol)
-    # win.short_real_entry(symbol=symbol)
-    # win.update_symbol_parameters()
-    # win.long_entry_test()
-    # win.scale_out_positions()
-    # print(win.calculate_slots(3.89)/100000)
-    
-
 
