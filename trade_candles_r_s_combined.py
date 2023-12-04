@@ -173,7 +173,7 @@ class AlgoTrader():
                 # mp.exit_one_r()
                 
                 parallel_trades = len(selected_symbols) # mp.num_of_parallel_tickers()
-                                
+
                 _, current_hour, _ = util.get_gmt_time()
 
                 combinbed_resistance_long = {}
@@ -188,7 +188,7 @@ class AlgoTrader():
                     combinbed_resistance_short[symbol] = []
 
                     # print(symbol)
-                    for r_s_timeframe in [240, 120, 60, 30]:
+                    for r_s_timeframe in [240, 120, 60, 30, 15]:
                         levels = ind.find_r_s(symbol, r_s_timeframe)
                         # print("\t", r_s_timeframe, levels)
                         resistances = levels["resistance"]
