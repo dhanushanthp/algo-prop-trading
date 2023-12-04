@@ -19,7 +19,7 @@ class AlgoTrader():
         mt.initialize()
 
         self.entry_timeframe = None # Default to 15 min
-        self.target_ratio = 1.0 # Default 1:0.5 Ratio
+        self.target_ratio = 2.0 # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.risk_manager = risk_manager.RiskManager()
         self.updated_risk = self.risk_manager.initial_risk
@@ -169,7 +169,7 @@ class AlgoTrader():
             
             if is_market_open and not is_market_close:
                 mp.cancel_all_pending_orders()
-                mp.trail_stop_half_points(self.target_ratio)
+                # mp.trail_stop_half_points(self.risk_manager.initial_risk)
                 # mp.exit_one_r()
                 
                 parallel_trades = len(selected_symbols) # mp.num_of_parallel_tickers()
