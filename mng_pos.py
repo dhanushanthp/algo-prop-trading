@@ -298,6 +298,47 @@ def exit_one_r():
             close_single_position(position)
 
 
+def trail_stop_previous_candle(risk):
+    existing_positions = mt5.positions_get()
+    for position in existing_positions:
+        symbol = position.symbol
+        stop_price = position.sl
+        short_tf = int(position.comment.split("|")[-1])
+        high, low, _ = ind.get_stop_range(symbol, short_tf)
+        
+        if position.type == 0:
+            new_stop_point = util.curr_round(position.symbol,low)
+            trail_stop = max(stop_price, new_stop_point)
+        else:
+            new_stop_point = util.curr_round(position.symbol, high)
+            trail_stop = min(stop_price, new_stop_point)
+
+        # # If the stop is already equal to existing stop, then no need to change it!
+        # # Enable trailning once price moved 1/4 of the stop
+        if (position.profit > risk/4) and trail_stop != stop_price:
+            print(f"STP Updated: {position.symbol}, PRE: {stop_price}, CURR: {trail_stop}")
+
+            modify_request = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "symbol": position.symbol,
+                "volume": position.volume,
+                "type": position.type,
+                "position": position.ticket,
+                "sl": trail_stop,
+                "tp": position.tp,
+                "comment": position.comment,
+                "magic": position.magic,
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_FOK,
+                "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+            }
+            
+            result = mt5.order_send(modify_request)
+            
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                if result.comment != "No changes":
+                    print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
+
 def trail_stop_half_points(risk):
     existing_positions = mt5.positions_get()
     for position in existing_positions:
@@ -450,4 +491,4 @@ if __name__ == "__main__":
     # print(get_continues_wins())
     # print(exist_on_initial_plan_changed_ema())
     # print(get_last_trades_position("UK100.cash", 15))
-    print(trail_stop_half_points(25))
+    print(trail_stop_previous_candle(25))
