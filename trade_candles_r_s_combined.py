@@ -188,7 +188,7 @@ class AlgoTrader():
                     combinbed_resistance_short[symbol] = []
 
                     # print(symbol)
-                    for r_s_timeframe in [240, 180, 120, 60]:
+                    for r_s_timeframe in [240, 120, 60, 30]:
                         levels = ind.find_r_s(symbol, r_s_timeframe)
                         # print("\t", r_s_timeframe, levels)
                         resistances = levels["resistance"]
