@@ -135,26 +135,18 @@ def find_r_s(symbol, timeframe):
     for res in resistance_levels.keys():
         res_level = resistance_levels[res]
         upcoming_candles = past_candles[:res]
-        overrided = False
         for candle in upcoming_candles:
             if is_number_between(res_level, candle["low"], candle["high"]):
-                overrided = True
                 breaked_resistances.append(res_level)
                 break
-        # print(res, res_level, overrided)
 
     for supp in suport_levels.keys():
         supp_level = suport_levels[supp]
         upcoming_candles = past_candles[:supp]
-        overrided = False
         for candle in upcoming_candles:
             if is_number_between(supp_level, candle["low"], candle["high"]):
-                overrided = True
                 breaked_supprots.append(supp_level)
                 break
-        # print(supp, supp_level, overrided)
-
-            # all the candles after the resistance candle
     
     clean_resistance = [i for i in resistance_levels.values() if i not in breaked_resistances]
     clean_support = [i for i in suport_levels.values() if i not in breaked_supprots]
@@ -233,6 +225,8 @@ def match_timeframe(timeframe):
         selected_time = mt5.TIMEFRAME_H1
     elif timeframe == 120:
         selected_time = mt5.TIMEFRAME_H2
+    elif timeframe == 180:
+        selected_time = mt5.TIMEFRAME_H3
     elif timeframe == 240:
         selected_time = mt5.TIMEFRAME_H4
     else:

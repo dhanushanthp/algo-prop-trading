@@ -188,7 +188,7 @@ class AlgoTrader():
                     combinbed_resistance_short[symbol] = []
 
                     # print(symbol)
-                    for r_s_timeframe in [240, 120, 60, 30, 15]:
+                    for r_s_timeframe in [240, 180, 120, 60]:
                         levels = ind.find_r_s(symbol, r_s_timeframe)
                         # print("\t", r_s_timeframe, levels)
                         resistances = levels["resistance"]
@@ -234,122 +234,28 @@ class AlgoTrader():
                                 print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                 if len(total_resistance_tf_long) >= 2:
                                     self.long_real_entry(symbol=symbol, 
-                                                            comment="RL>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                            comment='|'.join(map(str, total_resistance_tf_long)), 
                                                             r_s_timeframe=max(total_resistance_tf_long), 
                                                             entry_timeframe=max(total_resistance_tf_long))
                                 elif len(total_support_tf_short) >= 2:
                                     self.short_real_entry(symbol=symbol, 
-                                                            comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
+                                                            comment='|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max(total_support_tf_short), 
                                                             entry_timeframe=max(total_support_tf_short))
                             elif self.entry_timeframe == "reverse":
                                 print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
                                 if len(total_resistance_tf_short) >= 2:
                                     self.short_real_entry(symbol=symbol, 
-                                                            comment="RS>" + '|'.join(map(str, total_resistance_tf_short)), 
+                                                            comment='|'.join(map(str, total_resistance_tf_short)), 
                                                             r_s_timeframe=max(total_resistance_tf_short), 
                                                             entry_timeframe=max(total_resistance_tf_short))
                                 elif len(total_support_tf_long) >= 2:
                                     self.long_real_entry(symbol=symbol, 
-                                                            comment="SL>" + '|'.join(map(str, total_support_tf_long)), 
+                                                            comment='|'.join(map(str, total_support_tf_long)), 
                                                             r_s_timeframe=max(total_support_tf_long), 
                                                             entry_timeframe=max(total_support_tf_long))
                             else:
                                     raise Exception("Strategy not defined!")
-
-                # for r_s_timeframe in [240, 120, 60, 30, 15]:
-                #     existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                #     print(f"{f'{r_s_timeframe}: Available Slots'.ljust(20)}: {parallel_trades - len(existing_positions)}")
-                #     if len(existing_positions) < len(selected_symbols):
-                #         for symbol in selected_symbols:
-                            
-                #             active_orders = len(mt.orders_get())
-
-                #             if  (symbol not in existing_positions) and active_orders < 1:
-                                
-                #                 # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
-                #                 if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
-                #                     continue
-
-                #                 levels = ind.find_r_s(symbol, r_s_timeframe)
-                #                 # print(f"{symbol.ljust(12)}:", levels)
-                #                 resistances = levels["resistance"]
-                #                 support = levels["support"]
-
-
-                #                 """
-                #                 If it's a fixed timeframe, then the 15 minute candle will be checked for entry along with higer timeframe.
-                #                 Also the stop will be decided based on 15 minutes time frame.
-
-                #                 If it's auto then all the levels check and trade entry will be in same time frame
-                #                 """
-                #                 entry_check_timeframe = r_s_timeframe if self.entry_timeframe in ["auto", "break"] else ind.correlate_entry_timeframe(r_s_timeframe)
-                #                 # If it's a fixed time, then check the previous closed candle positions.
-                #                 # If it'a auto then always check the current active candle
-                #                 # candle_reference = 0 if self.entry_timeframe == "auto" else 1
-                                
-
-                #                 if self.entry_timeframe == "auto":
-                #                     for resistance_level in resistances:
-                #                         resistance_level += (3 * ind.get_spread(symbol))
-                #                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
-                #                         if current_candle["open"] > resistance_level and current_candle["close"] < resistance_level:
-                #                             if self.short_real_entry(symbol=symbol, 
-                #                                                     comment=f"{entry_check_timeframe}>{round(resistance_level, 5)}", 
-                #                                                     r_s_timeframe=r_s_timeframe, 
-                #                                                     entry_timeframe=entry_check_timeframe):
-                #                                 break
-
-                #                     for support_level in support:
-                #                         support_level -= (3 * ind.get_spread(symbol))
-                #                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
-                #                         if current_candle["open"] < support_level and current_candle["close"] > support_level:
-                #                             if self.long_real_entry(symbol=symbol, 
-                #                                                     comment=f"{entry_check_timeframe}>{round(support_level, 5)}", 
-                #                                                     r_s_timeframe=r_s_timeframe, 
-                #                                                     entry_timeframe=entry_check_timeframe):
-                #                                 break
-                #                 elif self.entry_timeframe == "break":
-                #                     for resistance_level in resistances:
-                #                         resistance_level += (3 * ind.get_spread(symbol))
-                #                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
-                #                         if current_candle["open"] > resistance_level and current_candle["close"] < resistance_level:
-                #                             if self.long_real_entry(symbol=symbol, 
-                #                                                     comment=f"{entry_check_timeframe}>{round(resistance_level, 5)}", 
-                #                                                     r_s_timeframe=r_s_timeframe, 
-                #                                                     entry_timeframe=entry_check_timeframe):
-                #                                 break
-
-                #                     for support_level in support:
-                #                         support_level -= (3 * ind.get_spread(symbol))
-                #                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
-                #                         if current_candle["open"] < support_level and current_candle["close"] > support_level:
-                #                             if self.short_real_entry(symbol=symbol, 
-                #                                                     comment=f"{entry_check_timeframe}>{round(support_level, 5)}", 
-                #                                                     r_s_timeframe=r_s_timeframe, 
-                #                                                     entry_timeframe=entry_check_timeframe):
-                #                                 break
-                                            
-                #                 else:
-                #                     for resistance_level in resistances:
-                #                         resistance_level += (3 * ind.get_spread(symbol))
-                #                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
-                #                         if current_candle["open"] > resistance_level and current_candle["close"] < resistance_level:
-                #                            if self.long_real_entry(symbol=symbol, 
-                #                                                     comment=f"{entry_check_timeframe}>{round(resistance_level, 5)}", 
-                #                                                     r_s_timeframe=r_s_timeframe, 
-                #                                                     entry_timeframe=entry_check_timeframe):
-                #                                 break
-
-                #                     for support_level in support:
-                #                         support_level -= (3 * ind.get_spread(symbol))
-                #                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(entry_check_timeframe), 0, 1)[-1]
-                #                         if current_candle["open"] < support_level and current_candle["close"] > support_level:
-                #                             if self.short_real_entry(symbol=symbol, 
-                #                                                     comment=f"{entry_check_timeframe}>{round(support_level, 5)}", 
-                #                                                     r_s_timeframe=r_s_timeframe, 
-                #                                                     entry_timeframe=entry_check_timeframe):
-                #                                 break
             
             time.sleep(30)
     
