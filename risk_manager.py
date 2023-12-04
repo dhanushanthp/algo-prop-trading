@@ -10,7 +10,7 @@ class RiskManager:
     def __init__(self) -> None:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage) # Risk only 0.25%
-        self.max_loss = ACCOUNT_SIZE * 2/100
+        self.max_loss = self.initial_risk * 4 # 4 times the initial risk
         
         self.updated_risk = self.initial_risk
         self.previous_time = None
@@ -20,16 +20,16 @@ class RiskManager:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.updated_risk = ACCOUNT_SIZE/100*config.risk_percentage
     
-    def is_dly_max_risk_reached(self, risk_percentage=2):
+    def is_dly_max_risk_reached(self):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
-        if equity < ACCOUNT_SIZE - (ACCOUNT_SIZE * risk_percentage/100):
+        if equity < ACCOUNT_SIZE - self.max_loss:
             return True
 
         return False
     
-    def is_dly_max_profit_reached(self, risk_percentage=2):
+    def is_dly_max_profit_reached(self):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
-        if equity > ACCOUNT_SIZE + (ACCOUNT_SIZE * risk_percentage/100):
+        if equity > ACCOUNT_SIZE + self.max_loss:
             return True
 
         return False
