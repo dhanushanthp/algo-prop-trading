@@ -85,6 +85,16 @@ def get_value_at_risk_by_points(symbol, difference, positions):
         risk = difference * dollor_value * 100000 * positions
     return round(risk, 2)
 
+def get_points_in_risk(symbol, lots, risk):
+    dollor_value = get_dollar_value(symbol)
+    
+    if symbol in curr.indexes:
+        points_in_risk =  risk/(dollor_value * lots)
+    else:
+        points_in_risk =  risk/(dollor_value * 100000 * lots)
+
+    return points_in_risk
+
 def stop_round(symbol, stop_price):
     if symbol in curr.currencies:
         if symbol in curr.jpy_currencies:
@@ -288,32 +298,28 @@ def exit_one_r():
             close_single_position(position)
 
 
-def trail_stop_half_points(profit_ratio):
+def trail_stop_half_points(risk):
     existing_positions = mt5.positions_get()
     for position in existing_positions:
         symbol = position.symbol
-        entry_price = position.price_open
         stop_price = position.sl
-        target_price = position.tp
         quantity = position.volume
+
+        mid_price = ind.get_mid_price(symbol)
         
-        max_loss = get_value_at_risk_by_points(symbol=symbol, 
-                                               difference=abs(entry_price-target_price)/profit_ratio,  
-                                               positions=quantity)
-        
-        trailing_points = abs(entry_price-target_price)/profit_ratio/2 # Trailning 0.5R
+        total_points_in_risk = get_points_in_risk(symbol, quantity, risk)/2 # Trailning 0.5R
         
         if position.type == 0:
-            new_stop_point = util.curr_round(position.symbol, (entry_price - trailing_points))
+            new_stop_point = util.curr_round(position.symbol, (mid_price - total_points_in_risk))
             trail_stop = max(stop_price, new_stop_point)
         else:
-            new_stop_point = util.curr_round(position.symbol, (entry_price + trailing_points))
+            new_stop_point = util.curr_round(position.symbol, (mid_price + total_points_in_risk))
             trail_stop = min(stop_price, new_stop_point)
 
         # If the stop is already equal to existing stop, then no need to change it!
         # Enable trailning once price moved 1/4 of the stop
-        if (position.profit > max_loss/4) and trail_stop != stop_price:
-            print(f"{position.symbol}")
+        if (position.profit > risk/4) and trail_stop != stop_price:
+            print(f"STP Updated: {position.symbol}, PRE: {stop_price}, CURR: {trail_stop}")
 
             modify_request = {
                 "action": mt5.TRADE_ACTION_SLTP,
@@ -443,4 +449,5 @@ if __name__ == "__main__":
     # print(num_of_parallel_tickers())
     # print(get_continues_wins())
     # print(exist_on_initial_plan_changed_ema())
-    print(get_last_trades_position("UK100.cash", 15))
+    # print(get_last_trades_position("UK100.cash", 15))
+    print(trail_stop_half_points(25))
