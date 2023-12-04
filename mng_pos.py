@@ -305,15 +305,15 @@ def trail_stop_half_points(risk):
         stop_price = position.sl
         quantity = position.volume
 
-        mid_price = ind.get_mid_price(symbol)
+        bid_price, ask_price = ind.get_bid_ask(symbol)
         
         total_points_in_risk = get_points_in_risk(symbol, quantity, risk)/2 # Trailning 0.5R
         
         if position.type == 0:
-            new_stop_point = util.curr_round(position.symbol, (mid_price - total_points_in_risk))
+            new_stop_point = util.curr_round(position.symbol, (bid_price - total_points_in_risk))
             trail_stop = max(stop_price, new_stop_point)
         else:
-            new_stop_point = util.curr_round(position.symbol, (mid_price + total_points_in_risk))
+            new_stop_point = util.curr_round(position.symbol, (ask_price + total_points_in_risk))
             trail_stop = min(stop_price, new_stop_point)
 
         # If the stop is already equal to existing stop, then no need to change it!

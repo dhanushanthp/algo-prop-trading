@@ -25,6 +25,11 @@ def get_mid_price(symbol):
     mid_price = (ask_price + bid_price)/2
     return mid_price
 
+def get_bid_ask(symbol):
+    ask_price = mt5.symbol_info_tick(symbol).ask
+    bid_price = mt5.symbol_info_tick(symbol).bid
+    return bid_price, ask_price
+
 
 def get_ordered_symbols():
     ticks = (curr.currencies + curr.indexes)
