@@ -19,8 +19,8 @@ class AlgoTrader():
         mt.initialize()
 
         self.entry_timeframe = None # Default to 15 min
-        self.target_ratio = 1.0 # Default 1:0.5 Ratio
-        self.stop_ratio = 2.0
+        self.target_ratio = 2.0 # Default 1:0.5 Ratio
+        self.stop_ratio = 1.0
         self.risk_manager = risk_manager.RiskManager()
         self.updated_risk = self.risk_manager.initial_risk
         self.strategy = config.REVERSAL
@@ -171,34 +171,49 @@ class AlgoTrader():
             
             if is_market_open and not is_market_close:
                 mp.cancel_all_pending_orders()
-                mp.trail_stop_half_points(self.target_ratio)
+                mp.trail_stop_half_points(self.risk_manager.initial_risk)
                 # mp.exit_one_r()
                 
                 parallel_trades = len(selected_symbols) # mp.num_of_parallel_tickers()
                                 
                 _, current_hour, _ = util.get_gmt_time()
 
-                combinbed_resistance = {}
-                combined_support = {}
+                combinbed_resistance_long = {}
+                combined_support_long = {}
+
+                combined_support_short = {}
+                combinbed_resistance_short = {}
                 for symbol in selected_symbols:
-                    combinbed_resistance[symbol] = []
-                    combined_support[symbol] = []
+                    combinbed_resistance_long[symbol] = []
+                    combined_support_long[symbol] = []
+                    combined_support_short[symbol] = []
+                    combinbed_resistance_short[symbol] = []
+
+                    # print(symbol)
                     for r_s_timeframe in [240, 120, 60, 30, 15]:
                         levels = ind.find_r_s(symbol, r_s_timeframe)
+                        # print("\t", r_s_timeframe, levels)
                         resistances = levels["resistance"]
                         support = levels["support"]
 
                         for resistance_level in resistances:
-                            resistance_level += (3 * ind.get_spread(symbol))
+                            short_entry_level = resistance_level + (3 * ind.get_spread(symbol))
+                            long_entry_level = resistance_level - (3 * ind.get_spread(symbol))
+
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                            if current_candle["open"] > resistance_level and current_candle["close"] < resistance_level:
-                                combinbed_resistance[symbol].append(r_s_timeframe)
+                            if current_candle["open"] > short_entry_level and current_candle["close"] < short_entry_level:
+                                combinbed_resistance_short[symbol].append(r_s_timeframe)
+                            elif current_candle["open"] < long_entry_level and current_candle["close"] > long_entry_level:
+                                combinbed_resistance_long[symbol].append(r_s_timeframe)
                         
                         for support_level in support:
-                            support_level -= (3 * ind.get_spread(symbol))
+                            short_entry_level = support_level + (3 * ind.get_spread(symbol))
+                            long_entry_level = support_level - (3 * ind.get_spread(symbol))
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                            if current_candle["open"] < support_level and current_candle["close"] > support_level:
-                                combined_support[symbol].append(r_s_timeframe)
+                            if current_candle["open"] > short_entry_level and current_candle["close"] < short_entry_level:
+                                combined_support_short[symbol].append(r_s_timeframe)
+                            elif current_candle["open"] < long_entry_level and current_candle["close"] > long_entry_level:
+                                combined_support_long[symbol].append(r_s_timeframe)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 if len(existing_positions) < len(selected_symbols):
@@ -211,46 +226,38 @@ class AlgoTrader():
                             # if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
                             #     continue
                             
-                            total_resistance_tf = set(combinbed_resistance[symbol])
-                            total_support_tf = set(combined_support[symbol])
+                            total_resistance_tf_long = set(combinbed_resistance_long[symbol])
+                            total_support_tf_long = set(combined_support_long[symbol])
 
-                            if len(total_resistance_tf) >= 2 and (len(total_resistance_tf) > len(total_support_tf)):
-                                print(f"{symbol}: Resistance: {','.join(map(str,total_resistance_tf))}")
+                            total_resistance_tf_short = set(combinbed_resistance_short[symbol])
+                            total_support_tf_short = set(combined_support_short[symbol])
 
-                                if self.entry_timeframe == "break":
-                                    if self.long_real_entry(symbol=symbol, 
-                                                            comment='|'.join(map(str, total_resistance_tf)), 
-                                                            r_s_timeframe=max(total_resistance_tf), 
-                                                            entry_timeframe=max(total_resistance_tf)):
-                                        break
-                                elif self.entry_timeframe == "reverse":
-                                    if self.short_real_entry(symbol=symbol,
-                                                            comment='|'.join(map(str, total_resistance_tf)), 
-                                                            r_s_timeframe=max(total_resistance_tf), 
-                                                            entry_timeframe=max(total_resistance_tf)):
-                                        break
-                                else:
+                            if self.entry_timeframe == "break":
+                                print(f"{symbol.ljust(12)}", "RL: ", list(total_resistance_tf_long), "SS: ", list(total_support_tf_short))
+                                if len(total_resistance_tf_long) >= 2:
+                                    self.long_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_resistance_tf_long)), 
+                                                            r_s_timeframe=max(total_resistance_tf_long), 
+                                                            entry_timeframe=max(total_resistance_tf_long))
+                                elif len(total_support_tf_short) >= 2:
+                                    self.short_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_support_tf_short)), 
+                                                            r_s_timeframe=max(total_support_tf_short), 
+                                                            entry_timeframe=max(total_support_tf_short))
+                            elif self.entry_timeframe == "reverse":
+                                print(f"{symbol.ljust(12)}", "SL:", list(total_support_tf_long), "RS: ", list(total_resistance_tf_short))
+                                if len(total_resistance_tf_short) >= 2:
+                                    self.short_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_resistance_tf_short)), 
+                                                            r_s_timeframe=max(total_resistance_tf_short), 
+                                                            entry_timeframe=max(total_resistance_tf_short))
+                                elif len(total_support_tf_long) >= 2:
+                                    self.long_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_support_tf_long)), 
+                                                            r_s_timeframe=max(total_support_tf_long), 
+                                                            entry_timeframe=max(total_support_tf_long))
+                            else:
                                     raise Exception("Strategy not defined!")
-
-
-                            if len(total_support_tf) >= 2 and (len(total_support_tf) > len(total_resistance_tf)):
-                                print(f"{symbol}: Support: {','.join(map(str,total_support_tf))}")
-                                if self.entry_timeframe == "break":
-                                    if self.short_real_entry(symbol=symbol, 
-                                                            comment='|'.join(map(str, total_support_tf)), 
-                                                            r_s_timeframe=max(total_support_tf), 
-                                                            entry_timeframe=max(total_support_tf)):
-                                        break
-                                elif self.entry_timeframe == "reverse":
-                                    if self.long_real_entry(symbol=symbol, 
-                                                            comment='|'.join(map(str, total_support_tf)), 
-                                                            r_s_timeframe=max(total_support_tf), 
-                                                            entry_timeframe=max(total_support_tf)):
-                                        break
-                                else:
-                                    raise Exception("Strategy not defined!")
-
-
 
                 # for r_s_timeframe in [240, 120, 60, 30, 15]:
                 #     existing_positions = list(set([i.symbol for i in mt.positions_get()]))
