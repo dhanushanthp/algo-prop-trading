@@ -45,8 +45,8 @@ class AlgoTrader():
         
         stop_factor = 1 # Default
 
-        if timeframe in [5, 15, 30]:
-            stop_factor = 1.5 # Give extra room for shorter timeframe
+        # if timeframe in [5, 15, 30]:
+        #     stop_factor = 1.5 # Give extra room for shorter timeframe
 
         dollor_value = mp.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price) * stop_factor
