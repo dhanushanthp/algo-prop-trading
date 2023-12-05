@@ -440,6 +440,17 @@ def close_all_positions():
     positions = mt5.positions_get()
     for obj in positions: 
         close_single_position(obj=obj)
+
+def close_all_positions_on_exit():
+    positions = mt5.positions_get()
+    for obj in positions:
+        symbol = obj.symbol
+        stop_price = obj.sl
+        entry_price = obj.price_open
+        entry_type = obj.type
+
+        if (entry_type == 0 and stop_price < entry_price) or (entry_type ==1 and stop_price > entry_price):
+            close_single_position(obj=obj)
         
 
 def close_slave_positions():

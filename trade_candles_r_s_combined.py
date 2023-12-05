@@ -24,7 +24,6 @@ class AlgoTrader():
         self.risk_manager = risk_manager.RiskManager()
         self.updated_risk = self.risk_manager.initial_risk
         self.strategy = config.REVERSAL
-        self.immidiate_exit = False
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -155,22 +154,21 @@ class AlgoTrader():
             print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
             
             is_market_open, is_market_close = util.get_market_status()
+            mp.trail_stop_previous_candle(self.risk_manager.initial_risk)
 
             # Max profit or loss
             if self.risk_manager.is_dly_max_risk_reached() or self.risk_manager.is_dly_max_profit_reached():
                 print("Max loss/profit reached! Closing all positions!")
-                mp.close_all_positions()
-                self.immidiate_exit = True
+                mp.close_all_positions_on_exit()
+                self.risk_manager.reset_risk() # Reset the risk for the day
 
             if is_market_close:
                 print("Market Close!")
                 self.risk_manager.reset_risk() # Reset the risk for the day
                 mp.close_all_positions()
-                self.immidiate_exit = False
             
-            if is_market_open and not is_market_close and not self.immidiate_exit:
+            if is_market_open and not is_market_close:
                 mp.cancel_all_pending_orders()
-                mp.trail_stop_previous_candle(self.risk_manager.initial_risk)
 
                 combinbed_resistance_long = {}
                 combined_support_long = {}

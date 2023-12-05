@@ -19,6 +19,7 @@ class RiskManager:
         print("-------Reset to initial risk!-----")
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.updated_risk = ACCOUNT_SIZE/100*config.risk_percentage
+        self.max_loss = self.updated_risk * 2 # 4 times the initial risk
     
     def is_dly_max_risk_reached(self):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
