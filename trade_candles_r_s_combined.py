@@ -25,6 +25,7 @@ class AlgoTrader():
         self.updated_risk = self.risk_manager.initial_risk
         self.strategy = config.REVERSAL
         self.immidiate_exit = False
+        self.account_type = "real"
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -152,17 +153,20 @@ class AlgoTrader():
         
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
-            print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}, Max Loss: ${self.risk_manager.get_max_loss()}, Max Profit: ${self.risk_manager.get_max_profit()}")
+            print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
+            print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}")
+            print(f"{'Max Profit'.ljust(20)}: ${round(self.risk_manager.get_max_profit())}")
             
             is_market_open, is_market_close = util.get_market_status()
             mp.trail_stop_previous_candle(self.risk_manager.initial_risk)
 
             # Max profit or loss
-            if self.risk_manager.is_dly_max_risk_reached() or self.risk_manager.is_dly_max_profit_reached():
-                print("Max loss/profit reached! Closing all positions!")
-                mp.close_all_positions_on_exit()
-                self.risk_manager.reset_risk() # Reset the risk for the day
-                self.immidiate_exit = True
+            if self.account_type == "real":
+                if self.risk_manager.is_dly_max_risk_reached() or self.risk_manager.is_dly_max_profit_reached():
+                    print("Max loss/profit reached! Closing all positions!")
+                    mp.close_all_positions_on_exit()
+                    self.risk_manager.reset_risk() # Reset the risk for the day
+                    self.immidiate_exit = True
 
             if is_market_close:
                 print("Market Close!")
@@ -259,6 +263,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         win.entry_timeframe = sys.argv[1]
+        win.account_type = sys.argv[2]
         if win.entry_timeframe not in ["reverse", "break"]:
             raise Exception("Please enter fixed or auto entry time check!")
     else:
