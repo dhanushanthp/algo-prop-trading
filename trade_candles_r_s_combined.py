@@ -85,7 +85,6 @@ class AlgoTrader():
                         
                         lots =  round(lots, 2)
                         
-                        # "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
                             "symbol": symbol,
@@ -93,6 +92,7 @@ class AlgoTrader():
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
+                            "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
                             "comment": comment,
                             "magic":r_s_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
@@ -124,7 +124,6 @@ class AlgoTrader():
                         
                         lots =  round(lots, 2)
 
-                        # "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
                             "symbol": symbol,
@@ -132,6 +131,7 @@ class AlgoTrader():
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
+                            "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
                             "comment": comment,
                             "magic":r_s_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
