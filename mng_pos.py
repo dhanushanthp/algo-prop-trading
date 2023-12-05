@@ -306,7 +306,7 @@ def trail_stop_previous_candle(risk):
         symbol = position.symbol
         stop_price = position.sl
         short_tf = int(position.comment.split("|")[-1])
-        high, low, _ = ind.get_stop_range(symbol, 15)
+        high, low, _ = ind.get_stop_range(symbol, short_tf)
         
         if position.type == 0:
             new_stop_point = util.curr_round(position.symbol,low)
