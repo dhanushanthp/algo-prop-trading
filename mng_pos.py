@@ -121,7 +121,9 @@ def get_last_trades_position(symbol, timeframe):
         position_id = exit_traded_position[-1].position_id
         entry_traded_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.position_id == position_id and i.entry == 0]
         if len(entry_traded_object) > 0:
-            timeframe = int(entry_traded_object[-1].magic)  # in minutes
+            # If the traded time frame is less than 1 hour, then choose from the traded timeframe. e.g: 240,120 will be using 60 min as checking time frame
+            if timeframe < 60:
+                timeframe = int(entry_traded_object[-1].magic)  # in minutes
 
         current_time = (datetime.now(tm_zone) + timedelta(hours=2))
 
