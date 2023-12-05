@@ -151,7 +151,7 @@ class AlgoTrader():
         
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
-            print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
+            print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}, Max Loss: ${self.risk_manager.get_max_loss()}, Max Profit: ${self.risk_manager.get_max_profit()}")
             
             is_market_open, is_market_close = util.get_market_status()
             mp.trail_stop_previous_candle(self.risk_manager.initial_risk)

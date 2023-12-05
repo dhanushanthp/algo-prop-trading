@@ -9,12 +9,19 @@ import mng_pos as mp
 class RiskManager:
     def __init__(self) -> None:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
+        self.account_size  = ACCOUNT_SIZE
         self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage) # Risk only 0.25%
         self.max_loss = self.initial_risk * 2 # 4 times the initial risk
         
         self.updated_risk = self.initial_risk
         self.previous_time = None
     
+    def get_max_loss(self):
+        return self.account_size - self.max_loss
+
+    def get_max_profit(self):
+        return self.account_size + self.max_loss
+
     def reset_risk(self):
         print("-------Reset to initial risk!-----")
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
