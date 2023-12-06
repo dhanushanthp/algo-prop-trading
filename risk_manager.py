@@ -12,7 +12,7 @@ class RiskManager:
         self.account_size  = ACCOUNT_SIZE
         self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage) # Risk only 0.25%
         self.max_loss = self.initial_risk * 2 # 4 times the initial risk
-        self.profit_factor = 5
+        self.profit_factor = 1
         self.updated_risk = self.initial_risk
         self.previous_time = None
 
