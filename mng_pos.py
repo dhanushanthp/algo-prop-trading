@@ -2,7 +2,6 @@ import MetaTrader5 as mt5
 import indicators as ind
 import util
 import currency_pairs as curr
-import client
 import numpy as np
 import pytz
 from datetime import datetime, timedelta, time
@@ -454,17 +453,17 @@ def close_all_positions_on_exit():
             close_single_position(obj=obj)
         
 
-def close_slave_positions():
-    """
-    If the positions is already filled in master, then no need for slave position in local
-    """
-    existing_positions = list(set([i.symbol for i in mt5.positions_get()]))
-    server_positions = client.get_active_positions()
-    co_exisiting_positions = np.intersect1d(existing_positions, server_positions)
-    if len(co_exisiting_positions) > 0:
-        for obj in mt5.positions_get():
-            if obj.symbol in co_exisiting_positions:
-                close_single_position(obj=obj)
+# def close_slave_positions():
+#     """
+#     If the positions is already filled in master, then no need for slave position in local
+#     """
+#     existing_positions = list(set([i.symbol for i in mt5.positions_get()]))
+#     server_positions = client.get_active_positions()
+#     co_exisiting_positions = np.intersect1d(existing_positions, server_positions)
+#     if len(co_exisiting_positions) > 0:
+#         for obj in mt5.positions_get():
+#             if obj.symbol in co_exisiting_positions:
+#                 close_single_position(obj=obj)
 
 def exist_on_initial_plan_changed_ema():
     positions = mt5.positions_get()
