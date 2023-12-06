@@ -53,7 +53,7 @@ def get_market_status():
     market_open = False
     market_about_to_close= False
     day, hour, minute = get_gmt_time()
-    print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
+    print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}\n")
 
     if day not in ["Saturday","Sunday"]:
         # Once market open become disabled, No new trades
