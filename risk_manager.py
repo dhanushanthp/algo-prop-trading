@@ -12,7 +12,7 @@ class RiskManager:
         self.account_size  = ACCOUNT_SIZE
         self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage) # Risk only 0.25%
         self.max_loss = self.initial_risk * 2 # 4 times the initial risk
-        
+        self.profit_factor = 5
         self.updated_risk = self.initial_risk
         self.previous_time = None
 
@@ -24,7 +24,7 @@ class RiskManager:
         return self.trail_loss
 
     def get_max_profit(self):
-        return self.account_size + self.max_loss
+        return self.account_size + (self.max_loss * self.profit_factor)
     
     def trail_stop_account_level(self):
         # This update the account level exit plan
@@ -50,7 +50,7 @@ class RiskManager:
     def is_dly_max_profit_reached(self):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
         # Maintain the the 1:5 ratio with overall position.
-        if equity > ACCOUNT_SIZE + (self.max_loss * 5):
+        if equity > ACCOUNT_SIZE + (self.max_loss * self.profit_factor):
             return True
 
         return False
