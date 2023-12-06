@@ -37,7 +37,8 @@ class RiskManager:
     
     def is_dly_max_profit_reached(self):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
-        if equity > ACCOUNT_SIZE + self.max_loss:
+        # Maintain the the 1:2 ratio with overall position.
+        if equity > ACCOUNT_SIZE + self.max_loss * 2:
             return True
 
         return False
