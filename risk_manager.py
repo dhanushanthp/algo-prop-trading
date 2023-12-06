@@ -15,12 +15,24 @@ class RiskManager:
         
         self.updated_risk = self.initial_risk
         self.previous_time = None
+
+        # Initial Trail loss w.r.t to account size
+        self.trail_loss = ACCOUNT_SIZE - self.max_loss
+        self.previous_trail_loss = self.trail_loss
     
     def get_max_loss(self):
-        return self.account_size - self.max_loss
+        return self.trail_loss
 
     def get_max_profit(self):
         return self.account_size + self.max_loss
+    
+    def trail_stop_account_level(self):
+        # This update the account level exit plan
+        _, equity, _,_ = ind.get_account_details()
+        trail_loss = equity - self.max_loss
+        # always move update with trail stop
+        self.trail_loss = max(trail_loss, self.previous_trail_loss)
+        self.previous_trail_loss = self.trail_loss
 
     def reset_risk(self):
         print("-------Reset to initial risk!-----")
@@ -29,16 +41,16 @@ class RiskManager:
         self.max_loss = self.updated_risk * 2 # 4 times the initial risk
     
     def is_dly_max_risk_reached(self):
-        ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
-        if equity < ACCOUNT_SIZE - self.max_loss:
+        _, equity, _,_ = ind.get_account_details()
+        if equity < self.trail_loss:
             return True
 
         return False
     
     def is_dly_max_profit_reached(self):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
-        # Maintain the the 1:2 ratio with overall position.
-        if equity > ACCOUNT_SIZE + self.max_loss * 2:
+        # Maintain the the 1:5 ratio with overall position.
+        if equity > ACCOUNT_SIZE + (self.max_loss * 5):
             return True
 
         return False

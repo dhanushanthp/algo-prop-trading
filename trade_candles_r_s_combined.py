@@ -158,7 +158,8 @@ class AlgoTrader():
             print(f"{'Max Profit'.ljust(20)}: ${round(self.risk_manager.get_max_profit())}")
             
             is_market_open, is_market_close = util.get_market_status()
-            mp.trail_stop_previous_candle(self.risk_manager.initial_risk)
+            mp.trail_stop_previous_candle(self.risk_manager.initial_risk) # Each position trail stop
+            self.risk_manager.trail_stop_account_level() # Update the account level exit plan
 
             # Max profit or loss
             if self.account_type == "real":
