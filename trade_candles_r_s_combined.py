@@ -155,7 +155,7 @@ class AlgoTrader():
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
             print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
-            print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())} with trail $({self.risk_manager.max_loss})")
+            print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.max_loss}")
             print(f"{'Max Profit'.ljust(20)}: ${round(self.risk_manager.get_max_profit())}")
             
             is_market_open, is_market_close = util.get_market_status()
