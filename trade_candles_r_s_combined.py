@@ -13,6 +13,7 @@ import time
 
 import MetaTrader5 as mt
 import mng_pos as mp
+from slack_msg import Slack
 
 class AlgoTrader():
     def __init__(self):
@@ -27,6 +28,7 @@ class AlgoTrader():
         self.immidiate_exit = False
         self.account_type = "real"
         self.timer = 30
+        self.alert = Slack()
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -166,13 +168,19 @@ class AlgoTrader():
                 # so we can move with the pase rather 30 second delay
                 self.timer = 10
 
-            # Max profit or loss
+            # Max Accepted Trail Loss
             if self.account_type == "real":
                 if self.risk_manager.is_dly_max_risk_reached():
-                    print("Max loss/profit reached! Closing all positions!")
                     mp.close_all_positions()
                     self.risk_manager.reset_risk() # Reset the risk for the day
                     self.immidiate_exit = True
+                    self.alert.send_msg("Real Account: Exit")
+            else:
+                if self.risk_manager.is_dly_max_risk_reached():
+                    mp.close_all_positions()
+                    self.risk_manager.reset_risk() # Reset the risk for the day
+                    self.alert.send_msg("Demo Account: Exit")
+
 
             if is_market_close:
                 print("Market Close!")

@@ -44,6 +44,10 @@ class RiskManager:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.updated_risk = ACCOUNT_SIZE/100*config.risk_percentage
         self.max_loss = self.updated_risk * 2 # 4 times the initial risk
+
+        # Reset max trail loss parameters
+        self.first_max_profit_check = True
+        self.second_max_profit_check = True
     
     def is_dly_max_risk_reached(self):
         _, equity, _,_ = ind.get_account_details()
