@@ -442,6 +442,9 @@ def close_all_positions():
         close_single_position(obj=obj)
 
 def close_all_positions_on_exit():
+    """
+    This only closes the positions which has possible loss than 0. This is not heling out.
+    """
     positions = mt5.positions_get()
     for obj in positions:
         symbol = obj.symbol

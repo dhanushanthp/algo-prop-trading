@@ -165,7 +165,7 @@ class AlgoTrader():
             if self.account_type == "real":
                 if self.risk_manager.is_dly_max_risk_reached() or self.risk_manager.is_dly_max_profit_reached():
                     print("Max loss/profit reached! Closing all positions!")
-                    mp.close_all_positions_on_exit()
+                    mp.close_all_positions()
                     self.risk_manager.reset_risk() # Reset the risk for the day
                     self.immidiate_exit = True
 
