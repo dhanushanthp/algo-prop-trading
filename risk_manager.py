@@ -12,19 +12,24 @@ class RiskManager:
         self.account_size  = ACCOUNT_SIZE
         self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage) # Risk only 0.25%
         self.max_loss = self.initial_risk * 2 # 4 times the initial risk
-        self.profit_factor = 2
+        self.first_profit_factor = 2
+        self.second_profit_factor = 3
         self.updated_risk = self.initial_risk
         self.previous_time = None
+        self.first_max_profit_check = True
+        self.second_max_profit_check = True
 
         # Initial Trail loss w.r.t to account size
         self.trail_loss = ACCOUNT_SIZE - self.max_loss
         self.previous_trail_loss = self.trail_loss
+
+        assert self.first_profit_factor < self.second_profit_factor
     
     def get_max_loss(self):
         return self.trail_loss
 
     def get_max_profit(self):
-        return self.account_size + (self.max_loss * self.profit_factor)
+        return self.account_size + (self.max_loss * self.first_profit_factor)
     
     def trail_stop_account_level(self):
         # This update the account level exit plan
@@ -49,11 +54,17 @@ class RiskManager:
     
     def is_dly_max_profit_reached(self):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
-        # Maintain the the 1:5 ratio with overall position.
-        if equity > ACCOUNT_SIZE + (self.max_loss * self.profit_factor):
+        # Reduce the trail distance when the price cross first profit target
+        if (equity > ACCOUNT_SIZE + (self.max_loss * self.first_profit_factor)) and self.first_max_profit_check:
+            self.max_loss = self.max_loss/2
+            self.first_max_profit_check = False
             return True
 
-        return False
+        # Reduce the trail distance when the price cross second profit target
+        # We multiply by 2, since the max loss will be set as half from first profit target marker
+        if equity > ACCOUNT_SIZE + (self.max_loss * 2 * self.second_profit_factor) and self.second_max_profit_check:
+            self.max_loss = self.max_loss/2
+            self.second_max_profit_check = False
     
     def update_risk(self):
         return round(self.initial_risk, 2)

@@ -26,6 +26,7 @@ class AlgoTrader():
         self.strategy = config.REVERSAL
         self.immidiate_exit = False
         self.account_type = "real"
+        self.timer = 30
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -154,16 +155,20 @@ class AlgoTrader():
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
             print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
-            print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}")
+            print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())} with trail $({self.risk_manager.max_loss})")
             print(f"{'Max Profit'.ljust(20)}: ${round(self.risk_manager.get_max_profit())}")
             
             is_market_open, is_market_close = util.get_market_status()
             mp.trail_stop_previous_candle(self.risk_manager.initial_risk) # Each position trail stop
             self.risk_manager.trail_stop_account_level() # Update the account level exit plan
+            if self.risk_manager.is_dly_max_profit_reached():
+                # Increase the checking frequency one the price pass the first target
+                # so we can move with the pase rather 30 second delay
+                self.timer = 10
 
             # Max profit or loss
             if self.account_type == "real":
-                if self.risk_manager.is_dly_max_risk_reached() or self.risk_manager.is_dly_max_profit_reached():
+                if self.risk_manager.is_dly_max_risk_reached():
                     print("Max loss/profit reached! Closing all positions!")
                     mp.close_all_positions()
                     self.risk_manager.reset_risk() # Reset the risk for the day
@@ -257,7 +262,7 @@ class AlgoTrader():
                             else:
                                     raise Exception("Strategy not defined!")
             
-            time.sleep(30)
+            time.sleep(self.timer)
     
 if __name__ == "__main__":
     win = AlgoTrader()
