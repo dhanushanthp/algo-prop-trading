@@ -5,6 +5,7 @@ import datetime
 import time
 import MetaTrader5 as mt5
 import mng_pos as mp
+import slack_msg
 
 class RiskManager:
     def __init__(self) -> None:
@@ -18,6 +19,7 @@ class RiskManager:
         self.previous_time = None
         self.first_max_profit_check = True
         self.second_max_profit_check = True
+        self.alert = slack_msg.Slack()
 
         # Initial Trail loss w.r.t to account size
         self.trail_loss = ACCOUNT_SIZE - self.max_loss
@@ -60,6 +62,7 @@ class RiskManager:
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
         # Reduce the trail distance when the price cross first profit target
         if (equity > ACCOUNT_SIZE + (self.max_loss * self.first_profit_factor)) and self.first_max_profit_check:
+            self.alert.send_msg(f"First target max triggered!")
             self.max_loss = self.max_loss/2
             self.first_max_profit_check = False
             return True

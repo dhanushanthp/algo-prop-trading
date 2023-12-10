@@ -14,6 +14,7 @@ import time
 import MetaTrader5 as mt
 import mng_pos as mp
 from slack_msg import Slack
+from monitor import Monitor
 
 class AlgoTrader():
     def __init__(self):
@@ -29,6 +30,7 @@ class AlgoTrader():
         self.account_type = "real"
         self.timer = 30
         self.alert = Slack()
+        self.monitor = Monitor()
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -167,6 +169,8 @@ class AlgoTrader():
                 # Increase the checking frequency one the price pass the first target
                 # so we can move with the pase rather 30 second delay
                 self.timer = 10
+
+            self.monitor.update_positions_alert()
 
             # Max Accepted Trail Loss
             if self.account_type == "real":

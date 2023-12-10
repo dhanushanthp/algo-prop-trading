@@ -20,3 +20,6 @@ class Monitor:
                 msg = f"{position.symbol} added."
                 self.alert.send_msg(msg)
                 
+            
+            # each existing position ID, check it has type -1 for exit,
+            # So can alert on exist as well.
