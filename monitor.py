@@ -14,12 +14,17 @@ class Monitor:
     def update_positions_alert(self):
         existing_positions = mt5.positions_get()
         for position in existing_positions:
-            position_id = position.position_id
-            if position_id not in self.existing_positions:
-                self.existing_positions.append(position_id)
+            ticket = position.ticket
+            if ticket not in self.existing_positions:
+                self.existing_positions.append(ticket)
                 msg = f"{position.symbol} added."
                 self.alert.send_msg(msg)
                 
             
             # each existing position ID, check it has type -1 for exit,
             # So can alert on exist as well.
+
+
+if __name__ == "__main__":
+    obj = Monitor()
+    obj.update_positions_alert()
