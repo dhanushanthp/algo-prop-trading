@@ -176,13 +176,18 @@ class AlgoTrader():
             if self.account_type == "real":
                 if self.risk_manager.is_dly_max_risk_reached():
                     mp.close_all_positions()
-                    self.risk_manager.reset_risk() # Reset the risk for the day
+                    # Re initiate the object
+                    self.risk_manager = risk_manager.RiskManager()
+                    self.updated_risk = self.risk_manager.initial_risk
                     self.immidiate_exit = True
                     self.alert.send_msg("Real Account: Exit")
+                    sys.exit()
             else:
                 if self.risk_manager.is_dly_max_risk_reached():
                     mp.close_all_positions()
-                    self.risk_manager.reset_risk() # Reset the risk for the day
+                    # Re initiate the object
+                    self.risk_manager = risk_manager.RiskManager()
+                    self.updated_risk = self.risk_manager.initial_risk
                     self.alert.send_msg("Demo Account: Exit")
 
 
