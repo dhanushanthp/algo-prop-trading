@@ -31,6 +31,7 @@ class AlgoTrader():
         self.timer = 30
         self.alert = Slack()
         self.monitor = Monitor()
+        self.retries = 0
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -175,20 +176,25 @@ class AlgoTrader():
             # Max Accepted Trail Loss
             if self.account_type == "real":
                 if self.risk_manager.is_dly_max_risk_reached():
+                    self.retries += 1
                     mp.close_all_positions()
                     # Re initiate the object
                     self.risk_manager = risk_manager.RiskManager()
                     self.updated_risk = self.risk_manager.initial_risk
                     self.immidiate_exit = True
-                    self.alert.send_msg("Real Account: Exit")
+                    self.alert.send_msg(f"Real Account: Exit {self.retries}")
                     sys.exit()
             else:
                 if self.risk_manager.is_dly_max_risk_reached():
+                    self.retries += 1
                     mp.close_all_positions()
                     # Re initiate the object
                     self.risk_manager = risk_manager.RiskManager()
                     self.updated_risk = self.risk_manager.initial_risk
-                    self.alert.send_msg("Demo Account: Exit")
+                    self.alert.send_msg(f"Demo Account: Exit {self.retries}")
+
+                    if self.retries > 2:
+                        self.immidiate_exit = True
 
 
             if is_market_close:
