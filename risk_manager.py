@@ -46,6 +46,7 @@ class RiskManager:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.updated_risk = ACCOUNT_SIZE/100*config.risk_percentage
         self.max_loss = self.updated_risk * 2 # 4 times the initial risk
+        self.trail_loss = ACCOUNT_SIZE - self.max_loss
 
         # Reset max trail loss parameters
         self.first_max_profit_check = True
