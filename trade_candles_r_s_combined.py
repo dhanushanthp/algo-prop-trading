@@ -166,15 +166,17 @@ class AlgoTrader():
             is_market_open, is_market_close = util.get_market_status()
             mp.trail_stop_previous_candle(self.risk_manager.initial_risk) # Each position trail stop
             self.risk_manager.trail_stop_account_level() # Update the account level exit plan
-            if self.risk_manager.is_dly_max_profit_reached():
-                # Increase the checking frequency one the price pass the first target
-                # so we can move with the pase rather 30 second delay
-                self.timer = 10
 
-            self.monitor.update_positions_alert()
+            # Update entry Positions
+            # self.monitor.update_positions_alert()
 
             # Max Accepted Trail Loss
             if self.account_type == "real":
+                if self.risk_manager.is_dly_max_profit_reached(1, 2.5):
+                # Increase the checking frequency one the price pass the first target
+                # so we can move with the pase rather 30 second delay
+                    self.timer = 10
+            
                 if self.risk_manager.is_dly_max_risk_reached():
                     self.retries += 1
                     mp.close_all_positions()
@@ -186,6 +188,11 @@ class AlgoTrader():
                     self.timer = 30
                     sys.exit()
             else:
+                if self.risk_manager.is_dly_max_profit_reached(2, 3):
+                # Increase the checking frequency one the price pass the first target
+                # so we can move with the pase rather 30 second delay
+                    self.timer = 10
+
                 if self.risk_manager.is_dly_max_risk_reached():
                     self.retries += 1
                     mp.close_all_positions()
@@ -205,6 +212,12 @@ class AlgoTrader():
                 self.immidiate_exit = False
             
             if is_market_open and not is_market_close and not self.immidiate_exit:
+                
+                if self.account_type == "real":
+                    # Sent heart beat every 30 minutes
+                    if int(datetime.now().strftime('%M'))%30 == 0:
+                        self.alert.send_msg("Heartbeat...")
+
                 mp.cancel_all_pending_orders()
 
                 combinbed_resistance_long = {}

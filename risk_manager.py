@@ -13,8 +13,7 @@ class RiskManager:
         self.account_size  = ACCOUNT_SIZE
         self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage) # Risk only 0.25%
         self.max_loss = self.initial_risk * 2 # 4 times the initial risk
-        self.first_profit_factor = 2
-        self.second_profit_factor = 3
+        self.first_profit_factor = 1
         self.updated_risk = self.initial_risk
         self.previous_time = None
         self.first_max_profit_check = True
@@ -24,8 +23,6 @@ class RiskManager:
         # Initial Trail loss w.r.t to account size
         self.trail_loss = ACCOUNT_SIZE - self.max_loss
         self.previous_trail_loss = self.trail_loss
-
-        assert self.first_profit_factor < self.second_profit_factor
     
     def get_max_loss(self):
         return self.trail_loss
@@ -59,10 +56,12 @@ class RiskManager:
 
         return False
     
-    def is_dly_max_profit_reached(self):
+    def is_dly_max_profit_reached(self, first_profit_factor, second_profit_factor):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
         # Reduce the trail distance when the price cross first profit target
-        if (equity > ACCOUNT_SIZE + (self.max_loss * self.first_profit_factor)) and self.first_max_profit_check:
+        self.first_profit_factor = first_profit_factor
+        print(equity, ACCOUNT_SIZE + (self.max_loss * first_profit_factor), self.first_max_profit_check, "\n")
+        if (equity > ACCOUNT_SIZE + (self.max_loss * first_profit_factor)) and self.first_max_profit_check:
             self.alert.send_msg(f"First target max triggered!")
             self.max_loss = self.max_loss/2
             self.first_max_profit_check = False
@@ -70,7 +69,8 @@ class RiskManager:
 
         # Reduce the trail distance when the price cross second profit target
         # We multiply by 2, since the max loss will be set as half from first profit target marker
-        if equity > ACCOUNT_SIZE + (self.max_loss * 2 * self.second_profit_factor) and self.second_max_profit_check:
+        if equity > ACCOUNT_SIZE + (self.max_loss * 2 * second_profit_factor) and self.second_max_profit_check:
+            self.alert.send_msg(f"Second target max triggered!")
             self.max_loss = self.max_loss/2
             self.second_max_profit_check = False
     
