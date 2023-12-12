@@ -183,6 +183,7 @@ class AlgoTrader():
                     self.updated_risk = self.risk_manager.initial_risk
                     self.immidiate_exit = True
                     self.alert.send_msg(f"Real Account: Exit {self.retries}")
+                    self.timer = 30
                     sys.exit()
             else:
                 if self.risk_manager.is_dly_max_risk_reached():
@@ -192,7 +193,7 @@ class AlgoTrader():
                     self.risk_manager = risk_manager.RiskManager()
                     self.updated_risk = self.risk_manager.initial_risk
                     self.alert.send_msg(f"Demo Account: Exit {self.retries}")
-
+                    self.timer = 30
                     if self.retries > 2:
                         self.immidiate_exit = True
 
