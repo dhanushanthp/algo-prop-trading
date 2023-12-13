@@ -193,7 +193,7 @@ class AlgoTrader():
                         self.immidiate_exit = True
             else:
                 # 1, Reduce Trail as soon as the profit reach 1R
-                # 2, Reduce Trail as soon as the profit reach 1R
+                # 2, Reduce Trail as soon as the profit reach 2R
                 if self.risk_manager.is_dly_max_profit_reached(1, 2):
                 # Increase the checking frequency one the price pass the first target
                 # so we can move with the pase rather 30 second delay
