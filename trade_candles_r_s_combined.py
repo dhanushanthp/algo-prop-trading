@@ -161,8 +161,8 @@ class AlgoTrader():
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
             print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
-            print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.max_loss}")
-            print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.max_loss)}")
+            print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.account_max_loss}")
+            print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss)}")
             
             is_market_open, is_market_close = util.get_market_status()
             mp.trail_stop_previous_candle(self.risk_manager.initial_risk) # Each position trail stop
@@ -173,10 +173,12 @@ class AlgoTrader():
 
             # Max Accepted Trail Loss
             if self.account_type == "real":
-                if self.risk_manager.is_dly_max_profit_reached(1, 2.5):
+                # 0, Reduce  Trail as soon as the entry has positive
+                # 1, Reduce Trail as soon as the profit reach 1R
+                if self.risk_manager.is_dly_max_profit_reached(0, 2):
                 # Increase the checking frequency one the price pass the first target
                 # so we can move with the pase rather 30 second delay
-                    self.timer = 10
+                    self.timer = 30
             
                 if self.risk_manager.is_dly_max_risk_reached():
                     self.retries += 1
@@ -190,10 +192,12 @@ class AlgoTrader():
                         self.alert.send_msg(f"Real Account: Done for today!")
                         self.immidiate_exit = True
             else:
-                if self.risk_manager.is_dly_max_profit_reached(2, 3):
+                # 1, Reduce Trail as soon as the profit reach 1R
+                # 2, Reduce Trail as soon as the profit reach 1R
+                if self.risk_manager.is_dly_max_profit_reached(1, 2):
                 # Increase the checking frequency one the price pass the first target
                 # so we can move with the pase rather 30 second delay
-                    self.timer = 10
+                    self.timer = 30
 
                 if self.risk_manager.is_dly_max_risk_reached():
                     self.retries += 1
@@ -203,14 +207,14 @@ class AlgoTrader():
                     self.updated_risk = self.risk_manager.initial_risk
                     self.alert.send_msg(f"Demo Account: Exit {self.retries}")
                     self.timer = 30
-                    if self.retries >= 2:
+                    if self.retries >= 4:
                         self.alert.send_msg(f"Demo Account: Done for today!")
                         self.immidiate_exit = True
 
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager.reset_risk() # Reset the risk for the day
+                self.risk_manager = risk_manager.RiskManager() # Reset the risk for the day
                 mp.close_all_positions()
                 self.immidiate_exit = False
             
