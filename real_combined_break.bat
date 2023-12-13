@@ -1,1 +1,1 @@
-python trade_candles_r_s_combined.py break real
+python trade_candles_r_s_combined.py break real FTMO_10K

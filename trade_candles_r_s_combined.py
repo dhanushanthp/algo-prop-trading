@@ -32,6 +32,7 @@ class AlgoTrader():
         self.alert = Slack()
         self.monitor = Monitor()
         self.retries = 0
+        self.account = "NA"
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -161,7 +162,7 @@ class AlgoTrader():
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
             print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
             print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.max_loss}")
-            print(f"{'Max Profit'.ljust(20)}: ${round(self.risk_manager.get_max_profit())}")
+            print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.max_loss)}")
             
             is_market_open, is_market_close = util.get_market_status()
             mp.trail_stop_previous_candle(self.risk_manager.initial_risk) # Each position trail stop
@@ -218,7 +219,7 @@ class AlgoTrader():
                 if self.account_type == "real":
                     # Sent heart beat every 30 minutes
                     if int(datetime.now().strftime('%M'))%30 == 0:
-                        self.alert.send_msg("Heartbeat...")
+                        self.alert.send_msg(f"{self.account}: Heartbeat...")
 
                 mp.cancel_all_pending_orders()
 
@@ -234,7 +235,13 @@ class AlgoTrader():
                     combinbed_resistance_short[symbol] = []
 
                     for r_s_timeframe in [240, 120, 60, 30, 15]:
-                        levels = ind.find_r_s(symbol, r_s_timeframe)
+                        try:
+                            # Incase if it failed to request the symbol price
+                            levels = ind.find_r_s(symbol, r_s_timeframe)
+                        except Exception as e:
+                            self.alert.send_msg(f"{self.account}: {symbol}: {e}")
+                            break
+
                         resistances = levels["resistance"]
                         support = levels["support"]
 
@@ -261,8 +268,8 @@ class AlgoTrader():
                 if len(existing_positions) < len(selected_symbols):
                     for symbol in selected_symbols:
                         active_orders = len(mt.orders_get())
-
-                        if (symbol not in existing_positions) and active_orders < 1:
+                        #  and active_orders < 1
+                        if (symbol not in existing_positions):
 
                             # Don't trade US500.cash before GMT -2 time 10, or 3AM US Time
                             # if current_hour <= 10 and symbol in ["US500.cash", "UK100.cash"]:
@@ -311,6 +318,7 @@ if __name__ == "__main__":
         win.account_type = sys.argv[2]
         if win.entry_timeframe not in ["reverse", "break"]:
             raise Exception("Please enter fixed or auto entry time check!")
+        win.account = sys.argv[3]
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
         win.entry_timeframe = "auto"
