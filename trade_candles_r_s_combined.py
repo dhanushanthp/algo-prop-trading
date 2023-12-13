@@ -183,10 +183,11 @@ class AlgoTrader():
                     # Re initiate the object
                     self.risk_manager = risk_manager.RiskManager()
                     self.updated_risk = self.risk_manager.initial_risk
-                    self.immidiate_exit = True
                     self.alert.send_msg(f"Real Account: Exit {self.retries}")
                     self.timer = 30
-                    sys.exit()
+                    if self.retries >= 2:
+                        self.alert.send_msg(f"Real Account: Done for today!")
+                        self.immidiate_exit = True
             else:
                 if self.risk_manager.is_dly_max_profit_reached(2, 3):
                 # Increase the checking frequency one the price pass the first target
@@ -201,7 +202,8 @@ class AlgoTrader():
                     self.updated_risk = self.risk_manager.initial_risk
                     self.alert.send_msg(f"Demo Account: Exit {self.retries}")
                     self.timer = 30
-                    if self.retries > 2:
+                    if self.retries >= 2:
+                        self.alert.send_msg(f"Demo Account: Done for today!")
                         self.immidiate_exit = True
 
 
