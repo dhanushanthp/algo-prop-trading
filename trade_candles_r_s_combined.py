@@ -175,7 +175,7 @@ class AlgoTrader():
             if self.account_type == "real":
                 # 0, Reduce  Trail as soon as the entry has positive
                 # 1, Reduce Trail as soon as the profit reach 1R
-                if self.risk_manager.is_dly_max_profit_reached(0, 2):
+                if self.risk_manager.is_dly_max_profit_reached(0, 3):
                 # Increase the checking frequency one the price pass the first target
                 # so we can move with the pase rather 30 second delay
                     self.timer = 30
