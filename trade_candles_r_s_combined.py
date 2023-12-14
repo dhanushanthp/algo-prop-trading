@@ -35,6 +35,7 @@ class AlgoTrader():
         self.retries = 0
         self.account = "NA"
         self.file_util = FileUtils()
+        self.previous_equity = None
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -172,9 +173,11 @@ class AlgoTrader():
 
             # Collect change in equity
             _, equity, _,_ = ind.get_account_details()
-            self.file_util.equity_collector(self.account, 
-                                            datetime.now().strftime('%H:%M:%S'),
-                                            equity)
+            if self.previous_equity != equity:
+                self.previous_equity = equity
+                self.file_util.equity_collector(self.account, 
+                                                datetime.now().strftime('%H:%M:%S'),
+                                                equity)
 
             # Max Accepted Trail Loss
             if self.account_type == "real":

@@ -7,16 +7,19 @@ log = logging.getLogger("SLACK")
 
 class Slack:
     def __init__(self) -> None:
-        self.client = WebClient(
-            token="xoxb-4628404917445-4631574171810-nrebpFdu1u7M3mpmy0H5y0Pq")
-        self.SLACK_CHANNEL = 'general'
+        # self.client = WebClient(
+        #     token="xoxb-4628404917445-4631574171810-nrebpFdu1u7M3mpmy0H5y0Pq")
+        # self.SLACK_CHANNEL = 'general'
+
+        pass
 
     def send_msg(self, msg):
-        if True:
-            try:
-                self.client.chat_postMessage(channel='#general', text=msg)
-            except SlackApiError as e:
-                log.info(msg)
+        # if True:
+        #     try:
+        #         self.client.chat_postMessage(channel='#general', text=msg)
+        #     except SlackApiError as e:
+        #         log.info(msg)
+        print(msg)
 
 
 if __name__ == "__main__":
