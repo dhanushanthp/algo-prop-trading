@@ -15,6 +15,7 @@ import MetaTrader5 as mt
 import mng_pos as mp
 from slack_msg import Slack
 from monitor import Monitor
+from file_utils import FileUtils
 
 class AlgoTrader():
     def __init__(self):
@@ -33,6 +34,7 @@ class AlgoTrader():
         self.monitor = Monitor()
         self.retries = 0
         self.account = "NA"
+        self.file_util = FileUtils()
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -168,8 +170,11 @@ class AlgoTrader():
             mp.trail_stop_previous_candle(self.risk_manager.initial_risk) # Each position trail stop
             self.risk_manager.trail_stop_account_level() # Update the account level exit plan
 
-            # Update entry Positions
-            # self.monitor.update_positions_alert()
+            # Collect change in equity
+            _, equity, _,_ = ind.get_account_details()
+            self.file_util.equity_collector(self.account, 
+                                            datetime.now().strftime('%H:%M:%S'),
+                                            equity)
 
             # Max Accepted Trail Loss
             if self.account_type == "real":

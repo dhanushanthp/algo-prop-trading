@@ -1,6 +1,6 @@
 class FileUtils:
-    def __init__(self, directory) -> None:
-        self.directory = directory
+    def __init__(self) -> None:
+        pass
     
     def log_writer(self, trade_time, write_line, write_mode="a", sep="\t"):
         """
@@ -24,9 +24,8 @@ class FileUtils:
             f.write(f"{trade_time}{sep}{write_line}\n")
             f.close()
     
-    def equity_collector(self, date_time, equity):
-         with open("equity.csv", "a") as f:
-            # Prepend the time
+    def equity_collector(self, file_name, date_time, equity):
+         with open(f"{file_name}.csv", "a") as f:
             f.write(f"{date_time},{equity}\n")
             f.close()
             
