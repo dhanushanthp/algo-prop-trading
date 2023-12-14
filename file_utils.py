@@ -23,7 +23,14 @@ class FileUtils:
             # Prepend the time
             f.write(f"{trade_time}{sep}{write_line}\n")
             f.close()
+    
+    def equity_collector(self, date_time, equity):
+         with open("equity.csv", "a") as f:
+            # Prepend the time
+            f.write(f"{date_time},{equity}\n")
+            f.close()
             
 if __name__ == "__main__":
     obj = FileUtils("/")
-    obj.log_writer("testing,adfad")
+    # obj.log_writer("testing,adfad")
+    obj.equity_collector("asdf", 9080)
