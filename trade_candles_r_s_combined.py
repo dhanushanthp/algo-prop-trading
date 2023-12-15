@@ -33,7 +33,7 @@ class AlgoTrader():
         self.alert = Slack()
         self.monitor = Monitor()
         self.retries = 0
-        self.account_account = ind.get_account_name()
+        self.account_name = ind.get_account_name()
         self.file_util = FileUtils()
         self.previous_equity = None
     
@@ -175,7 +175,7 @@ class AlgoTrader():
             _, equity, _,_ = ind.get_account_details()
             if self.previous_equity != equity:
                 self.previous_equity = equity
-                self.file_util.equity_collector(self.account_account, 
+                self.file_util.equity_collector(self.account_name, 
                                                 datetime.now().strftime('%H:%M:%S'),
                                                 equity)
 
@@ -194,10 +194,10 @@ class AlgoTrader():
                     # Re initiate the object
                     self.risk_manager = risk_manager.RiskManager()
                     self.updated_risk = self.risk_manager.initial_risk
-                    self.alert.send_msg(f"Real Account: Exit {self.retries}")
+                    self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
                     self.timer = 30
                     if self.retries >= 2:
-                        self.alert.send_msg(f"Real Account: Done for today!")
+                        self.alert.send_msg(f"{self.account_name}: Done for today!")
                         self.immidiate_exit = True
             else:
                 # 1, Reduce Trail as soon as the profit reach 1R
@@ -213,10 +213,10 @@ class AlgoTrader():
                     # Re initiate the object
                     self.risk_manager = risk_manager.RiskManager()
                     self.updated_risk = self.risk_manager.initial_risk
-                    self.alert.send_msg(f"Demo Account: Exit {self.retries}")
+                    self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
                     self.timer = 30
                     if self.retries >= 4:
-                        self.alert.send_msg(f"Demo Account: Done for today!")
+                        self.alert.send_msg(f"{self.account_name}: Done for today!")
                         self.immidiate_exit = True
 
 
@@ -231,7 +231,7 @@ class AlgoTrader():
                 if self.account_type == "real":
                     # Sent heart beat every 30 minutes
                     if int(datetime.now().strftime('%M'))%30 == 0:
-                        self.alert.send_msg(f"{self.account_account}: Heartbeat...")
+                        self.alert.send_msg(f"{self.account_name}: Heartbeat...")
 
                 mp.cancel_all_pending_orders()
 
@@ -251,7 +251,7 @@ class AlgoTrader():
                             # Incase if it failed to request the symbol price
                             levels = ind.find_r_s(symbol, r_s_timeframe)
                         except Exception as e:
-                            self.alert.send_msg(f"{self.account_account}: {symbol}: {e}")
+                            self.alert.send_msg(f"{self.account_name}: {symbol}: {e}")
                             break
 
                         resistances = levels["resistance"]
