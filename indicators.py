@@ -103,6 +103,9 @@ def previous_candle_move(symbol, timeframe):
     
     return previous_high, previous_low, previous_candle_signal
 
+def get_account_name():
+    info = mt5.account_info()
+    return info.name
 
 def find_r_s(symbol, timeframe):
 
@@ -312,6 +315,7 @@ if __name__ == "__main__":
     # print(match_timeframe(60))
     # print(mt5.TIMEFRAME_H2)
     # print(mt5.TIMEFRAME_H1)
-    print(mt5.TIMEFRAME_M15)
+    # print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
+    print(get_account_name())

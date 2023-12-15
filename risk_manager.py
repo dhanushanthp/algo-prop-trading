@@ -18,10 +18,12 @@ class RiskManager:
         self.first_max_profit_check = True
         self.second_max_profit_check = True
         self.alert = slack_msg.Slack()
+        self.max_risk_hit_counter = 0
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.account_max_loss
         self.previous_trail_loss = self.account_trail_loss
+        self.account_name = ind.get_account_name()
     
     def get_max_loss(self):
         return self.account_trail_loss
@@ -40,8 +42,11 @@ class RiskManager:
     def is_dly_max_risk_reached(self):
         _, equity, _,_ = ind.get_account_details()
         if equity < self.account_trail_loss:
-            return True
-
+            self.max_risk_hit_counter += 1
+            self.alert.send_msg(f"{self.account_name}: Max risk hit: {self.max_risk_hit_counter}")
+            # Give 3 changes to avoid spliked hit of account levels losses.
+            if self.max_risk_hit_counter > 3:
+                return True
         return False
     
     def is_dly_max_profit_reached(self, first_profit_factor, second_profit_factor):
@@ -50,7 +55,7 @@ class RiskManager:
         self.first_profit_factor = first_profit_factor
         print(equity, ACCOUNT_SIZE + (self.account_max_loss * first_profit_factor), self.first_max_profit_check, "\n")
         if (equity > ACCOUNT_SIZE + (self.account_max_loss * first_profit_factor)) and self.first_max_profit_check:
-            self.alert.send_msg(f"First target max triggered!")
+            self.alert.send_msg(f"{self.account_name}: First target max triggered!")
             self.account_max_loss = self.account_max_loss/2
             self.first_max_profit_check = False
             return True
@@ -58,7 +63,7 @@ class RiskManager:
         # Reduce the trail distance when the price cross second profit target
         # We multiply by 2, since the max loss will be set as half from first profit target marker
         if equity > ACCOUNT_SIZE + (self.account_max_loss * 2 * second_profit_factor) and self.second_max_profit_check:
-            self.alert.send_msg(f"Second target max triggered!")
+            self.alert.send_msg(f"{self.account_name}: Second target max triggered!")
             self.account_max_loss = self.account_max_loss/2
             self.second_max_profit_check = False
     
