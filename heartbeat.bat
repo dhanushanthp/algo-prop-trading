@@ -1,0 +1,1 @@
+python "C:\Users\SathyaGayathriRajara\OneDrive\Financial Freedom\MetaTraderTrial\heartbeat.py"

@@ -227,12 +227,6 @@ class AlgoTrader():
                 self.immidiate_exit = False
             
             if is_market_open and not is_market_close and not self.immidiate_exit:
-                
-                if self.account_type == "real":
-                    # Sent heart beat every 30 minutes
-                    if int(datetime.now().strftime('%M'))%30 == 0:
-                        self.alert.send_msg(f"{self.account_name}: Heartbeat...")
-
                 mp.cancel_all_pending_orders()
 
                 combinbed_resistance_long = {}
