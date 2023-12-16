@@ -19,25 +19,38 @@ from file_utils import FileUtils
 
 class AlgoTrader():
     def __init__(self):
+        # MetaTrader initialization
         mt.initialize()
 
-        self.entry_timeframe = None # Default to 15 min
-        self.target_ratio = 2.0 # Default 1:0.5 Ratio
+        # Default values
+        self.entry_timeframe = None  # Default to 15 min
+        self.target_ratio = 2.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
-        self.risk_manager = risk_manager.RiskManager()
         self.immidiate_exit = False
         self.account_type = "real"
         self.timer = 30
+        self.retries = 0
+
+        # External dependencies
+        self.risk_manager = risk_manager.RiskManager()
         self.alert = Slack()
         self.monitor = Monitor()
-        self.retries = 0
-        self.account_name = ind.get_account_name()
         self.file_util = FileUtils()
+
+        # Account information
+        self.account_name = ind.get_account_name()
         self.previous_equity = None
+
         # Expected reward for the day
         self.fixed_initial_account_size = self.risk_manager.account_size
-        self.fixed_expected_reward = self.risk_manager.account_size + self.risk_manager.account_max_loss
-        self.fixed_expected_reward_2R = self.risk_manager.account_size + (self.risk_manager.account_max_loss * 2)
+        
+        self.fixed_expected_reward = (
+            self.risk_manager.account_size + self.risk_manager.account_max_loss
+        )
+        self.fixed_expected_reward_2R = (
+            self.risk_manager.account_size
+            + (self.risk_manager.account_max_loss * 2)
+        )
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
