@@ -36,6 +36,9 @@ class AlgoTrader():
         self.account_name = ind.get_account_name()
         self.file_util = FileUtils()
         self.previous_equity = None
+        # Expected reward for the day
+        self.fixed_initial_account_size = self.risk_manager.account_size
+        self.fixed_expected_reward = self.risk_manager.account_size + self.risk_manager.account_max_loss
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -196,8 +199,14 @@ class AlgoTrader():
                     self.updated_risk = self.risk_manager.initial_risk
                     self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
                     self.timer = 30
-                    if self.retries >= 2:
-                        self.alert.send_msg(f"{self.account_name}: Done for today!")
+                    
+                    time.sleep(30) # Take some time for the account to digest the positions
+                    current_account_size,_,_,_ = ind.get_account_details()
+                    
+                    self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward}")
+                    # We are going to trade until we have the positive outcome 1R for the day
+                    if current_account_size > self.fixed_expected_reward:
+                        self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         self.immidiate_exit = True
             else:
                 # 1, Reduce Trail as soon as the profit reach 1R
