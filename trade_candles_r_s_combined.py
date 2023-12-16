@@ -170,9 +170,8 @@ class AlgoTrader():
             
             is_market_open, is_market_close = util.get_market_status()
             mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
-            self.risk_manager.update_account_trail_loss() # Update the account level exit plan
 
-            if self.risk_manager.has_daily_maximum_risk_been_reached():
+            if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
                 mp.close_all_positions()
                 # Re initiate the object

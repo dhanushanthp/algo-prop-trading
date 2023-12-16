@@ -307,11 +307,11 @@ def adjust_positions_trailing_stops(risk):
         high, low, _ = ind.get_stop_range(symbol, short_tf)
         
         if position.type == 0:
-            new_stop_point = util.curr_round(position.symbol,low)
-            trail_stop = max(stop_price, new_stop_point)
+            new_stop_point = util.curr_round(position.symbol, low)
         else:
             new_stop_point = util.curr_round(position.symbol, high)
-            trail_stop = min(stop_price, new_stop_point)
+        
+        trail_stop = min(stop_price, new_stop_point)
 
         # If the stop is already equal to existing stop, then no need to change it!
         # Enable trailning once price moved 1/4 of the stop, Otherswise this will keep adjust while the price is on

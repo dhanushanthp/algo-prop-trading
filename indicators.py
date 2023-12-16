@@ -300,6 +300,18 @@ def get_candle_signal(symbol, verb=True):
         return list(signals)[0]
 
 def get_account_details():
+    """
+    Retrieves and returns essential details of the trading account.
+
+    This function fetches information such as balance, equity, margin-free funds,
+    and profit from the MetaTrader 5 trading account. If the account information is
+    successfully obtained, it returns a tuple containing these values.
+
+    Returns:
+        tuple: A tuple containing trading account details in the order of (balance, equity, margin_free, profit).
+               Returns None if account information retrieval fails.
+    """
+     
     account_info=mt5.account_info()
     if account_info!=None:
         # display trading account data 'as is'

@@ -22,7 +22,6 @@ class RiskManager:
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.account_max_loss
-        self.previous_trail_loss = self.account_trail_loss
         self.account_name = ind.get_account_name()
     
     def get_max_loss(self):
@@ -31,21 +30,14 @@ class RiskManager:
     def get_max_profit(self):
         return self.account_size + (self.account_max_loss * self.first_profit_factor)
     
-    def update_account_trail_loss(self):
-        # Get account details
+    def has_daily_maximum_risk_reached(self):
         _, equity, _, _ = ind.get_account_details()
 
-        # Calculate trail loss
+        # Calculate trail loss, The equtity will keep increase based on positive return
         trail_loss = equity - self.account_max_loss
 
-        # Update account trail loss with the maximum value between current trail loss and previous trail loss
-        self.account_trail_loss = max(trail_loss, self.previous_trail_loss)
-
-        # Update previous trail loss for the next iteration
-        self.previous_trail_loss = self.account_trail_loss
-    
-    def has_daily_maximum_risk_been_reached(self):
-        _, equity, _, _ = ind.get_account_details()
+        # Update account trail loss with the maximum value between current trail loss
+        self.account_trail_loss = max(trail_loss, self.account_trail_loss)
 
         # Check if the daily maximum risk has been reached
         if equity < self.account_trail_loss:
