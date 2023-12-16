@@ -45,8 +45,10 @@ class AlgoTrader():
         self.fixed_initial_account_size = self.risk_manager.account_size
         
         self.fixed_expected_reward = (
-            self.risk_manager.account_size + self.risk_manager.account_max_loss
+            self.risk_manager.account_size 
+            + self.risk_manager.account_max_loss
         )
+        
         self.fixed_expected_reward_2R = (
             self.risk_manager.account_size
             + (self.risk_manager.account_max_loss * 2)
