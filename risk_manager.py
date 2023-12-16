@@ -44,14 +44,18 @@ class RiskManager:
         # Update previous trail loss for the next iteration
         self.previous_trail_loss = self.account_trail_loss
     
-    def is_dly_max_risk_reached(self):
-        _, equity, _,_ = ind.get_account_details()
+    def has_daily_maximum_risk_been_reached(self):
+        _, equity, _, _ = ind.get_account_details()
+
+        # Check if the daily maximum risk has been reached
         if equity < self.account_trail_loss:
             self.max_risk_hit_counter += 1
             self.alert.send_msg(f"{self.account_name}: Max risk hit: {self.max_risk_hit_counter}")
-            # Give 3 changes to avoid spliked hit of account levels losses.
+
+            # Give 3 chances to avoid spiked hits of account-level losses
             if self.max_risk_hit_counter > 3:
                 return True
+
         return False
     
     def is_dly_max_profit_reached(self, first_profit_factor, second_profit_factor):

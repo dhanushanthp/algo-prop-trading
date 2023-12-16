@@ -172,43 +172,30 @@ class AlgoTrader():
             mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
             self.risk_manager.update_account_trail_loss() # Update the account level exit plan
 
-            # Max Accepted Trail Loss
-            if self.account_type == "real":           
-                if self.risk_manager.is_dly_max_risk_reached():
-                    self.retries += 1
-                    mp.close_all_positions()
-                    # Re initiate the object
-                    self.risk_manager = risk_manager.RiskManager()
-                    self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
-                    self.timer = 30
-                    
-                    time.sleep(30) # Take some time for the account to digest the positions
-                    current_account_size,_,_,_ = ind.get_account_details()
-                    
+            if self.risk_manager.has_daily_maximum_risk_been_reached():
+                self.retries += 1
+                mp.close_all_positions()
+                # Re initiate the object
+                self.risk_manager = risk_manager.RiskManager()
+                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
+
+                time.sleep(30) # Take some time for the account to digest the positions
+                current_account_size,_,_,_ = ind.get_account_details()
+
+                # Max Accepted Trail Loss
+                if self.account_type == "real":
                     self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward}")
                     # We are going to trade until we have the positive outcome 1R for the day
                     # TODO The retries limit is just to keep the account safe
                     if (current_account_size > self.fixed_expected_reward) or (self.retries >= 2):
                         self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         self.immidiate_exit = True
-            else:
-                if self.risk_manager.is_dly_max_risk_reached():
-                    self.retries += 1
-                    mp.close_all_positions()
-                    # Re initiate the object
-                    self.risk_manager = risk_manager.RiskManager()
-                    self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
-                    self.timer = 30
-
-                    time.sleep(30) # Take some time for the account to digest the positions
-                    current_account_size,_,_,_ = ind.get_account_details()
-                    
+                else:
                     self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward_2R}")
                     # We are going to trade until we have the positive outcome 1R for the day
                     if current_account_size > self.fixed_expected_reward_2R:
                         self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         self.immidiate_exit = True
-
 
             if is_market_close:
                 print("Market Close!")
