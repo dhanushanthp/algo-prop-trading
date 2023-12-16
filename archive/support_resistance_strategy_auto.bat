@@ -1,1 +1,0 @@
-python trade_candles_r_s.py auto

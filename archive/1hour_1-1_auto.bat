@@ -1,1 +1,0 @@
-python trade_candles.py 1 1 1 AUTO
