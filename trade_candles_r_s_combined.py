@@ -249,8 +249,6 @@ class AlgoTrader():
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 if len(existing_positions) < len(selected_symbols):
                     for symbol in selected_symbols:
-                        active_orders = len(mt.orders_get())
-                        #  and active_orders < 1
                         if (symbol not in existing_positions):
                             total_resistance_tf_long = set(combinbed_resistance_long[symbol])
                             total_support_tf_long = set(combined_support_long[symbol])
