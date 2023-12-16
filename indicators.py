@@ -155,24 +155,6 @@ def find_r_s(symbol, timeframe):
     clean_support = [i for i in suport_levels.values() if i not in breaked_supprots]
 
     return {"support": clean_support, "resistance": clean_resistance}
-
-
-def find_resistance_support(symbol, timeframe):
-    """
-    Find resistance and suppot based on 4X timeframe based on current time frame
-    """
-    selected_time = match_timeframe(timeframe)
-    
-    # If does the mid values intersect with previous 5 bars
-    # get past 5 candles and start from prevous second candle
-    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 1, 3))
-    past_candles.reverse()
-    mid_price = get_mid_price(symbol)
-    for candle in past_candles:
-        if is_number_between(mid_price, candle["low"], candle["high"]):
-            return True
-        
-    return False
     
 def is_number_between(number, lower_limit, upper_limit):
     if lower_limit > upper_limit:
