@@ -25,7 +25,6 @@ class AlgoTrader():
         self.target_ratio = 2.0 # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.risk_manager = risk_manager.RiskManager()
-        self.strategy = config.REVERSAL
         self.immidiate_exit = False
         self.account_type = "real"
         self.timer = 30
@@ -196,7 +195,8 @@ class AlgoTrader():
                     
                     self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward}")
                     # We are going to trade until we have the positive outcome 1R for the day
-                    if current_account_size > self.fixed_expected_reward:
+                    # TODO The retries limit is just to keep the account safe
+                    if (current_account_size > self.fixed_expected_reward) or (self.retries >= 2):
                         self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         self.immidiate_exit = True
             else:
