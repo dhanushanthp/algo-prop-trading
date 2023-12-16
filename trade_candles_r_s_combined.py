@@ -275,7 +275,7 @@ class AlgoTrader():
                                                             r_s_timeframe=max(total_support_tf_long), 
                                                             entry_timeframe=max(total_support_tf_long))
                             else:
-                                    raise Exception("Strategy not defined!")
+                                raise Exception("Strategy not defined!")
             
             time.sleep(self.timer)
     
