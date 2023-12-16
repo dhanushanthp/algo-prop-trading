@@ -170,7 +170,7 @@ class AlgoTrader():
             
             is_market_open, is_market_close = util.get_market_status()
             mp.trail_stop_previous_candle(self.risk_manager.initial_risk) # Each position trail stop
-            self.risk_manager.trail_stop_account_level() # Update the account level exit plan
+            self.risk_manager.update_account_trail_loss() # Update the account level exit plan
 
             # Collect change in equity
             _, equity, _,_ = ind.get_account_details()

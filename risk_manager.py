@@ -31,12 +31,17 @@ class RiskManager:
     def get_max_profit(self):
         return self.account_size + (self.account_max_loss * self.first_profit_factor)
     
-    def trail_stop_account_level(self):
-        # This update the account level exit plan
-        _,equity,_,_ = ind.get_account_details()
+    def update_account_trail_loss(self):
+        # Get account details
+        _, equity, _, _ = ind.get_account_details()
+
+        # Calculate trail loss
         trail_loss = equity - self.account_max_loss
-        # always move update with trail stop
+
+        # Update account trail loss with the maximum value between current trail loss and previous trail loss
         self.account_trail_loss = max(trail_loss, self.previous_trail_loss)
+
+        # Update previous trail loss for the next iteration
         self.previous_trail_loss = self.account_trail_loss
     
     def is_dly_max_risk_reached(self):
