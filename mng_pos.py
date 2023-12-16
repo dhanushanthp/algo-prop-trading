@@ -204,56 +204,6 @@ def get_symbol_entry_price(symbol):
 
     return None, None
 
-def breakeven_1R_positions_old():
-    existing_positions = mt5.positions_get()
-    for position in existing_positions:
-        symbol = position.symbol
-        entry_price = position.price_open
-        stop_loss = position.sl
-        quantity = position.volume
-        max_loss = get_value_at_risk(symbol, entry_price, stop_loss, quantity)
-        # Break even when price reach 1R
-        # if position.symbol != "GBPUSD":
-        #     continue
-
-        high, low, length = ind.previous_candle_move(symbol=position.symbol)
-        stop_price = 0
-        if position.type == 0:
-            stop_price = low
-        elif position.type == 1:
-            stop_price = high
-        
-        stop_price = stop_round(symbol=position.symbol, stop_price=stop_price)
-
-        actual_stop_pips = abs(position.tp - position.price_open)
-        current_stop_pips = abs(stop_price - position.price_open)
-
-        # Only when the stop price is not set to previous bar. Otherwise the 
-        # stop has been already moved.
-        # Don't change when 1. existing stop price equals to new calculated stop and 2. If new stop pips is higher than initial pips
-        # round(stop_price, 3) != round(position.sl, 3)
-        if (actual_stop_pips > current_stop_pips):
-            modify_request = {
-                "action": mt5.TRADE_ACTION_SLTP,
-                "symbol": position.symbol,
-                "volume": position.volume,
-                "type": position.type,
-                "position": position.ticket,
-                "sl": stop_price,
-                "tp": position.tp,
-                "comment": 'Break Even',
-                "magic": 234000,
-                "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_FOK,
-                "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
-            }
-            
-            result = mt5.order_send(modify_request)
-            
-            if result.retcode != mt5.TRADE_RETCODE_DONE:
-                if result.comment not in ["No changes"]:
-                    print("Manage Order " + position.symbol + " failed!!...Error: "+str(result.comment))
-
 
 def cancel_specific_pending_order(symbol):
     active_orders = mt5.orders_get()
@@ -271,6 +221,7 @@ def cancel_specific_pending_order(symbol):
             if result.retcode != mt5.TRADE_RETCODE_DONE:
                 print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
 
+
 def cancel_all_pending_orders():
     active_orders = mt5.orders_get()
 
@@ -285,6 +236,7 @@ def cancel_all_pending_orders():
 
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
+
 
 def exit_one_r():
     existing_positions = mt5.positions_get()
@@ -384,6 +336,7 @@ def trail_stop_half_points(risk):
                 if result.comment != "No changes":
                     print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
+
 def breakeven_1R_positions():
     existing_positions = mt5.positions_get()
     for position in existing_positions:
@@ -414,6 +367,7 @@ def breakeven_1R_positions():
                 if result.comment != "No changes":
                     print("Modify Order " + position.symbol + " failed!!...Error: "+str(result.comment))
 
+
 def close_single_position(obj):        
     order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
     exist_price = mt5.symbol_info_tick(obj.symbol).bid if obj.type == 1 else mt5.symbol_info_tick(obj.symbol).ask
@@ -437,10 +391,12 @@ def close_single_position(obj):
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
 
+
 def close_all_positions():
     positions = mt5.positions_get()
     for obj in positions: 
         close_single_position(obj=obj)
+
 
 def close_all_positions_on_exit():
     """
@@ -456,18 +412,6 @@ def close_all_positions_on_exit():
         if (entry_type == 0 and stop_price < entry_price) or (entry_type ==1 and stop_price > entry_price):
             close_single_position(obj=obj)
         
-
-# def close_slave_positions():
-#     """
-#     If the positions is already filled in master, then no need for slave position in local
-#     """
-#     existing_positions = list(set([i.symbol for i in mt5.positions_get()]))
-#     server_positions = client.get_active_positions()
-#     co_exisiting_positions = np.intersect1d(existing_positions, server_positions)
-#     if len(co_exisiting_positions) > 0:
-#         for obj in mt5.positions_get():
-#             if obj.symbol in co_exisiting_positions:
-#                 close_single_position(obj=obj)
 
 def exist_on_initial_plan_changed_ema():
     positions = mt5.positions_get()

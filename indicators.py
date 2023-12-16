@@ -30,8 +30,13 @@ def get_bid_ask(symbol):
     bid_price = mt5.symbol_info_tick(symbol).bid
     return bid_price, ask_price
 
-
 def get_ordered_symbols():
+    """
+    Retrieves a list of trading symbols ordered by the absolute value of their price changes.
+    
+    Returns:
+        List[str]: A list of trading symbols in descending order of absolute price changes.
+    """
     ticks = (curr.currencies + curr.indexes)
     symbol_change = []    
     for tick in ticks:
@@ -51,12 +56,9 @@ def previous_candle_move(symbol, timeframe):
     selected_time = match_timeframe(timeframe)
     
     previous_candle = mt5.copy_rates_from_pos(symbol, selected_time, 1, 1)[0]
+    
     current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
-
     current_candle_body = abs(current_candle["close"] - current_candle["open"])
-    previous_candle_body = abs(previous_candle["close"] - previous_candle["open"])
-
-    previous_candle_total_length = abs(previous_candle["high"] - previous_candle["low"])
 
     spread = get_spread(symbol)
 
@@ -67,7 +69,6 @@ def previous_candle_move(symbol, timeframe):
         1.1 The 3 time spread for a valid current candle has been added in signal idenfication.
     2. Current candle body should be larger than the previous candle body to be valid entry
     """
-    # and (current_candle_body < previous_candle_total_length)
     if (current_candle_body > 3 * spread) :
         if previous_candle["close"] > previous_candle["open"]:
             previous_candle_signal = "L"
