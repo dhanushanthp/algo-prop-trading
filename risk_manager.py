@@ -66,13 +66,10 @@ class RiskManager:
             self.alert.send_msg(f"{self.account_name}: Second target max triggered!")
             self.account_max_loss = self.account_max_loss/2
             self.second_max_profit_check = False
-    
-    def update_risk(self):
-        return round(self.initial_risk, 2)
         
 
 if __name__ == "__main__":
     obj = RiskManager()
     while True:
-        print(f"Current Risk: {obj.update_risk()}")
+        print(f"Current Risk: {obj.initial_risk}")
         time.sleep(30)

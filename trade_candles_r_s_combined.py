@@ -25,7 +25,6 @@ class AlgoTrader():
         self.target_ratio = 2.0 # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.risk_manager = risk_manager.RiskManager()
-        self.updated_risk = self.risk_manager.initial_risk
         self.strategy = config.REVERSAL
         self.immidiate_exit = False
         self.account_type = "real"
@@ -65,8 +64,7 @@ class AlgoTrader():
 
         dollor_value = mp.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price) * stop_factor
-        self.updated_risk = self.risk_manager.update_risk()
-        lots = self.updated_risk/(points_in_stop * dollor_value)
+        lots = self.risk_manager.initial_risk/(points_in_stop * dollor_value)
         
         if symbol in curr.currencies:
             points_in_stop = round(points_in_stop, 5)
@@ -167,7 +165,7 @@ class AlgoTrader():
         
         while True:
             print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
-            print(f"{'Current Risk'.ljust(20)}: ${self.updated_risk}")
+            print(f"{'Current Risk'.ljust(20)}: ${round(self.risk_manager.initial_risk, 2)}")
             print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.account_max_loss}")
             print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss)}")
             
@@ -190,7 +188,6 @@ class AlgoTrader():
                     mp.close_all_positions()
                     # Re initiate the object
                     self.risk_manager = risk_manager.RiskManager()
-                    self.updated_risk = self.risk_manager.initial_risk
                     self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
                     self.timer = 30
                     
@@ -208,7 +205,6 @@ class AlgoTrader():
                     mp.close_all_positions()
                     # Re initiate the object
                     self.risk_manager = risk_manager.RiskManager()
-                    self.updated_risk = self.risk_manager.initial_risk
                     self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
                     self.timer = 30
 
