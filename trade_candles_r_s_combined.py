@@ -54,15 +54,9 @@ class AlgoTrader():
         except Exception:
             return None
     
-    def get_lot_size(self, symbol, entry_price, stop_price, timeframe):
-        
-        stop_factor = 1 # Default
-
-        # if timeframe in [5, 15, 30]:
-        #     stop_factor = 1.5 # Give extra room for shorter timeframe
-
+    def get_lot_size(self, symbol, entry_price, stop_price):
         dollor_value = mp.get_dollar_value(symbol)
-        points_in_stop = abs(entry_price-stop_price) * stop_factor
+        points_in_stop = abs(entry_price-stop_price)
         lots = self.risk_manager.initial_risk/(points_in_stop * dollor_value)
         
         if symbol in curr.currencies:
@@ -93,7 +87,7 @@ class AlgoTrader():
                 if entry_price > stop_price:                
                     try:
                         print(f"{symbol.ljust(12)}: LONG")        
-                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price, timeframe=entry_timeframe)
+                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         lots =  round(lots, 2)
                         
@@ -132,7 +126,7 @@ class AlgoTrader():
                 if stop_price > entry_price:
                     try:
                         print(f"{symbol.ljust(12)}: SHORT")      
-                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price, timeframe=entry_timeframe)
+                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         lots =  round(lots, 2)
 
