@@ -11,8 +11,8 @@ class RiskManager:
     def __init__(self) -> None:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.account_size  = ACCOUNT_SIZE
-        self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage) # Risk only 0.25%
-        self.account_max_loss = self.initial_risk * config.stop_factor
+        self.initial_risk = round(ACCOUNT_SIZE/100*config.risk_percentage)
+        self.account_max_loss = self.initial_risk
         self.first_profit_factor = 1
         self.previous_time = None
         self.first_max_profit_check = True
@@ -33,7 +33,7 @@ class RiskManager:
     
     def trail_stop_account_level(self):
         # This update the account level exit plan
-        _, equity, _,_ = ind.get_account_details()
+        _,equity,_,_ = ind.get_account_details()
         trail_loss = equity - self.account_max_loss
         # always move update with trail stop
         self.account_trail_loss = max(trail_loss, self.previous_trail_loss)

@@ -39,6 +39,7 @@ class AlgoTrader():
         # Expected reward for the day
         self.fixed_initial_account_size = self.risk_manager.account_size
         self.fixed_expected_reward = self.risk_manager.account_size + self.risk_manager.account_max_loss
+        self.fixed_expected_reward_2R = self.risk_manager.account_size + (self.risk_manager.account_max_loss * 2)
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -183,14 +184,7 @@ class AlgoTrader():
                                                 equity)
 
             # Max Accepted Trail Loss
-            if self.account_type == "real":
-                # 0, Reduce  Trail as soon as the entry has positive
-                # 1, Reduce Trail as soon as the profit reach 1R
-                if self.risk_manager.is_dly_max_profit_reached(0, 3):
-                # Increase the checking frequency one the price pass the first target
-                # so we can move with the pase rather 30 second delay
-                    self.timer = 30
-            
+            if self.account_type == "real":           
                 if self.risk_manager.is_dly_max_risk_reached():
                     self.retries += 1
                     mp.close_all_positions()
@@ -209,13 +203,6 @@ class AlgoTrader():
                         self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         self.immidiate_exit = True
             else:
-                # 1, Reduce Trail as soon as the profit reach 1R
-                # 2, Reduce Trail as soon as the profit reach 2R
-                if self.risk_manager.is_dly_max_profit_reached(1, 2):
-                # Increase the checking frequency one the price pass the first target
-                # so we can move with the pase rather 30 second delay
-                    self.timer = 30
-
                 if self.risk_manager.is_dly_max_risk_reached():
                     self.retries += 1
                     mp.close_all_positions()
@@ -224,8 +211,14 @@ class AlgoTrader():
                     self.updated_risk = self.risk_manager.initial_risk
                     self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
                     self.timer = 30
-                    if self.retries >= 4:
-                        self.alert.send_msg(f"{self.account_name}: Done for today!")
+
+                    time.sleep(30) # Take some time for the account to digest the positions
+                    current_account_size,_,_,_ = ind.get_account_details()
+                    
+                    self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward_2R}")
+                    # We are going to trade until we have the positive outcome 1R for the day
+                    if current_account_size > self.fixed_expected_reward_2R:
+                        self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         self.immidiate_exit = True
 
 

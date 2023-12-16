@@ -1,9 +1,10 @@
 import pandas as pd
 
-data = pd.read_csv("FTMO_10K_DEMO.csv", names=["time", "equity"])
+data = pd.read_csv("FTMO Free Trial USD.csv", names=["time", "equity"])
 
 initial_equity = data.iloc[0]["equity"]
 
+data["equity_shift"] = data["equity"].shift(10)
 data["change"] = data["equity"] - initial_equity
 
 import plotly.graph_objects as go

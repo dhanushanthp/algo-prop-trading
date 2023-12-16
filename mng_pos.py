@@ -313,8 +313,9 @@ def trail_stop_previous_candle(risk):
             new_stop_point = util.curr_round(position.symbol, high)
             trail_stop = min(stop_price, new_stop_point)
 
-        # # If the stop is already equal to existing stop, then no need to change it!
-        # # Enable trailning once price moved 1/4 of the stop
+        # If the stop is already equal to existing stop, then no need to change it!
+        # Enable trailning once price moved 1/4 of the stop, Otherswise this will keep adjust while the price is on
+        # negative 
         if (position.profit > risk/4) and trail_stop != stop_price:
             print(f"STP Updated: {position.symbol}, PRE: {stop_price}, CURR: {trail_stop}")
 
