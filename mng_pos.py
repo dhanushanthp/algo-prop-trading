@@ -298,7 +298,7 @@ def exit_one_r():
             close_single_position(position)
 
 
-def trail_stop_previous_candle(risk):
+def adjust_positions_trailing_stops(risk):
     existing_positions = mt5.positions_get()
     for position in existing_positions:
         symbol = position.symbol
@@ -506,4 +506,4 @@ if __name__ == "__main__":
     # print(get_continues_wins())
     # print(exist_on_initial_plan_changed_ema())
     # print(get_last_trades_position("UK100.cash", 15))
-    print(trail_stop_previous_candle(25))
+    print(adjust_positions_trailing_stops(25))

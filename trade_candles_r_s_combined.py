@@ -169,7 +169,7 @@ class AlgoTrader():
             print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss)}")
             
             is_market_open, is_market_close = util.get_market_status()
-            mp.trail_stop_previous_candle(self.risk_manager.initial_risk) # Each position trail stop
+            mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
             self.risk_manager.update_account_trail_loss() # Update the account level exit plan
 
             # Collect change in equity
