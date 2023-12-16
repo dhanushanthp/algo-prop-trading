@@ -172,14 +172,6 @@ class AlgoTrader():
             mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
             self.risk_manager.update_account_trail_loss() # Update the account level exit plan
 
-            # Collect change in equity
-            _, equity, _,_ = ind.get_account_details()
-            if self.previous_equity != equity:
-                self.previous_equity = equity
-                self.file_util.equity_collector(self.account_name, 
-                                                datetime.now().strftime('%H:%M:%S'),
-                                                equity)
-
             # Max Accepted Trail Loss
             if self.account_type == "real":           
                 if self.risk_manager.is_dly_max_risk_reached():
