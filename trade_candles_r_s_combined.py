@@ -48,7 +48,7 @@ class AlgoTrader():
             self.risk_manager.account_size 
             + self.risk_manager.account_max_loss
         )
-        
+
         self.fixed_expected_reward_2R = (
             self.risk_manager.account_size
             + (self.risk_manager.account_max_loss * 2)
@@ -81,14 +81,11 @@ class AlgoTrader():
         return points_in_stop, lots
 
    
-    def print_order_log(self, result, request={}):
+    def error_logging(self, result, request_str={}):
         if result:
             if result.retcode != mt.TRADE_RETCODE_DONE:
-                error_string = f"Error: {result.comment}"
-                print(error_string)
-                print(request)
-        else:
-            print("Error with response!")
+                error_string = f"{result.comment}"
+                self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
     def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol=symbol)
@@ -121,7 +118,7 @@ class AlgoTrader():
                         }
                         
                         request_log = mt.order_send(order_request)
-                        self.print_order_log(request_log, order_request)
+                        self.error_logging(request_log, order_request)
                         return True
                     except Exception as e:
                         print(f"Long entry exception: {e}")
@@ -160,7 +157,7 @@ class AlgoTrader():
                         }
                         
                         request_log = mt.order_send(order_request)
-                        self.print_order_log(request_log, order_request)
+                        self.error_logging(request_log, order_request)
                         return True
                     except Exception as e:
                         print(e)
