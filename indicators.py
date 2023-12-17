@@ -82,13 +82,14 @@ def get_stop_range(symbol, timeframe):
     if current_candle["low"] < previous_low:
         previous_low = current_candle["low"]
     
+    # Adding buffer to candle based high and low
     previous_high = previous_high + 3 * spread
     previous_low = previous_low - 3 * spread
     
     mid_price = get_mid_price(symbol)
     
+    # In cooprate ATR along with candle high/low
     atr = get_atr(symbol, selected_time)
-
     distance_from_high = max(atr, abs(previous_high-mid_price))
     distance_from_low = max(atr, abs(previous_low-mid_price))
     
