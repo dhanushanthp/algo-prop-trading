@@ -51,7 +51,8 @@ def get_ordered_symbols():
     
     return sorted_list
 
-def previous_candle_move(symbol, timeframe):
+
+def get_stop_range(symbol, timeframe):
     
     selected_time = match_timeframe(timeframe)
     
@@ -62,13 +63,9 @@ def previous_candle_move(symbol, timeframe):
 
     spread = get_spread(symbol)
 
-    # We should implment this logics here, since we are trading based on the selected timeframe
     previous_candle_signal = None
-    """
-    1. Previous candle should atleaat 3 times more than the spread (Avoid ranging behaviour)
-        1.1 The 3 time spread for a valid current candle has been added in signal idenfication.
-    2. Current candle body should be larger than the previous candle body to be valid entry
-    """
+
+    # Current candle should atleaat 3 times more than the spread (Avoid ranging behaviour)
     if (current_candle_body > 3 * spread) :
         if previous_candle["close"] > previous_candle["open"]:
             previous_candle_signal = "L"
@@ -162,10 +159,6 @@ def is_number_between(number, lower_limit, upper_limit):
         return lower_limit > number > upper_limit
     else:
         return lower_limit < number < upper_limit
-
-def get_stop_range(symbol, timeframe):
-    high, low, previous_candle = previous_candle_move(symbol, timeframe)
-    return high, low, previous_candle
 
 def get_atr(symbol, selected_time):
     """
