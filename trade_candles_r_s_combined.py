@@ -182,21 +182,22 @@ class AlgoTrader():
                 mp.close_all_positions()
                 # Re initiate the object
                 self.risk_manager = risk_manager.RiskManager()
-                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}")
 
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
 
+                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, PnL: {round(current_account_size - self.fixed_initial_account_size)}")
+
                 # Max Accepted Trail Loss
                 if self.account_type == "real":
-                    self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward}")
+                    # self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward}")
                     # We are going to trade until we have the positive outcome 1R for the day
                     # TODO The retries limit is just to keep the account safe
                     if (current_account_size > self.fixed_expected_reward) or (self.retries >= 2):
                         self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         self.immidiate_exit = True
                 else:
-                    self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward_2R}")
+                    # self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward_2R}")
                     # We are going to trade until we have the positive outcome 1R for the day
                     if current_account_size > self.fixed_expected_reward_2R:
                         self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
