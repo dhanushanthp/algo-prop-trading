@@ -235,23 +235,23 @@ class AlgoTrader():
                         support = levels["support"]
 
                         for resistance_level in resistances:
-                            reverse_short_entry_level = resistance_level + (3 * ind.get_spread(symbol)) # Give more buffer to reverse
+                            reverse_short_entry_level = resistance_level + (6 * ind.get_spread(symbol)) # Give more buffer to reverse
                             break_long_entry_level = resistance_level - (3 * ind.get_spread(symbol)) 
 
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                            if current_candle["open"] > reverse_short_entry_level and current_candle["close"] < reverse_short_entry_level:
+                            if current_candle["open"] < reverse_short_entry_level and current_candle["close"] > reverse_short_entry_level:
                                 reverse_combinbed_resistance_short[symbol].append(r_s_timeframe)
                             elif current_candle["open"] < break_long_entry_level and current_candle["close"] > break_long_entry_level:
                                 break_combinbed_resistance_long[symbol].append(r_s_timeframe)
                         
                         for support_level in support:
                             break_short_entry_level = support_level + (3 * ind.get_spread(symbol))
-                            reverse_long_entry_level = support_level - (3 * ind.get_spread(symbol)) # Give more buffer to reverse
+                            reverse_long_entry_level = support_level - (6 * ind.get_spread(symbol)) # Give more buffer to reverse
 
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
                             if current_candle["open"] > break_short_entry_level and current_candle["close"] < break_short_entry_level:
                                 break_combined_support_short[symbol].append(r_s_timeframe)
-                            elif current_candle["open"] < reverse_long_entry_level and current_candle["close"] > reverse_long_entry_level:
+                            elif current_candle["open"] > reverse_long_entry_level and current_candle["close"] < reverse_long_entry_level:
                                 reverse_combined_support_long[symbol].append(r_s_timeframe)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
@@ -266,8 +266,6 @@ class AlgoTrader():
                             total_support_tf_long = set(reverse_combined_support_long[symbol])
                             total_resistance_tf_short = set(reverse_combinbed_resistance_short[symbol])
                             
-                            
-
                             if self.entry_timeframe == "break":
                                 print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                 if len(total_resistance_tf_long) >= 2:
@@ -281,18 +279,6 @@ class AlgoTrader():
                                                             r_s_timeframe=max(total_support_tf_short), 
                                                             entry_timeframe=max(total_support_tf_short))
                             elif self.entry_timeframe == "reverse":
-                                print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_short)).ljust(10)} RS: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                if len(total_resistance_tf_long) >= 2:
-                                    self.short_real_entry(symbol=symbol, 
-                                                            comment='|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=max(total_resistance_tf_long), 
-                                                            entry_timeframe=max(total_resistance_tf_long))
-                                elif len(total_support_tf_short) >= 2:
-                                    self.long_real_entry(symbol=symbol, 
-                                                            comment='|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=max(total_support_tf_short), 
-                                                            entry_timeframe=max(total_support_tf_short))
-                            elif self.entry_timeframe == "reverse_valid":
                                 print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
                                 if len(total_resistance_tf_short) >= 2:
                                     self.short_real_entry(symbol=symbol, 
