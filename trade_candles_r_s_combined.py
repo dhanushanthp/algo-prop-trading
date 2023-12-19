@@ -211,16 +211,16 @@ class AlgoTrader():
             if is_market_open and not is_market_close and not self.immidiate_exit:
                 mp.cancel_all_pending_orders()
 
-                combinbed_resistance_long = {}
-                combined_support_long = {}
+                break_combinbed_resistance_long = {}
+                reverse_combined_support_long = {}
 
-                combined_support_short = {}
-                combinbed_resistance_short = {}
+                break_combined_support_short = {}
+                reverse_combinbed_resistance_short = {}
                 for symbol in selected_symbols:
-                    combinbed_resistance_long[symbol] = []
-                    combined_support_long[symbol] = []
-                    combined_support_short[symbol] = []
-                    combinbed_resistance_short[symbol] = []
+                    break_combinbed_resistance_long[symbol] = []
+                    break_combined_support_short[symbol] = []
+                    reverse_combined_support_long[symbol] = []
+                    reverse_combinbed_resistance_short[symbol] = []
 
                     for r_s_timeframe in [240, 120, 60, 30, 15]:
                         try:
@@ -239,28 +239,32 @@ class AlgoTrader():
 
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
                             if current_candle["open"] > short_entry_level and current_candle["close"] < short_entry_level:
-                                combinbed_resistance_short[symbol].append(r_s_timeframe)
+                                reverse_combinbed_resistance_short[symbol].append(r_s_timeframe)
                             elif current_candle["open"] < long_entry_level and current_candle["close"] > long_entry_level:
-                                combinbed_resistance_long[symbol].append(r_s_timeframe)
+                                break_combinbed_resistance_long[symbol].append(r_s_timeframe)
                         
                         for support_level in support:
                             short_entry_level = support_level + (3 * ind.get_spread(symbol))
                             long_entry_level = support_level - (3 * ind.get_spread(symbol))
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
                             if current_candle["open"] > short_entry_level and current_candle["close"] < short_entry_level:
-                                combined_support_short[symbol].append(r_s_timeframe)
+                                break_combined_support_short[symbol].append(r_s_timeframe)
                             elif current_candle["open"] < long_entry_level and current_candle["close"] > long_entry_level:
-                                combined_support_long[symbol].append(r_s_timeframe)
+                                reverse_combined_support_long[symbol].append(r_s_timeframe)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 if len(existing_positions) < len(selected_symbols):
                     for symbol in selected_symbols:
                         if (symbol not in existing_positions):
-                            total_resistance_tf_long = set(combinbed_resistance_long[symbol])
-                            total_support_tf_long = set(combined_support_long[symbol])
+                            # Break Strategy
+                            total_resistance_tf_long = set(break_combinbed_resistance_long[symbol])
+                            total_support_tf_short = set(break_combined_support_short[symbol])
 
-                            total_resistance_tf_short = set(combinbed_resistance_short[symbol])
-                            total_support_tf_short = set(combined_support_short[symbol])
+                            # Reverse Strategy
+                            total_support_tf_long = set(reverse_combined_support_long[symbol])
+                            total_resistance_tf_short = set(reverse_combinbed_resistance_short[symbol])
+                            
+                            
 
                             if self.entry_timeframe == "break":
                                 print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
