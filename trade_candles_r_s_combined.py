@@ -275,6 +275,18 @@ class AlgoTrader():
                                                             r_s_timeframe=max(total_support_tf_short), 
                                                             entry_timeframe=max(total_support_tf_short))
                             elif self.entry_timeframe == "reverse":
+                                print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_short)).ljust(10)} RS: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
+                                if len(total_resistance_tf_long) >= 2:
+                                    self.short_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_resistance_tf_long)), 
+                                                            r_s_timeframe=max(total_resistance_tf_long), 
+                                                            entry_timeframe=max(total_resistance_tf_long))
+                                elif len(total_support_tf_short) >= 2:
+                                    self.long_real_entry(symbol=symbol, 
+                                                            comment='|'.join(map(str, total_support_tf_short)), 
+                                                            r_s_timeframe=max(total_support_tf_short), 
+                                                            entry_timeframe=max(total_support_tf_short))
+                            elif self.entry_timeframe == "reverse_valid":
                                 print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
                                 if len(total_resistance_tf_short) >= 2:
                                     self.short_real_entry(symbol=symbol, 
