@@ -219,6 +219,7 @@ class AlgoTrader():
                 for symbol in selected_symbols:
                     break_combinbed_resistance_long[symbol] = []
                     break_combined_support_short[symbol] = []
+
                     reverse_combined_support_long[symbol] = []
                     reverse_combinbed_resistance_short[symbol] = []
 
@@ -234,22 +235,23 @@ class AlgoTrader():
                         support = levels["support"]
 
                         for resistance_level in resistances:
-                            short_entry_level = resistance_level + (3 * ind.get_spread(symbol))
-                            long_entry_level = resistance_level - (3 * ind.get_spread(symbol))
+                            reverse_short_entry_level = resistance_level + (3 * ind.get_spread(symbol)) # Give more buffer to reverse
+                            break_long_entry_level = resistance_level - (3 * ind.get_spread(symbol)) 
 
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                            if current_candle["open"] > short_entry_level and current_candle["close"] < short_entry_level:
+                            if current_candle["open"] > reverse_short_entry_level and current_candle["close"] < reverse_short_entry_level:
                                 reverse_combinbed_resistance_short[symbol].append(r_s_timeframe)
-                            elif current_candle["open"] < long_entry_level and current_candle["close"] > long_entry_level:
+                            elif current_candle["open"] < break_long_entry_level and current_candle["close"] > break_long_entry_level:
                                 break_combinbed_resistance_long[symbol].append(r_s_timeframe)
                         
                         for support_level in support:
-                            short_entry_level = support_level + (3 * ind.get_spread(symbol))
-                            long_entry_level = support_level - (3 * ind.get_spread(symbol))
+                            break_short_entry_level = support_level + (3 * ind.get_spread(symbol))
+                            reverse_long_entry_level = support_level - (3 * ind.get_spread(symbol)) # Give more buffer to reverse
+
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                            if current_candle["open"] > short_entry_level and current_candle["close"] < short_entry_level:
+                            if current_candle["open"] > break_short_entry_level and current_candle["close"] < break_short_entry_level:
                                 break_combined_support_short[symbol].append(r_s_timeframe)
-                            elif current_candle["open"] < long_entry_level and current_candle["close"] > long_entry_level:
+                            elif current_candle["open"] < reverse_long_entry_level and current_candle["close"] > reverse_long_entry_level:
                                 reverse_combined_support_long[symbol].append(r_s_timeframe)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
