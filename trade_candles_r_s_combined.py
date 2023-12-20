@@ -16,6 +16,7 @@ import mng_pos as mp
 from slack_msg import Slack
 from monitor import Monitor
 from file_utils import FileUtils
+import os
 
 class AlgoTrader():
     def __init__(self):
@@ -53,6 +54,13 @@ class AlgoTrader():
             self.risk_manager.account_size
             + (self.risk_manager.account_max_loss * 2)
         )
+
+        self.precheck = True
+        self.prod_trades = False
+        if os.path.isfile("enabler.txt"):
+            os.remove("enabler.txt")
+
+        self.profit_hit_counter = 0
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -173,15 +181,38 @@ class AlgoTrader():
             print(f"{'Current Risk'.ljust(20)}: ${round(self.risk_manager.initial_risk, 2)}")
             print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.account_max_loss}")
             print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss)}")
+            print(f"{'Profit Hit'.ljust(20)}: {self.profit_hit_counter}")
             
             is_market_open, is_market_close = util.get_market_status()
             mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
+            self.risk_manager.update_to_half_trail()
+
+            if self.account_type == "demo":
+                # Use the demo account as testing environment. Once that able to get significant profit. then enable the 
+                # production
+                if self.precheck:
+                    if self.risk_manager.profit_day_checker():
+                        self.profit_hit_counter += 1
+                        self.precheck = False
+                        self.alert.send_msg("Enable Real Accounts!")
+            
+            # Dynamic enable disable based on demo account trades
+            if os.path.isfile("enabler.txt"):
+                self.prod_trades = True
+            else:
+                self.prod_trades = False
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
                 mp.close_all_positions()
                 # Re initiate the object
                 self.risk_manager = risk_manager.RiskManager()
+
+                # Reset all and will delete all the files w.r.t demo and real account
+                self.precheck = True
+                self.prod_trades = False
+                if os.path.isfile("enabler.txt"):
+                    os.remove("enabler.txt")
 
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
@@ -193,7 +224,7 @@ class AlgoTrader():
                     # self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward}")
                     # We are going to trade until we have the positive outcome 1R for the day
                     # TODO The retries limit is just to keep the account safe
-                    if (current_account_size > self.fixed_expected_reward) or (self.retries >= 2):
+                    if (current_account_size > self.fixed_expected_reward) or (self.retries >= 1):
                         self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         self.immidiate_exit = True
                 else:
@@ -201,15 +232,24 @@ class AlgoTrader():
                     # We are going to trade until we have the positive outcome 1R for the day
                     if current_account_size > self.fixed_expected_reward_2R:
                         self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
-                        self.immidiate_exit = True
+                        # self.immidiate_exit = True
 
             if is_market_close:
                 print("Market Close!")
                 self.risk_manager = risk_manager.RiskManager() # Reset the risk for the day
                 mp.close_all_positions()
+                self.precheck = True
+                self.prod_trades = False
+                if os.path.isfile("enabler.txt"):
+                    os.remove("enabler.txt")
                 self.immidiate_exit = False
             
             if is_market_open and not is_market_close and not self.immidiate_exit:
+                
+                if not self.prod_trades and self.account_type == "real":
+                    time.sleep(self.timer)
+                    continue
+
                 mp.cancel_all_pending_orders()
 
                 break_combinbed_resistance_long = {}
