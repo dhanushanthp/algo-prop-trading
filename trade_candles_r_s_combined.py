@@ -24,7 +24,7 @@ class AlgoTrader():
         mt.initialize()
 
         # Default values
-        self.entry_timeframe = None  # Default to 15 min
+        self.strategy = None  # Default to 15 min
         self.target_ratio = 2.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
@@ -177,7 +177,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n-------  Executed @ {datetime.now().strftime('%H:%M:%S')}------------------")
+            print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')}------------------")
             print(f"{'Current Risk'.ljust(20)}: ${round(self.risk_manager.initial_risk, 2)}")
             print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.account_max_loss}")
             print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss)}")
@@ -307,7 +307,7 @@ class AlgoTrader():
                             total_support_tf_long = set(reverse_combined_support_long[symbol])
                             total_resistance_tf_short = set(reverse_combinbed_resistance_short[symbol])
                             
-                            if self.entry_timeframe == "break":
+                            if self.strategy == "break":
                                 print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                 if len(total_resistance_tf_long) >= 2:
                                     self.long_real_entry(symbol=symbol, 
@@ -319,7 +319,7 @@ class AlgoTrader():
                                                             comment='|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max(total_support_tf_short), 
                                                             entry_timeframe=max(total_support_tf_short))
-                            elif self.entry_timeframe == "reverse":
+                            elif self.strategy == "reverse":
                                 print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
                                 if len(total_resistance_tf_short) >= 2:
                                     self.short_real_entry(symbol=symbol, 
@@ -340,17 +340,17 @@ if __name__ == "__main__":
     win = AlgoTrader()
     
     if len(sys.argv) > 1:
-        win.entry_timeframe = sys.argv[1]
+        win.strategy = sys.argv[1]
         win.account_type = sys.argv[2]
-        if win.entry_timeframe not in ["reverse", "break"]:
+        if win.strategy not in ["reverse", "break"]:
             raise Exception("Please enter fixed or auto entry time check!")
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
-        win.entry_timeframe = "auto"
+        win.strategy = "auto"
         
     
     print("\n------------------------------------------------")
-    print(f"SELECTED TIMEFRAME {win.entry_timeframe}" )
+    print(f"SELECTED STRATEGY {win.strategy}" )
     print("------------------------------------------------")
     win.main()
 
