@@ -93,7 +93,7 @@ class AlgoTrader():
         if result:
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 error_string = f"{result.comment}"
-                self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
+                # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
     def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol=symbol)
@@ -185,7 +185,7 @@ class AlgoTrader():
             
             is_market_open, is_market_close = util.get_market_status()
             mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
-            self.risk_manager.update_to_half_trail()
+            # self.risk_manager.update_to_half_trail()
 
             if self.account_type == "demo":
                 # Use the demo account as testing environment. Once that able to get significant profit. then enable the 
@@ -194,7 +194,7 @@ class AlgoTrader():
                     if self.risk_manager.profit_day_checker():
                         self.profit_hit_counter += 1
                         self.precheck = False
-                        self.alert.send_msg("Enable Real Accounts!")
+                        # self.alert.send_msg("Enable Real Accounts!")
             
             # Dynamic enable disable based on demo account trades
             if os.path.isfile("enabler.txt"):
@@ -217,7 +217,7 @@ class AlgoTrader():
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
 
-                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, PnL: {round(current_account_size - self.fixed_initial_account_size)}")
+                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, PnL: {round((current_account_size - self.fixed_initial_account_size)/self.risk_manager.initial_risk, 2)}")
 
                 # Max Accepted Trail Loss
                 if self.account_type == "real":
@@ -231,8 +231,9 @@ class AlgoTrader():
                     # self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward_2R}")
                     # We are going to trade until we have the positive outcome 1R for the day
                     if current_account_size > self.fixed_expected_reward_2R:
-                        self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
+                        # self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
                         # self.immidiate_exit = True
+                        pass
 
             if is_market_close:
                 print("Market Close!")
@@ -242,6 +243,9 @@ class AlgoTrader():
                 self.prod_trades = False
                 if os.path.isfile("enabler.txt"):
                     os.remove("enabler.txt")
+                
+                # Reset account size for next day
+                self.fixed_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
             
             if is_market_open and not is_market_close and not self.immidiate_exit:
