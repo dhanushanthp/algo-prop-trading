@@ -54,7 +54,7 @@ class RiskManager:
         
         return False
     
-    def update_to_half_trail(self, first_profit_factor=1, second_profit_factor=2):
+    def update_to_half_trail(self, first_profit_factor=1):
         ACCOUNT_SIZE, equity, _,_ = ind.get_account_details()
         # Reduce the trail distance when the price cross first profit target
         self.first_profit_factor = first_profit_factor
@@ -65,13 +65,6 @@ class RiskManager:
             self.first_max_profit_check = False
             return True
 
-        # Reduce the trail distance when the price cross second profit target
-        # We multiply by 2, since the max loss will be set as half from first profit target marker
-        if equity > ACCOUNT_SIZE + (self.account_max_loss * 2 * second_profit_factor) and self.second_max_profit_check:
-            self.alert.send_msg(f"{self.account_name}: Second target max triggered!")
-            self.account_max_loss = self.account_max_loss/2
-            self.second_max_profit_check = False
-        
 
 if __name__ == "__main__":
     obj = RiskManager()
