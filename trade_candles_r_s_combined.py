@@ -131,7 +131,7 @@ class AlgoTrader():
                     except Exception as e:
                         print(f"Long entry exception: {e}")
             else:
-                print(f"{symbol.ljust(12)}: Skipped!")
+                print(f" Skipped!")
                 return False
 
     def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
@@ -170,7 +170,7 @@ class AlgoTrader():
                     except Exception as e:
                         print(e)
             else:
-                print(f"{symbol.ljust(12)}: Skipped!")
+                print(f" Skipped!")
                 return False
     
     def main(self):

@@ -103,7 +103,7 @@ def stop_round(symbol, stop_price):
         return round(stop_price, 2)
 
 
-def get_last_trades_position(symbol, timeframe):
+def get_last_trades_position(symbol, current_trade_timeframe):
     """
     If you already have made some money. Then don't entry this for another 1 hour
     """
@@ -122,6 +122,7 @@ def get_last_trades_position(symbol, timeframe):
         if len(entry_traded_object) > 0:
             # Wait until the last traded timeframe is complete
             timeframe = int(entry_traded_object[-1].magic)  # in minutes
+            timeframe = max(timeframe, current_trade_timeframe) # Pick the max timeframe based on previous and current suggested trade timeframe
 
         current_time = (datetime.now(tm_zone) + timedelta(hours=2))
 
@@ -129,7 +130,7 @@ def get_last_trades_position(symbol, timeframe):
         time_difference = (current_time_epoch - last_traded_time)/60
 
         if time_difference < timeframe:
-            print(f"{symbol.ljust(12)}: Last Traded TF: {timeframe} > Wait Time {round(timeframe - time_difference)} Minutes!")
+            print(f"{symbol.ljust(12)}: Last/Current TF: {timeframe} > Wait Time {round(timeframe - time_difference)} Minutes!", end="")
             return False
 
     return True
