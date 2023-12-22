@@ -123,6 +123,8 @@ def get_last_trades_position(symbol, current_trade_timeframe):
             # Wait until the last traded timeframe is complete
             timeframe = int(entry_traded_object[-1].magic)  # in minutes
             timeframe = max(timeframe, current_trade_timeframe) # Pick the max timeframe based on previous and current suggested trade timeframe
+        else:
+            timeframe = current_trade_timeframe
 
         current_time = (datetime.now(tm_zone) + timedelta(hours=2))
 

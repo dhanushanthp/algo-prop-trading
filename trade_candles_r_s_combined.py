@@ -190,7 +190,7 @@ class AlgoTrader():
                 rr = round((current_account_size - self.fixed_initial_account_size)/self.risk_manager.initial_risk, 2)
                 self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {rr}")
 
-                if rr >= 2 or rr <= -2:
+                if rr >= 4 or rr <= -4:
                     self.alert.send_msg(f"{self.account_name}: Done for today!, RR: {rr}")
                     self.immidiate_exit = True
 
