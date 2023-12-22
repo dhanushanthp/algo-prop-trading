@@ -272,7 +272,7 @@ def adjust_positions_trailing_stops(risk):
         # Enable trailning once price moved 1/4 of the stop, Otherswise this will keep adjust while the price is on
         # negative 
         if (position.profit > risk/4) and trail_stop != stop_price:
-            print(f"STP Updated: {position.symbol}, PRE: {stop_price}, CURR: {trail_stop}")
+            print(f"STP Updated: {position.symbol}, PRE: {round(stop_price, 5)}, CURR: {trail_stop}")
 
             modify_request = {
                 "action": mt5.TRADE_ACTION_SLTP,
