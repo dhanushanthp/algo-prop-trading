@@ -28,7 +28,6 @@ class AlgoTrader():
         self.target_ratio = 2.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
-        self.account_type = "real"
         self.timer = 30
         self.retries = 0
 
@@ -189,34 +188,23 @@ class AlgoTrader():
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
 
-                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, PnL: {round((current_account_size - self.fixed_initial_account_size)/self.risk_manager.initial_risk, 2)}")
+                rr = round((current_account_size - self.fixed_initial_account_size)/self.risk_manager.initial_risk, 2)
+                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {rr}")
 
-                # Max Accepted Trail Loss
-                if self.account_type == "real":
-                    # self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward}")
-                    # We are going to trade until we have the positive outcome 1R for the day
-                    # TODO The retries limit is just to keep the account safe
-                    if (current_account_size > self.fixed_expected_reward) or (self.retries >= 1):
-                        self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
-                        self.immidiate_exit = True
-                else:
-                    # self.alert.send_msg(f"{self.account_name}: Current: {current_account_size}, Expected : {self.fixed_expected_reward_2R}")
-                    # We are going to trade until we have the positive outcome 1R for the day
-                    if current_account_size > self.fixed_expected_reward_2R:
-                        # self.alert.send_msg(f"{self.account_name}: Done for today!, Profit: {round(current_account_size - self.fixed_initial_account_size)}")
-                        # self.immidiate_exit = True
-                        pass
+                if rr >= 2 or rr <= -2:
+                    self.alert.send_msg(f"{self.account_name}: Done for today!, RR: {rr}")
+                    self.immidiate_exit = True
 
             if is_market_close:
                 print("Market Close!")
                 self.risk_manager = risk_manager.RiskManager() # Reset the risk for the day
                 mp.close_all_positions()
+                
                 # Reset account size for next day
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
             
             if is_market_open and not is_market_close and not self.immidiate_exit:
-
                 mp.cancel_all_pending_orders()
 
                 break_long_at_resistance = {}
@@ -302,7 +290,6 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         win.strategy = sys.argv[1]
-        win.account_type = sys.argv[2]
         if win.strategy not in ["reverse", "break"]:
             raise Exception("Please enter fixed or auto entry time check!")
     else:
