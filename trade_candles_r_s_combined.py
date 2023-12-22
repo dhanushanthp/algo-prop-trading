@@ -173,7 +173,6 @@ class AlgoTrader():
             print(f"{'Current Risk'.ljust(20)}: ${round(self.risk_manager.initial_risk, 2)}")
             print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.account_max_loss}")
             print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss)}")
-            print(f"{'Profit Hit'.ljust(20)}: {self.profit_hit_counter}")
             
             is_market_open, is_market_close = util.get_market_status()
             mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
@@ -294,7 +293,7 @@ if __name__ == "__main__":
             raise Exception("Please enter fixed or auto entry time check!")
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
-        win.strategy = "auto"
+        win.strategy = "reverse"
         
     
     print("\n------------------------------------------------")
