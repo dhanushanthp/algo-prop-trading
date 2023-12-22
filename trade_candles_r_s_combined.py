@@ -101,7 +101,7 @@ class AlgoTrader():
         if entry_price:
             _, stop_price, prev_can_dir = ind.get_stop_range(symbol, entry_timeframe)
             
-            if prev_can_dir:
+            if prev_can_dir and mp.get_last_trades_position(symbol, entry_timeframe):
                 stop_price = self._round(symbol, stop_price)
                 
                 if entry_price > stop_price:                
@@ -137,10 +137,10 @@ class AlgoTrader():
     def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol)
         
-        if entry_price:
+        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
             stop_price, _, previous_candle = ind.get_stop_range(symbol, entry_timeframe)
             
-            if previous_candle:
+            if previous_candle and mp.get_last_trades_position(symbol, entry_timeframe):
                 stop_price = self._round(symbol, stop_price)
 
                 if stop_price > entry_price:
