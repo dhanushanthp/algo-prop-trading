@@ -67,11 +67,6 @@ def get_market_status():
 
     return market_open, market_about_to_close
 
-# # Get and print the local time (including day of the week) for each city
-# cities = ['New York', 'London', 'Tokyo', 'Sydney']
-# for city in cities:
-#     local_time = get_local_time(city)
-#     print(local_time)
 
 def is_c_pair_active(currency_pair):
     symbol_info=mt5.symbol_info(currency_pair)
