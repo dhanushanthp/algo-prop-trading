@@ -121,19 +121,18 @@ def get_last_trades_position(symbol, current_trade_timeframe):
         entry_traded_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.position_id == position_id and i.entry == 0]
         if len(entry_traded_object) > 0:
             # Wait until the last traded timeframe is complete
-            timeframe = int(entry_traded_object[-1].magic)  # in minutes
-            timeframe = max(timeframe, current_trade_timeframe) # Pick the max timeframe based on previous and current suggested trade timeframe
-        else:
-            timeframe = current_trade_timeframe
+            previous_timeframe = int(entry_traded_object[-1].magic)  # in minutes, This was my input to the process
+            # timeframe = max(timeframe, current_trade_timeframe) # Pick the max timeframe based on previous and current suggested trade timeframe
 
-        current_time = (datetime.now(tm_zone) + timedelta(hours=2))
+            current_time = (datetime.now(tm_zone) + timedelta(hours=2))
+            current_time_epoch = current_time.timestamp()
 
-        current_time_epoch = current_time.timestamp()
-        time_difference = (current_time_epoch - last_traded_time)/60
+            # Minutes from last traded time.
+            time_difference = (current_time_epoch - last_traded_time)/60
 
-        if time_difference < timeframe:
-            print(f"{symbol.ljust(12)}: Last/Current TF: {timeframe} > Wait Time {round(timeframe - time_difference)} Minutes!", end="")
-            return False
+            if time_difference < previous_timeframe:
+                print(f"{symbol.ljust(12)}: Last/Current TF: {previous_timeframe} > Wait Time {round(previous_timeframe - time_difference)} Minutes!", end="")
+                return False
 
     return True
 
