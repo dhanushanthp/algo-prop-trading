@@ -63,44 +63,49 @@ def get_stop_range(symbol, timeframe):
 
     spread = get_spread(symbol)
 
-    previous_candle_signal = None
+    is_strong_candle = None
 
     # Current candle should atleaat 3 times more than the spread (Avoid ranging behaviour)
     if (current_candle_body > 3 * spread) :
-        if previous_candle["close"] > previous_candle["open"]:
-            previous_candle_signal = "L"
-        else:
-            previous_candle_signal = "S"
-    
-    # Previous bar high/low
-    previous_high = previous_candle["high"]
-    previous_low = previous_candle["low"]
+        is_strong_candle = True
 
-    if current_candle["high"] > previous_high:
-        previous_high = current_candle["high"]
-    
-    if current_candle["low"] < previous_low:
-        previous_low = current_candle["low"]
+    # Extracting high and low values from the previous candle
+    higher_stop = previous_candle["high"]
+    lower_stop = previous_candle["low"]
+
+    # Checking if the high value of the current candle is greater than the previous high
+    if current_candle["high"] > higher_stop:
+        # Updating the previous_high if the condition is met
+        higher_stop = current_candle["high"]
+
+    # Checking if the low value of the current candle is less than the previous low
+    if current_candle["low"] < lower_stop:
+        # Updating the previous_low if the condition is met
+        lower_stop = current_candle["low"]
     
     # Adding buffer to candle based high and low
-    previous_high = previous_high + 3 * spread
-    previous_low = previous_low - 3 * spread
+    higher_stop = higher_stop + 3 * spread
+    lower_stop = lower_stop - 3 * spread
     
     mid_price = get_mid_price(symbol)
     
     # In cooprate ATR along with candle high/low
     atr = get_atr(symbol, selected_time)
-    distance_from_high = max(atr, abs(previous_high-mid_price))
-    distance_from_low = max(atr, abs(previous_low-mid_price))
+    distance_from_high = max(atr, abs(higher_stop-mid_price))
+    distance_from_low = max(atr, abs(lower_stop-mid_price))
     
     # Balance the stop incase if stop is too close
     if distance_from_high > distance_from_low:
-        previous_low = mid_price - distance_from_high
-    
+        lower_stop = mid_price - distance_from_high
+
     if distance_from_low > distance_from_high:
-        previous_high = mid_price + distance_from_low
+        higher_stop = mid_price + distance_from_low
+
+    is_long = "N"
+    if distance_from_high > atr or distance_from_low > atr:
+        is_long = "Y"
     
-    return previous_high, previous_low, previous_candle_signal
+    return higher_stop, lower_stop, is_strong_candle, is_long
 
 def get_account_name():
     info = mt5.account_info()

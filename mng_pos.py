@@ -258,8 +258,8 @@ def adjust_positions_trailing_stops(risk):
     for position in existing_positions:
         symbol = position.symbol
         stop_price = position.sl
-        short_tf = int(position.comment.split("|")[-1])
-        high, low, _ = ind.get_stop_range(symbol, short_tf)
+        short_tf = min([int(i) for i in position.comment.split(">")[-1].split("|")])
+        high, low, _, _ = ind.get_stop_range(symbol, short_tf)
         
         if position.type == 0:
             new_stop_point = util.curr_round(position.symbol, low)

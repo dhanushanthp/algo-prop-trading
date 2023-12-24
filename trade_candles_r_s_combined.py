@@ -43,16 +43,6 @@ class AlgoTrader():
 
         # Expected reward for the day
         self.fixed_initial_account_size = self.risk_manager.account_size
-        
-        self.fixed_expected_reward = (
-            self.risk_manager.account_size 
-            + self.risk_manager.account_max_loss
-        )
-
-        self.fixed_expected_reward_2R = (
-            self.risk_manager.account_size
-            + (self.risk_manager.account_max_loss * 2)
-        )
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -91,9 +81,9 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, stop_price, prev_can_dir = ind.get_stop_range(symbol, entry_timeframe)
+            _, stop_price, is_strong_candle, is_long_c = ind.get_stop_range(symbol, entry_timeframe)
             
-            if prev_can_dir and mp.get_last_trades_position(symbol, entry_timeframe):
+            if is_strong_candle and mp.get_last_trades_position(symbol, entry_timeframe):
                 stop_price = self._round(symbol, stop_price)
                 
                 if entry_price > stop_price:                
@@ -111,7 +101,7 @@ class AlgoTrader():
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
-                            "comment": comment,
+                            "comment": f"{is_long_c}>{comment}",
                             "magic":r_s_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
@@ -130,9 +120,9 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            stop_price, _, previous_candle = ind.get_stop_range(symbol, entry_timeframe)
+            stop_price, _, is_strong_candle, is_long_c = ind.get_stop_range(symbol, entry_timeframe)
             
-            if previous_candle and mp.get_last_trades_position(symbol, entry_timeframe):
+            if is_strong_candle and mp.get_last_trades_position(symbol, entry_timeframe):
                 stop_price = self._round(symbol, stop_price)
 
                 if stop_price > entry_price:
@@ -150,7 +140,7 @@ class AlgoTrader():
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
-                            "comment": comment,
+                            "comment": f"{is_long_c}>{comment}",
                             "magic":r_s_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
