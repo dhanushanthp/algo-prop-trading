@@ -176,7 +176,8 @@ class AlgoTrader():
 
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
-
+                
+                # The risk reward calclualted based on initial risk
                 rr = round((current_account_size - self.fixed_initial_account_size)/self.risk_manager.initial_risk, 2)
                 self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {rr}")
 
