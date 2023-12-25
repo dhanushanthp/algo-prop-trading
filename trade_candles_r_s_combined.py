@@ -212,7 +212,7 @@ class AlgoTrader():
                     for r_s_timeframe in [1440, 480, 240, 120, 60, 30, 15, 5]:
                         try:
                             # Incase if it failed to request the symbol price
-                            levels = ind.find_r_s(symbol, r_s_timeframe)
+                            levels = ind.support_resistance_levels(symbol, r_s_timeframe)
                         except Exception as e:
                             self.alert.send_msg(f"{self.account_name}: {symbol}: {e}")
                             break

@@ -112,6 +112,34 @@ def get_account_name():
     return info.name
 
 def find_reversal_zones(symbol, timeframe, reversal_looks_back=20):
+    """
+    Finds potential reversal zones based on historical price data.
+
+    Parameters:
+    - symbol (str): The trading symbol for the financial instrument.
+    - timeframe (str): The timeframe for historical price data (e.g., 'M1', 'H1', 'D1').
+    - reversal_looks_back (int): The number of candles to look back for identifying potential reversals (default: 20).
+
+    Returns:
+    dict: A dictionary containing identified support and resistance levels.
+        Example:
+        {
+            'support': [support_level1, support_level2, ...],
+            'resistance': [resistance_level1, resistance_level2, ...]
+        }
+
+    The function analyzes historical price data to identify potential reversal zones by comparing
+    highs and lows of adjacent candles. It then filters out levels that intersect with previous candles.
+
+    Note: The function relies on a helper function, `match_timeframe`, and assumes the existence of
+    another helper function, `is_number_between`.
+
+    :param symbol: Trading symbol for the financial instrument.
+    :param timeframe: Timeframe for historical price data.
+    :param reversal_looks_back: Number of candles to look back for potential reversals (default: 20).
+    :return: A dictionary with 'support' and 'resistance' levels.
+    """
+
     selected_time = match_timeframe(timeframe)
     
     past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 0, reversal_looks_back * 10))
@@ -171,7 +199,76 @@ def find_reversal_zones(symbol, timeframe, reversal_looks_back=20):
     return {"support": clean_support, "resistance": clean_resistance}
 
 
+def support_resistance_levels(symbol, timeframe):
+    """
+    Combines support and resistance levels identified from different methods to provide a consolidated set.
+
+    Parameters:
+    - symbol (str): The trading symbol for the financial instrument.
+    - timeframe (str): The timeframe for historical price data (e.g., 'M1', 'H1', 'D1').
+
+    Returns:
+    dict: A dictionary containing consolidated support and resistance levels.
+        Example:
+        {
+            'support': [support_level1, support_level2, ...],
+            'resistance': [resistance_level1, resistance_level2, ...]
+        }
+
+    This function leverages two different methods to identify support and resistance levels: one based on recent
+    candlestick patterns and the other based on historical reversal zones. The identified levels from both methods
+    are consolidated and returned in a clean format, free from duplicates.
+
+    Note: The function relies on the existence of two helper functions, `find_r_s` and `find_reversal_zones`.
+
+    :param symbol: Trading symbol for the financial instrument.
+    :param timeframe: Timeframe for historical price data.
+    :return: A dictionary with consolidated 'support' and 'resistance' levels.
+    """
+    from_candle_pattern = find_r_s(symbol, timeframe)
+    from_higher_level = find_reversal_zones(symbol, timeframe)
+
+    clean_support = from_candle_pattern["support"]
+    clean_resistance = from_candle_pattern["resistance"]
+
+    clean_support.extend(from_higher_level["support"])
+    clean_resistance.extend(from_higher_level["resistance"])
+    
+    return {"support": clean_support, "resistance": clean_resistance}
+
+
 def find_r_s(symbol, timeframe):
+    """
+    Identifies potential support and resistance levels based on recent price behavior.
+
+    Parameters:
+    - symbol (str): The trading symbol for the financial instrument.
+    - timeframe (str): The timeframe for historical price data (e.g., 'M1', 'H1', 'D1').
+
+    Returns:
+    dict: A dictionary containing identified support and resistance levels.
+        Example:
+        {
+            'support': [support_level1, support_level2, ...],
+            'resistance': [resistance_level1, resistance_level2, ...]
+        }
+
+    The function analyzes recent price behavior by examining the highs and lows of the past three candles.
+    It identifies potential resistance levels when the difference between the high of the middle candle
+    and the highs of the adjacent candles is greater than 3 times the spread. Similarly, it identifies
+    potential support levels when the difference between the low of the middle candle and the lows of
+    the adjacent candles is greater than 3 times the spread.
+
+    The function further filters out levels that intersect with previous candles to provide clean support
+    and resistance levels.
+
+    Note: The function relies on a helper function, `match_timeframe`, and assumes the existence of
+    another helper function, `is_number_between`.
+
+    :param symbol: Trading symbol for the financial instrument.
+    :param timeframe: Timeframe for recent price data.
+    :return: A dictionary with 'support' and 'resistance' levels.
+    """
 
     selected_time = match_timeframe(timeframe)
     
@@ -376,4 +473,4 @@ if __name__ == "__main__":
     # print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
-    print(find_reversal_zones("AUDJPY", 15))
+    print(support_resistance_levels("AUDJPY", 15))
