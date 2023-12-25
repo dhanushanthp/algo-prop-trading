@@ -170,31 +170,6 @@ def num_of_parallel_tickers():
     
     # Default is one trade, To take more the algo should earn by winning more
     return 4
-        
-
-def get_recommended_strategy():
-    tm_zone = pytz.timezone('Etc/GMT-2')
-    start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=4)
-    end_time = datetime.now(tm_zone) + timedelta(hours=4)
-    
-    # Get the last exit trade, Which will not have the "comment". So we need to find the entry for this one
-    exit_objects = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1]
-    
-    # If it's a fresh then there won't be any existing orders. So we set default to reverse starategy
-    if len(exit_objects) > 0:
-        exit_object = exit_objects[-1]
-        entry_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==0 and i.position_id == exit_object.position_id][-1]
-        
-        previous_strategy = entry_object.comment
-        previous_profit = exit_object.profit
-        
-        if previous_strategy != "":
-            if previous_profit > 0:
-                return config.TREND if previous_strategy == config.TREND else config.REVERSAL
-            elif previous_profit < 0:
-                return config.TREND if previous_strategy == config.REVERSAL else config.REVERSAL
-    else:
-        return config.REVERSAL
 
 
 def get_symbol_entry_price(symbol):
