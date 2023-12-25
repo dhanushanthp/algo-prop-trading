@@ -160,7 +160,7 @@ class AlgoTrader():
         
         while True:
             print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')}------------------")
-            print(f"{'Current Risk'.ljust(20)}: ${round(self.risk_manager.initial_risk, 2)}")
+            print(f"{'Current Risk'.ljust(20)}: ${round(self.risk_manager.initial_risk, 2)}, Account Max Loss: ${self.risk_manager.account_max_loss}")
             print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, trail ${self.risk_manager.account_max_loss}")
             print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss)}")
             
