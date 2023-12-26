@@ -167,7 +167,7 @@ class AlgoTrader():
             print(f"{'$ Trail Update at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss))}")
             
             mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
-            self.risk_manager.update_to_half_trail(first_profit_factor=2)
+            self.risk_manager.update_to_half_trail(first_profit_factor=2.5)
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
