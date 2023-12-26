@@ -161,10 +161,9 @@ class AlgoTrader():
         while True:
             print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')}------------------")
             is_market_open, is_market_close = util.get_market_status()
-            current_account_size,equity,_,_ = ind.get_account_details()
             print(f"{'Acc Trail Loss'.ljust(20)}: {config.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {config.risk_percentage}%")
-            print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - current_account_size)/self.fixed_initial_account_size) * 100, 2))}%")
+            print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
             mp.adjust_positions_trailing_stops(self.risk_manager.risk_of_a_position) # Each position trail stop
@@ -177,7 +176,8 @@ class AlgoTrader():
                 self.risk_manager = risk_manager.RiskManager()
 
                 time.sleep(30) # Take some time for the account to digest the positions
-                
+                current_account_size,_,_,_ = ind.get_account_details()
+
                 # The risk reward calclualted based on initial risk
                 rr = round((current_account_size - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account, 2)
                 self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {rr}")

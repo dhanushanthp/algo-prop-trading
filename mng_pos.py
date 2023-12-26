@@ -232,7 +232,8 @@ def adjust_positions_trailing_stops(risk):
     for position in existing_positions:
         symbol = position.symbol
         stop_price = position.sl
-        short_tf = min([int(i) for i in position.comment.split(">")[-1].split("|")])
+        # short_tf = min([int(i) for i in position.comment.split(">")[-1].split("|")])
+        short_tf = 5
         high, low, _, _ = ind.get_stop_range(symbol, short_tf)
         
         if position.type == 0:
@@ -244,8 +245,8 @@ def adjust_positions_trailing_stops(risk):
 
         # If the stop is already equal to existing stop, then no need to change it!
         # Enable trailning once price moved 1/4 of the stop, Otherswise this will keep adjust while the price is on
-        # negative 
-        if ((position.profit > risk/4) or (position.profit < -risk/2)) and trail_stop != stop_price:
+        # negative
+        if ((position.profit > risk/2) or (position.profit < -risk/2)) and trail_stop != stop_price:
             print(f"STP Updated: {position.symbol}, PRE: {round(stop_price, 5)}, CURR: {trail_stop}")
 
             modify_request = {
