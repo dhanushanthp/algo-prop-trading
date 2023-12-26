@@ -223,16 +223,20 @@ class AlgoTrader():
 
                         for resistance_level in resistances:
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                            if (current_candle["open"] > resistance_level) and (resistance_level - 3*ind.get_spread(symbol) < current_candle["close"] < resistance_level):
+                            
+                            if (current_candle["open"] < resistance_level) and current_candle["close"] > resistance_level:
                                 reverse_short_at_resistance[symbol].append(r_s_timeframe)
-                            elif (current_candle["open"] < resistance_level) and (resistance_level + 3*ind.get_spread(symbol) > current_candle["close"] > resistance_level):
+                            
+                            if (current_candle["open"] < resistance_level) and (resistance_level + 3*ind.get_spread(symbol) > current_candle["close"] > resistance_level):
                                 break_long_at_resistance[symbol].append(r_s_timeframe)
                         
                         for support_level in support:
                             current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
+                            
                             if (current_candle["open"] > support_level) and (support_level - 3*ind.get_spread(symbol) < current_candle["close"] < support_level):
                                 break_short_at_support[symbol].append(r_s_timeframe)
-                            elif (current_candle["open"] < support_level) and (support_level + 3*ind.get_spread(symbol) > current_candle["close"] > support_level):
+                            
+                            if (current_candle["open"] > support_level) and current_candle["close"] < support_level:
                                 reverse_long_at_support[symbol].append(r_s_timeframe)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
@@ -286,10 +290,6 @@ if __name__ == "__main__":
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
         win.strategy = "reverse"
-        
-    
-    print("\n------------------------------------------------")
-    print(f"SELECTED STRATEGY {win.strategy}" )
-    print("------------------------------------------------")
+
     win.main()
 
