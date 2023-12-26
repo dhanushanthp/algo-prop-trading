@@ -221,18 +221,16 @@ class AlgoTrader():
                         resistances = levels["resistance"]
                         support = levels["support"]
 
+                        current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
+
                         for resistance_level in resistances:
-                            current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                            
                             if (current_candle["open"] < resistance_level) and current_candle["close"] > resistance_level:
                                 reverse_short_at_resistance[symbol].append(r_s_timeframe)
                             
                             if (current_candle["open"] < resistance_level) and (resistance_level + 3*ind.get_spread(symbol) > current_candle["close"] > resistance_level):
                                 break_long_at_resistance[symbol].append(r_s_timeframe)
                         
-                        for support_level in support:
-                            current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                            
+                        for support_level in support:                            
                             if (current_candle["open"] > support_level) and (support_level - 3*ind.get_spread(symbol) < current_candle["close"] < support_level):
                                 break_short_at_support[symbol].append(r_s_timeframe)
                             
