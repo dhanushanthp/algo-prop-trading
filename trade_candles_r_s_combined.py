@@ -182,7 +182,7 @@ class AlgoTrader():
                 rr = round((current_account_size - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account, 2)
                 self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {rr}")
 
-                if rr >= 1 or rr <= -1:
+                if rr >= 2 or rr <= -1:
                     self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {rr}")
                     self.immidiate_exit = True
 
@@ -210,7 +210,7 @@ class AlgoTrader():
                     reverse_long_at_support[symbol] = []
                     reverse_short_at_resistance[symbol] = []
 
-                    for r_s_timeframe in [1440, 480, 240, 120, 60, 30, 15]:
+                    for r_s_timeframe in [480, 240, 120, 60, 30, 15, 5]:
                         try:
                             # Incase if it failed to request the symbol price
                             levels = ind.support_resistance_levels(symbol, r_s_timeframe)
@@ -273,6 +273,42 @@ class AlgoTrader():
                                                             comment='|'.join(map(str, total_support_tf_long)), 
                                                             r_s_timeframe=max(total_support_tf_long), 
                                                             entry_timeframe=max(total_support_tf_long))
+                            elif self.strategy == "auto":
+                                timeframe_seperator = [5, 15, 30]
+                                # Breakout should have less than 30 and 15 and 5
+                                total_resistance_tf_long = [i for i in total_resistance_tf_long if i in timeframe_seperator]
+                                total_support_tf_short = [i for i in total_support_tf_short if i in timeframe_seperator]
+
+
+                                # Reverse should have more than 30 min
+                                total_support_tf_long = [i for i in total_support_tf_long if i not in timeframe_seperator]
+                                total_resistance_tf_short = [i for i in total_resistance_tf_short if i not in timeframe_seperator]
+
+                                if len(total_resistance_tf_long) >= 2:
+                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
+                                    self.long_real_entry(symbol=symbol, 
+                                                            comment="B>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                            r_s_timeframe=max(total_resistance_tf_long), 
+                                                            entry_timeframe=max(total_resistance_tf_long))
+                                elif len(total_support_tf_short) >= 2:
+                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
+                                    self.short_real_entry(symbol=symbol, 
+                                                            comment="B>" + '|'.join(map(str, total_support_tf_short)), 
+                                                            r_s_timeframe=max(total_support_tf_short), 
+                                                            entry_timeframe=max(total_support_tf_short))
+                                elif len(total_resistance_tf_short) >= 2:
+                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
+                                    self.short_real_entry(symbol=symbol, 
+                                                            comment="R>" + '|'.join(map(str, total_resistance_tf_short)), 
+                                                            r_s_timeframe=max(total_resistance_tf_short), 
+                                                            entry_timeframe=max(total_resistance_tf_short))
+                                elif len(total_support_tf_long) >= 2:
+                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
+                                    self.long_real_entry(symbol=symbol, 
+                                                            comment="R>" + '|'.join(map(str, total_support_tf_long)), 
+                                                            r_s_timeframe=max(total_support_tf_long), 
+                                                            entry_timeframe=max(total_support_tf_long))
+
                             else:
                                 raise Exception("Strategy not defined!")
             
@@ -283,7 +319,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         win.strategy = sys.argv[1]
-        if win.strategy not in ["reverse", "break"]:
+        if win.strategy not in ["reverse", "break", "auto"]:
             raise Exception("Please enter fixed or auto entry time check!")
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default

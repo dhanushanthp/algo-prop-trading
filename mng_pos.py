@@ -131,7 +131,7 @@ def get_last_trades_position(symbol, current_trade_timeframe):
             time_difference = (current_time_epoch - last_traded_time)/60
 
             if time_difference < previous_timeframe:
-                print(f"{symbol.ljust(12)}: Last/Current TF: {previous_timeframe} > Wait Time {round(previous_timeframe - time_difference)} Minutes!", end="")
+                print(f"{symbol.ljust(12)}: Last/Current TF: {previous_timeframe} > Wait Time {round(previous_timeframe - time_difference)} Minutes!")
                 return False
 
     return True
