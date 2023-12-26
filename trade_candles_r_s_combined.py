@@ -164,7 +164,7 @@ class AlgoTrader():
             current_account_size,equity,_,_ = ind.get_account_details()
             print(f"{'Acc Trail Loss'.ljust(20)}: {config.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {config.risk_percentage}%")
-            print(f"{'Acc at Risk'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() - current_account_size))}")
+            print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - current_account_size)/self.fixed_initial_account_size) * 100, 2))}%")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
             mp.adjust_positions_trailing_stops(self.risk_manager.risk_of_a_position) # Each position trail stop
