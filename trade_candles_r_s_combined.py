@@ -160,11 +160,12 @@ class AlgoTrader():
         
         while True:
             print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')}------------------")
-            print(f"{'Current Risk'.ljust(20)}: ${round(self.risk_manager.initial_risk, 2)}")
-            print(f"{'Max Loss'.ljust(20)}: ${round(self.risk_manager.get_max_loss())}, Trail/Acc Max Loss ${self.risk_manager.account_max_loss}")
-            print(f"{'Trail Update at'.ljust(20)}: ${round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss)}")
-            
             is_market_open, is_market_close = util.get_market_status()
+            print(f"{'Acc Trail Loss'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.account_max_loss, 2))}")
+            print(f"{'Current Risk'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.initial_risk, 2))}")
+            print(f"{'$ Max Loss'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss()))}")
+            print(f"{'$ Trail Update at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.account_max_loss))}")
+            
             mp.adjust_positions_trailing_stops(self.risk_manager.initial_risk) # Each position trail stop
             self.risk_manager.update_to_half_trail(first_profit_factor=2)
 
