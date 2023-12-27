@@ -80,10 +80,10 @@ class AlgoTrader():
     def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol=symbol)
 
-        if entry_price:
+        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
             _, stop_price, is_strong_candle, is_long_c = ind.get_stop_range(symbol, entry_timeframe)
             
-            if is_strong_candle and mp.get_last_trades_position(symbol, entry_timeframe):
+            if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
                 
                 if entry_price > stop_price:                
@@ -122,7 +122,7 @@ class AlgoTrader():
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
             stop_price, _, is_strong_candle, is_long_c = ind.get_stop_range(symbol, entry_timeframe)
             
-            if is_strong_candle and mp.get_last_trades_position(symbol, entry_timeframe):
+            if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
 
                 if stop_price > entry_price:

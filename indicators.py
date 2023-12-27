@@ -93,16 +93,13 @@ def get_stop_range(symbol, timeframe):
     atr = get_atr(symbol, selected_time)
     distance_from_high = max(atr, abs(higher_stop-mid_price))
     distance_from_low = max(atr, abs(lower_stop-mid_price))
-    
-    # Balance the stop incase if stop is too close
-    if distance_from_high > distance_from_low:
-        lower_stop = mid_price - distance_from_high
 
-    if distance_from_low > distance_from_high:
-        higher_stop = mid_price + distance_from_low
+    optimal_distance = max(distance_from_high, distance_from_low)
+    lower_stop = mid_price - optimal_distance
+    higher_stop = mid_price + optimal_distance
 
     is_long = "N"
-    if distance_from_high > atr or distance_from_low > atr:
+    if optimal_distance > atr:
         is_long = "Y"
     
     return higher_stop, lower_stop, is_strong_candle, is_long
@@ -473,4 +470,4 @@ if __name__ == "__main__":
     # print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
-    print(support_resistance_levels("AUDJPY", 15))
+    print(get_stop_range("GBPJPY", 480))
