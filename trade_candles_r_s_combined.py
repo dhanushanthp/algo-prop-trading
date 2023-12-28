@@ -81,7 +81,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            _, stop_price, is_strong_candle, is_long_c = ind.get_stop_range(symbol, entry_timeframe)
+            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol, entry_timeframe)
             
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
@@ -101,7 +101,7 @@ class AlgoTrader():
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
-                            "comment": f"{is_long_c}>{comment}",
+                            "comment": f"{comment}",
                             "magic":r_s_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
@@ -120,7 +120,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            stop_price, _, is_strong_candle, is_long_c = ind.get_stop_range(symbol, entry_timeframe)
+            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol, entry_timeframe)
             
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
@@ -140,7 +140,7 @@ class AlgoTrader():
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
-                            "comment": f"{is_long_c}>{comment}",
+                            "comment": f"{comment}",
                             "magic":r_s_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
@@ -204,16 +204,19 @@ class AlgoTrader():
                 break_short_at_support = {}
                 reverse_short_at_resistance = {}
                 for symbol in selected_symbols:
+
                     break_long_at_resistance[symbol] = []
                     break_short_at_support[symbol] = []
 
                     reverse_long_at_support[symbol] = []
                     reverse_short_at_resistance[symbol] = []
 
-                    for r_s_timeframe in [480, 240, 120, 60, 30, 15, 5]:
+                    for r_s_timeframe in [240, 120, 60, 30, 15]:
                         try:
                             # Incase if it failed to request the symbol price
                             levels = ind.support_resistance_levels(symbol, r_s_timeframe)
+                            _, _, _, _, optimal_distance = ind.get_stop_range(symbol, r_s_timeframe)
+                            optimal_distance = optimal_distance/2
                         except Exception as e:
                             self.alert.send_msg(f"{self.account_name}: {symbol}: {e}")
                             break
@@ -308,7 +311,35 @@ class AlgoTrader():
                                                             comment="R>" + '|'.join(map(str, total_support_tf_long)), 
                                                             r_s_timeframe=max(total_support_tf_long), 
                                                             entry_timeframe=max(total_support_tf_long))
-
+                            elif self.strategy == "ema":
+                                if len(total_resistance_tf_long) >= 2:
+                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
+                                    if ind.ema_direction(symbol, total_resistance_tf_long) == "L":
+                                        self.long_real_entry(symbol=symbol, 
+                                                            comment="LB>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                            r_s_timeframe=max(total_resistance_tf_long), 
+                                                            entry_timeframe=max(total_resistance_tf_long))
+                                elif len(total_support_tf_short) >= 2:
+                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
+                                    if ind.ema_direction(symbol, total_support_tf_short) == "S":
+                                        self.short_real_entry(symbol=symbol, 
+                                                            comment="SB>" + '|'.join(map(str, total_support_tf_short)), 
+                                                            r_s_timeframe=max(total_support_tf_short), 
+                                                            entry_timeframe=max(total_support_tf_short))
+                                elif len(total_resistance_tf_short) >= 2:
+                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
+                                    if ind.ema_direction(symbol, total_resistance_tf_short) == "S":
+                                        self.short_real_entry(symbol=symbol, 
+                                                            comment="SR>" + '|'.join(map(str, total_resistance_tf_short)), 
+                                                            r_s_timeframe=max(total_resistance_tf_short), 
+                                                            entry_timeframe=max(total_resistance_tf_short))
+                                elif len(total_support_tf_long) >= 2: 
+                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
+                                    if ind.ema_direction(symbol, total_support_tf_long) == "L":
+                                        self.long_real_entry(symbol=symbol, 
+                                                            comment="LR>" + '|'.join(map(str, total_support_tf_long)), 
+                                                            r_s_timeframe=max(total_support_tf_long), 
+                                                            entry_timeframe=max(total_support_tf_long))
                             else:
                                 raise Exception("Strategy not defined!")
             
@@ -319,7 +350,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         win.strategy = sys.argv[1]
-        if win.strategy not in ["reverse", "break", "auto"]:
+        if win.strategy not in ["reverse", "break", "auto", "ema"]:
             raise Exception("Please enter fixed or auto entry time check!")
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default

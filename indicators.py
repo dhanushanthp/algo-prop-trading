@@ -3,6 +3,7 @@ import MetaTrader5 as mt5
 import pytz
 import numpy as np
 import currency_pairs as curr
+import collections
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -102,7 +103,7 @@ def get_stop_range(symbol, timeframe):
     if optimal_distance > atr:
         is_long = "Y"
     
-    return higher_stop, lower_stop, is_strong_candle, is_long
+    return higher_stop, lower_stop, is_strong_candle, is_long, optimal_distance
 
 def get_account_name():
     info = mt5.account_info()
@@ -403,6 +404,36 @@ def is_ema_cross(symbol, timeframe):
     
     return None, None
 
+def ema_direction(symbol, timeframes:list):
+    directions = []
+    for timeframe in timeframes:
+        selected_time = match_timeframe(timeframe)
+
+        # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
+        candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 9)
+        candle_close = [i["close"] for i in candle]
+        sma9  = np.average(candle_close)
+
+        # Upper Time SMA
+        upper_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 21)
+        upper_candle_close = [i["close"] for i in upper_candle]
+        sma21  = np.average(upper_candle_close)
+
+        if sma9 > sma21:
+            directions.append("L")
+        elif sma9 < sma21:
+            directions.append("S")
+    
+    print(timeframes, directions)
+    if len(timeframes) == len(directions):
+        counter = collections.Counter(directions)
+        optimal_direction = set(directions)
+        if len(optimal_direction) == 1:
+            return list(optimal_direction)[0]
+        elif len(directions) > 2:
+            return counter.most_common()[0][0]
+
+
 def get_candle_signal(symbol, verb=True):
     
     # get 10 EURUSD H4 bars starting from 01.10.2020 in UTC time zone
@@ -470,4 +501,4 @@ if __name__ == "__main__":
     # print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
-    print(get_stop_range("GBPJPY", 480))
+    print(ema_direction("AUDJPY", [240, 60, 30]))
