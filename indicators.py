@@ -196,6 +196,43 @@ def find_reversal_zones(symbol, timeframe, reversal_looks_back=20):
 
     return {"support": clean_support, "resistance": clean_resistance}
 
+def understand_direction(symbol, timeframe, level):
+    """
+    Determines the market direction based on candlestick analysis.
+
+    Parameters:
+    - symbol (str): The financial instrument symbol.
+    - timeframe (str): The timeframe for candlestick analysis.
+    - level (float): The specified price level for analysis.
+
+    Returns:
+    - str: The market direction, either "short" for a potential short entry or
+           "long" for a potential long entry.
+
+    This function analyzes the intersection of the mid-values of the previous
+    30 candles with the specified price level. If an intersection is found, the
+    function checks whether the breakout is in the "short" or "long" direction
+    based on the color of the previous breakout candle. A green candle indicates
+    a potential short entry, while a red candle indicates a potential long entry.
+    """
+    selected_time = match_timeframe(timeframe)
+    
+    # If the mid values intersect with the previous 5 bars
+    # get past 5 candles and start from the previous second candle
+    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 2, 30))
+    for candle in past_candles:
+        open_price = candle["open"]
+        close_price = candle["close"]
+
+        # If there is any candle intersection with the current level,
+        # determine the breakout direction based on the previous breakout candle color
+        if is_number_between(level, open_price, close_price):
+            return "short"
+        elif is_number_between(level, close_price, open_price):
+            return "long"
+    
+    # If there is no candle intersection then we go for reverse
+    return None
 
 def support_resistance_levels(symbol, timeframe):
     """
@@ -501,4 +538,5 @@ if __name__ == "__main__":
     # print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
     # print(get_account_details())
-    print(ema_direction("AUDJPY", [240, 60, 30]))
+    # print(ema_direction("AUDJPY", [240, 60, 30]))
+    print(understand_direction("AUDCHF", 60, 0.56882))

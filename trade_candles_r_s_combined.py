@@ -211,7 +211,7 @@ class AlgoTrader():
                     reverse_long_at_support[symbol] = []
                     reverse_short_at_resistance[symbol] = []
 
-                    for r_s_timeframe in [240, 120, 60, 30, 15]:
+                    for r_s_timeframe in [240, 120, 60, 30]:
                         try:
                             # Incase if it failed to request the symbol price
                             levels = ind.support_resistance_levels(symbol, r_s_timeframe)
@@ -340,6 +340,36 @@ class AlgoTrader():
                                                             comment="LR>" + '|'.join(map(str, total_support_tf_long)), 
                                                             r_s_timeframe=max(total_support_tf_long), 
                                                             entry_timeframe=max(total_support_tf_long))
+                            elif self.strategy == "smart":
+                                level_price = ind.get_mid_price(symbol)
+                                if len(total_resistance_tf_long) >= 1:
+                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
+                                    if ind.understand_direction(symbol, max(total_resistance_tf_long), level_price) == "long":
+                                        self.long_real_entry(symbol=symbol, 
+                                                            comment="LB>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                            r_s_timeframe=max(total_resistance_tf_long), 
+                                                            entry_timeframe=max(total_resistance_tf_long))
+                                elif len(total_support_tf_short) >= 1:
+                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
+                                    if ind.understand_direction(symbol, max(total_support_tf_short), level_price) == "short":
+                                        self.short_real_entry(symbol=symbol, 
+                                                            comment="SB>" + '|'.join(map(str, total_support_tf_short)), 
+                                                            r_s_timeframe=max(total_support_tf_short), 
+                                                            entry_timeframe=max(total_support_tf_short))
+                                elif len(total_resistance_tf_short) >= 1:
+                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
+                                    if ind.understand_direction(symbol, max(total_resistance_tf_short), level_price) is None:
+                                        self.short_real_entry(symbol=symbol, 
+                                                            comment="SR>" + '|'.join(map(str, total_resistance_tf_short)), 
+                                                            r_s_timeframe=max(total_resistance_tf_short), 
+                                                            entry_timeframe=max(total_resistance_tf_short))
+                                elif len(total_support_tf_long) >= 1: 
+                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
+                                    if ind.understand_direction(symbol, max(total_support_tf_long), level_price) is None:
+                                        self.long_real_entry(symbol=symbol, 
+                                                            comment="LR>" + '|'.join(map(str, total_support_tf_long)), 
+                                                            r_s_timeframe=max(total_support_tf_long), 
+                                                            entry_timeframe=max(total_support_tf_long))
                             else:
                                 raise Exception("Strategy not defined!")
             
@@ -350,7 +380,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         win.strategy = sys.argv[1]
-        if win.strategy not in ["reverse", "break", "auto", "ema"]:
+        if win.strategy not in ["reverse", "break", "auto", "ema","smart"]:
             raise Exception("Please enter fixed or auto entry time check!")
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
