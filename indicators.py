@@ -430,8 +430,8 @@ def ema_direction(symbol, timeframes:list):
         optimal_direction = set(directions)
         if len(optimal_direction) == 1:
             return list(optimal_direction)[0]
-        elif len(directions) > 2:
-            return counter.most_common()[0][0]
+        # elif len(directions) > 2:
+        #     return counter.most_common()[0][0]
 
 
 def get_candle_signal(symbol, verb=True):
