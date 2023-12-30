@@ -344,32 +344,36 @@ class AlgoTrader():
                                 level_price = ind.get_mid_price(symbol)
                                 if len(total_resistance_tf_long) >= 1:
                                     print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    if ind.understand_direction(symbol, max(total_resistance_tf_long), level_price) == "long":
+                                    max_timeframe = max(total_resistance_tf_long)
+                                    if ind.understand_direction(symbol, max_timeframe, level_price) == "long":
                                         self.long_real_entry(symbol=symbol, 
                                                             comment="LB>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=max(total_resistance_tf_long), 
-                                                            entry_timeframe=max(total_resistance_tf_long))
+                                                            r_s_timeframe=max_timeframe, 
+                                                            entry_timeframe=max_timeframe)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    if ind.understand_direction(symbol, max(total_support_tf_short), level_price) == "short":
+                                    max_timeframe = max(total_support_tf_short)
+                                    if ind.understand_direction(symbol, max_timeframe, level_price) == "short":
                                         self.short_real_entry(symbol=symbol, 
                                                             comment="SB>" + '|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=max(total_support_tf_short), 
-                                                            entry_timeframe=max(total_support_tf_short))
+                                                            r_s_timeframe=max_timeframe, 
+                                                            entry_timeframe=max_timeframe)
                                 elif len(total_resistance_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
-                                    if ind.understand_direction(symbol, max(total_resistance_tf_short), level_price) is None:
+                                    max_timeframe = max(total_resistance_tf_short)
+                                    if ind.understand_direction(symbol, max_timeframe, level_price) is None:
                                         self.short_real_entry(symbol=symbol, 
                                                             comment="SR>" + '|'.join(map(str, total_resistance_tf_short)), 
-                                                            r_s_timeframe=max(total_resistance_tf_short), 
-                                                            entry_timeframe=max(total_resistance_tf_short))
+                                                            r_s_timeframe=max_timeframe, 
+                                                            entry_timeframe=max_timeframe)
                                 elif len(total_support_tf_long) >= 1: 
                                     print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
-                                    if ind.understand_direction(symbol, max(total_support_tf_long), level_price) is None:
+                                    max_timeframe = max(total_support_tf_long)
+                                    if ind.understand_direction(symbol, max_timeframe, level_price) is None:
                                         self.long_real_entry(symbol=symbol, 
                                                             comment="LR>" + '|'.join(map(str, total_support_tf_long)), 
-                                                            r_s_timeframe=max(total_support_tf_long), 
-                                                            entry_timeframe=max(total_support_tf_long))
+                                                            r_s_timeframe=max_timeframe, 
+                                                            entry_timeframe=max_timeframe)
                             else:
                                 raise Exception("Strategy not defined!")
             
