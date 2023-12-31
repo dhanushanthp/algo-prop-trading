@@ -172,19 +172,21 @@ class AlgoTrader():
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
                 mp.close_all_positions()
-                # Re initiate the object
-                self.risk_manager = risk_manager.RiskManager()
-
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
 
                 # The risk reward calclualted based on initial risk
-                rr = round((current_account_size - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account, 2)
-                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {rr}")
-
-                if rr >= 2 or rr <= -1:
-                    self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {rr}")
+                rr = (current_account_size - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
+                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {round(rr, 2)}")
+                
+                # if rr >= 2 or rr <= -1:
+                if rr <= 0:
+                    self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
                     self.immidiate_exit = True
+                
+                # Re initiate the object
+                self.risk_manager = risk_manager.RiskManager()
+                self.fixed_initial_account_size = self.risk_manager.account_size
 
             if is_market_close:
                 print("Market Close!")
