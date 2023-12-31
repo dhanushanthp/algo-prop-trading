@@ -19,51 +19,99 @@ def get_exchange_price(symbol):
     return exchange_rate
 
 def get_dollar_value(symbol):
-        # Check which radio button is selected
-        if symbol == "US500.cash":
-            return 1
-        elif symbol == "UK100.cash":
-            return get_exchange_price("GBPUSD")
-        elif symbol == "HK50.cash":
-            return round(1/get_exchange_price("USDHKD"), 4)
-        elif symbol == "JP225.cash":
-            return round(1/get_exchange_price("USDJPY"), 4)
-        elif symbol == "AUS200.cash":
-            return get_exchange_price("AUDUSD")
-        elif symbol == "AUDNZD":
-            return (1/get_exchange_price("AUDNZD")) * get_exchange_price("AUDUSD")
-        elif symbol == "USDJPY":
-            return 1/get_exchange_price("USDJPY")
-        elif symbol == "USDCHF":
-            return 1/get_exchange_price("USDCHF")
-        elif symbol == "AUDJPY":
-            return (1/get_exchange_price("AUDJPY")) * get_exchange_price("AUDUSD")
-        elif symbol == "NZDJPY":
-            return (1/get_exchange_price("NZDJPY")) * get_exchange_price("NZDUSD")
-        elif symbol == "EURJPY":
-            return (1/get_exchange_price("EURJPY")) * get_exchange_price("EURUSD")
-        elif symbol == "GBPJPY":
-            return (1/get_exchange_price("GBPJPY")) * get_exchange_price("GBPUSD")
-        elif symbol == "EURCAD":
-            return (1/get_exchange_price("EURCAD")) * get_exchange_price("EURUSD")
-        elif symbol == "NZDCAD":
-            return (1/get_exchange_price("NZDCAD")) * get_exchange_price("NZDUSD")
-        elif symbol == "XAUUSD":
-            return 2/get_exchange_price("XAUUSD")
-        elif symbol == "EURUSD":
-            return get_exchange_price("EURUSD")
-        elif symbol == "USDCAD":
-            return  1/get_exchange_price("USDCAD")
-        elif symbol == "AUDUSD":
-            return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
-        elif symbol == "GBPUSD":
-            return get_exchange_price("GBPUSD")
-        elif symbol == "EURNZD":
-            return (1/get_exchange_price("EURNZD")) * get_exchange_price("EURUSD")
-        elif symbol == "CHFJPY":
-            return 1/get_exchange_price("CHFJPY")/ get_exchange_price("USDCHF")
-        else:
-            raise Exception("Currency Pair No defined in manage_positions.py")
+        if curr.company == "FTMO S.R.O.":
+            # Check which radio button is selected
+            if symbol == "US500.cash":
+                return 1
+            elif symbol == "UK100.cash":
+                return get_exchange_price("GBPUSD")
+            elif symbol == "HK50.cash":
+                return round(1/get_exchange_price("USDHKD"), 4)
+            elif symbol == "JP225.cash":
+                return round(1/get_exchange_price("USDJPY"), 4)
+            elif symbol == "AUS200.cash":
+                return get_exchange_price("AUDUSD")
+            elif symbol == "AUDNZD":
+                return (1/get_exchange_price("AUDNZD")) * get_exchange_price("AUDUSD")
+            elif symbol == "USDJPY":
+                return 1/get_exchange_price("USDJPY")
+            elif symbol == "USDCHF":
+                return 1/get_exchange_price("USDCHF")
+            elif symbol == "AUDJPY":
+                return (1/get_exchange_price("AUDJPY")) * get_exchange_price("AUDUSD")
+            elif symbol == "NZDJPY":
+                return (1/get_exchange_price("NZDJPY")) * get_exchange_price("NZDUSD")
+            elif symbol == "EURJPY":
+                return (1/get_exchange_price("EURJPY")) * get_exchange_price("EURUSD")
+            elif symbol == "GBPJPY":
+                return (1/get_exchange_price("GBPJPY")) * get_exchange_price("GBPUSD")
+            elif symbol == "EURCAD":
+                return (1/get_exchange_price("EURCAD")) * get_exchange_price("EURUSD")
+            elif symbol == "NZDCAD":
+                return (1/get_exchange_price("NZDCAD")) * get_exchange_price("NZDUSD")
+            elif symbol == "XAUUSD":
+                return 2/get_exchange_price("XAUUSD")
+            elif symbol == "EURUSD":
+                return get_exchange_price("EURUSD")
+            elif symbol == "USDCAD":
+                return  1/get_exchange_price("USDCAD")
+            elif symbol == "AUDUSD":
+                return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "GBPUSD":
+                return get_exchange_price("GBPUSD")
+            elif symbol == "EURNZD":
+                return (1/get_exchange_price("EURNZD")) * get_exchange_price("EURUSD")
+            elif symbol == "CHFJPY":
+                return 1/get_exchange_price("CHFJPY")/ get_exchange_price("USDCHF")
+            else:
+                raise Exception("Currency Pair No defined in manage_positions.py")
+        elif curr.company == "AXSE Brokerage Ltd.":
+            # Check which radio button is selected
+            if symbol == "SP_raw":
+                return 1
+            elif symbol == "FTSE_raw":
+                return get_exchange_price("GBPUSD_raw")
+            elif symbol == "HK50_raw":
+                return round(1/get_exchange_price("USDHKD_raw"), 4)
+            elif symbol == "NIKKEI_raw":
+                return round(1/get_exchange_price("USDJPY_raw"), 4)
+            elif symbol == "ASX_raw":
+                return get_exchange_price("AUDUSD_raw")
+            elif symbol == "AUDNZD_raw":
+                return (1/get_exchange_price("AUDNZD_raw")) * get_exchange_price("AUDUSD_raw")
+            elif symbol == "USDJPY_raw":
+                return 1/get_exchange_price("USDJPY_raw")
+            elif symbol == "USDCHF_raw":
+                return 1/get_exchange_price("USDCHF_raw")
+            elif symbol == "AUDJPY_raw":
+                return (1/get_exchange_price("AUDJPY_raw")) * get_exchange_price("AUDUSD_raw")
+            elif symbol == "NZDJPY_raw":
+                return (1/get_exchange_price("NZDJPY_raw")) * get_exchange_price("NZDUSD_raw")
+            elif symbol == "EURJPY_raw":
+                return (1/get_exchange_price("EURJPY_raw")) * get_exchange_price("EURUSD_raw")
+            elif symbol == "GBPJPY_raw":
+                return (1/get_exchange_price("GBPJPY_raw")) * get_exchange_price("GBPUSD_raw")
+            elif symbol == "EURCAD_raw":
+                return (1/get_exchange_price("EURCAD_raw")) * get_exchange_price("EURUSD_raw")
+            elif symbol == "NZDCAD_raw":
+                return (1/get_exchange_price("NZDCAD_raw")) * get_exchange_price("NZDUSD_raw")
+            elif symbol == "XAUUSD_raw":
+                return 2/get_exchange_price("XAUUSD_raw")
+            elif symbol == "EURUSD_raw":
+                return get_exchange_price("EURUSD_raw")
+            elif symbol == "USDCAD_raw":
+                return  1/get_exchange_price("USDCAD_raw")
+            elif symbol == "AUDUSD_raw":
+                return 1.6 * get_exchange_price("AUDUSD_raw") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "GBPUSD_raw":
+                return get_exchange_price("GBPUSD_raw")
+            elif symbol == "EURNZD_raw":
+                return (1/get_exchange_price("EURNZD_raw")) * get_exchange_price("EURUSD_raw")
+            elif symbol == "CHFJPY_raw":
+                return 1/get_exchange_price("CHFJPY_raw")/ get_exchange_price("USDCHF_raw")
+            else:
+                raise Exception("Currency Pair No defined in manage_positions.py")
+
 
 def get_value_at_risk(symbol, price_open, stop, positions):
     difference = abs(price_open - stop)
