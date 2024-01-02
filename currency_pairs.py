@@ -40,6 +40,22 @@ elif company == "FTMO S.R.O.":
 
     support_pairs = ["NZDUSD", "USDHKD"]
 
+elif company == "Black Bull Group Limited":
+    currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 
+                'CHFJPY', 
+                'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD',
+                'GBPUSD', 'GBPJPY',
+                'NZDJPY', "NZDCAD",
+                'USDCAD', 'USDJPY', 'USDCHF', 
+                'XAUUSD']
+
+    indexes = ['JP225', 'SPX500', 'FTSE100']
+
+    jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY']
+
+    support_pairs = ["NZDUSD", "USDHKD"]
+
+
 else:
     raise Exception(f"The << {company} >> Trading platform not found")
 

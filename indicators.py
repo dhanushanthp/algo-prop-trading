@@ -219,7 +219,9 @@ def understand_direction(symbol, timeframe, level):
     
     # If the mid values intersect with the previous 5 bars
     # get past 5 candles and start from the previous second candle
-    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 2, 30))
+    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 2, 52))
+    past_candles.reverse()
+    
     for candle in past_candles:
         open_price = candle["open"]
         close_price = candle["close"]
