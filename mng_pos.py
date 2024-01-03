@@ -201,12 +201,19 @@ def get_last_trades_position(symbol, current_trade_timeframe):
     tm_zone = pytz.timezone('Etc/GMT-2')
     start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=2)
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
+    today_date = datetime.now(tm_zone).date()
 
     exit_traded_position = [i for i in mt5.history_deals_get(start_time,  end_time) if i.symbol== symbol and i.entry==1]
 
     if len(exit_traded_position) > 0:
         last_traded_time = exit_traded_position[-1].time
+        last_traded_date = (datetime.fromtimestamp(last_traded_time, tz=tm_zone) - timedelta(hours=2)).date()
 
+        # This is considered as new day
+        if last_traded_date != today_date:
+            return True
+
+        # Below logic, sameday with traded time gap
         position_id = exit_traded_position[-1].position_id
         entry_traded_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.position_id == position_id and i.entry == 0]
         if len(entry_traded_object) > 0:
@@ -517,5 +524,5 @@ if __name__ == "__main__":
     # print(num_of_parallel_tickers())
     # print(get_continues_wins())
     # print(exist_on_initial_plan_changed_ema())
-    # print(get_last_trades_position("UK100.cash", 15))
-    print(get_dollar_value("AUS200.cash"))
+    print(get_last_trades_position("GBPUSD", 15))
+    # print(get_dollar_value("AUS200.cash"))
