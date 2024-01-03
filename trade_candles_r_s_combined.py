@@ -68,6 +68,13 @@ class AlgoTrader():
             points_in_stop = round(points_in_stop, 5)
             lots = lots/10**5
         
+        # This change made of fundedEngineer account!
+        if symbol in ['ASX_raw', 'HK50_raw', 'NIKKEI_raw', 'FTSE_raw', 'FTSE100']:
+            lots = lots/10
+        
+        if symbol in ['SP_raw', "SPX500"]:
+            lots = lots/40
+        
         return points_in_stop, lots
 
    
@@ -163,7 +170,7 @@ class AlgoTrader():
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {config.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {config.risk_percentage}%")
-            print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%")
+            print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
             mp.adjust_positions_trailing_stops(self.risk_manager.risk_of_a_position) # Each position trail stop
@@ -213,7 +220,8 @@ class AlgoTrader():
                     reverse_long_at_support[symbol] = []
                     reverse_short_at_resistance[symbol] = []
 
-                    for r_s_timeframe in [240, 120, 60, 30]:
+                    # for r_s_timeframe in [240, 120, 60, 30]:
+                    for r_s_timeframe in [240]:
                         try:
                             # Incase if it failed to request the symbol price
                             levels = ind.support_resistance_levels(symbol, r_s_timeframe)
@@ -347,7 +355,7 @@ class AlgoTrader():
                                 if len(total_resistance_tf_long) >= 1:
                                     print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
                                     max_timeframe = max(total_resistance_tf_long)
-                                    if ind.understand_direction(symbol, max_timeframe, level_price) == "long":
+                                    if ind.understand_direction(symbol, max_timeframe, level_price) is not None:
                                         self.long_real_entry(symbol=symbol, 
                                                             comment="LB>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                             r_s_timeframe=max_timeframe, 
@@ -355,7 +363,7 @@ class AlgoTrader():
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                     max_timeframe = max(total_support_tf_short)
-                                    if ind.understand_direction(symbol, max_timeframe, level_price) == "short":
+                                    if ind.understand_direction(symbol, max_timeframe, level_price) is not None:
                                         self.short_real_entry(symbol=symbol, 
                                                             comment="SB>" + '|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max_timeframe, 
