@@ -10,6 +10,7 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
+# Funded Engineer
 if company == "AXSE Brokerage Ltd.":
     currencies = ['AUDJPY_raw', 'AUDNZD_raw', 'AUDUSD_raw', 
                 'CHFJPY_raw', 
@@ -39,7 +40,7 @@ elif company == "FTMO S.R.O.":
     jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY']
 
     support_pairs = ["NZDUSD", "USDHKD"]
-
+# FundingPips
 elif company == "Black Bull Group Limited":
     currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 
                 'CHFJPY', 
