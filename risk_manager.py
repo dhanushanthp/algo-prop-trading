@@ -18,6 +18,7 @@ class RiskManager:
         self.second_max_profit_check = True
         self.alert = slack_msg.Slack()
         self.max_risk_hit_counter = 0
+        self.enable_half_trail = self.risk_of_an_account + round(ACCOUNT_SIZE/100*0.25) # Add addtional 0.25 to cover commision
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
@@ -56,8 +57,8 @@ class RiskManager:
     def update_to_half_trail(self):
         _, equity, _,_ = ind.get_account_details()
         # Reduce the trail distance when the price cross first profit target
-        print(f"{'Half trail at'.ljust(20)}: ${'{:,}'.format(round(self.account_size + self.risk_of_an_account))}", "\n")
-        if (equity > self.account_size + self.risk_of_an_account) and self.first_max_profit_check:
+        print(f"{'Half trail at'.ljust(20)}: ${'{:,}'.format(round(self.account_size + self.enable_half_trail))}", "\n")
+        if (equity > self.account_size + self.enable_half_trail) and self.first_max_profit_check:
             self.alert.send_msg(f"{self.account_name}: First target max triggered!")
             self.risk_of_an_account = self.risk_of_a_position
             self.first_max_profit_check = False
