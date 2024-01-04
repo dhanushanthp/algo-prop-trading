@@ -48,8 +48,8 @@ elif company == "Black Bull Group Limited":
                 'NZDJPY', "NZDCAD",
                 'USDCAD', 'USDJPY', 'USDCHF', 
                 'XAUUSD']
-
-    indexes = ['JP225', 'SPX500', 'FTSE100']
+    # TODO JP225 is removed, because of invalid volume, which is working for FTMO
+    indexes = ['SPX500', 'FTSE100'] # 'JP225',
 
     jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY']
 

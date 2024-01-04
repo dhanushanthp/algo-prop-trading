@@ -69,10 +69,10 @@ class AlgoTrader():
             lots = lots/10**5
         
         # This change made of fundedEngineer account!
-        if symbol in ['ASX_raw', 'HK50_raw', 'NIKKEI_raw', 'FTSE_raw', 'FTSE100']:
+        if symbol in ['ASX_raw', 'HK50_raw', 'FTSE_raw', 'FTSE100']:
             lots = lots/10
         
-        if symbol in ['SP_raw', "SPX500"]:
+        if symbol in ['SP_raw', "SPX500", 'NIKKEI_raw']:
             lots = lots/40
         
         return points_in_stop, lots
