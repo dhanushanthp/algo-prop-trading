@@ -107,7 +107,8 @@ def get_stop_range(symbol, timeframe):
 
 def get_account_name():
     info = mt5.account_info()
-    return info.name
+    balance = round(info.balance/1000)
+    return f"{info.name} {balance}K "
 
 def find_reversal_zones(symbol, timeframe, reversal_looks_back=20):
     """
@@ -539,6 +540,6 @@ if __name__ == "__main__":
     # print(mt5.TIMEFRAME_H1)
     # print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
-    # print(get_account_details())
+    print(get_account_name())
     # print(ema_direction("AUDJPY", [240, 60, 30]))
-    print(understand_direction("AUDCHF", 60, 0.56882))
+    # print(understand_direction("AUDCHF", 60, 0.56882))

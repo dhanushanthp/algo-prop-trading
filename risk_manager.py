@@ -8,11 +8,13 @@ import mng_pos as mp
 import slack_msg
 
 class RiskManager:
-    def __init__(self) -> None:
+    def __init__(self, profit_split=1) -> None:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
         self.account_size  = ACCOUNT_SIZE
-        self.risk_of_a_position = round(ACCOUNT_SIZE/100*config.risk_percentage)
-        self.risk_of_an_account = round(ACCOUNT_SIZE/100*config.account_risk_percentage)
+        self.account_risk_percentage = config.account_risk_percentage * profit_split
+        self.risk_of_an_account = round(ACCOUNT_SIZE/100*self.account_risk_percentage)
+        self.position_risk_percentage = self.account_risk_percentage/config.position_split_of_account_risk
+        self.risk_of_a_position = round(ACCOUNT_SIZE/100*self.position_risk_percentage)
         self.previous_time = None
         self.first_max_profit_check = True
         self.second_max_profit_check = True
@@ -23,6 +25,9 @@ class RiskManager:
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
         self.account_name = ind.get_account_name()
+
+        # The max profit split is 100% of risking the account
+        assert profit_split <= 1
     
     def get_max_loss(self):
         return self.account_trail_loss
@@ -66,7 +71,7 @@ class RiskManager:
 
 
 if __name__ == "__main__":
-    obj = RiskManager()
+    obj = RiskManager(profit_split=0.5)
     while True:
         print(f"Current Risk: {obj.risk_of_a_position}")
         time.sleep(30)

@@ -1,1 +1,1 @@
-python "C:\Users\SathyaGayathriRajara\OneDrive\Financial Freedom\MetaTraderTrial\heartbeat.py"
+python "C:\Users\%USERNAME%\OneDrive\Financial Freedom\MetaTraderTrial\heartbeat.py"

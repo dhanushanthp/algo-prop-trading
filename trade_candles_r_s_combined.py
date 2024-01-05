@@ -32,7 +32,7 @@ class AlgoTrader():
         self.retries = 0
 
         # External dependencies
-        self.risk_manager = risk_manager.RiskManager()
+        self.risk_manager = risk_manager.RiskManager(profit_split=1)
         self.alert = Slack()
         self.monitor = Monitor()
         self.file_util = FileUtils()
@@ -69,11 +69,14 @@ class AlgoTrader():
             lots = lots/10**5
         
         # This change made of fundedEngineer account!
-        if symbol in ['ASX_raw', 'HK50_raw', 'FTSE_raw', 'FTSE100']:
+        if symbol in ['ASX_raw', 'FTSE_raw', 'FTSE100']:
             lots = lots/10
         
         if symbol in ['SP_raw', "SPX500"]:
             lots = lots/40
+        
+        if symbol in ['HK50_raw']:
+            lots = lots/100
         
         if symbol in ['NIKKEI_raw']:
             lots = lots/1000
@@ -171,8 +174,8 @@ class AlgoTrader():
         while True:
             print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')}------------------")
             is_market_open, is_market_close = util.get_market_status()
-            print(f"{'Acc Trail Loss'.ljust(20)}: {config.account_risk_percentage}%")
-            print(f"{'Positional Risk'.ljust(20)}: {config.risk_percentage}%")
+            print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
+            print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
@@ -195,12 +198,12 @@ class AlgoTrader():
                     self.immidiate_exit = True
                 
                 # Re initiate the object
-                self.risk_manager = risk_manager.RiskManager()
+                self.risk_manager = risk_manager.RiskManager(profit_split=0.5)
                 self.fixed_initial_account_size = self.risk_manager.account_size
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager = risk_manager.RiskManager() # Reset the risk for the day
+                self.risk_manager = risk_manager.RiskManager(profit_split=1) # Reset the risk for the day
                 mp.close_all_positions()
                 
                 # Reset account size for next day

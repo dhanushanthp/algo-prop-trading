@@ -3,7 +3,8 @@ from slack import WebClient
 import logging
 from slack.errors import SlackApiError
 log = logging.getLogger("SLACK")
-
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 class Slack:
     def __init__(self) -> None:
@@ -20,8 +21,6 @@ class Slack:
                 self.client.chat_postMessage(channel='#general', text=msg)
             except Exception as e:
                 print(e)
-                log.info(msg)
-
 
 if __name__ == "__main__":
     ref = Slack()
