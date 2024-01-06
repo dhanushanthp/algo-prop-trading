@@ -85,8 +85,8 @@ def get_stop_range(symbol, timeframe):
         lower_stop = current_candle["low"]
     
     # Adding buffer to candle based high and low
-    higher_stop = higher_stop + 3 * spread
-    lower_stop = lower_stop - 3 * spread
+    higher_stop = higher_stop + 6 * spread
+    lower_stop = lower_stop - 6 * spread
     
     mid_price = get_mid_price(symbol)
     
