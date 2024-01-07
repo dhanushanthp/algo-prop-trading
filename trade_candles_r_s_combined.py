@@ -43,6 +43,9 @@ class AlgoTrader():
 
         # Expected reward for the day
         self.fixed_initial_account_size = self.risk_manager.account_size
+
+        # Default
+        self.trading_timeframes = [240]
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -172,7 +175,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')}------------------")
+            print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs------------------")
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
@@ -227,7 +230,7 @@ class AlgoTrader():
                     reverse_short_at_resistance[symbol] = []
 
                     # for r_s_timeframe in [240, 120, 60, 30]:
-                    for r_s_timeframe in [240]:
+                    for r_s_timeframe in self.trading_timeframes:
                         try:
                             # Incase if it failed to request the symbol price
                             levels = ind.support_resistance_levels(symbol, r_s_timeframe)
@@ -402,9 +405,14 @@ if __name__ == "__main__":
         win.strategy = sys.argv[1]
         if win.strategy not in ["reverse", "break", "auto", "ema","smart"]:
             raise Exception("Please enter fixed or auto entry time check!")
+        
+        win.trading_timeframes = [int(i) for i in sys.argv[2].split(",")]
+
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
-        win.strategy = "reverse"
+        win.strategy = "smart"
+
+        # otherwise timeframe will be default to 4 hours
 
     win.main()
 
