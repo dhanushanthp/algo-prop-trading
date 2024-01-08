@@ -195,7 +195,7 @@ def stop_round(symbol, stop_price):
 
 def get_last_trades_position(symbol, current_trade_timeframe):
     """
-    If you already have made some money. Then don't entry this for another 1 hour
+    If you already have made some money. Then don't entry this for another time peroid based on last entered timeframe
     """
 
     tm_zone = pytz.timezone('Etc/GMT-2')
