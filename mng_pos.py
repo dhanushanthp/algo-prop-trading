@@ -473,13 +473,12 @@ def close_all_positions():
         close_single_position(obj=obj)
 
 
-def close_all_positions_on_exit():
+def close_all_with_condition():
     """
-    This only closes the positions which has possible loss than 0. This is not heling out.
+    Only close the positions which has trailing stop below 0, Also this consided as positions which are not hit 1R profit yet.
     """
     positions = mt5.positions_get()
     for obj in positions:
-        symbol = obj.symbol
         stop_price = obj.sl
         entry_price = obj.price_open
         entry_type = obj.type
