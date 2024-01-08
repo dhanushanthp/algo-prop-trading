@@ -45,19 +45,30 @@ class RiskManager:
         return self.account_size + self.risk_of_an_account
     
     def has_daily_maximum_risk_reached(self):
+        """
+        Check if the daily maximum risk has been reached based on the account's equity and trail loss.
+
+        Returns:
+        bool: True if the daily maximum risk has been reached, False otherwise.
+        """
+
+        # Retrieve account details including equity
         _, equity, _, _ = ind.get_account_details()
 
-        # Calculate trail loss, The equtity will keep increase based on positive return
+        # Calculate trail loss, where equity will increase based on positive returns
         trail_loss = equity - self.risk_of_an_account
 
-        # Update account trail loss with the maximum value between current trail loss
+        # Update account trail loss with the maximum value between current trail loss and previous maximum
         self.account_trail_loss = max(trail_loss, self.account_trail_loss)
 
-        # Check if the daily maximum risk has been reached
+        # Check if the daily maximum risk has been reached by comparing equity with account trail loss
         if equity < self.account_trail_loss:
+            # Return True if daily maximum risk has been reached
             return True
         
+        # Return False if daily maximum risk has not been reached
         return False
+
     
     def update_to_half_trail(self):
         _, equity, _,_ = ind.get_account_details()
