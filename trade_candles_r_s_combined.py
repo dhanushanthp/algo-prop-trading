@@ -25,7 +25,7 @@ class AlgoTrader():
 
         # Default values
         self.strategy = None  # Default to 15 min
-        self.target_ratio = 2.0  # Default 1:0.5 Ratio
+        self.target_ratio = 1.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
         self.timer = 30
@@ -183,11 +183,10 @@ class AlgoTrader():
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
             mp.adjust_positions_trailing_stops(self.risk_manager.risk_of_a_position) # Each position trail stop
-            self.risk_manager.update_to_half_trail()
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
-                mp.close_all_positions()
+                mp.close_all_with_condition()
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
 
@@ -365,16 +364,16 @@ class AlgoTrader():
                                     print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
                                     max_timeframe = max(total_resistance_tf_long)
                                     if ind.understand_direction(symbol, max_timeframe, level_price) is not None:
-                                        self.long_real_entry(symbol=symbol, 
-                                                            comment="LB>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                        self.short_real_entry(symbol=symbol, 
+                                                            comment="SRR>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                     max_timeframe = max(total_support_tf_short)
                                     if ind.understand_direction(symbol, max_timeframe, level_price) is not None:
-                                        self.short_real_entry(symbol=symbol, 
-                                                            comment="SB>" + '|'.join(map(str, total_support_tf_short)), 
+                                        self.long_real_entry(symbol=symbol, 
+                                                            comment="LRR>" + '|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
                                 elif len(total_resistance_tf_short) >= 1:
