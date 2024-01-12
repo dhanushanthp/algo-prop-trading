@@ -329,22 +329,27 @@ def adjust_positions_trailing_stops(risk):
     for position in existing_positions:
         symbol = position.symbol
         stop_price = position.sl
+        target_price = position.tp
         # short_tf = min([int(i) for i in position.comment.split(">")[-1].split("|")])
         short_tf = 15
-        high, low, _, _, _ = ind.get_stop_range(symbol, short_tf)
+        candle_high, candle_low, _, _, _ = ind.get_stop_range(symbol, short_tf)
+        candle_low = util.curr_round(position.symbol, candle_low)
+        candle_high = util.curr_round(position.symbol, candle_high)
         
         if position.type == 0:
-            new_stop_point = util.curr_round(position.symbol, low)
-            trail_stop = max(stop_price, new_stop_point)
+            # Long Position
+            trail_stop = max(stop_price, candle_low)
+            trail_target = min(target_price, candle_high)
         else:
-            new_stop_point = util.curr_round(position.symbol, high)
-            trail_stop = min(stop_price, new_stop_point)        
+            # Short Position
+            trail_stop = min(stop_price, candle_high)        
+            trail_target = max(target_price, candle_low)
 
         # If the stop is already equal to existing stop, then no need to change it!
         # Enable trailning once price moved 1/4 of the stop, Otherswise this will keep adjust while the price is on
         # negative
-        if (position.profit > risk) and trail_stop != stop_price:
-            print(f"STP Updated: {position.symbol}, PRE: {round(stop_price, 5)}, CURR: {trail_stop}")
+        if (trail_stop != stop_price) or (target_price != trail_target):
+            print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
 
             modify_request = {
                 "action": mt5.TRADE_ACTION_SLTP,
@@ -353,7 +358,7 @@ def adjust_positions_trailing_stops(risk):
                 "type": position.type,
                 "position": position.ticket,
                 "sl": trail_stop,
-                "tp": position.tp,
+                "tp": trail_target,
                 "comment": position.comment,
                 "magic": position.magic,
                 "type_time": mt5.ORDER_TIME_GTC,
