@@ -97,7 +97,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol, entry_timeframe)
+            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
@@ -136,7 +136,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol, entry_timeframe)
+            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
@@ -233,7 +233,7 @@ class AlgoTrader():
                         try:
                             # Incase if it failed to request the symbol price
                             levels = ind.support_resistance_levels(symbol, r_s_timeframe)
-                            _, _, _, _, optimal_distance = ind.get_stop_range(symbol, r_s_timeframe)
+                            _, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=r_s_timeframe, n_spreds=6)
                             optimal_distance = optimal_distance/2
                         except Exception as e:
                             self.alert.send_msg(f"{self.account_name}: {symbol}: {e}")

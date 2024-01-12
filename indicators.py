@@ -53,7 +53,7 @@ def get_ordered_symbols():
     return sorted_list
 
 
-def get_stop_range(symbol, timeframe):
+def get_stop_range(symbol, timeframe, n_spreds=10):
     
     selected_time = match_timeframe(timeframe)
     
@@ -85,8 +85,8 @@ def get_stop_range(symbol, timeframe):
         lower_stop = current_candle["low"]
     
     # Adding buffer to candle based high and low
-    higher_stop = higher_stop + 6 * spread
-    lower_stop = lower_stop - 6 * spread
+    higher_stop = higher_stop + (n_spreds * spread)
+    lower_stop = lower_stop - (n_spreds * spread)
     
     mid_price = get_mid_price(symbol)
     
