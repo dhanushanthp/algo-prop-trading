@@ -283,17 +283,20 @@ class AlgoTrader():
                                                             r_s_timeframe=max(total_support_tf_short), 
                                                             entry_timeframe=max(total_support_tf_short))
                             elif self.strategy == "reverse":
-                                print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
-                                if len(total_resistance_tf_short) >= 2:
+                                if len(total_resistance_tf_short) >= 1:
+                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
+                                    max_timeframe = max(total_resistance_tf_short)
                                     self.short_real_entry(symbol=symbol, 
-                                                            comment='|'.join(map(str, total_resistance_tf_short)), 
-                                                            r_s_timeframe=max(total_resistance_tf_short), 
-                                                            entry_timeframe=max(total_resistance_tf_short))
-                                elif len(total_support_tf_long) >= 2:
+                                                            comment="RS>" + '|'.join(map(str, total_resistance_tf_short)), 
+                                                            r_s_timeframe=max_timeframe, 
+                                                            entry_timeframe=max_timeframe)
+                                elif len(total_support_tf_long) >= 1:
+                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
+                                    max_timeframe = max(total_support_tf_long)
                                     self.long_real_entry(symbol=symbol, 
-                                                            comment='|'.join(map(str, total_support_tf_long)), 
-                                                            r_s_timeframe=max(total_support_tf_long), 
-                                                            entry_timeframe=max(total_support_tf_long))
+                                                            comment="SL>" + '|'.join(map(str, total_support_tf_long)), 
+                                                            r_s_timeframe=max_timeframe, 
+                                                            entry_timeframe=max_timeframe)
                             elif self.strategy == "auto":
                                 timeframe_seperator = [5, 15, 30]
                                 # Breakout should have less than 30 and 15 and 5
