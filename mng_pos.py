@@ -323,6 +323,9 @@ def exit_one_r():
         if (position.profit > max_loss * 0.9):
             close_single_position(position)
 
+def get_position_dollar_value(symbol, type, entry_price, current_price, volume):
+    dollor_value = mt5.order_calc_profit(type, symbol, volume, entry_price, current_price)
+    return dollor_value
 
 def adjust_positions_trailing_stops(risk):
     existing_positions = mt5.positions_get()
@@ -529,5 +532,5 @@ if __name__ == "__main__":
     # print(num_of_parallel_tickers())
     # print(get_continues_wins())
     # print(exist_on_initial_plan_changed_ema())
-    print(get_last_trades_position("GBPUSD", 15))
-    # print(get_dollar_value("AUS200.cash"))
+    # print(get_last_trades_position("GBPUSD", 15))
+    print(get_dollar_value("AUS200.cash"))
