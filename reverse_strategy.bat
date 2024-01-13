@@ -1,1 +1,1 @@
-python trade_candles_r_s_combined.py reverse
+python trade_candles_r_s_combined.py reverse 240,60
