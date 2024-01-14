@@ -327,7 +327,7 @@ def get_position_dollar_value(symbol, type, entry_price, current_price, volume):
     dollor_value = mt5.order_calc_profit(type, symbol, volume, entry_price, current_price)
     return dollor_value
 
-def adjust_positions_trailing_stops(risk):
+def adjust_positions_trailing_stops():
     existing_positions = mt5.positions_get()
     for position in existing_positions:
         symbol = position.symbol

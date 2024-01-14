@@ -182,7 +182,7 @@ class AlgoTrader():
             print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
-            mp.adjust_positions_trailing_stops(self.risk_manager.risk_of_a_position) # Each position trail stop
+            mp.adjust_positions_trailing_stops() # Each position trail stop
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
