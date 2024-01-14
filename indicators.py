@@ -393,6 +393,13 @@ def correlate_entry_timeframe(timeframe):
     else:
         raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
 
+def short_tf_mapping(timeframe):
+    if timeframe == 240:
+        return 60
+    elif timeframe == 60:
+        return 15
+    else:
+        raise Exception("TIMEFRAME for mapping is not defined")
 
 def match_timeframe(timeframe):
     if timeframe == 5:
