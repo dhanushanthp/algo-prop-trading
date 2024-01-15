@@ -301,20 +301,20 @@ class AlgoTrader():
                                                             comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
-                                elif len(total_resistance_tf_short_v2) >= 1:
-                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short_v2)).ljust(10)}")
-                                    max_timeframe = max(total_resistance_tf_short_v2)
-                                    self.short_real_entry(symbol=symbol, 
-                                                            comment="RS>" + '|'.join(map(str, total_resistance_tf_short_v2)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                                elif len(total_support_tf_long_v2) >= 1:
-                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long_v2)).ljust(10)}")
-                                    max_timeframe = max(total_support_tf_long_v2)
-                                    self.long_real_entry(symbol=symbol, 
-                                                            comment="SL>" + '|'.join(map(str, total_support_tf_long_v2)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
+                                # elif len(total_resistance_tf_short_v2) >= 1:
+                                #     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short_v2)).ljust(10)}")
+                                #     max_timeframe = max(total_resistance_tf_short_v2)
+                                #     self.short_real_entry(symbol=symbol, 
+                                #                             comment="RS>" + '|'.join(map(str, total_resistance_tf_short_v2)), 
+                                #                             r_s_timeframe=max_timeframe, 
+                                #                             entry_timeframe=max_timeframe)
+                                # elif len(total_support_tf_long_v2) >= 1:
+                                #     print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long_v2)).ljust(10)}")
+                                #     max_timeframe = max(total_support_tf_long_v2)
+                                #     self.long_real_entry(symbol=symbol, 
+                                #                             comment="SL>" + '|'.join(map(str, total_support_tf_long_v2)), 
+                                #                             r_s_timeframe=max_timeframe, 
+                                #                             entry_timeframe=max_timeframe)
                             elif self.strategy == "reverse":
                                 if len(total_resistance_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
