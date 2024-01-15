@@ -19,8 +19,8 @@ if company == "AXSE Brokerage Ltd.":
                 'NZDJPY_raw', "NZDCAD_raw",
                 'USDCAD_raw', 'USDJPY_raw', 'USDCHF_raw', 
                 'XAUUSD_raw']
-
-    indexes = ['ASX_raw', 'HK50_raw', 'NIKKEI_raw',  'SP_raw', 'FTSE_raw']
+    # 'ASX_raw'
+    indexes = ['HK50_raw', 'NIKKEI_raw',  'SP_raw', 'FTSE_raw']
 
     jpy_currencies = ['AUDJPY_raw', 'CHFJPY_raw', 'EURJPY_raw', 'GBPJPY_raw' , 'NZDJPY_raw', 'USDJPY_raw']
 

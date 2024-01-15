@@ -339,7 +339,7 @@ def adjust_positions_trailing_stops():
         short_tf = 15
         
         # Increase the range of the spread to eliminate the sudden stopouts
-        candle_high, candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=short_tf, n_spreds=10)
+        candle_high, candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=short_tf, n_spreds=6)
         candle_low = util.curr_round(position.symbol, candle_low)
         candle_high = util.curr_round(position.symbol, candle_high)
         

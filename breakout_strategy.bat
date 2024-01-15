@@ -1,1 +1,1 @@
-python trade_candles_r_s_combined.py break 240,60
+python trade_candles_r_s_combined.py break 60
