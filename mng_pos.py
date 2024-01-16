@@ -392,11 +392,11 @@ def adjust_positions_trailing_stops():
         if position.type == 0:
             # Long Position
             trail_stop = max(stop_price, candle_low)
-            trail_target = min(target_price, candle_high - 6*ind.get_spread(symbol=symbol))
+            trail_target = min(target_price, candle_high)
         else:
             # Short Position
             trail_stop = min(stop_price, candle_high)        
-            trail_target = max(target_price, candle_low + 6*ind.get_spread(symbol=symbol)) 
+            trail_target = max(target_price, candle_low) 
 
         # If the stop is already equal to existing stop, then no need to change it!
         # Enable trailning once price moved 1/4 of the stop, Otherswise this will keep adjust while the price is on
