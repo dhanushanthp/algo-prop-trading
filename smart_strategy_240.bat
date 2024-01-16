@@ -1,1 +1,0 @@
-python trade_candles_r_s_combined.py smart 240

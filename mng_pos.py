@@ -153,6 +153,52 @@ def get_dollar_value(symbol):
                 return 1/get_exchange_price("CHFJPY_raw")/ get_exchange_price("USDCHF_raw")
             else:
                 raise Exception("Currency Pair No defined in manage_positions.py")
+        elif curr.company == "TF Global Markets (Aust) Pty Ltd":
+            # Check which radio button is selected
+            if symbol == "SPX500x":
+                return 1
+            elif symbol == "UK100x":
+                return get_exchange_price("GBPUSDx")
+            elif symbol == "HK50.cash":
+                return round(1/get_exchange_price("USDHKDx"), 4)
+            elif symbol == "JPN225X":
+                return round(1/get_exchange_price("USDJPYx"), 4)
+            elif symbol == "AUS200.cash":
+                return get_exchange_price("AUDUSDx")
+            elif symbol == "AUDNZDx":
+                return (1/get_exchange_price("AUDNZDx")) * get_exchange_price("AUDUSDx")
+            elif symbol == "USDJPYx":
+                return 1/get_exchange_price("USDJPYx")
+            elif symbol == "USDCHFx":
+                return 1/get_exchange_price("USDCHFx")
+            elif symbol == "AUDJPYx":
+                return (1/get_exchange_price("AUDJPYx")) * get_exchange_price("AUDUSDx")
+            elif symbol == "NZDJPYx":
+                return (1/get_exchange_price("NZDJPYx")) * get_exchange_price("NZDUSDx")
+            elif symbol == "EURJPYx":
+                return (1/get_exchange_price("EURJPYx")) * get_exchange_price("EURUSDx")
+            elif symbol == "GBPJPYx":
+                return (1/get_exchange_price("GBPJPYx")) * get_exchange_price("GBPUSDx")
+            elif symbol == "EURCADx":
+                return (1/get_exchange_price("EURCADx")) * get_exchange_price("EURUSDx")
+            elif symbol == "NZDCADx":
+                return (1/get_exchange_price("NZDCADx")) * get_exchange_price("NZDUSDx")
+            elif symbol == "XAUUSDx":
+                return 2/get_exchange_price("XAUUSDx")
+            elif symbol == "EURUSDx":
+                return get_exchange_price("EURUSDx")
+            elif symbol == "USDCADx":
+                return  1/get_exchange_price("USDCADx")
+            elif symbol == "AUDUSDx":
+                return 1.6 * get_exchange_price("AUDUSDx") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "GBPUSDx":
+                return get_exchange_price("GBPUSDx")
+            elif symbol == "EURNZDx":
+                return (1/get_exchange_price("EURNZDx")) * get_exchange_price("EURUSDx")
+            elif symbol == "CHFJPYx":
+                return 1/get_exchange_price("CHFJPYx")/ get_exchange_price("USDCHFx")
+            else:
+                raise Exception("Currency Pair No defined in manage_positions.py")
 
 
 def get_value_at_risk(symbol, price_open, stop, positions):
@@ -346,11 +392,11 @@ def adjust_positions_trailing_stops():
         if position.type == 0:
             # Long Position
             trail_stop = max(stop_price, candle_low)
-            trail_target = min(target_price, candle_high)
+            trail_target = min(target_price, candle_high - 6*ind.get_spread(symbol=symbol))
         else:
             # Short Position
             trail_stop = min(stop_price, candle_high)        
-            trail_target = max(target_price, candle_low)
+            trail_target = max(target_price, candle_low + 6*ind.get_spread(symbol=symbol)) 
 
         # If the stop is already equal to existing stop, then no need to change it!
         # Enable trailning once price moved 1/4 of the stop, Otherswise this will keep adjust while the price is on

@@ -55,7 +55,21 @@ elif company == "Black Bull Group Limited":
     jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY']
 
     support_pairs = ["NZDUSD", "USDHKD"]
+# FundedFor
+elif company == "TF Global Markets (Aust) Pty Ltd":
+    currencies = ['AUDJPYx', 'AUDNZDx', 'AUDUSDx', 
+                'CHFJPYx', 
+                'EURJPYx', 'EURNZDx', 'EURUSDx', 'EURCADx',
+                'GBPUSDx', 'GBPJPYx',
+                'NZDJPYx', "NZDCADx",
+                'USDCADx', 'USDJPYx', 'USDCHFx', 
+                'XAUUSDx']
+    
+    indexes = ['SPX500x', "UK100x" ] # 'JPN225X',
 
+    jpy_currencies = ['AUDJPYx', 'CHFJPYx', 'EURJPYx', 'GBPJPYx' , 'NZDJPYx', 'USDJPYx']
+
+    support_pairs = ["NZDUSDx", "USDHKDx"]
 
 else:
     raise Exception(f"The << {company} >> Trading platform not found")
