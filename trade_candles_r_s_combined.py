@@ -94,7 +94,6 @@ class AlgoTrader():
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
     def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
-        # entry_timeframe = 15
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
@@ -134,8 +133,6 @@ class AlgoTrader():
                 return False
 
     def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
-        # entry_timeframe = 15
-
         entry_price = self.get_entry_price(symbol)
         
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
