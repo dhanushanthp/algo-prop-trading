@@ -382,21 +382,26 @@ def adjust_positions_trailing_stops():
         # traded_tf = int(position.magic)
         # short_tf = ind.short_tf_mapping(traded_tf)
         # short_tf = min([int(i) for i in position.comment.split(">")[-1].split("|")])
-        short_tf = 15
+        stp_tf = 60
+        tgt_tf = 15
         
         # Increase the range of the spread to eliminate the sudden stopouts
-        candle_high, candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=short_tf, n_spreds=6)
-        candle_low = util.curr_round(position.symbol, candle_low)
-        candle_high = util.curr_round(position.symbol, candle_high)
+        stp_candle_high, stp_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=stp_tf, n_spreds=6)
+        stp_candle_low = util.curr_round(position.symbol, stp_candle_low)
+        stp_candle_high = util.curr_round(position.symbol, stp_candle_high)
+        
+        tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=tgt_tf, n_spreds=6)
+        tgt_candle_low = util.curr_round(position.symbol, tgt_candle_low)
+        tgt_candle_high = util.curr_round(position.symbol, tgt_candle_high)
         
         if position.type == 0:
             # Long Position
-            trail_stop = max(stop_price, candle_low)
-            trail_target = min(target_price, candle_high)
+            trail_stop = max(stop_price, stp_candle_low)
+            trail_target = min(target_price, tgt_candle_high)
         else:
             # Short Position
-            trail_stop = min(stop_price, candle_high)
-            trail_target = max(target_price, candle_low)
+            trail_stop = min(stop_price, stp_candle_high)
+            trail_target = max(target_price, tgt_candle_low)
 
         if (trail_stop != stop_price) or (target_price != trail_target):
             print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
