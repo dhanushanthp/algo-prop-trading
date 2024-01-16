@@ -234,7 +234,6 @@ class AlgoTrader():
                     reverse_long_at_support_v2[symbol] = []
                     reverse_short_at_resistance_v2[symbol] = []
 
-                    # for r_s_timeframe in [240, 120, 60, 30]:
                     for r_s_timeframe in self.trading_timeframes:
                         try:
                             # Incase if it failed to request the symbol price
