@@ -212,7 +212,8 @@ class AlgoTrader():
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
             
-            if is_market_open and not is_market_close and not self.immidiate_exit:
+            num_existing_positions = len(mt.positions_get())
+            if is_market_open and (not is_market_close) and (not self.immidiate_exit) and (num_existing_positions <= config.position_split_of_account_risk):
                 mp.cancel_all_pending_orders()
 
                 break_long_at_resistance = {}
