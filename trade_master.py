@@ -43,6 +43,7 @@ class AlgoTrader():
 
         # Expected reward for the day
         self.fixed_initial_account_size = self.risk_manager.account_size
+        self.master_initial_account_size = self.risk_manager.account_size
 
         # Default
         self.trading_timeframes = [240]
@@ -184,24 +185,15 @@ class AlgoTrader():
             
             mp.adjust_positions_trailing_stops() # Each position trail stop
 
-            if self.risk_manager.has_daily_maximum_risk_reached():
-                self.retries += 1
-                mp.close_all_with_condition()
+            # +3 is failed 3 tries, and -6 profit of 30% slot
+            if self.retries >= 3 or self.retries < -6:
+                mp.close_all_positions()
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
 
-                # The risk reward calclualted based on initial risk
-                rr = (current_account_size - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
-                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {round(rr, 2)}")
-                
-                # if rr >= 2 or rr <= -1:
-                if rr <= 0:
-                    self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
-                    self.immidiate_exit = True
-                
-                # Re initiate the object
-                self.risk_manager = risk_manager.RiskManager(profit_split=0.5)
-                self.fixed_initial_account_size = self.risk_manager.account_size
+                pnl = (current_account_size - self.master_initial_account_size)
+                self.alert.send_msg(f"{self.account_name}: Done for today! {round(pnl)}")
+                self.immidiate_exit = True
 
             if is_market_close:
                 print("Market Close!")
@@ -210,16 +202,31 @@ class AlgoTrader():
                 
                 # Reset account size for next day
                 self.fixed_initial_account_size = self.risk_manager.account_size
+                self.master_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
+                self.retries = 0
             
+
             if is_market_open and not is_market_close and not self.immidiate_exit:
                 mp.cancel_all_pending_orders()
 
-                _, _, _, profit = ind.get_account_details()
+                _, equity, _, _ = ind.get_account_details()
+                rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
+                pnl = (equity - self.master_initial_account_size)
+                
+                print(f"RR:{round(rr, 2)}")
+                
+                if rr > 0.33 or rr < -0.33:
+                    mp.close_all_positions()
+                    self.risk_manager = risk_manager.RiskManager(profit_split=1)
+                    self.fixed_initial_account_size = self.risk_manager.account_size
 
-                with open(f'{self.account_name}.csv', 'a') as file:
-                    # Append a new line to the file
-                    file.write(f'{profit}\n')
+                    if rr > 0.3:
+                        self.retries -= 1
+                    else:
+                        self.retries += 1
+
+                    self.alert.send_msg(f"`{self.account_name}`: **{self.retries}**, RR: {round(rr, 2)}, ${round(pnl)}")
 
                 break_long_at_resistance = {}
                 break_short_at_support = {}
