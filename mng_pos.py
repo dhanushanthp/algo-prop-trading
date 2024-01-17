@@ -383,7 +383,7 @@ def adjust_positions_trailing_stops():
         # short_tf = ind.short_tf_mapping(traded_tf)
         # short_tf = min([int(i) for i in position.comment.split(">")[-1].split("|")])
         stp_tf = 60
-        tgt_tf = 15
+        tgt_tf = 60
         
         # Increase the range of the spread to eliminate the sudden stopouts
         stp_candle_high, stp_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=stp_tf, n_spreds=6)
