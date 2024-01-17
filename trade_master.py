@@ -183,7 +183,7 @@ class AlgoTrader():
             print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
-            mp.adjust_positions_trailing_stops() # Each position trail stop
+            # mp.adjust_positions_trailing_stops() # Each position trail stop
 
             # +3 is failed 3 tries, and -6 profit of 30% slot
             if self.retries >= 3 or self.retries < -6:
@@ -216,12 +216,12 @@ class AlgoTrader():
                 
                 print(f"RR:{round(rr, 2)}")
                 
-                if rr > 0.33 or rr < -0.33:
+                if rr > 0.6 or rr < -0.3:
                     mp.close_all_positions()
                     self.risk_manager = risk_manager.RiskManager(profit_split=1)
                     self.fixed_initial_account_size = self.risk_manager.account_size
 
-                    if rr > 0.3:
+                    if rr > 0.5:
                         self.retries -= 1
                     else:
                         self.retries += 1
