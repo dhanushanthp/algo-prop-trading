@@ -1,1 +1,1 @@
-python trade_master.py break 240,60
+python trade_master.py break 60
