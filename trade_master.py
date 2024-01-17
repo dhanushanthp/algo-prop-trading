@@ -215,6 +215,12 @@ class AlgoTrader():
             if is_market_open and not is_market_close and not self.immidiate_exit:
                 mp.cancel_all_pending_orders()
 
+                _, _, _, profit = ind.get_account_details()
+
+                with open(f'{self.account_name}.csv', 'a') as file:
+                    # Append a new line to the file
+                    file.write(f'{profit}\n')
+
                 break_long_at_resistance = {}
                 break_short_at_support = {}
 
