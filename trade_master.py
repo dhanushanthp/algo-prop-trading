@@ -216,7 +216,7 @@ class AlgoTrader():
                 
                 print(f"RR:{round(rr, 2)}")
                 
-                if rr > 0.5 or rr < -0.3:
+                if rr > 0.6 or rr < -0.3:
                     mp.close_all_positions()
                     time.sleep(30) # Take some time for the account to digest the positions
                     self.risk_manager = risk_manager.RiskManager(profit_split=1)
