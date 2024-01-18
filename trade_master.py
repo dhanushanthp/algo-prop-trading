@@ -227,7 +227,7 @@ class AlgoTrader():
                     else:
                         self.retries += 1
 
-                    self.alert.send_msg(f"`{self.account_name}`: **{self.retries}**, RR: {round(rr, 2)}, ${round(pnl)}")
+                    self.alert.send_msg(f"`{self.account_name}`(`{self.retries}`), RR: {round(rr, 2)}, ${round(pnl)}")
 
                 break_long_at_resistance = {}
                 break_short_at_support = {}
