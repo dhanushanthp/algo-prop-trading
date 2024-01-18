@@ -1,1 +1,0 @@
-python trade_master.py reverse 60
