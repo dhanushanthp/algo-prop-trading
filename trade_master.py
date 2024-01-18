@@ -218,6 +218,7 @@ class AlgoTrader():
                 
                 if rr > 0.5 or rr < -0.3:
                     mp.close_all_positions()
+                    time.sleep(30) # Take some time for the account to digest the positions
                     self.risk_manager = risk_manager.RiskManager(profit_split=1)
                     self.fixed_initial_account_size = self.risk_manager.account_size
 
@@ -225,7 +226,6 @@ class AlgoTrader():
                         self.retries -= 1
                     else:
                         self.retries += 1
-                        # self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
                     self.alert.send_msg(f"`{self.account_name}`: **{self.retries}**, RR: {round(rr, 2)}, ${round(pnl)}")
 
