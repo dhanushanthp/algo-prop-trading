@@ -25,7 +25,7 @@ class AlgoTrader():
 
         # Default values
         self.strategy = None  # Default to 15 min
-        self.target_ratio = 1.0  # Default 1:0.5 Ratio
+        self.target_ratio = 2.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
         self.timer = 30
@@ -105,7 +105,7 @@ class AlgoTrader():
                 
                 if entry_price > stop_price:                
                     try:
-                        print(f"{symbol.ljust(12)}: LONG")        
+                        print(f"{symbol.ljust(12)}: LONG")
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         lots =  round(lots, 2)
