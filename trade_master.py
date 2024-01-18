@@ -216,7 +216,7 @@ class AlgoTrader():
                 
                 print(f"RR:{round(rr, 2)}")
                 
-                if rr > 0.6 or rr < -0.3:
+                if rr > 0.5 or rr < -0.3:
                     mp.close_all_positions()
                     self.risk_manager = risk_manager.RiskManager(profit_split=1)
                     self.fixed_initial_account_size = self.risk_manager.account_size
@@ -225,6 +225,7 @@ class AlgoTrader():
                         self.retries -= 1
                     else:
                         self.retries += 1
+                        self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
                     self.alert.send_msg(f"`{self.account_name}`: **{self.retries}**, RR: {round(rr, 2)}, ${round(pnl)}")
 
@@ -283,6 +284,21 @@ class AlgoTrader():
                                                             comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
+                            elif self.strategy == "reverse":
+                                if len(total_resistance_tf_long) >= 1:
+                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
+                                    max_timeframe = max(total_resistance_tf_long)
+                                    self.short_real_entry(symbol=symbol,
+                                                            comment="RS>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                            r_s_timeframe=max_timeframe, 
+                                                            entry_timeframe=max_timeframe)
+                                elif len(total_support_tf_short) >= 1:
+                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
+                                    max_timeframe = max(total_support_tf_short)
+                                    self.long_real_entry(symbol=symbol, 
+                                                            comment="SL>" + '|'.join(map(str, total_support_tf_short)), 
+                                                            r_s_timeframe=max_timeframe, 
+                                                            entry_timeframe=max_timeframe)
                             else:
                                 raise Exception("Strategy not defined!")
             
@@ -293,7 +309,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         win.strategy = sys.argv[1]
-        if win.strategy not in ["reverse", "break", "auto", "ema","smart"]:
+        if win.strategy not in ["reverse", "break"]:
             raise Exception("Please enter fixed or auto entry time check!")
         
         win.trading_timeframes = [int(i) for i in sys.argv[2].split(",")]
