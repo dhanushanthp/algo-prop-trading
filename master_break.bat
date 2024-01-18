@@ -1,1 +1,1 @@
-python trade_master.py reverse 60
+python trade_master.py break 60
