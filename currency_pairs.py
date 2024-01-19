@@ -10,6 +10,15 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
+
+master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 
+                'CHFJPY', 
+                'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD',
+                'GBPUSD', 'GBPJPY',
+                'NZDJPY', "NZDCAD",
+                'USDCAD', 'USDJPY', 'USDCHF', 
+                'XAUUSD']
+
 # Funded Engineer
 if company == "AXSE Brokerage Ltd.":
     currencies = ['AUDJPY_raw', 'AUDNZD_raw', 'AUDUSD_raw', 
@@ -82,49 +91,23 @@ def get_symbol_mapping(symbol):
     if company == "FTMO S.R.O.":
        return symbol
     elif company == "Black Bull Group Limited":
-        # Check which radio button is selected
+        """
+        BlackBullMarkets [Funding Pips]
+        """
         if symbol == "US500.cash":
             return "SPX500"
         elif symbol == "UK100.cash":
             return "FTSE100"
         elif symbol == "JP225.cash":
             return "JP225"
-        elif symbol == "AUDNZD":
-            return symbol
-        elif symbol == "USDJPY":
-            return symbol
-        elif symbol == "USDCHF":
-            return symbol
-        elif symbol == "AUDJPY":
-            return symbol
-        elif symbol == "NZDJPY":
-            return symbol
-        elif symbol == "EURJPY":
-            return symbol
-        elif symbol == "GBPJPY":
-            return symbol
-        elif symbol == "EURCAD":
-            return symbol
-        elif symbol == "NZDCAD":
-            return symbol
-        elif symbol == "XAUUSD":
-            return symbol
-        elif symbol == "EURUSD":
-            return symbol
-        elif symbol == "USDCAD":
-            return symbol
-        elif symbol == "AUDUSD":
-            return symbol
-        elif symbol == "GBPUSD":
-            return symbol
-        elif symbol == "EURNZD":
-            return symbol
-        elif symbol == "CHFJPY":
+        elif symbol in master_currencies:
             return symbol
         else:
             print(f"Currency Pair No defined in manage_positions.py {symbol}")
     elif company == "AXSE Brokerage Ltd.":
-        # Check which radio button is selected
+        """
+        PurpleTrading [FundedEngineer, SFT, Blueguardian, Thefundedtrader]
+        """
         if symbol == "US500.cash":
             return "SP_raw"
         elif symbol == "UK100.cash":
@@ -135,79 +118,21 @@ def get_symbol_mapping(symbol):
             return "NIKKEI_raw"
         elif symbol == "AUS200.cash":
             return "ASX_raw"
-        elif symbol == "AUDNZD":
-            return "AUDNZD_raw"
-        elif symbol == "USDJPY":
-            return "USDJPY_raw"
-        elif symbol == "USDCHF":
-            return "USDCHF_raw"
-        elif symbol == "AUDJPY":
-            return "AUDJPY_raw"
-        elif symbol == "NZDJPY":
-            return "NZDJPY_raw"
-        elif symbol == "EURJPY":
-            return "EURJPY_raw"
-        elif symbol == "GBPJPY":
-            return "GBPJPY_raw"
-        elif symbol == "EURCAD":
-            return "EURCAD_raw"
-        elif symbol == "NZDCAD":
-            return "NZDCAD_raw"
-        elif symbol == "XAUUSD":
-            return "XAUUSD_raw"
-        elif symbol == "EURUSD":
-            return "EURUSD_raw"
-        elif symbol == "USDCAD":
-            return  "USDCAD_raw"
-        elif symbol == "AUDUSD":
-            return "AUDUSD_raw"
-        elif symbol == "GBPUSD":
-            return "GBPUSD_raw"
-        elif symbol == "EURNZD":
-            return "EURNZD_raw"
-        elif symbol == "CHFJPY":
-            return "CHFJPY_raw"
+        elif symbol in master_currencies:
+            return f"{symbol}_raw"
         else:
             print(f"Currency Pair No defined in manage_positions.py {symbol}")
     elif company == "TF Global Markets (Aust) Pty Ltd":
-        # Check which radio button is selected
+        """
+        ThinkMarkets [FortunesFunding Compition]
+        """
         if symbol == "US500.cash":
             return "SPX500x"
         elif symbol == "UK100.cash":
             return "UK100x"
         elif symbol == "JP225.cash":
-            return "JPN225X"
-        elif symbol == "AUDNZD":
-            return "AUDNZDx"
-        elif symbol == "USDJPY":
-            return "USDJPYx"
-        elif symbol == "USDCHF":
-            return "USDCHFx"
-        elif symbol == "AUDJPY":
-            return "AUDJPYx"
-        elif symbol == "NZDJPY":
-            return "NZDJPYx"
-        elif symbol == "EURJPY":
-            return "EURJPYx"
-        elif symbol == "GBPJPY":
-            return "GBPJPYx"
-        elif symbol == "EURCAD":
-            return "EURCADx"
-        elif symbol == "NZDCAD":
-            return "NZDCADx"
-        elif symbol == "XAUUSD":
-            return "XAUUSDx"
-        elif symbol == "EURUSD":
-            return "EURUSDx"
-        elif symbol == "USDCAD":
-            return  "USDCADx"
-        elif symbol == "AUDUSD":
-            return "AUDUSDx"
-        elif symbol == "GBPUSD":
-            return "GBPUSDx"
-        elif symbol == "EURNZD":
-            return "EURNZDx"
-        elif symbol == "CHFJPY":
-            return "CHFJPYx"
+            return "JPN225x"
+        elif symbol in master_currencies:
+            return f"{symbol}x"
         else:
             print(f"Currency Pair No defined in manage_positions.py {symbol}")
