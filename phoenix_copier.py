@@ -17,7 +17,7 @@ from modules.slack_msg import Slack
 from modules.monitor import Monitor
 from modules.file_utils import FileUtils
 import os
-import phoenix_client as client
+import modules.phoenix_client as client
 
 class AlgoTrader():
     def __init__(self):
