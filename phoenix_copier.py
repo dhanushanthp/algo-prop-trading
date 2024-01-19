@@ -222,16 +222,16 @@ class AlgoTrader():
                     if mapped_symbol not in existing_positions:
                         direction = master_positions[symbol][0]
                         time_difference = util.get_time_difference(master_positions[symbol][1])
-                        print(f"{symbol}: {time_difference}")
                         if time_difference < 15:
+                            print(f"{symbol}: {time_difference} minutes so far...")
                             if direction == 0:
                                 self.long_real_entry(symbol=mapped_symbol,
-                                                    comment="RL>60", 
+                                                    comment="long", 
                                                     r_s_timeframe=60, 
                                                     entry_timeframe=60)
                             elif direction == 1:
                                 self.short_real_entry(symbol=mapped_symbol,
-                                                    comment="RL>60",
+                                                    comment="short",
                                                     r_s_timeframe=60,
                                                     entry_timeframe=60)
 
