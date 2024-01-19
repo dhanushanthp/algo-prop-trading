@@ -218,7 +218,7 @@ class AlgoTrader():
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 # Existing positions
                 for symbol in master_positions.keys():
-                    mapped_symbol = mp.get_symbol_mapping(symbol=symbol)
+                    mapped_symbol = curr.get_symbol_mapping(symbol=symbol)
                     if mapped_symbol not in existing_positions:
                         direction = master_positions[symbol][0]
                         time_difference = util.get_time_difference(master_positions[symbol][1])
