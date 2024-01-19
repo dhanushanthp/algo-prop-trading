@@ -214,7 +214,7 @@ class AlgoTrader():
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
                 pnl = (equity - self.master_initial_account_size)
                 
-                print(f"RR:{round(rr, 2)}")
+                print(f"RR:{round(rr, 3)}, Pnl: {round(pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
                 
                 if rr > 0.6 or rr < -0.3:
                     mp.close_all_positions()
