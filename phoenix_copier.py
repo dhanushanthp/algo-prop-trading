@@ -17,6 +17,7 @@ from slack_msg import Slack
 from monitor import Monitor
 from file_utils import FileUtils
 import os
+import phoenix_client as client
 
 class AlgoTrader():
     def __init__(self):
@@ -187,14 +188,6 @@ class AlgoTrader():
             
             # mp.adjust_positions_trailing_stops() # Each position trail stop
 
-            if self.trade_master:
-                # Get the current positions
-                existing_positions = mt.positions_get()
-                existing_symbols = ",".join([i.symbol for i in existing_positions])
-                with open('master.txt', 'w') as file:
-                    # Write some data to the file
-                    file.write(existing_symbols)
-
             # +3 is failed 3 tries, and -6 profit of 30% slot
             if (self.retries >= 3 or self.retries < -6) and not self.immidiate_exit:
                 mp.close_all_positions()
@@ -220,6 +213,25 @@ class AlgoTrader():
             if is_market_open and not is_market_close and not self.immidiate_exit:
                 mp.cancel_all_pending_orders()
 
+                master_positions = client.get_master_positions()
+                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+                # Existing positions
+                for symbol in master_positions.keys():
+                    mapped_symbol = mp.get_symbol_mapping(symbol=symbol)
+                    if mapped_symbol not in existing_positions:
+                        direction = master_positions[symbol][0]
+                        trade_time = master_positions[symbol][1]
+                        if direction == 0:
+                            self.long_real_entry(symbol=mapped_symbol,
+                                                 comment="RL>60", 
+                                                 r_s_timeframe=60, 
+                                                 entry_timeframe=60)
+                        elif direction == 1:
+                            self.short_real_entry(symbol=mapped_symbol,
+                                                 comment="RL>60",
+                                                 r_s_timeframe=60,
+                                                 entry_timeframe=60)
+
                 _, equity, _, _ = ind.get_account_details()
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
                 pnl = (equity - self.master_initial_account_size)
@@ -238,79 +250,6 @@ class AlgoTrader():
                         self.retries += 1
 
                     self.alert.send_msg(f"`{self.account_name}`(`{self.retries}`), RR: {round(rr, 2)}, ${round(pnl)}")
-
-                break_long_at_resistance = {}
-                break_short_at_support = {}
-
-                for symbol in selected_symbols:
-
-                    break_long_at_resistance[symbol] = []
-                    break_short_at_support[symbol] = []
-
-                    for r_s_timeframe in self.trading_timeframes:
-                        try:
-                            # Incase if it failed to request the symbol price
-                            levels = ind.support_resistance_levels(symbol, r_s_timeframe)
-                            _, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=r_s_timeframe, n_spreds=3)
-                        except Exception as e:
-                            self.alert.send_msg(f"{self.account_name}: {symbol}: {e}")
-                            break
-
-                        resistances = levels["resistance"]
-                        support = levels["support"]
-
-                        current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-
-                        for resistance_level in resistances:
-                            resistance_level = resistance_level - optimal_distance
-                            if (current_candle["open"] < resistance_level) and (resistance_level + 3*ind.get_spread(symbol) > current_candle["close"] > resistance_level):
-                                break_long_at_resistance[symbol].append(r_s_timeframe)
-                        
-                        for support_level in support:
-                            support_level = support_level + optimal_distance                 
-                            if (current_candle["open"] > support_level) and (support_level - 3*ind.get_spread(symbol) < current_candle["close"] < support_level):
-                                break_short_at_support[symbol].append(r_s_timeframe)
-                
-                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                if len(existing_positions) < len(selected_symbols):
-                    for symbol in selected_symbols:
-                        if (symbol not in existing_positions):
-                            # Break Strategy
-                            total_resistance_tf_long = set(break_long_at_resistance[symbol])
-                            total_support_tf_short = set(break_short_at_support[symbol])
-
-                            if self.strategy == "break":
-                                if len(total_resistance_tf_long) >= 1:
-                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    max_timeframe = max(total_resistance_tf_long)
-                                    self.long_real_entry(symbol=symbol,
-                                                            comment="RL>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                                elif len(total_support_tf_short) >= 1:
-                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    max_timeframe = max(total_support_tf_short)
-                                    self.short_real_entry(symbol=symbol, 
-                                                            comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                            elif self.strategy == "reverse":
-                                if len(total_resistance_tf_long) >= 1:
-                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    max_timeframe = max(total_resistance_tf_long)
-                                    self.short_real_entry(symbol=symbol,
-                                                            comment="RS>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                                elif len(total_support_tf_short) >= 1:
-                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    max_timeframe = max(total_support_tf_short)
-                                    self.long_real_entry(symbol=symbol, 
-                                                            comment="SL>" + '|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                            else:
-                                raise Exception("Strategy not defined!")
             
             time.sleep(self.timer)
     
