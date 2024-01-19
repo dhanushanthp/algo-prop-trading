@@ -1,22 +1,23 @@
+import os
 from statistics import mean 
 import math
 import sys
+import MetaTrader5 as mt
+from datetime import datetime, timedelta
+import pytz
+import time
+
+
 import modules.indicators as ind
 import modules.util as util
 import modules.currency_pairs as curr
 import modules.risk_manager as risk_manager
-
-from datetime import datetime, timedelta
 import modules.config as config
-import pytz
-import time
-
-import MetaTrader5 as mt
 import modules.mng_pos as mp
 from modules.slack_msg import Slack
 from modules.monitor import Monitor
 from modules.file_utils import FileUtils
-import os
+
 
 class AlgoTrader():
     def __init__(self):
