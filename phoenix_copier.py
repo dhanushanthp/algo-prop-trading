@@ -96,6 +96,7 @@ class AlgoTrader():
             if result.retcode != mt.TRADE_RETCODE_DONE:
                 error_string = f"{result.comment}"
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
+                print(error_string)
 
     def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol=symbol)

@@ -1,7 +1,13 @@
 from flask import Flask, jsonify
 import MetaTrader5 as mt5
 import json
+import logging
 app = Flask(__name__)
+
+# Disable Flask logs
+app.logger.disabled = True
+log = logging.getLogger('werkzeug')
+log.disabled = True
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
