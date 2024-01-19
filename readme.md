@@ -1,2 +1,0 @@
-The reason we may need to change to 2R profit. Because the direction of the candles might be changed once after it hit the profit. So we just enter
-new position with 1R profit range rather hold to 2R range.

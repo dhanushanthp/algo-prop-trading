@@ -1,21 +1,21 @@
 from statistics import mean 
 import math
-import indicators as ind
-import util as util
-import currency_pairs as curr
+import modules.indicators as ind
+import modules.util as util
+import modules.currency_pairs as curr
 import sys
-import risk_manager
+import modules.risk_manager as risk_manager
 
 from datetime import datetime, timedelta
-import config
+import modules.config as config
 import pytz
 import time
 
 import MetaTrader5 as mt
-import mng_pos as mp
-from slack_msg import Slack
-from monitor import Monitor
-from file_utils import FileUtils
+import modules.mng_pos as mp
+from modules.slack_msg import Slack
+from modules.monitor import Monitor
+from modules.file_utils import FileUtils
 import os
 import phoenix_client as client
 

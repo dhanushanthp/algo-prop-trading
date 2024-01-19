@@ -2,7 +2,7 @@ from datetime import datetime,  timedelta
 import MetaTrader5 as mt5
 import pytz
 import numpy as np
-import currency_pairs as curr
+import modules.currency_pairs as curr
 import collections
 
 # establish connection to MetaTrader 5 terminal

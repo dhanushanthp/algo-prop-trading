@@ -1,7 +1,7 @@
 import psutil
-from slack_msg import Slack
+from modules.slack_msg import Slack
 alert = Slack()
-import indicators as ind
+import modules.indicators as ind
 
 def is_process_running(process_name):
     for process in psutil.process_iter(['pid', 'name', "cmdline"]):

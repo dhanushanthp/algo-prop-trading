@@ -1,11 +1,11 @@
-import indicators as ind
-import config
+import modules.indicators as ind
+import modules.config as config
 import pytz
 import datetime
 import time
 import MetaTrader5 as mt5
-import mng_pos as mp
-import slack_msg
+import modules.mng_pos as mp
+import modules.slack_msg as slack_msg
 
 class RiskManager:
     def __init__(self, profit_split=1) -> None:

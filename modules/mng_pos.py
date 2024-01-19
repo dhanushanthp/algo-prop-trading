@@ -1,11 +1,11 @@
 import MetaTrader5 as mt5
-import indicators as ind
-import util
-import currency_pairs as curr
+import modules.indicators as ind
+import modules.util as util
+import modules.currency_pairs as curr
 import numpy as np
 import pytz
 from datetime import datetime, timedelta, time
-import config
+import modules.config as config
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
