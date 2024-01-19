@@ -4,6 +4,7 @@ import pytz
 import MetaTrader5 as mt5
 mt5.initialize()
 import currency_pairs as curr
+import config
 
 def get_local_time(city):
     # Create a dictionary to map cities to their respective time zones
@@ -27,8 +28,26 @@ def get_local_time(city):
     
     return day_of_week, hour, minute
 
+def get_traded_time(epoch):
+    normal_time = datetime.fromtimestamp(epoch, pytz.timezone('Etc/GMT'))
+    return normal_time
+
+def get_current_time():
+    current_time =  datetime.now(pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+    return current_time
+
+def get_time_difference(epoch):
+    traded_time = get_traded_time(epoch)
+    traded_hour = traded_time.hour
+    traded_minute = traded_time.minute + (traded_hour * 60)
+    current_time = get_current_time()
+    current_hour = current_time.hour
+    current_minute = current_time.minute + (60 * current_hour)
+    difference = round(current_minute - traded_minute)
+    return difference
+
 def get_gmt_time():
-    tm_zone = pytz.timezone('Etc/GMT-2')
+    tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
     local_time = datetime.now(tm_zone)
     day_of_week = local_time.strftime('%A')
     hour = int(local_time.strftime('%H'))

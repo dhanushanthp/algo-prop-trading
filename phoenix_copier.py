@@ -220,17 +220,19 @@ class AlgoTrader():
                     mapped_symbol = mp.get_symbol_mapping(symbol=symbol)
                     if mapped_symbol not in existing_positions:
                         direction = master_positions[symbol][0]
-                        trade_time = master_positions[symbol][1]
-                        if direction == 0:
-                            self.long_real_entry(symbol=mapped_symbol,
-                                                 comment="RL>60", 
-                                                 r_s_timeframe=60, 
-                                                 entry_timeframe=60)
-                        elif direction == 1:
-                            self.short_real_entry(symbol=mapped_symbol,
-                                                 comment="RL>60",
-                                                 r_s_timeframe=60,
-                                                 entry_timeframe=60)
+                        time_difference = util.get_time_difference(master_positions[symbol][1])
+                        print(f"{symbol}: {time_difference}")
+                        if time_difference < 15:
+                            if direction == 0:
+                                self.long_real_entry(symbol=mapped_symbol,
+                                                    comment="RL>60", 
+                                                    r_s_timeframe=60, 
+                                                    entry_timeframe=60)
+                            elif direction == 1:
+                                self.short_real_entry(symbol=mapped_symbol,
+                                                    comment="RL>60",
+                                                    r_s_timeframe=60,
+                                                    entry_timeframe=60)
 
                 _, equity, _, _ = ind.get_account_details()
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
