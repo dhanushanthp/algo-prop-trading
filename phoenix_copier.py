@@ -190,7 +190,7 @@ class AlgoTrader():
             # mp.adjust_positions_trailing_stops() # Each position trail stop
 
             # +3 is failed 3 tries, and -6 profit of 30% slot
-            if (self.retries >= 3 or self.retries < -6) and not self.immidiate_exit:
+            if (self.retries >= 3) and not self.immidiate_exit:
                 mp.close_all_positions()
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
