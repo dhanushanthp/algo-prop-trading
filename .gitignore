@@ -2,3 +2,4 @@ __pycache__/*
 analysis
 .DS_Store
 equity.csv
+modules/__pycache__/*
