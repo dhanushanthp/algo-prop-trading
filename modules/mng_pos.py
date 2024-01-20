@@ -19,8 +19,10 @@ def get_exchange_price(symbol):
     return exchange_rate
 
 def get_dollar_value(symbol):
+        symbol_lead = symbol[0:3]
+        symbol_follow = symbol[3:6]
+
         if curr.company == "FTMO S.R.O.":
-            # Check which radio button is selected
             if symbol == "US500.cash":
                 return 1
             elif symbol == "UK100.cash":
@@ -31,84 +33,60 @@ def get_dollar_value(symbol):
                 return round(1/get_exchange_price("USDJPY"), 4)
             elif symbol == "AUS200.cash":
                 return get_exchange_price("AUDUSD")
-            elif symbol == "AUDNZD":
-                return (1/get_exchange_price("AUDNZD")) * get_exchange_price("AUDUSD")
-            elif symbol == "USDJPY":
-                return 1/get_exchange_price("USDJPY")
-            elif symbol == "USDCHF":
-                return 1/get_exchange_price("USDCHF")
-            elif symbol == "AUDJPY":
-                return (1/get_exchange_price("AUDJPY")) * get_exchange_price("AUDUSD")
-            elif symbol == "NZDJPY":
-                return (1/get_exchange_price("NZDJPY")) * get_exchange_price("NZDUSD")
-            elif symbol == "EURJPY":
-                return (1/get_exchange_price("EURJPY")) * get_exchange_price("EURUSD")
-            elif symbol == "GBPJPY":
-                return (1/get_exchange_price("GBPJPY")) * get_exchange_price("GBPUSD")
-            elif symbol == "EURCAD":
-                return (1/get_exchange_price("EURCAD")) * get_exchange_price("EURUSD")
-            elif symbol == "NZDCAD":
-                return (1/get_exchange_price("NZDCAD")) * get_exchange_price("NZDUSD")
             elif symbol == "XAUUSD":
                 return 2/get_exchange_price("XAUUSD")
-            elif symbol == "EURUSD":
-                return get_exchange_price("EURUSD")
-            elif symbol == "USDCAD":
-                return  1/get_exchange_price("USDCAD")
             elif symbol == "AUDUSD":
                 return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
-            elif symbol == "GBPUSD":
-                return get_exchange_price("GBPUSD")
-            elif symbol == "EURNZD":
-                return (1/get_exchange_price("EURNZD")) * get_exchange_price("EURUSD")
-            elif symbol == "CHFJPY":
-                return 1/get_exchange_price("CHFJPY")/ get_exchange_price("USDCHF")
+            elif symbol_lead == "USD":
+                """
+                e.g USDJPY, USDCAD, USDCHF
+                If the currency is lead by USD then we just calculate the inverse of the exchange
+                """
+                return 1/get_exchange_price(symbol)
+            elif symbol_follow == "USD":
+                """
+                e.g GBPUSD, EURUSD
+                If the currency is followed by USD then we just calculate the exchange
+                """
+                return get_exchange_price(symbol)
             else:
-                raise Exception("Currency Pair No defined in manage_positions.py")
+                """
+                e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
+                Non of the currency lead by USD
+                """
+                return (1/get_exchange_price(symbol)) * get_exchange_price(f"{symbol_lead}USD")
+            
         elif curr.company == "Black Bull Group Limited":
-            # Check which radio button is selected
             if symbol == "SPX500":
                 return 1
             elif symbol == "FTSE100":
                 return get_exchange_price("GBPUSD")
             elif symbol == "JP225":
                 return round(1/get_exchange_price("USDJPY"), 4)
-            elif symbol == "AUDNZD":
-                return (1/get_exchange_price("AUDNZD")) * get_exchange_price("AUDUSD")
-            elif symbol == "USDJPY":
-                return 1/get_exchange_price("USDJPY")
-            elif symbol == "USDCHF":
-                return 1/get_exchange_price("USDCHF")
-            elif symbol == "AUDJPY":
-                return (1/get_exchange_price("AUDJPY")) * get_exchange_price("AUDUSD")
-            elif symbol == "NZDJPY":
-                return (1/get_exchange_price("NZDJPY")) * get_exchange_price("NZDUSD")
-            elif symbol == "EURJPY":
-                return (1/get_exchange_price("EURJPY")) * get_exchange_price("EURUSD")
-            elif symbol == "GBPJPY":
-                return (1/get_exchange_price("GBPJPY")) * get_exchange_price("GBPUSD")
-            elif symbol == "EURCAD":
-                return (1/get_exchange_price("EURCAD")) * get_exchange_price("EURUSD")
-            elif symbol == "NZDCAD":
-                return (1/get_exchange_price("NZDCAD")) * get_exchange_price("NZDUSD")
             elif symbol == "XAUUSD":
                 return 2/get_exchange_price("XAUUSD")
-            elif symbol == "EURUSD":
-                return get_exchange_price("EURUSD")
-            elif symbol == "USDCAD":
-                return  1/get_exchange_price("USDCAD")
             elif symbol == "AUDUSD":
                 return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
-            elif symbol == "GBPUSD":
-                return get_exchange_price("GBPUSD")
-            elif symbol == "EURNZD":
-                return (1/get_exchange_price("EURNZD")) * get_exchange_price("EURUSD")
-            elif symbol == "CHFJPY":
-                return 1/get_exchange_price("CHFJPY")/ get_exchange_price("USDCHF")
+            elif symbol_lead == "USD":
+                """
+                e.g USDJPY, USDCAD, USDCHF
+                If the currency is lead by USD then we just calculate the inverse of the exchange
+                """
+                return 1/get_exchange_price(symbol)
+            elif symbol_follow == "USD":
+                """
+                e.g GBPUSD, EURUSD
+                If the currency is followed by USD then we just calculate the exchange
+                """
+                return get_exchange_price(symbol)
             else:
-                raise Exception("Currency Pair No defined in manage_positions.py")
+                """
+                e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
+                Non of the currency lead by USD
+                """
+                return (1/get_exchange_price(symbol)) * get_exchange_price(f"{symbol_lead}USD")
+            
         elif curr.company == "AXSE Brokerage Ltd.":
-            # Check which radio button is selected
             if symbol == "SP_raw":
                 return 1
             elif symbol == "FTSE_raw":
@@ -119,42 +97,30 @@ def get_dollar_value(symbol):
                 return round(1/get_exchange_price("USDJPY_raw"), 4)
             elif symbol == "ASX_raw":
                 return get_exchange_price("AUDUSD_raw")
-            elif symbol == "AUDNZD_raw":
-                return (1/get_exchange_price("AUDNZD_raw")) * get_exchange_price("AUDUSD_raw")
-            elif symbol == "USDJPY_raw":
-                return 1/get_exchange_price("USDJPY_raw")
-            elif symbol == "USDCHF_raw":
-                return 1/get_exchange_price("USDCHF_raw")
-            elif symbol == "AUDJPY_raw":
-                return (1/get_exchange_price("AUDJPY_raw")) * get_exchange_price("AUDUSD_raw")
-            elif symbol == "NZDJPY_raw":
-                return (1/get_exchange_price("NZDJPY_raw")) * get_exchange_price("NZDUSD_raw")
-            elif symbol == "EURJPY_raw":
-                return (1/get_exchange_price("EURJPY_raw")) * get_exchange_price("EURUSD_raw")
-            elif symbol == "GBPJPY_raw":
-                return (1/get_exchange_price("GBPJPY_raw")) * get_exchange_price("GBPUSD_raw")
-            elif symbol == "EURCAD_raw":
-                return (1/get_exchange_price("EURCAD_raw")) * get_exchange_price("EURUSD_raw")
-            elif symbol == "NZDCAD_raw":
-                return (1/get_exchange_price("NZDCAD_raw")) * get_exchange_price("NZDUSD_raw")
             elif symbol == "XAUUSD_raw":
                 return 2/get_exchange_price("XAUUSD_raw")
-            elif symbol == "EURUSD_raw":
-                return get_exchange_price("EURUSD_raw")
-            elif symbol == "USDCAD_raw":
-                return  1/get_exchange_price("USDCAD_raw")
             elif symbol == "AUDUSD_raw":
                 return 1.6 * get_exchange_price("AUDUSD_raw") # TODO, This fix number 1.6 has to be changed!
-            elif symbol == "GBPUSD_raw":
-                return get_exchange_price("GBPUSD_raw")
-            elif symbol == "EURNZD_raw":
-                return (1/get_exchange_price("EURNZD_raw")) * get_exchange_price("EURUSD_raw")
-            elif symbol == "CHFJPY_raw":
-                return 1/get_exchange_price("CHFJPY_raw")/ get_exchange_price("USDCHF_raw")
+            elif symbol_lead == "USD":
+                """
+                e.g USDJPY, USDCAD, USDCHF
+                If the currency is lead by USD then we just calculate the inverse of the exchange
+                """
+                return 1/get_exchange_price(symbol)
+            elif symbol_follow == "USD":
+                """
+                e.g GBPUSD, EURUSD
+                If the currency is followed by USD then we just calculate the exchange
+                """
+                return get_exchange_price(symbol)
             else:
-                raise Exception("Currency Pair No defined in manage_positions.py")
+                """
+                e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
+                Non of the currency lead by USD
+                """
+                return (1/get_exchange_price(symbol)) * get_exchange_price(f"{symbol_lead}USD_raw")
+            
         elif curr.company == "TF Global Markets (Aust) Pty Ltd":
-            # Check which radio button is selected
             if symbol == "SPX500x":
                 return 1
             elif symbol == "UK100x":
@@ -165,40 +131,28 @@ def get_dollar_value(symbol):
                 return round(1/get_exchange_price("USDJPYx"), 4)
             elif symbol == "AUS200.cash":
                 return get_exchange_price("AUDUSDx")
-            elif symbol == "AUDNZDx":
-                return (1/get_exchange_price("AUDNZDx")) * get_exchange_price("AUDUSDx")
-            elif symbol == "USDJPYx":
-                return 1/get_exchange_price("USDJPYx")
-            elif symbol == "USDCHFx":
-                return 1/get_exchange_price("USDCHFx")
-            elif symbol == "AUDJPYx":
-                return (1/get_exchange_price("AUDJPYx")) * get_exchange_price("AUDUSDx")
-            elif symbol == "NZDJPYx":
-                return (1/get_exchange_price("NZDJPYx")) * get_exchange_price("NZDUSDx")
-            elif symbol == "EURJPYx":
-                return (1/get_exchange_price("EURJPYx")) * get_exchange_price("EURUSDx")
-            elif symbol == "GBPJPYx":
-                return (1/get_exchange_price("GBPJPYx")) * get_exchange_price("GBPUSDx")
-            elif symbol == "EURCADx":
-                return (1/get_exchange_price("EURCADx")) * get_exchange_price("EURUSDx")
-            elif symbol == "NZDCADx":
-                return (1/get_exchange_price("NZDCADx")) * get_exchange_price("NZDUSDx")
             elif symbol == "XAUUSDx":
                 return 2/get_exchange_price("XAUUSDx")
-            elif symbol == "EURUSDx":
-                return get_exchange_price("EURUSDx")
-            elif symbol == "USDCADx":
-                return  1/get_exchange_price("USDCADx")
             elif symbol == "AUDUSDx":
                 return 1.6 * get_exchange_price("AUDUSDx") # TODO, This fix number 1.6 has to be changed!
-            elif symbol == "GBPUSDx":
-                return get_exchange_price("GBPUSDx")
-            elif symbol == "EURNZDx":
-                return (1/get_exchange_price("EURNZDx")) * get_exchange_price("EURUSDx")
-            elif symbol == "CHFJPYx":
-                return 1/get_exchange_price("CHFJPYx")/ get_exchange_price("USDCHFx")
+            elif symbol_lead == "USD":
+                """
+                e.g USDJPY, USDCAD, USDCHF
+                If the currency is lead by USD then we just calculate the inverse of the exchange
+                """
+                return 1/get_exchange_price(symbol)
+            elif symbol_follow == "USD":
+                """
+                e.g GBPUSD, EURUSD
+                If the currency is followed by USD then we just calculate the exchange
+                """
+                return get_exchange_price(symbol)
             else:
-                raise Exception("Currency Pair No defined in manage_positions.py")
+                """
+                e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
+                Non of the currency lead by USD
+                """
+                return (1/get_exchange_price(symbol)) * get_exchange_price(f"{symbol_lead}USDx")
 
 def get_value_at_risk(symbol, price_open, stop, positions):
     difference = abs(price_open - stop)
