@@ -102,37 +102,37 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
+            _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
-            if is_strong_candle:
-                stop_price = self._round(symbol, stop_price)
-                
-                if entry_price > stop_price:                
-                    try:
-                        print(f"{symbol.ljust(12)}: LONG")
-                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
-                        
-                        lots =  round(lots, 2)
-                        
-                        order_request = {
-                            "action": mt.TRADE_ACTION_PENDING,
-                            "symbol": symbol,
-                            "volume": lots,
-                            "type": mt.ORDER_TYPE_BUY_LIMIT,
-                            "price": entry_price,
-                            "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
-                            "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
-                            "comment": f"{comment}",
-                            "magic":r_s_timeframe,
-                            "type_time": mt.ORDER_TIME_GTC,
-                            "type_filling": mt.ORDER_FILLING_RETURN,
-                        }
-                        
-                        request_log = mt.order_send(order_request)
-                        self.error_logging(request_log, order_request)
-                        return True
-                    except Exception as e:
-                        print(f"Long entry exception: {e}")
+            # The strong candle check is disabled for copier. Since we don't need to validated it.
+            stop_price = self._round(symbol, stop_price)
+            
+            if entry_price > stop_price:                
+                try:
+                    print(f"{symbol.ljust(12)}: LONG")
+                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                    
+                    lots =  round(lots, 2)
+                    
+                    order_request = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": symbol,
+                        "volume": lots,
+                        "type": mt.ORDER_TYPE_BUY_LIMIT,
+                        "price": entry_price,
+                        "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
+                        "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
+                        "comment": f"{comment}",
+                        "magic":r_s_timeframe,
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request_log = mt.order_send(order_request)
+                    self.error_logging(request_log, order_request)
+                    return True
+                except Exception as e:
+                    print(f"Long entry exception: {e}")
             else:
                 print(f" Skipped!")
                 return False
@@ -141,37 +141,37 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
+            stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
-            if is_strong_candle:
-                stop_price = self._round(symbol, stop_price)
+            # The strong candle check is disabled for copier. Since we don't need to validated it.
+            stop_price = self._round(symbol, stop_price)
 
-                if stop_price > entry_price:
-                    try:
-                        print(f"{symbol.ljust(12)}: SHORT")      
-                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
-                        
-                        lots =  round(lots, 2)
+            if stop_price > entry_price:
+                try:
+                    print(f"{symbol.ljust(12)}: SHORT")      
+                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                    
+                    lots =  round(lots, 2)
 
-                        order_request = {
-                            "action": mt.TRADE_ACTION_PENDING,
-                            "symbol": symbol,
-                            "volume": lots,
-                            "type": mt.ORDER_TYPE_SELL_LIMIT,
-                            "price": entry_price,
-                            "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
-                            "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
-                            "comment": f"{comment}",
-                            "magic":r_s_timeframe,
-                            "type_time": mt.ORDER_TIME_GTC,
-                            "type_filling": mt.ORDER_FILLING_RETURN,
-                        }
-                        
-                        request_log = mt.order_send(order_request)
-                        self.error_logging(request_log, order_request)
-                        return True
-                    except Exception as e:
-                        print(e)
+                    order_request = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": symbol,
+                        "volume": lots,
+                        "type": mt.ORDER_TYPE_SELL_LIMIT,
+                        "price": entry_price,
+                        "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
+                        "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
+                        "comment": f"{comment}",
+                        "magic":r_s_timeframe,
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request_log = mt.order_send(order_request)
+                    self.error_logging(request_log, order_request)
+                    return True
+                except Exception as e:
+                    print(e)
             else:
                 print(f" Skipped!")
                 return False
