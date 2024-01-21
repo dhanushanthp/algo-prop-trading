@@ -19,6 +19,11 @@ def get_exchange_price(symbol):
     return exchange_rate
 
 def get_dollar_value(symbol):
+        """"
+        The dollar value received is inversely proportional to the estimated number of lots. Therefore, 
+        increasing the dollar value will lead to a decrease in lots, ultimately reducing the overall risk
+        for a single position.
+        """
         symbol_lead = symbol[0:3]
         symbol_follow = symbol[3:6]
 
@@ -37,6 +42,8 @@ def get_dollar_value(symbol):
                 return 2/get_exchange_price("XAUUSD")
             elif symbol == "AUDUSD":
                 return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "NZDUSD":
+                return 1.6 * get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -67,6 +74,8 @@ def get_dollar_value(symbol):
                 return 2/get_exchange_price("XAUUSD")
             elif symbol == "AUDUSD":
                 return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "NZDUSD":
+                return 1.6 * get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -101,6 +110,8 @@ def get_dollar_value(symbol):
                 return 2/get_exchange_price("XAUUSD_raw")
             elif symbol == "AUDUSD_raw":
                 return 1.6 * get_exchange_price("AUDUSD_raw") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "NZDUSD_raw":
+                return 1.6 * get_exchange_price("NZDUSD_raw") # TODO, This fix number 1.6 has to be changed!
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -135,6 +146,8 @@ def get_dollar_value(symbol):
                 return 2/get_exchange_price("XAUUSDx")
             elif symbol == "AUDUSDx":
                 return 1.6 * get_exchange_price("AUDUSDx") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "NZDUSDx":
+                return 1.6 * get_exchange_price("NZDUSDx") # TODO, This fix number 1.6 has to be changed!
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
