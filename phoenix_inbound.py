@@ -209,6 +209,7 @@ class AlgoTrader():
                 self.master_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
                 self.retries = 0
+                self.strategy="reverse"
             
 
             if is_market_open and not is_market_close and not self.immidiate_exit:
