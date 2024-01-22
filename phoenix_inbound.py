@@ -201,10 +201,10 @@ class AlgoTrader():
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager = risk_manager.RiskManager(profit_split=1) # Reset the risk for the day
                 mp.close_all_positions()
                 
                 # Reset account size for next day
+                self.risk_manager = risk_manager.RiskManager(profit_split=1) # Reset the risk for the day
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.master_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
@@ -214,6 +214,10 @@ class AlgoTrader():
 
             if is_market_open and not is_market_close and not self.immidiate_exit:
                 mp.cancel_all_pending_orders()
+
+                if self.pnl != 0:
+                    with open(f'{config.local_ip}.csv', 'a') as file:
+                        file.write(f"{datetime.now().strftime('%H:%M:%S')},{self.pnl}\n")
 
                 _, equity, _, _ = ind.get_account_details()
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
