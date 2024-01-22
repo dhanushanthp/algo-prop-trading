@@ -21,13 +21,14 @@ class RiskManager:
         self.alert = slack_msg.Slack()
         self.max_risk_hit_counter = 0
         self.enable_half_trail = self.risk_of_an_account + round(ACCOUNT_SIZE/100*0.25) # Add addtional 0.25 to cover commision
+        self.max_account_risk = round(ACCOUNT_SIZE/100)
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
         self.account_name = ind.get_account_name()
 
         # The max profit split is 100% of risking the account
-        assert profit_split <= 1
+        # assert profit_split <= 1
     
     def get_max_loss(self):
         return self.account_trail_loss

@@ -46,6 +46,9 @@ class AlgoTrader():
         self.fixed_initial_account_size = self.risk_manager.account_size
         self.master_initial_account_size = self.risk_manager.account_size
 
+        self.profit_factor = 1
+        self.pnl = 0
+
         # Default
         self.trading_timeframes = [240]
     
@@ -187,13 +190,13 @@ class AlgoTrader():
             # mp.adjust_positions_trailing_stops() # Each position trail stop
 
             # +3 is failed 3 tries, and -6 profit of 30% slot
-            if (self.retries >= 3) and not self.immidiate_exit:
+            if self.pnl < -self.risk_manager.max_account_risk and not self.immidiate_exit:
                 mp.close_all_positions()
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
 
-                pnl = (current_account_size - self.master_initial_account_size)
-                self.alert.send_msg(f"{self.account_name}: Done for today! {round(pnl)}")
+                self.pnl = (current_account_size - self.master_initial_account_size)
+                self.alert.send_msg(f"{self.account_name}: Done for today! {round(self.pnl)}")
                 self.immidiate_exit = True
 
             if is_market_close:
@@ -213,23 +216,26 @@ class AlgoTrader():
 
                 _, equity, _, _ = ind.get_account_details()
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
-                pnl = (equity - self.master_initial_account_size)
+                self.pnl = (equity - self.master_initial_account_size)
                 
-                print(f"RR:{round(rr, 3)}, Pnl: {round(pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
+                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
                 
                 if rr > 0.6 or rr < -0.3:
                     mp.close_all_positions()
                     time.sleep(30) # Take some time for the account to digest the positions
-                    self.risk_manager = risk_manager.RiskManager(profit_split=1)
-                    self.fixed_initial_account_size = self.risk_manager.account_size
+                    self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
 
                     if rr > 0.5:
                         self.retries -= 1
+                        self.profit_factor = min(self.profit_factor+1, 5)
                     else:
                         self.retries += 1
-                        # self.strategy = "break" if self.strategy == "reverse" else "reverse"
+                        self.profit_factor = max(self.profit_factor-1, 1)
+                        self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
-                    self.alert.send_msg(f"`{self.account_name}`(`{self.retries}`), RR: {round(rr, 2)}, ${round(pnl)}")
+                    self.risk_manager = risk_manager.RiskManager(self.profit_factor)
+                    self.fixed_initial_account_size = self.risk_manager.account_size
+                    
 
                 break_long_at_resistance = {}
                 break_short_at_support = {}
