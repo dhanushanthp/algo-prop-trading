@@ -180,7 +180,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n-------  PHOENIX {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs------------------")
+            print(f"\n------- {config.local_ip}  PHOENIX {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs------------------")
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
@@ -215,13 +215,13 @@ class AlgoTrader():
             if is_market_open and not is_market_close and not self.immidiate_exit:
                 mp.cancel_all_pending_orders()
 
-                if self.pnl != 0:
-                    with open(f'{config.local_ip}.csv', 'a') as file:
-                        file.write(f"{datetime.now().strftime('%H:%M:%S')},{self.pnl}\n")
-
                 _, equity, _, _ = ind.get_account_details()
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
                 self.pnl = (equity - self.master_initial_account_size)
+
+                if self.pnl != 0:
+                    with open(f'{config.local_ip}.csv', 'a') as file:
+                        file.write(f"{datetime.now().strftime('%H:%M:%S')},{self.strategy},{self.retries},{round(rr, 3)},{round(self.pnl, 3)}\n")
                 
                 print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
                 
