@@ -1,7 +1,7 @@
 import modules.currency_pairs as curr
 
 if curr.company == "FTMO S.R.O.":
-    account_risk_percentage = 0.5 # Value in %
+    account_risk_percentage = 0.25 # Value in %
 elif curr.company == "AXSE Brokerage Ltd.":
     account_risk_percentage = 0.25 # Value in %
 elif curr.company == "Black Bull Group Limited":

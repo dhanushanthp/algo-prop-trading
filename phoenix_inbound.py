@@ -227,6 +227,7 @@ class AlgoTrader():
                         self.retries -= 1
                     else:
                         self.retries += 1
+                        # self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
                     self.alert.send_msg(f"`{self.account_name}`(`{self.retries}`), RR: {round(rr, 2)}, ${round(pnl)}")
 
