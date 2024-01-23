@@ -222,7 +222,11 @@ class AlgoTrader():
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
                 self.pnl = (equity - self.master_initial_account_size)
                 
-                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")                    
+                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
+                
+                if self.pnl != 0:
+                    with open(f'{config.local_ip}.csv', 'a') as file:
+                        file.write(f"{datetime.now().strftime('%H:%M:%S')},{self.strategy},{self.retries},{round(rr, 3)},{round(self.pnl, 3)}\n")
 
                 break_long_at_resistance = {}
                 break_short_at_support = {}
