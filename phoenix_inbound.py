@@ -192,9 +192,6 @@ class AlgoTrader():
             
             mp.adjust_positions_trailing_stops() # Each position trail stop
 
-            if self.experiment1 == "true":
-                mp.immidiate_stop()
-
             # +3 is failed 3 tries, and -6 profit of 30% slot
             if self.pnl < -self.risk_manager.max_account_risk and not self.immidiate_exit:
                 mp.close_all_positions()
@@ -224,33 +221,8 @@ class AlgoTrader():
                 _, equity, _, _ = ind.get_account_details()
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
                 self.pnl = (equity - self.master_initial_account_size)
-
-                if self.pnl != 0:
-                    with open(f'{config.local_ip}.csv', 'a') as file:
-                        file.write(f"{datetime.now().strftime('%H:%M:%S')},{self.strategy},{self.retries},{round(rr, 3)},{round(self.pnl, 3)}\n")
                 
-                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
-                
-                max_rr = 1; min_rr = -0.3
-                if self.experiment1 == "true":
-                    max_rr=1; min_rr=-0.3
-
-                if rr > max_rr or rr < min_rr:
-                    mp.close_all_positions()
-                    time.sleep(30) # Take some time for the account to digest the positions
-                    self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
-
-                    if rr > 0.5:
-                        self.retries -= 1
-                        self.profit_factor = min(self.profit_factor+1, 5)
-                    else:
-                        self.retries += 1
-                        self.profit_factor = max(self.profit_factor-1, 1)
-                        # self.strategy = "break" if self.strategy == "reverse" else "reverse"
-
-                    self.risk_manager = risk_manager.RiskManager(self.profit_factor)
-                    self.fixed_initial_account_size = self.risk_manager.account_size
-                    
+                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")                    
 
                 break_long_at_resistance = {}
                 break_short_at_support = {}
@@ -273,9 +245,6 @@ class AlgoTrader():
                         support = levels["support"]
 
                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-
-                        if self.experiment2 == "true":
-                            optimal_distance=0
 
                         for resistance_level in resistances:
                             resistance_level = resistance_level - optimal_distance
