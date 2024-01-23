@@ -393,6 +393,51 @@ def adjust_positions_trailing_stops():
                 if result.comment != "No changes":
                     print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
+def immidiate_stop():
+    existing_positions = mt5.positions_get()
+    for position in existing_positions:
+        symbol = position.symbol
+        stop_price = position.sl
+        target_price = position.tp
+        entry_price = position.price_open
+        
+        spread = 6*ind.get_spread(symbol)
+
+        if position.type == 0:
+            # Long Position
+            trail_stop = entry_price - spread
+            trail_stop = max(stop_price, trail_stop)
+            trail_stop = util.curr_round(position.symbol, trail_stop)
+        else:
+            # Short Position
+            trail_stop = entry_price + spread
+            trail_stop = min(stop_price, trail_stop)
+            trail_stop = util.curr_round(position.symbol, trail_stop)
+
+        if (trail_stop != stop_price):
+            print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}")
+
+            modify_request = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "symbol": position.symbol,
+                "volume": position.volume,
+                "type": position.type,
+                "position": position.ticket,
+                "sl": trail_stop,
+                "tp": target_price,
+                "comment": position.comment,
+                "magic": position.magic,
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_FOK,
+                "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+            }
+            
+            result = mt5.order_send(modify_request)
+            
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                if result.comment != "No changes":
+                    print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
+
 def trail_stop_half_points(risk):
     existing_positions = mt5.positions_get()
     for position in existing_positions:
