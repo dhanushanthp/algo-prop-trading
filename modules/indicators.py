@@ -53,7 +53,7 @@ def get_ordered_symbols():
     return sorted_list
 
 
-def get_stop_range(symbol, timeframe, n_spreds=10):
+def get_stop_range(symbol, timeframe, n_spreds=10, multiplier=1):
     
     selected_time = match_timeframe(timeframe)
     
@@ -95,7 +95,7 @@ def get_stop_range(symbol, timeframe, n_spreds=10):
     distance_from_high = max(atr, abs(higher_stop-mid_price))
     distance_from_low = max(atr, abs(lower_stop-mid_price))
 
-    optimal_distance = max(distance_from_high, distance_from_low)
+    optimal_distance = max(distance_from_high, distance_from_low) * multiplier
     lower_stop = mid_price - optimal_distance
     higher_stop = mid_price + optimal_distance
 

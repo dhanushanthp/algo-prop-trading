@@ -190,7 +190,8 @@ class AlgoTrader():
             print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
-            # mp.adjust_positions_trailing_stops() # Each position trail stop
+            mp.adjust_positions_trailing_stops() # Each position trail stop
+
             if self.experiment1 == "true":
                 mp.immidiate_stop()
 
@@ -232,7 +233,7 @@ class AlgoTrader():
                 
                 max_rr = 1; min_rr = -0.3
                 if self.experiment1 == "true":
-                    max_rr=1; min_rr=-1
+                    max_rr=1; min_rr=-0.3
 
                 if rr > max_rr or rr < min_rr:
                     mp.close_all_positions()
@@ -245,7 +246,7 @@ class AlgoTrader():
                     else:
                         self.retries += 1
                         self.profit_factor = max(self.profit_factor-1, 1)
-                        self.strategy = "break" if self.strategy == "reverse" else "reverse"
+                        # self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
                     self.risk_manager = risk_manager.RiskManager(self.profit_factor)
                     self.fixed_initial_account_size = self.risk_manager.account_size
