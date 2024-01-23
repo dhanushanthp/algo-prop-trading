@@ -110,6 +110,53 @@ def get_account_name():
     balance = round(info.balance/1000)
     return f"{info.name} {balance}K "
 
+def close_based_reversals(symbol, timeframe, reversal_looks_back=24):
+    selected_time = match_timeframe(timeframe)
+    
+    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 1, reversal_looks_back))
+    past_candles.reverse()
+
+    resistance_levels = {}
+    suport_levels = {}
+
+    for i in range(len(past_candles) - 1):
+        current_candle = past_candles[i]
+        next_candle = past_candles[i+1]
+
+        current_candle_dir = "long" if current_candle["open"] < current_candle["close"] else "short"
+        next_candle_dir = "long" if next_candle["open"] < next_candle["close"] else "short"
+
+        if next_candle_dir == "long" and current_candle_dir=="short":
+            resistance_levels[i] = next_candle["close"]
+        elif next_candle_dir == "short" and current_candle_dir=="long":
+            suport_levels[i] = next_candle["close"]
+    
+    # Filter resistance levels, The levels should not intersect with any previous candle
+    breaked_resistances = []
+    breaked_supprots = []
+
+    for res in resistance_levels.keys():
+        res_level = resistance_levels[res]
+        upcoming_candles = past_candles[:res]
+        for candle in upcoming_candles:
+            if is_number_between(res_level, candle["low"], candle["high"]):
+                breaked_resistances.append(res_level)
+                break
+
+    for supp in suport_levels.keys():
+        supp_level = suport_levels[supp]
+        upcoming_candles = past_candles[:supp]
+        for candle in upcoming_candles:
+            if is_number_between(supp_level, candle["low"], candle["high"]):
+                breaked_supprots.append(supp_level)
+                break
+    
+    clean_resistance = [i for i in resistance_levels.values() if i not in breaked_resistances]
+    clean_support = [i for i in suport_levels.values() if i not in breaked_supprots]
+
+    return {"support": clean_support, "resistance": clean_resistance}
+
+
 def find_reversal_zones(symbol, timeframe, reversal_looks_back=20):
     """
     Finds potential reversal zones based on historical price data.
@@ -197,7 +244,7 @@ def find_reversal_zones(symbol, timeframe, reversal_looks_back=20):
 
     return {"support": clean_support, "resistance": clean_resistance}
 
-def understand_direction(symbol, timeframe, level):
+def understand_direction(symbol, timeframe, level, num_past_candles=8):
     """
     Determines the market direction based on candlestick analysis.
 
@@ -220,7 +267,7 @@ def understand_direction(symbol, timeframe, level):
     
     # If the mid values intersect with the previous 5 bars
     # get past 5 candles and start from the previous second candle
-    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 2, 8))
+    past_candles = list(mt5.copy_rates_from_pos(symbol, selected_time, 1, num_past_candles))
     past_candles.reverse()
     
     for candle in past_candles:
@@ -547,6 +594,23 @@ if __name__ == "__main__":
     # print(mt5.TIMEFRAME_H1)
     # print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
-    print(get_account_name())
+    # print(get_account_name())
+    for symbol in get_ordered_symbols():
+        print(symbol)
+        dict_values = support_resistance_levels(symbol, 60)
+        close_b = close_based_reversals(symbol, 60)
+        print(dict_values)
+        print(close_b)
+        print()
+        
+        # support = dict_values["support"]
+        # resistance = dict_values["resistance"]
+        # for sup in support:
+        #     print(sup, understand_direction(symbol, 60, sup))
+        
+        # for res in resistance:
+        #     print(res, understand_direction(symbol, 60, res))
+
+    # print(close_based_reversals("EURNZD", 60))
     # print(ema_direction("AUDJPY", [240, 60, 30]))
     # print(understand_direction("AUDCHF", 60, 0.56882))
