@@ -51,6 +51,9 @@ class AlgoTrader():
 
         # Default
         self.trading_timeframes = [240]
+
+        self.experiment1 = "false" # enable high rr
+        self.experiment2 = "false" # enable general breakout
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -225,7 +228,11 @@ class AlgoTrader():
                 
                 print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
                 
-                if rr > 0.6 or rr < -0.3:
+                max_rr = 0.6; min_rr = -0.3
+                if self.experiment1 == "true":
+                    max_rr=1; min_rr=-1
+
+                if rr > max_rr or rr < min_rr:
                     mp.close_all_positions()
                     time.sleep(30) # Take some time for the account to digest the positions
                     self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
@@ -263,6 +270,9 @@ class AlgoTrader():
                         support = levels["support"]
 
                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
+
+                        if self.experiment2 == "true":
+                            optimal_distance=0
 
                         for resistance_level in resistances:
                             resistance_level = resistance_level - optimal_distance
@@ -326,6 +336,12 @@ if __name__ == "__main__":
             raise Exception("Please enter fixed or auto entry time check!")
         
         win.trading_timeframes = [int(i) for i in sys.argv[2].split(",")]
+
+        try:
+            win.experiment1 = sys.argv[3]
+            win.experiment2 = sys.argv[4]
+        except Exception:
+            pass
 
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
