@@ -191,6 +191,8 @@ class AlgoTrader():
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
             # mp.adjust_positions_trailing_stops() # Each position trail stop
+            if self.experiment1 == "true":
+                mp.immidiate_stop()
 
             # +3 is failed 3 tries, and -6 profit of 30% slot
             if self.pnl < -self.risk_manager.max_account_risk and not self.immidiate_exit:
@@ -228,7 +230,7 @@ class AlgoTrader():
                 
                 print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
                 
-                max_rr = 0.6; min_rr = -0.3
+                max_rr = 1; min_rr = -0.3
                 if self.experiment1 == "true":
                     max_rr=1; min_rr=-1
 
