@@ -356,7 +356,7 @@ def adjust_positions_trailing_stops():
         stp_candle_low = util.curr_round(position.symbol, stp_candle_low)
         stp_candle_high = util.curr_round(position.symbol, stp_candle_high)
         
-        tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=tgt_tf, n_spreds=3, multiplier=2.0)
+        tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=tgt_tf, n_spreds=3, multiplier=1.0)
         tgt_candle_low = util.curr_round(position.symbol, tgt_candle_low)
         tgt_candle_high = util.curr_round(position.symbol, tgt_candle_high)
         
