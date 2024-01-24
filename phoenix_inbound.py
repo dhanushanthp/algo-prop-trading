@@ -335,12 +335,12 @@ if __name__ == "__main__":
 
 
     # Define your named arguments
-    parser.add_argument('--strategy', type=str, help='Description for arg1')
-    parser.add_argument('--timeframe', type=str, help='Description for arg2')
-    parser.add_argument('--rr', type=str, help='Description for arg3')
-    parser.add_argument('--incremental_risk', type=str, help='Description for arg3')
-    parser.add_argument('--enable_trail', type=str, help='Description for arg3')
-    parser.add_argument('--enable_str_switch', type=str, help='Description for arg3')
+    parser.add_argument('--strategy', type=str, help='Strategy Selection')
+    parser.add_argument('--timeframe', type=str, help='Selected timeframe for trade')
+    parser.add_argument('--rr', type=str, help='Risk and reward ratio')
+    parser.add_argument('--incremental_risk', type=str, help='Do you need to increase the risk on winning?')
+    parser.add_argument('--enable_trail', type=str, help='Do u enable trail stop')
+    parser.add_argument('--enable_str_switch', type=str, help='Switch break or reverse based on winning')
 
     args = parser.parse_args()
     
