@@ -240,7 +240,7 @@ class AlgoTrader():
                         self.profit_factor = min(self.profit_factor+1, 5)
                     else:
                         self.profit_factor = max(self.profit_factor-1, 1)
-                        if self.win.switchable_strategy == "yes":
+                        if self.switchable_strategy == "yes":
                             self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
                     self.retries += 1
