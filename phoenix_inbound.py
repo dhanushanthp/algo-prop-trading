@@ -110,7 +110,7 @@ class AlgoTrader():
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
                 
-                if entry_price > stop_price:                
+                if entry_price > stop_price:
                     try:
                         print(f"{symbol.ljust(12)}: LONG")
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
@@ -251,12 +251,12 @@ class AlgoTrader():
                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
 
                         for resistance_level in resistances:
-                            resistance_level = resistance_level - ind.get_spread(symbol)
+                            resistance_level = resistance_level - optimal_distance
                             if (current_candle["open"] < resistance_level) and (resistance_level + 3*ind.get_spread(symbol) > current_candle["close"] > resistance_level):
                                 break_long_at_resistance[symbol].append(r_s_timeframe)
                         
                         for support_level in support:
-                            support_level = support_level + ind.get_spread(symbol)
+                            support_level = support_level + optimal_distance
                             if (current_candle["open"] > support_level) and (support_level - 3*ind.get_spread(symbol) < current_candle["close"] < support_level):
                                 break_short_at_support[symbol].append(r_s_timeframe)
                 
