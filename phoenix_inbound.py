@@ -48,15 +48,17 @@ class AlgoTrader():
         self.fixed_initial_account_size = self.risk_manager.account_size
         self.master_initial_account_size = self.risk_manager.account_size
 
-        self.profit_factor = 1
+        
         self.pnl = 0
 
         # Default
         self.trading_timeframes = [240]
         self.rr = [0.6, 0.3]
 
-        self.enable_trail = "no"
-        self.switchable_strategy = "no"
+        self.profit_factor = 1
+        self.enable_trail = False
+        self.switchable_strategy = False
+        self.incremental_risk = False
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -186,14 +188,14 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip}  PHOENIX {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}, TRIL: {self.enable_trail} STR Swtich: {self.switchable_strategy}------------------")
+            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}, TRIL: {self.enable_trail} STR Swtich: {self.switchable_strategy} Risk Incre:{self.incremental_risk} ------------------")
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             # print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             # print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
-            if self.enable_trail == "yes":
+            if self.enable_trail:
                 mp.adjust_positions_trailing_stops() # Each position trail stop
 
             # +3 is failed 3 tries, and -6 profit of 30% slot
@@ -237,10 +239,13 @@ class AlgoTrader():
                     # self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
 
                     if rr > self.rr[0]:
-                        self.profit_factor = min(self.profit_factor+1, 5)
+                        if self.incremental_risk:
+                            self.profit_factor = min(self.profit_factor+1, 5)
                     else:
-                        self.profit_factor = max(self.profit_factor-1, 1)
-                        if self.switchable_strategy == "yes":
+                        if self.incremental_risk:
+                            self.profit_factor = max(self.profit_factor-1, 1)
+                        
+                        if self.switchable_strategy:
                             self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
                     self.retries += 1
@@ -293,14 +298,14 @@ class AlgoTrader():
                                     print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
                                     max_timeframe = max(total_resistance_tf_long)
                                     self.long_real_entry(symbol=symbol,
-                                                            comment="RL>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                            comment="B>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                     max_timeframe = max(total_support_tf_short)
                                     self.short_real_entry(symbol=symbol, 
-                                                            comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
+                                                            comment="B>" + '|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
                             elif self.strategy == "reverse":
@@ -308,14 +313,14 @@ class AlgoTrader():
                                     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
                                     max_timeframe = max(total_resistance_tf_long)
                                     self.short_real_entry(symbol=symbol,
-                                                            comment="RS>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                            comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                     max_timeframe = max(total_support_tf_short)
                                     self.long_real_entry(symbol=symbol, 
-                                                            comment="SL>" + '|'.join(map(str, total_support_tf_short)), 
+                                                            comment="R>" + '|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
                             else:
@@ -333,6 +338,7 @@ if __name__ == "__main__":
     parser.add_argument('--strategy', type=str, help='Description for arg1')
     parser.add_argument('--timeframe', type=str, help='Description for arg2')
     parser.add_argument('--rr', type=str, help='Description for arg3')
+    parser.add_argument('--incremental_risk', type=str, help='Description for arg3')
     parser.add_argument('--enable_trail', type=str, help='Description for arg3')
     parser.add_argument('--enable_str_switch', type=str, help='Description for arg3')
 
@@ -345,8 +351,9 @@ if __name__ == "__main__":
         
         win.trading_timeframes = [int(i) for i in args.timeframe.split(",")]
         win.rr = [float(i) for i in args.rr.split(",")]
-        win.enable_trail = args.enable_trail
-        win.switchable_strategy = args.enable_str_switch
+        win.enable_trail = util.boolean(args.enable_trail)
+        win.switchable_strategy = util.boolean(args.enable_str_switch)
+        win.incremental_risk = util.boolean(args.incremental_risk)
 
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default

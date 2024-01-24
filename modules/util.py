@@ -46,6 +46,12 @@ def get_time_difference(epoch):
     difference = round(current_minute - traded_minute)
     return difference
 
+def boolean(input):
+    if input == "yes" or input == "True" or input == "true":
+        return True
+
+    return False
+
 def get_gmt_time():
     tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
     local_time = datetime.now(tm_zone)

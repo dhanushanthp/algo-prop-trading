@@ -1,1 +1,1 @@
-python phoenix_inbound.py --strategy break --timeframe 60 --rr 0.3,0.3 --enable_trail no --enable_str_switch yes
+python phoenix_inbound.py --strategy break --timeframe 60 --rr 0.3,0.3 --enable_trail yes --enable_str_switch yes --incremental_risk no
