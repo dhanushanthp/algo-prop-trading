@@ -6,6 +6,8 @@ import MetaTrader5 as mt
 from datetime import datetime, timedelta
 import pytz
 import time
+import argparse
+
 
 
 import modules.indicators as ind
@@ -323,16 +325,28 @@ class AlgoTrader():
     
 if __name__ == "__main__":
     win = AlgoTrader()
+
+    parser = argparse.ArgumentParser(description='Example script with named arguments.')
+
+
+    # Define your named arguments
+    parser.add_argument('--strategy', type=str, help='Description for arg1')
+    parser.add_argument('--timeframe', type=str, help='Description for arg2')
+    parser.add_argument('--rr', type=str, help='Description for arg3')
+    parser.add_argument('--enable_trail', type=str, help='Description for arg3')
+    parser.add_argument('--enable_str_switch', type=str, help='Description for arg3')
+
+    args = parser.parse_args()
     
     if len(sys.argv) > 1:
-        win.strategy = sys.argv[1]
+        win.strategy = args.strategy
         if win.strategy not in ["reverse", "break"]:
             raise Exception("Please enter fixed or auto entry time check!")
         
-        win.trading_timeframes = [int(i) for i in sys.argv[2].split(",")]
-        win.rr = [float(i) for i in sys.argv[3].split(",")]
-        win.enable_trail = sys.argv[4]
-        win.switchable_strategy = sys.argv[5]
+        win.trading_timeframes = [int(i) for i in args.timeframe.split(",")]
+        win.rr = [float(i) for i in args.rr.split(",")]
+        win.enable_trail = args.enable_trail
+        win.switchable_strategy = args.enable_str_switch
 
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default

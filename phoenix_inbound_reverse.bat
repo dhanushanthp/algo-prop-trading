@@ -1,1 +1,1 @@
-python phoenix_inbound.py reverse 60 0.6,0.3 no no
+python phoenix_inbound.py --strategy reverse --timeframe 60 --rr 0.6,0.3 --enable_trail no --enable_str_switch no
