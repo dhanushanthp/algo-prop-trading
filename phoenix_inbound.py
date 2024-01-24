@@ -51,6 +51,7 @@ class AlgoTrader():
 
         # Default
         self.trading_timeframes = [240]
+        self.rr = [0.6, 0.3]
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -180,12 +181,12 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip}  PHOENIX {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs------------------")
+            print(f"\n------- {config.local_ip}  PHOENIX {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}------------------")
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
-            print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
-            print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
+            # print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
+            # print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
             # mp.adjust_positions_trailing_stops() # Each position trail stop
 
@@ -209,7 +210,6 @@ class AlgoTrader():
                 self.master_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
                 self.retries = 0
-                self.strategy="reverse"
             
 
             if is_market_open and not is_market_close and not self.immidiate_exit:
@@ -221,16 +221,16 @@ class AlgoTrader():
 
                 if self.pnl != 0:
                     with open(f'{config.local_ip}.csv', 'a') as file:
-                        file.write(f"{datetime.now().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{self.profit_factor},{round(rr, 3)},{round(self.pnl, 3)}\n")
+                        file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{self.profit_factor},{round(rr, 3)},{round(self.pnl, 3)}\n")
                 
                 print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
                 
-                if rr > 0.6 or rr < -0.3:
+                if rr > self.rr[0] or rr < -self.rr[1]:
                     mp.close_all_positions()
                     time.sleep(30) # Take some time for the account to digest the positions
                     # self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
 
-                    if rr > 0.5:
+                    if rr > self.rr[0]:
                         self.profit_factor = min(self.profit_factor+1, 5)
                     else:
                         self.profit_factor = max(self.profit_factor-1, 1)
@@ -325,6 +325,8 @@ if __name__ == "__main__":
             raise Exception("Please enter fixed or auto entry time check!")
         
         win.trading_timeframes = [int(i) for i in sys.argv[2].split(",")]
+
+        win.rr = [float(i) for i in sys.argv[3].split(",")]
 
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
