@@ -221,23 +221,22 @@ class AlgoTrader():
 
                 if self.pnl != 0:
                     with open(f'{config.local_ip}.csv', 'a') as file:
-                        file.write(f"{datetime.now().strftime('%H:%M:%S')},{self.strategy},{self.retries},{round(rr, 3)},{round(self.pnl, 3)}\n")
+                        file.write(f"{datetime.now().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{self.profit_factor},{round(rr, 3)},{round(self.pnl, 3)}\n")
                 
                 print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
                 
                 if rr > 0.6 or rr < -0.3:
                     mp.close_all_positions()
                     time.sleep(30) # Take some time for the account to digest the positions
-                    self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
+                    # self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
 
                     if rr > 0.5:
-                        self.retries -= 1
                         self.profit_factor = min(self.profit_factor+1, 5)
                     else:
-                        self.retries += 1
                         self.profit_factor = max(self.profit_factor-1, 1)
                         # self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
+                    self.retries += 1
                     self.risk_manager = risk_manager.RiskManager(self.profit_factor)
                     self.fixed_initial_account_size = self.risk_manager.account_size
                     
