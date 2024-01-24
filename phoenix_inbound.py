@@ -51,9 +51,6 @@ class AlgoTrader():
 
         # Default
         self.trading_timeframes = [240]
-
-        self.experiment1 = "false" # enable high rr
-        self.experiment2 = "false" # enable general breakout
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -104,13 +101,13 @@ class AlgoTrader():
     def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol=symbol)
 
-        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
+        if entry_price:
             _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
                 
-                if entry_price > stop_price:
+                if entry_price > stop_price:                
                     try:
                         print(f"{symbol.ljust(12)}: LONG")
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
@@ -143,7 +140,7 @@ class AlgoTrader():
     def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol)
         
-        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
+        if entry_price:
             stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
             if is_strong_candle:
@@ -190,7 +187,7 @@ class AlgoTrader():
             print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
-            mp.adjust_positions_trailing_stops() # Each position trail stop
+            # mp.adjust_positions_trailing_stops() # Each position trail stop
 
             # +3 is failed 3 tries, and -6 profit of 30% slot
             if self.pnl < -self.risk_manager.max_account_risk and not self.immidiate_exit:
@@ -221,12 +218,29 @@ class AlgoTrader():
                 _, equity, _, _ = ind.get_account_details()
                 rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
                 self.pnl = (equity - self.master_initial_account_size)
-                
-                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
-                
+
                 if self.pnl != 0:
                     with open(f'{config.local_ip}.csv', 'a') as file:
                         file.write(f"{datetime.now().strftime('%H:%M:%S')},{self.strategy},{self.retries},{round(rr, 3)},{round(self.pnl, 3)}\n")
+                
+                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
+                
+                if rr > 0.6 or rr < -0.3:
+                    mp.close_all_positions()
+                    time.sleep(30) # Take some time for the account to digest the positions
+                    self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
+
+                    if rr > 0.5:
+                        self.retries -= 1
+                        self.profit_factor = min(self.profit_factor+1, 5)
+                    else:
+                        self.retries += 1
+                        self.profit_factor = max(self.profit_factor-1, 1)
+                        # self.strategy = "break" if self.strategy == "reverse" else "reverse"
+
+                    self.risk_manager = risk_manager.RiskManager(self.profit_factor)
+                    self.fixed_initial_account_size = self.risk_manager.account_size
+                    
 
                 break_long_at_resistance = {}
                 break_short_at_support = {}
@@ -256,7 +270,7 @@ class AlgoTrader():
                                 break_long_at_resistance[symbol].append(r_s_timeframe)
                         
                         for support_level in support:
-                            support_level = support_level + optimal_distance
+                            support_level = support_level + optimal_distance                 
                             if (current_candle["open"] > support_level) and (support_level - 3*ind.get_spread(symbol) < current_candle["close"] < support_level):
                                 break_short_at_support[symbol].append(r_s_timeframe)
                 
@@ -312,12 +326,6 @@ if __name__ == "__main__":
             raise Exception("Please enter fixed or auto entry time check!")
         
         win.trading_timeframes = [int(i) for i in sys.argv[2].split(",")]
-
-        try:
-            win.experiment1 = sys.argv[3]
-            win.experiment2 = sys.argv[4]
-        except Exception:
-            pass
 
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default
