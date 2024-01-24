@@ -26,7 +26,7 @@ class AlgoTrader():
 
         # Default values
         self.strategy = None  # Default to 15 min
-        self.target_ratio = 2.0  # Default 1:0.5 Ratio
+        self.target_ratio = 1.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
         self.timer = 30
@@ -52,6 +52,9 @@ class AlgoTrader():
         # Default
         self.trading_timeframes = [240]
         self.rr = [0.6, 0.3]
+
+        self.enable_trail = "no"
+        self.switchable_strategy = "no"
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -181,14 +184,15 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip}  PHOENIX {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}------------------")
+            print(f"\n------- {config.local_ip}  PHOENIX {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}, TRIL: {self.enable_trail} STR Swtich: {self.switchable_strategy}------------------")
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             # print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             # print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
-            # mp.adjust_positions_trailing_stops() # Each position trail stop
+            if self.enable_trail == "yes":
+                mp.adjust_positions_trailing_stops() # Each position trail stop
 
             # +3 is failed 3 tries, and -6 profit of 30% slot
             if self.pnl < -self.risk_manager.max_account_risk and not self.immidiate_exit:
@@ -234,7 +238,8 @@ class AlgoTrader():
                         self.profit_factor = min(self.profit_factor+1, 5)
                     else:
                         self.profit_factor = max(self.profit_factor-1, 1)
-                        # self.strategy = "break" if self.strategy == "reverse" else "reverse"
+                        if self.win.switchable_strategy == "yes":
+                            self.strategy = "break" if self.strategy == "reverse" else "reverse"
 
                     self.retries += 1
                     self.risk_manager = risk_manager.RiskManager(self.profit_factor)
@@ -325,8 +330,9 @@ if __name__ == "__main__":
             raise Exception("Please enter fixed or auto entry time check!")
         
         win.trading_timeframes = [int(i) for i in sys.argv[2].split(",")]
-
         win.rr = [float(i) for i in sys.argv[3].split(",")]
+        win.enable_trail = sys.argv[4]
+        win.switchable_strategy = sys.argv[5]
 
     else:
         # Mean the R&S levels and entry check will be based on the same selected timeframe. Default

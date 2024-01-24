@@ -369,7 +369,8 @@ def adjust_positions_trailing_stops():
             trail_stop = min(stop_price, stp_candle_high)
             trail_target = max(target_price, tgt_candle_low)
 
-        if (trail_stop != stop_price) or (target_price != trail_target):
+        #  or (target_price != trail_target)
+        if (trail_stop != stop_price):
             print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
 
             modify_request = {
@@ -379,7 +380,7 @@ def adjust_positions_trailing_stops():
                 "type": position.type,
                 "position": position.ticket,
                 "sl": trail_stop,
-                "tp": trail_target,
+                "tp": position.tp,
                 "comment": position.comment,
                 "magic": position.magic,
                 "type_time": mt5.ORDER_TIME_GTC,
