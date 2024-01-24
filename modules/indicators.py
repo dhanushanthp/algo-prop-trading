@@ -110,6 +110,24 @@ def get_account_name():
     balance = round(info.balance/1000)
     return f"{info.name} {balance}K "
 
+
+def candle_based_trade(symbol, timeframe):
+    """
+    1 hour cdls
+    """
+    selected_time = match_timeframe(timeframe)
+    current_cadle = list(mt5.copy_rates_from_pos(symbol, selected_time, 0, 1))[-1]
+
+    upper_wick = abs(current_cadle["open"] - current_cadle["high"])
+    lower_wick = abs(current_cadle["open"] - current_cadle["low"])
+
+    if (6*get_spread(symbol) > abs(current_cadle["open"] - current_cadle["close"]) > 3*get_spread(symbol)) and (upper_wick > 3*get_spread(symbol) or lower_wick > 3*get_spread(symbol)):
+        if current_cadle["open"] > current_cadle["close"]:
+            return "short"
+        else:
+            return "long"
+    
+
 def close_based_reversals(symbol, timeframe, reversal_looks_back=24):
     selected_time = match_timeframe(timeframe)
     
@@ -597,10 +615,11 @@ if __name__ == "__main__":
     # print(get_account_name())
     for symbol in get_ordered_symbols():
         print(symbol)
-        dict_values = support_resistance_levels(symbol, 60)
-        close_b = close_based_reversals(symbol, 60)
-        print(dict_values)
-        print(close_b)
+        # dict_values = support_resistance_levels(symbol, 60)
+        # close_b = close_based_reversals(symbol, 60)
+        # print(dict_values)
+        # print(close_b)
+        print(candle_based_trade(symbol, 60))
         print()
         
         # support = dict_values["support"]
