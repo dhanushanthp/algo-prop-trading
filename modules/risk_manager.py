@@ -6,6 +6,7 @@ import time
 import MetaTrader5 as mt5
 import modules.mng_pos as mp
 import modules.slack_msg as slack_msg
+from collections import Counter
 
 class RiskManager:
     def __init__(self, profit_split=1) -> None:
@@ -44,6 +45,37 @@ class RiskManager:
 
     def get_max_profit(self):
         return self.account_size + self.risk_of_an_account
+    
+
+    def risk_diffusers(self):
+        internal_existing_positions = mt5.positions_get()
+        counter = Counter([i.symbol for i in internal_existing_positions])
+        orders = {}
+        for position in internal_existing_positions:
+            pos_symbol = position.symbol
+            if counter[pos_symbol] < 2 and position.comment == "R>60" and position.comment != "defuser":
+                order_type = position.type
+                entry_price = position.price_open
+                stop_price = position.sl
+                bid, ask = ind.get_bid_ask(pos_symbol)
+                if order_type == 0:
+                    current_price = bid
+                else:
+                    current_price = ask
+
+                volume = position.volume
+                points_in_stop = abs(entry_price - stop_price)/2
+
+                if order_type == 0:
+                    decision_point = entry_price-points_in_stop
+                    if current_price < decision_point:
+                        orders[pos_symbol] = "short"
+                else:
+                    decision_point = entry_price+points_in_stop
+                    if current_price > decision_point:
+                        orders[pos_symbol] = "long"
+        
+        return orders
     
     def has_daily_maximum_risk_reached(self):
         """

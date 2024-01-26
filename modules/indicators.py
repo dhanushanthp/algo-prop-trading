@@ -31,14 +31,18 @@ def get_bid_ask(symbol):
     bid_price = mt5.symbol_info_tick(symbol).bid
     return bid_price, ask_price
 
-def get_ordered_symbols():
+def get_ordered_symbols(without_index=False):
     """
     Retrieves a list of trading symbols ordered by the absolute value of their price changes.
     
     Returns:
         List[str]: A list of trading symbols in descending order of absolute price changes.
     """
-    ticks = (curr.currencies + curr.indexes)
+    if without_index:
+        ticks = (curr.currencies)
+    else:
+        ticks = (curr.currencies + curr.indexes)
+    
     symbol_change = []    
     for tick in ticks:
         symbol_info = mt5.symbol_info(tick)

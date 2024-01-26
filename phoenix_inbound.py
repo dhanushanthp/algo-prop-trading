@@ -109,7 +109,7 @@ class AlgoTrader():
     def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol=symbol)
 
-        if entry_price:
+        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
             _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
             if is_strong_candle:
@@ -148,7 +148,7 @@ class AlgoTrader():
     def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol)
         
-        if entry_price:
+        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
             stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
             if is_strong_candle:

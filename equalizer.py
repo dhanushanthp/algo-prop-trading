@@ -106,10 +106,10 @@ class AlgoTrader():
                 error_string = f"{result.comment}"
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
-    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
+    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1):
         entry_price = self.get_entry_price(symbol=symbol)
 
-        if entry_price:
+        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
             _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
             if is_strong_candle:
@@ -125,7 +125,7 @@ class AlgoTrader():
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
                             "symbol": symbol,
-                            "volume": lots,
+                            "volume": lots*double_vol,
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
@@ -145,10 +145,10 @@ class AlgoTrader():
                 print(f" Skipped!")
                 return False
 
-    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
+    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1):
         entry_price = self.get_entry_price(symbol)
         
-        if entry_price:
+        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
             stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
             
             if is_strong_candle:
@@ -164,7 +164,7 @@ class AlgoTrader():
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
                             "symbol": symbol,
-                            "volume": lots,
+                            "volume": lots*double_vol,
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
@@ -231,27 +231,7 @@ class AlgoTrader():
                     with open(f'{config.local_ip}.csv', 'a') as file:
                         file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{self.profit_factor},{round(rr, 3)},{round(self.pnl, 3)}\n")
                 
-                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
-                
-                if rr > self.rr[0] or rr < -self.rr[1]:
-                    mp.close_all_positions()
-                    time.sleep(30) # Take some time for the account to digest the positions
-                    # self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
-
-                    if rr > self.rr[0]:
-                        if self.incremental_risk:
-                            self.profit_factor = min(self.profit_factor+1, 5)
-                    else:
-                        if self.incremental_risk:
-                            self.profit_factor = max(self.profit_factor-1, 1)
-                        
-                        if self.switchable_strategy:
-                            self.strategy = "break" if self.strategy == "reverse" else "reverse"
-
-                    self.retries += 1
-                    self.risk_manager = risk_manager.RiskManager(self.profit_factor)
-                    self.fixed_initial_account_size = self.risk_manager.account_size
-                    
+                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")                    
 
                 break_long_at_resistance = {}
                 break_short_at_support = {}
@@ -325,6 +305,15 @@ class AlgoTrader():
                                                             entry_timeframe=max_timeframe)
                             else:
                                 raise Exception("Strategy not defined!")
+                
+                need_action = self.risk_manager.risk_diffusers()
+                max_timeframe = 60
+                for symbol in need_action.keys():
+                    action = need_action[symbol]
+                    if action == "long":
+                        self.long_real_entry(symbol=symbol, comment="defuser", r_s_timeframe=max_timeframe, entry_timeframe=max_timeframe, double_vol=2)
+                    elif action == "short":
+                        self.short_real_entry(symbol=symbol, comment="defuser", r_s_timeframe=max_timeframe, entry_timeframe=max_timeframe, double_vol=2)
             
             time.sleep(self.timer)
     
