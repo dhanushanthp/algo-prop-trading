@@ -46,6 +46,12 @@ class RiskManager:
     def get_max_profit(self):
         return self.account_size + self.risk_of_an_account
     
+    def diffuser_profits(self):
+        existing_positions = mt5.positions_get()
+        counter = Counter([i.symbol for i in existing_positions])
+        diffuser_positions = {item: count for item, count in counter.items() if count >= 2}
+        for symbol in diffuser_positions.keys():
+            print(symbol)
 
     def risk_diffusers(self):
         internal_existing_positions = mt5.positions_get()
