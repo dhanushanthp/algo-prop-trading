@@ -7,6 +7,7 @@ import MetaTrader5 as mt5
 import modules.mng_pos as mp
 import modules.slack_msg as slack_msg
 from collections import Counter
+from objects.risk_diffuser import RiskDiffuser
 
 class RiskManager:
     def __init__(self, profit_split=1) -> None:
@@ -62,24 +63,27 @@ class RiskManager:
             if counter[pos_symbol] < 2 and position.comment == "R>60" and position.comment != "defuser":
                 order_type = position.type
                 entry_price = position.price_open
-                stop_price = position.sl
+                stop_price = position.tp
+                volume = position.volume
                 bid, ask = ind.get_bid_ask(pos_symbol)
                 if order_type == 0:
                     current_price = bid
                 else:
                     current_price = ask
 
-                volume = position.volume
-                points_in_stop = abs(entry_price - stop_price)/2
+                points_in_stop = abs(current_price - stop_price)
+                diffuser_enabler = abs(entry_price - stop_price)/2
+
+                positional_risk = mp.get_position_dollar_value(pos_symbol, order_type, entry_price, stop_price, volume)
 
                 if order_type == 0:
-                    decision_point = entry_price-points_in_stop
+                    decision_point = entry_price - diffuser_enabler
                     if current_price < decision_point:
-                        orders[pos_symbol] = "short"
+                        orders[pos_symbol] = RiskDiffuser("short", pos_symbol, current_price + points_in_stop, positional_risk)
                 else:
-                    decision_point = entry_price+points_in_stop
+                    decision_point = entry_price + diffuser_enabler
                     if current_price > decision_point:
-                        orders[pos_symbol] = "long"
+                        orders[pos_symbol] = RiskDiffuser("long", pos_symbol, current_price - points_in_stop, positional_risk)
         
         return orders
     
