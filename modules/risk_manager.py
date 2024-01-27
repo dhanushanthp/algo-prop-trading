@@ -63,7 +63,7 @@ class RiskManager:
             if counter[pos_symbol] < 2 and position.comment == "R>60" and position.comment != "defuser":
                 order_type = position.type
                 entry_price = position.price_open
-                stop_price = position.tp
+                stop_price = position.sl
                 volume = position.volume
                 bid, ask = ind.get_bid_ask(pos_symbol)
                 if order_type == 0:
@@ -74,16 +74,19 @@ class RiskManager:
                 points_in_stop = abs(current_price - stop_price)
                 diffuser_enabler = abs(entry_price - stop_price)/2
 
-                positional_risk = mp.get_position_dollar_value(pos_symbol, order_type, entry_price, stop_price, volume)
+                positional_risk = mp.get_position_dollar_value(pos_symbol, order_type, entry_price, current_price, volume) * 2
+                print(f"{pos_symbol}:{positional_risk/2}")
 
                 if order_type == 0:
                     decision_point = entry_price - diffuser_enabler
+                    print(f"{pos_symbol}: {decision_point}->{current_price}")
                     if current_price < decision_point:
-                        orders[pos_symbol] = RiskDiffuser("short", pos_symbol, current_price + points_in_stop, positional_risk)
+                        orders[pos_symbol] = RiskDiffuser("short", pos_symbol, ask + points_in_stop, positional_risk)
                 else:
                     decision_point = entry_price + diffuser_enabler
+                    print(f"{pos_symbol}: {decision_point}->{current_price}")
                     if current_price > decision_point:
-                        orders[pos_symbol] = RiskDiffuser("long", pos_symbol, current_price - points_in_stop, positional_risk)
+                        orders[pos_symbol] = RiskDiffuser("long", pos_symbol, bid - points_in_stop, positional_risk)
         
         return orders
     

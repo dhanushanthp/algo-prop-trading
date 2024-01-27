@@ -114,13 +114,13 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=60, n_spreds=3)
+            # _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=60, n_spreds=3)
             stop_price = self._round(symbol, stop_price)
             
             if entry_price > stop_price:                
                 try:
                     print(f"{symbol.ljust(12)}: LONG, {adhoc_risk}")
-                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price, adhoc_risk=adhoc_risk)
                     
                     lots =  round(lots, 2)
                     
@@ -187,13 +187,13 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=60, n_spreds=3)
+            # stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=60, n_spreds=3)
             stop_price = self._round(symbol, stop_price)
 
             if stop_price > entry_price:
                 try:
                     print(f"{symbol.ljust(12)}: SHORT, {adhoc_risk}")      
-                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price, adhoc_risk=adhoc_risk)
                     
                     lots =  round(lots, 2)
 
