@@ -260,7 +260,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n--##-- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}, TRIL: {self.enable_trail} STR Swtich: {self.switchable_strategy} Risk Incre:{self.incremental_risk} --##--")
+            print(f"\n--##-- {config.local_ip} EQUALIZER {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}, TRIL: {self.enable_trail} STR Swtich: {self.switchable_strategy} Risk Incre:{self.incremental_risk} --##--")
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
