@@ -44,6 +44,8 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSD":
                 return 1.6 * get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "CADJPY":
+                return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD")
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -76,6 +78,8 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSD":
                 return 1.6 * get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "CADJPY":
+                return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD")
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -112,6 +116,8 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("AUDUSD_raw") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSD_raw":
                 return 1.6 * get_exchange_price("NZDUSD_raw") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "CADJPY_raw":
+                return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD_raw")
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -148,6 +154,8 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("AUDUSDx") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSDx":
                 return 1.6 * get_exchange_price("NZDUSDx") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "CADJPYx":
+                return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCADx")
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -342,8 +350,8 @@ def cancel_specific_pending_orders(in_symbol, direction ,in_level):
         magic_number = float(active_order.comment)
         symbol = active_order.symbol
         order_type = active_order.type
-
-        if symbol == in_symbol and order_type==direction and magic_number != in_level:
+        
+        if symbol == in_symbol and magic_number != in_level:
             request = {
                 "action": mt5.TRADE_ACTION_REMOVE,
                 "order": active_order.ticket,
@@ -627,3 +635,4 @@ if __name__ == "__main__":
     # print(exist_on_initial_plan_changed_ema())
     # print(get_last_trades_position("GBPUSD", 15))
     print(get_dollar_value("AUS200.cash"))
+    print(get_exchange_price("CADJPY"))

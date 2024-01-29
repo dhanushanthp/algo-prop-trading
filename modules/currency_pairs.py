@@ -33,7 +33,7 @@ if company == "AXSE Brokerage Ltd.":
 
     jpy_currencies = ['AUDJPY_raw', 'CHFJPY_raw', 'EURJPY_raw', 'GBPJPY_raw' , 'NZDJPY_raw', 'USDJPY_raw', "CADJPY_raw"]
 
-    support_pairs = ["NZDUSD_raw", "USDHKD_raw"]
+    support_pairs = ["NZDUSD_raw", "USDHKD_raw", "USDCAD_raw"]
 
 elif company == "FTMO S.R.O.":
     currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF',
@@ -48,7 +48,7 @@ elif company == "FTMO S.R.O.":
 
     jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
 
-    support_pairs = ["NZDUSD", "USDHKD"]
+    support_pairs = ["NZDUSD", "USDHKD", "USDCAD"]
 # FundingPips
 elif company == "Black Bull Group Limited":
     currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF',
@@ -63,7 +63,7 @@ elif company == "Black Bull Group Limited":
 
     jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
 
-    support_pairs = ["NZDUSD", "USDHKD"]
+    support_pairs = ["NZDUSD", "USDHKD", "USDCAD"]
 # FundedFor
 elif company == "TF Global Markets (Aust) Pty Ltd":
     currencies = ['AUDJPYx', 'AUDNZDx', 'AUDUSDx', 'AUDCHFx',
@@ -78,7 +78,7 @@ elif company == "TF Global Markets (Aust) Pty Ltd":
 
     jpy_currencies = ['AUDJPYx', 'CHFJPYx', 'EURJPYx', 'GBPJPYx' , 'NZDJPYx', 'USDJPYx', "CADJPYx"]
 
-    support_pairs = ["NZDUSDx", "USDHKDx"]
+    support_pairs = ["NZDUSDx", "USDHKDx", "USDCADx"]
 
 else:
     raise Exception(f"The << {company} >> Trading platform not found")
