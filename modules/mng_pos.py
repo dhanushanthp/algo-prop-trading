@@ -323,6 +323,17 @@ def cancel_all_pending_orders():
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
 
+def get_level(in_symbol):
+    active_orders = mt5.orders_get()
+    for active_order in active_orders:
+        magic_number = float(active_order.comment)
+        symbol = active_order.symbol
+        order_type = active_order.type
+
+        if symbol == in_symbol:
+            return magic_number
+    
+
 def cancel_specific_pending_orders(in_symbol, direction ,in_level):
     active_orders = mt5.orders_get()
 

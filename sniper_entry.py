@@ -288,36 +288,44 @@ class AlgoTrader():
                                 if len(total_resistance_tf_long) >= 1:
                                     print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
                                     resis_level = min(total_resistance_tf_long)
-                                    mp.cancel_specific_pending_orders(symbol, 0, resis_level)
-                                    self.long_real_entry(symbol=symbol,
-                                                            comment="B>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=resis_level, 
-                                                            entry_timeframe=resis_level)
+                                    existing_order_level = mp.get_level(symbol)
+                                    if existing_order_level != resis_level:
+                                        mp.cancel_specific_pending_orders(symbol, 0, resis_level)
+                                        self.long_real_entry(symbol=symbol,
+                                                                comment="B>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                                r_s_timeframe=resis_level, 
+                                                                entry_timeframe=resis_level)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    resis_level = min(total_support_tf_short)
-                                    mp.cancel_specific_pending_orders(symbol, 1,  resis_level)
-                                    self.short_real_entry(symbol=symbol, 
-                                                            comment="B>" + '|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=resis_level, 
-                                                            entry_timeframe=resis_level)
+                                    resis_level = max(total_support_tf_short)
+                                    existing_order_level = mp.get_level(symbol)
+                                    if existing_order_level != resis_level:
+                                        mp.cancel_specific_pending_orders(symbol, 1,  resis_level)
+                                        self.short_real_entry(symbol=symbol, 
+                                                                comment="B>" + '|'.join(map(str, total_support_tf_short)), 
+                                                                r_s_timeframe=resis_level, 
+                                                                entry_timeframe=resis_level)
                             elif self.strategy == "reverse":
                                 if len(total_resistance_tf_long) >= 1:
                                     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    resis_level = max(total_resistance_tf_long)
-                                    mp.cancel_specific_pending_orders(symbol, 1,  resis_level)
-                                    self.short_real_entry(symbol=symbol,
-                                                            comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=resis_level, 
-                                                            entry_timeframe=resis_level)
+                                    resis_level = min(total_resistance_tf_long)
+                                    existing_order_level = mp.get_level(symbol)
+                                    if existing_order_level != resis_level:
+                                        mp.cancel_specific_pending_orders(symbol, 1,  resis_level)
+                                        self.short_real_entry(symbol=symbol,
+                                                                comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                                r_s_timeframe=resis_level, 
+                                                                entry_timeframe=resis_level)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                     resis_level = max(total_support_tf_short)
-                                    mp.cancel_specific_pending_orders(symbol, 0,  resis_level)
-                                    self.long_real_entry(symbol=symbol, 
-                                                            comment="R>" + '|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=resis_level, 
-                                                            entry_timeframe=resis_level)
+                                    existing_order_level = mp.get_level(symbol)
+                                    if existing_order_level != resis_level:
+                                        mp.cancel_specific_pending_orders(symbol, 0,  resis_level)
+                                        self.long_real_entry(symbol=symbol, 
+                                                                comment="R>" + '|'.join(map(str, total_support_tf_short)), 
+                                                                r_s_timeframe=resis_level, 
+                                                                entry_timeframe=resis_level)
                             else:
                                 raise Exception("Strategy not defined!")
             
