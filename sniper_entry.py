@@ -290,7 +290,7 @@ class AlgoTrader():
                                     resis_level = min(total_resistance_tf_long)
                                     existing_order_level = mp.get_level(symbol)
                                     if existing_order_level != resis_level:
-                                        mp.cancel_specific_pending_orders(symbol, 0, resis_level)
+                                        mp.cancel_specific_pending_orders(symbol, "long", resis_level)
                                         self.long_real_entry(symbol=symbol,
                                                                 comment="B>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                                 r_s_timeframe=resis_level, 
@@ -300,7 +300,7 @@ class AlgoTrader():
                                     resis_level = max(total_support_tf_short)
                                     existing_order_level = mp.get_level(symbol)
                                     if existing_order_level != resis_level:
-                                        mp.cancel_specific_pending_orders(symbol, 1,  resis_level)
+                                        mp.cancel_specific_pending_orders(symbol, "short",  resis_level)
                                         self.short_real_entry(symbol=symbol, 
                                                                 comment="B>" + '|'.join(map(str, total_support_tf_short)), 
                                                                 r_s_timeframe=resis_level, 
@@ -311,7 +311,7 @@ class AlgoTrader():
                                     resis_level = min(total_resistance_tf_long)
                                     existing_order_level = mp.get_level(symbol)
                                     if existing_order_level != resis_level:
-                                        mp.cancel_specific_pending_orders(symbol, 1,  resis_level)
+                                        mp.cancel_specific_pending_orders(symbol, "short",  resis_level)
                                         self.short_real_entry(symbol=symbol,
                                                                 comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                                 r_s_timeframe=resis_level, 
@@ -321,7 +321,7 @@ class AlgoTrader():
                                     resis_level = max(total_support_tf_short)
                                     existing_order_level = mp.get_level(symbol)
                                     if existing_order_level != resis_level:
-                                        mp.cancel_specific_pending_orders(symbol, 0,  resis_level)
+                                        mp.cancel_specific_pending_orders(symbol, "long",  resis_level)
                                         self.long_real_entry(symbol=symbol, 
                                                                 comment="R>" + '|'.join(map(str, total_support_tf_short)), 
                                                                 r_s_timeframe=resis_level, 
