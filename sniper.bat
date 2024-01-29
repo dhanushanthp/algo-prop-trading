@@ -1,1 +1,0 @@
-python sniper_entry.py --strategy break --timeframe 60 --rr 0.3,0.3 --enable_trail yes --enable_str_switch no --incremental_risk no

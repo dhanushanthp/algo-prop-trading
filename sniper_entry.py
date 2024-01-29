@@ -28,7 +28,7 @@ class AlgoTrader():
 
         # Default values
         self.strategy = None  # Default to 15 min
-        self.target_ratio = 1.0  # Default 1:0.5 Ratio
+        self.target_ratio = 2.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
         self.timer = 30
@@ -118,6 +118,7 @@ class AlgoTrader():
 
         if entry_price:
             _, stop_price, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
+            optimal_distance = optimal_distance/self.target_ratio
             
             # Shift Entries
             entry_price = entry_price - optimal_distance
@@ -161,7 +162,8 @@ class AlgoTrader():
         
         if entry_price:
             stop_price, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-
+            optimal_distance = optimal_distance/self.target_ratio
+            
             # Shift Entries
             entry_price = entry_price + optimal_distance
             entry_price = self._round(symbol, entry_price) 
@@ -354,6 +356,8 @@ if __name__ == "__main__":
         
         win.trading_timeframes = [int(i) for i in args.timeframe.split(",")]
         win.rr = [float(i) for i in args.rr.split(",")]
+        win.stop_ratio = win.rr[0]
+        win.target_ratio = win.rr[1]
         win.enable_trail = util.boolean(args.enable_trail)
         win.switchable_strategy = util.boolean(args.enable_str_switch)
         win.incremental_risk = util.boolean(args.incremental_risk)
