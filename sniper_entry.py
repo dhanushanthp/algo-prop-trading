@@ -117,7 +117,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
-            _, stop_price, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=60, n_spreds=3)
+            _, stop_price, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
             
             # Shift Entries
             entry_price = entry_price - optimal_distance
@@ -160,7 +160,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=60, n_spreds=3)
+            stop_price, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
 
             # Shift Entries
             entry_price = entry_price + optimal_distance
