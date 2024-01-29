@@ -44,7 +44,7 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSD":
                 return 1.6 * get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
-            elif symbol == "CADJPY":
+            elif symbol in ["CADJPY", "CADCHF"]:
                 return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD")
             elif symbol_lead == "USD":
                 """
@@ -78,7 +78,7 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSD":
                 return 1.6 * get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
-            elif symbol == "CADJPY":
+            elif symbol in ["CADJPY", "CADCHF"]:
                 return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD")
             elif symbol_lead == "USD":
                 """
@@ -116,7 +116,7 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("AUDUSD_raw") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSD_raw":
                 return 1.6 * get_exchange_price("NZDUSD_raw") # TODO, This fix number 1.6 has to be changed!
-            elif symbol == "CADJPY_raw":
+            elif symbol in ["CADJPY_raw", "CADCHF_raw"]:
                 return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD_raw")
             elif symbol_lead == "USD":
                 """
@@ -154,7 +154,7 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("AUDUSDx") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSDx":
                 return 1.6 * get_exchange_price("NZDUSDx") # TODO, This fix number 1.6 has to be changed!
-            elif symbol == "CADJPYx":
+            elif symbol in ["CADJPYx", "CADCHFx"]:
                 return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCADx")
             elif symbol_lead == "USD":
                 """
