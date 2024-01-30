@@ -118,13 +118,14 @@ class AlgoTrader():
 
         if entry_price:
             _, stop_price, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-            optimal_distance = optimal_distance/self.target_ratio * reverse
+            entry_distance = optimal_distance*reverse
+            optimal_distance = optimal_distance/self.target_ratio
             
             # Shift Entries
-            entry_price = entry_price - optimal_distance
+            entry_price = entry_price - entry_distance
             entry_price = self._round(symbol, entry_price) 
 
-            stop_price = stop_price - optimal_distance
+            stop_price = entry_price - optimal_distance
             stop_price = self._round(symbol, stop_price)
             
             order_type = mt.ORDER_TYPE_BUY_LIMIT
@@ -166,13 +167,14 @@ class AlgoTrader():
         
         if entry_price:
             stop_price, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-            optimal_distance = optimal_distance/self.target_ratio * reverse
+            entry_distance = optimal_distance*reverse
+            optimal_distance = optimal_distance/self.target_ratio
             
             # Shift Entries
-            entry_price = entry_price + optimal_distance
+            entry_price = entry_price + entry_distance
             entry_price = self._round(symbol, entry_price) 
 
-            stop_price = stop_price + optimal_distance
+            stop_price = entry_price + optimal_distance
             stop_price = self._round(symbol, stop_price)
 
             order_type = mt.ORDER_TYPE_SELL_LIMIT
@@ -217,6 +219,14 @@ class AlgoTrader():
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
+
+            if False:
+                resis_level = 0.66156
+                total_resistance_tf_long = [resis_level]
+                self.short_real_entry(symbol="EURJPY",
+                                                    comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
+                                                    r_s_timeframe=resis_level, 
+                                                    entry_timeframe=resis_level, reverse=1)
             
             if self.enable_trail:
                 mp.adjust_positions_trailing_stops() # Each position trail stop
@@ -290,13 +300,7 @@ class AlgoTrader():
                         if symbol not in self.trade_tracker:
                             self.trade_tracker[symbol] = None
                         
-                        # if symbol == "CADCHF":
-                        #     resis_level = 0.66156
-                        #     total_resistance_tf_long = [resis_level]
-                        #     self.long_real_entry(symbol=symbol,
-                        #                                         comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
-                        #                                         r_s_timeframe=resis_level, 
-                        #                                         entry_timeframe=resis_level, reverse=-1)
+                        
 
                         if (symbol not in existing_positions):
                             # Break Strategy
@@ -313,7 +317,7 @@ class AlgoTrader():
                                         self.long_real_entry(symbol=symbol,
                                                                 comment="B>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                                 r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level, reverse=-1)
+                                                                entry_timeframe=resis_level)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                     resis_level = max(total_support_tf_short)
@@ -323,7 +327,7 @@ class AlgoTrader():
                                         self.short_real_entry(symbol=symbol, 
                                                                 comment="B>" + '|'.join(map(str, total_support_tf_short)), 
                                                                 r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level, reverse=-1)
+                                                                entry_timeframe=resis_level)
                             elif self.strategy == "reverse":
                                 if len(total_resistance_tf_long) >= 1:
                                     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
