@@ -223,6 +223,7 @@ class AlgoTrader():
 
             # +3 is failed 3 tries, and -6 profit of 30% slot
             if self.pnl < -self.risk_manager.max_account_risk and not self.immidiate_exit:
+                mp.cancel_all_pending_orders()
                 mp.close_all_positions()
                 time.sleep(30) # Take some time for the account to digest the positions
                 current_account_size,_,_,_ = ind.get_account_details()
