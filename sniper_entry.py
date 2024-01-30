@@ -113,12 +113,12 @@ class AlgoTrader():
                 print(error_string)
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
-    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1):
+    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1, reverse=1):
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price:
             _, stop_price, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-            optimal_distance = optimal_distance/self.target_ratio
+            optimal_distance = optimal_distance/self.target_ratio * reverse
             
             # Shift Entries
             entry_price = entry_price - optimal_distance
@@ -127,6 +127,10 @@ class AlgoTrader():
             stop_price = stop_price - optimal_distance
             stop_price = self._round(symbol, stop_price)
             
+            order_type = mt.ORDER_TYPE_BUY_LIMIT
+            if reverse < 0:
+                order_type = mt.ORDER_TYPE_BUY_STOP
+
             if entry_price > stop_price:
                 try:
                     print(f"{symbol.ljust(12)}: LONG")
@@ -138,7 +142,7 @@ class AlgoTrader():
                         "action": mt.TRADE_ACTION_PENDING,
                         "symbol": symbol,
                         "volume": lots*double_vol,
-                        "type": mt.ORDER_TYPE_BUY_LIMIT,
+                        "type": order_type,
                         "price": entry_price,
                         "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
                         "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
@@ -157,12 +161,12 @@ class AlgoTrader():
             print(f" Skipped!")
             return False
 
-    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1):
+    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1, reverse=1):
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
             stop_price, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-            optimal_distance = optimal_distance/self.target_ratio
+            optimal_distance = optimal_distance/self.target_ratio * reverse
             
             # Shift Entries
             entry_price = entry_price + optimal_distance
@@ -170,6 +174,10 @@ class AlgoTrader():
 
             stop_price = stop_price + optimal_distance
             stop_price = self._round(symbol, stop_price)
+
+            order_type = mt.ORDER_TYPE_SELL_LIMIT
+            if reverse < 0:
+                order_type = mt.ORDER_TYPE_SELL_STOP
 
             if stop_price > entry_price:
                 try:
@@ -182,7 +190,7 @@ class AlgoTrader():
                         "action": mt.TRADE_ACTION_PENDING,
                         "symbol": symbol,
                         "volume": lots*double_vol,
-                        "type": mt.ORDER_TYPE_SELL_LIMIT,
+                        "type": order_type,
                         "price": entry_price,
                         "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
                         "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
@@ -280,6 +288,14 @@ class AlgoTrader():
                     for symbol in selected_symbols:
                         if symbol not in self.trade_tracker:
                             self.trade_tracker[symbol] = None
+                        
+                        # if symbol == "CADCHF":
+                        #     resis_level = 0.66156
+                        #     total_resistance_tf_long = [resis_level]
+                        #     self.long_real_entry(symbol=symbol,
+                        #                                         comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
+                        #                                         r_s_timeframe=resis_level, 
+                        #                                         entry_timeframe=resis_level, reverse=-1)
 
                         if (symbol not in existing_positions):
                             # Break Strategy
