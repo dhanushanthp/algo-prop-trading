@@ -333,7 +333,7 @@ class AlgoTrader():
                                         self.short_real_entry(symbol=symbol,
                                                                 comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                                 r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level)
+                                                                entry_timeframe=resis_level, reverse=-1)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                     resis_level = max(total_support_tf_short)
@@ -343,7 +343,7 @@ class AlgoTrader():
                                         self.long_real_entry(symbol=symbol, 
                                                                 comment="R>" + '|'.join(map(str, total_support_tf_short)), 
                                                                 r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level)
+                                                                entry_timeframe=resis_level, reverse=-1)
                             else:
                                 raise Exception("Strategy not defined!")
             
