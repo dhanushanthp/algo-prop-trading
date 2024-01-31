@@ -118,8 +118,9 @@ class AlgoTrader():
 
         if entry_price and mp.get_last_trades_position(symbol, self.trading_timeframes[0]):
             _, stop_price, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-            entry_distance = optimal_distance*reverse
-            
+            # entry_distance = optimal_distance*reverse
+            # optimal_distance = 3*ind.get_spread(symbol) * reverse
+
             # Shift Entries
             entry_price = self._round(symbol, entry_price) 
 
@@ -165,7 +166,8 @@ class AlgoTrader():
         
         if entry_price and mp.get_last_trades_position(symbol, self.trading_timeframes[0]):
             stop_price, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-            entry_distance = optimal_distance*reverse
+            # entry_distance = optimal_distance*reverse
+            # optimal_distance = 3*ind.get_spread(symbol) * reverse
             
             # Shift Entries
             entry_price = self._round(symbol, entry_price) 
@@ -209,12 +211,14 @@ class AlgoTrader():
     
     def main(self):
         selected_symbols = ind.get_ordered_symbols()
+        # selected_symbols = ["GBPUSD", "EURUSD", "USDJPY", "USDCHF", "AUDUSD"]
         
         while True:
             print(f"\n--##-- {config.local_ip} SNIPER  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}, TRIL: {self.enable_trail} STR Swtich: {self.switchable_strategy} Risk Incre:{self.incremental_risk} --##--")
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
+            mp.close_all_positions_by_time(self.trading_timeframes[0])
 
             if False:
                 resis_level = 0.66156
@@ -263,35 +267,6 @@ class AlgoTrader():
                         file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{self.profit_factor},{round(rr, 3)},{round(self.pnl, 3)}\n")
                 
                 print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")                    
-
-                break_long_at_resistance = {}
-                break_short_at_support = {}
-
-                for symbol in selected_symbols:
-                    break_long_at_resistance[symbol] = []
-                    break_short_at_support[symbol] = []
-
-                    for r_s_timeframe in self.trading_timeframes:
-                        try:
-                            # Incase if it failed to request the symbol price
-                            levels = ind.support_resistance_levels(symbol, r_s_timeframe)
-                        except Exception as e:
-                            self.alert.send_msg(f"{self.account_name}: {symbol}: {e}")
-                            break
-
-                        resistances = levels["resistance"]
-                        support = levels["support"]
-
-                        current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 1, 1)[-1]
-                        # print(symbol, current_candle)
-                        
-                        for resistance_level in resistances:
-                            if (current_candle["open"] < resistance_level) and (current_candle["close"] > resistance_level):
-                                break_long_at_resistance[symbol].append(resistance_level)
-                        
-                        for support_level in support:
-                            if (current_candle["open"] > support_level) and (current_candle["close"] < support_level):
-                                break_short_at_support[symbol].append(support_level)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 if len(existing_positions) < config.position_split_of_account_risk - 1:
@@ -300,54 +275,28 @@ class AlgoTrader():
                             self.trade_tracker[symbol] = None
 
                         if (symbol not in existing_positions):
-                            # Break Strategy
-                            total_resistance_tf_long = break_long_at_resistance[symbol]
-                            total_support_tf_short = break_short_at_support[symbol]
+                            resis_level = ""
+                            previous_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(self.trading_timeframes[0]), 2, 1)[-1]
+                            current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(self.trading_timeframes[0]), 1, 1)[-1]
 
-                            if self.strategy == "break":
-                                if len(total_resistance_tf_long) >= 1:
-                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    resis_level = min(total_resistance_tf_long)
-                                    existing_order_level = mp.get_level(symbol)
-                                    if existing_order_level != resis_level:
-                                        mp.cancel_specific_pending_orders(symbol, "long", resis_level)
-                                        self.long_real_entry(symbol=symbol,
-                                                                comment="B>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                                r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level)
-                                elif len(total_support_tf_short) >= 1:
-                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    resis_level = max(total_support_tf_short)
-                                    existing_order_level = mp.get_level(symbol)
-                                    if existing_order_level != resis_level:
-                                        mp.cancel_specific_pending_orders(symbol, "short",  resis_level)
-                                        self.short_real_entry(symbol=symbol, 
-                                                                comment="B>" + '|'.join(map(str, total_support_tf_short)), 
-                                                                r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level)
-                            elif self.strategy == "reverse":
-                                if len(total_resistance_tf_long) >= 1:
-                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    resis_level = min(total_resistance_tf_long)
-                                    existing_order_level = mp.get_level(symbol)
-                                    if existing_order_level != resis_level:
-                                        mp.cancel_specific_pending_orders(symbol, "short",  resis_level)
-                                        self.short_real_entry(symbol=symbol,
-                                                                comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                                r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level, reverse=1)
-                                elif len(total_support_tf_short) >= 1:
-                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    resis_level = max(total_support_tf_short)
-                                    existing_order_level = mp.get_level(symbol)
-                                    if existing_order_level != resis_level:
-                                        mp.cancel_specific_pending_orders(symbol, "long",  resis_level)
+                            previous_bar_length = abs(previous_candle["open"] - previous_candle["close"]) > 3 * ind.get_spread(symbol)
+                            current_bar_length = abs(current_candle["open"] - current_candle["close"]) > 3 * ind.get_spread(symbol)
+
+                            if previous_bar_length and current_bar_length and util.get_current_time().minute%15 > 0 and util.get_current_time().minute%15 < 14:
+                                # Previous bull candle
+                                if previous_candle["open"] < previous_candle["close"]:
+                                    if previous_candle["close"] > current_candle["low"]  and  previous_candle["open"] < current_candle["high"]:
                                         self.long_real_entry(symbol=symbol, 
-                                                                comment="R>" + '|'.join(map(str, total_support_tf_short)), 
+                                                                comment="short", 
                                                                 r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level, reverse=1)
-                            else:
-                                raise Exception("Strategy not defined!")
+                                                                entry_timeframe=resis_level)
+                                elif previous_candle["open"] > previous_candle["close"]:
+                                    # Previous bear candle
+                                    if previous_candle["close"] < current_candle["high"]  and  previous_candle["open"] > current_candle["low"]:
+                                        self.short_real_entry(symbol=symbol, 
+                                                                comment="long", 
+                                                                r_s_timeframe=resis_level, 
+                                                                entry_timeframe=resis_level)
                 else:
                     mp.cancel_all_pending_orders()
             

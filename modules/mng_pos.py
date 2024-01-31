@@ -582,6 +582,13 @@ def close_all_positions():
     for obj in positions: 
         close_single_position(obj=obj)
 
+def close_all_positions_by_time(trade_tf):
+    minute = util.get_current_time().minute
+    if minute%trade_tf == 14:
+        positions = mt5.positions_get()
+        for obj in positions: 
+            close_single_position(obj=obj)
+
 
 def close_all_with_condition():
     """

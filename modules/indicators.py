@@ -471,7 +471,9 @@ def short_tf_mapping(timeframe):
         raise Exception("TIMEFRAME for mapping is not defined")
 
 def match_timeframe(timeframe):
-    if timeframe == 5:
+    if timeframe == 1:
+        selected_time = mt5.TIMEFRAME_M1
+    elif timeframe == 5:
         selected_time = mt5.TIMEFRAME_M5
     elif timeframe == 15:
         selected_time = mt5.TIMEFRAME_M15
