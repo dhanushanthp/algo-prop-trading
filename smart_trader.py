@@ -8,8 +8,6 @@ import pytz
 import time
 import argparse
 
-
-
 import modules.indicators as ind
 import modules.util as util
 import modules.currency_pairs as curr
@@ -131,7 +129,7 @@ class AlgoTrader():
                     except Exception as e:
                         print(f"Long entry exception: {e}")
             else:
-                print(f" Skipped!")
+                print(f" Candle not strong!")
                 return False
 
     def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
@@ -170,7 +168,7 @@ class AlgoTrader():
                     except Exception as e:
                         print(e)
             else:
-                print(f" Skipped!")
+                print(f" Candle not strong!")
                 return False
     
     def main(self):
