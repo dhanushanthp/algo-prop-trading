@@ -188,7 +188,13 @@ class AlgoTrader():
             print(f"{'Risk:Reward'.ljust(20)}: {round(rr, 3)}")
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
 
-            mp.adjust_positions_trailing_stops(self.target_ratio) # Each position trail stop
+            # Record PnL
+            if pnl != 0:
+                with open(f'{config.local_ip}.csv', 'a') as file:
+                    file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
+
+            # Each position trail stop
+            mp.adjust_positions_trailing_stops(self.target_ratio) 
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
