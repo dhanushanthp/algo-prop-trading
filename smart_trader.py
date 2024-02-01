@@ -182,7 +182,7 @@ class AlgoTrader():
             print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
             
-            mp.adjust_positions_trailing_stops() # Each position trail stop
+            mp.adjust_positions_trailing_stops(self.target_ratio) # Each position trail stop
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
@@ -232,9 +232,6 @@ class AlgoTrader():
                     reverse_long_at_support[symbol] = []
                     reverse_short_at_resistance[symbol] = []
 
-                    reverse_long_at_support_v2[symbol] = []
-                    reverse_short_at_resistance_v2[symbol] = []
-
                     for r_s_timeframe in self.trading_timeframes:
                         try:
                             # Incase if it failed to request the symbol price
@@ -256,9 +253,6 @@ class AlgoTrader():
                             
                             if (current_candle["open"] < resistance_level) and (resistance_level + 3*ind.get_spread(symbol) > current_candle["close"] > resistance_level):
                                 break_long_at_resistance[symbol].append(r_s_timeframe)
-
-                            if (current_candle["open"] > resistance_level) and (resistance_level - 3*ind.get_spread(symbol) < current_candle["close"] < resistance_level):
-                                reverse_short_at_resistance_v2[symbol].append(r_s_timeframe)
                         
                         for support_level in support:                            
                             if (current_candle["open"] > support_level) and (support_level - 3*ind.get_spread(symbol) < current_candle["close"] < support_level):
@@ -266,9 +260,7 @@ class AlgoTrader():
                             
                             if (current_candle["open"] > support_level) and current_candle["close"] < support_level:
                                 reverse_long_at_support[symbol].append(r_s_timeframe)
-                            
-                            if (current_candle["open"] < support_level) and (support_level + 3*ind.get_spread(symbol) > current_candle["close"] > support_level):
-                                reverse_long_at_support_v2[symbol].append(r_s_timeframe)
+
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
                 if len(existing_positions) < len(selected_symbols):
@@ -281,10 +273,6 @@ class AlgoTrader():
                             # Reverse Strategy
                             total_support_tf_long = set(reverse_long_at_support[symbol])
                             total_resistance_tf_short = set(reverse_short_at_resistance[symbol])
-                            
-                            # Reverse V2
-                            total_support_tf_long_v2 = set(reverse_long_at_support_v2[symbol])
-                            total_resistance_tf_short_v2 = set(reverse_short_at_resistance_v2[symbol])
 
                             if self.strategy == "break":
                                 if len(total_resistance_tf_long) >= 1:
