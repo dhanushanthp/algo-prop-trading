@@ -45,7 +45,7 @@ class AlgoTrader():
         self.fixed_initial_account_size = self.risk_manager.account_size
 
         # Default
-        self.trading_timeframes = [240]
+        self.trading_timeframes = [60]
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
