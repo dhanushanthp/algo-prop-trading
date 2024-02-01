@@ -25,7 +25,7 @@ class AlgoTrader():
 
         # Default values
         self.strategy = None  # Default to 15 min
-        self.target_ratio = 1.0  # Default 1:0.5 Ratio
+        self.target_ratio = 4.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
         self.timer = 30

@@ -1,0 +1,1 @@
+python smart_trader.py smart 60
