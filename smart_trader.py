@@ -176,7 +176,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs------------------")
+            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs------------------")
             is_market_open, is_market_close = util.get_market_status()
             _,equity,_,_ = ind.get_account_details()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
