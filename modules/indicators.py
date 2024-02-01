@@ -4,6 +4,7 @@ import pytz
 import numpy as np
 import modules.currency_pairs as curr
 import collections
+import modules.config as config
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -57,7 +58,7 @@ def get_ordered_symbols(without_index=False):
     return sorted_list
 
 
-def get_stop_range(symbol, timeframe, buffer_ratio=0.5, multiplier=1):
+def get_stop_range(symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1):
     
     selected_time = match_timeframe(timeframe)
     
