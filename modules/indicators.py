@@ -90,8 +90,8 @@ def get_stop_range(symbol, timeframe, buffer_ratio=config.buffer_ratio, multipli
         lower_stop = current_candle["low"]
 
     # Adding buffer to candle based high and low
-    higher_stop = higher_stop + (higher_stop*buffer_ratio)
-    lower_stop = lower_stop - (lower_stop*buffer_ratio)
+    # higher_stop = higher_stop + (higher_stop*buffer_ratio)
+    # lower_stop = lower_stop - (lower_stop*buffer_ratio)
     
     mid_price = get_mid_price(symbol)
     
@@ -101,6 +101,8 @@ def get_stop_range(symbol, timeframe, buffer_ratio=config.buffer_ratio, multipli
     distance_from_low = max(atr, abs(lower_stop-mid_price))
 
     optimal_distance = max(distance_from_high, distance_from_low) * multiplier
+    optimal_distance = optimal_distance + (optimal_distance*buffer_ratio)
+    
     lower_stop = mid_price - optimal_distance
     higher_stop = mid_price + optimal_distance
 

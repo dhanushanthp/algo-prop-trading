@@ -102,7 +102,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
+            _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, buffer_ratio=6)
             
             # The strong candle check is disabled for copier. Since we don't need to validated it.
             stop_price = self._round(symbol, stop_price)
@@ -141,7 +141,7 @@ class AlgoTrader():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
+            stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, buffer_ratio=6)
             
             # The strong candle check is disabled for copier. Since we don't need to validated it.
             stop_price = self._round(symbol, stop_price)

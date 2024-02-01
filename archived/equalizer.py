@@ -75,10 +75,14 @@ class AlgoTrader():
         except Exception:
             return None
     
-    def get_lot_size(self, symbol, entry_price, stop_price):
+    def get_lot_size(self, symbol, entry_price, stop_price, adhoc_risk=None):
         dollor_value = mp.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price)
-        lots = self.risk_manager.risk_of_a_position/(points_in_stop * dollor_value)
+
+        if adhoc_risk is None:
+            adhoc_risk = self.risk_manager.risk_of_a_position
+
+        lots = abs(adhoc_risk)/(points_in_stop * dollor_value)
         
         if symbol in curr.currencies:
             points_in_stop = round(points_in_stop, 5)
@@ -106,11 +110,45 @@ class AlgoTrader():
                 error_string = f"{result.comment}"
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
-    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
+    def long_diffuser_entry(self, symbol, comment, stop_price, adhoc_risk):
+        entry_price = self.get_entry_price(symbol=symbol)
+
+        if entry_price:
+            # _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=60, n_spreds=3)
+            stop_price = self._round(symbol, stop_price)
+            
+            if entry_price > stop_price:                
+                try:
+                    print(f"{symbol.ljust(12)}: LONG, {adhoc_risk}")
+                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price, adhoc_risk=adhoc_risk)
+                    
+                    lots =  round(lots, 2)
+                    
+                    order_request = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": symbol,
+                        "volume": lots,
+                        "type": mt.ORDER_TYPE_BUY_LIMIT,
+                        "price": entry_price,
+                        "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
+                        "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
+                        "comment": f"{comment}",
+                        "magic": 0,
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request_log = mt.order_send(order_request)
+                    self.error_logging(request_log, order_request)
+                    return True
+                except Exception as e:
+                    print(f"Long entry exception: {e}")
+
+    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1):
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
+            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, buffer_ratio=6)
             
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
@@ -125,7 +163,7 @@ class AlgoTrader():
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
                             "symbol": symbol,
-                            "volume": lots,
+                            "volume": lots*double_vol,
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
@@ -145,11 +183,45 @@ class AlgoTrader():
                 print(f" Skipped!")
                 return False
 
-    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
+    def short_diffuser_entry(self, symbol, comment, stop_price, adhoc_risk):
+        entry_price = self.get_entry_price(symbol)
+        
+        if entry_price:
+            # stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=60, n_spreds=3)
+            stop_price = self._round(symbol, stop_price)
+
+            if stop_price > entry_price:
+                try:
+                    print(f"{symbol.ljust(12)}: SHORT, {adhoc_risk}")      
+                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price, adhoc_risk=adhoc_risk)
+                    
+                    lots =  round(lots, 2)
+
+                    order_request = {
+                        "action": mt.TRADE_ACTION_PENDING,
+                        "symbol": symbol,
+                        "volume": lots,
+                        "type": mt.ORDER_TYPE_SELL_LIMIT,
+                        "price": entry_price,
+                        "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
+                        "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
+                        "comment": f"{comment}",
+                        "magic":0,
+                        "type_time": mt.ORDER_TIME_GTC,
+                        "type_filling": mt.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request_log = mt.order_send(order_request)
+                    self.error_logging(request_log, order_request)
+                    return True
+                except Exception as e:
+                    print(e)
+
+    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1):
         entry_price = self.get_entry_price(symbol)
         
         if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
-            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, n_spreds=6)
+            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe, buffer_ratio=6)
             
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
@@ -164,7 +236,7 @@ class AlgoTrader():
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
                             "symbol": symbol,
-                            "volume": lots,
+                            "volume": lots*double_vol,
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
@@ -188,7 +260,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n--##-- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}, TRIL: {self.enable_trail} STR Swtich: {self.switchable_strategy} Risk Incre:{self.incremental_risk} --##--")
+            print(f"\n--##-- {config.local_ip} EQUALIZER {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs, RR: {self.rr}, TRIL: {self.enable_trail} STR Swtich: {self.switchable_strategy} Risk Incre:{self.incremental_risk} --##--")
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
@@ -231,27 +303,7 @@ class AlgoTrader():
                     with open(f'{config.local_ip}.csv', 'a') as file:
                         file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{self.profit_factor},{round(rr, 3)},{round(self.pnl, 3)}\n")
                 
-                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")
-                
-                if rr > self.rr[0] or rr < -self.rr[1]:
-                    mp.close_all_positions()
-                    time.sleep(30) # Take some time for the account to digest the positions
-                    # self.alert.send_msg(f"`{self.account_name}`(`{self.strategy.upper()}:{self.retries}`) , RR: {round(rr, 2)}, ${round(self.pnl)}")
-
-                    if rr > self.rr[0]:
-                        if self.incremental_risk:
-                            self.profit_factor = min(self.profit_factor+1, 5)
-                    else:
-                        if self.incremental_risk:
-                            self.profit_factor = max(self.profit_factor-1, 1)
-                        
-                        if self.switchable_strategy:
-                            self.strategy = "break" if self.strategy == "reverse" else "reverse"
-
-                    self.retries += 1
-                    self.risk_manager = risk_manager.RiskManager(self.profit_factor)
-                    self.fixed_initial_account_size = self.risk_manager.account_size
-                    
+                print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")                    
 
                 break_long_at_resistance = {}
                 break_short_at_support = {}
@@ -265,7 +317,7 @@ class AlgoTrader():
                         try:
                             # Incase if it failed to request the symbol price
                             levels = ind.support_resistance_levels(symbol, r_s_timeframe)
-                            _, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=r_s_timeframe, n_spreds=3)
+                            _, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=r_s_timeframe, buffer_ratio=3)
                         except Exception as e:
                             self.alert.send_msg(f"{self.account_name}: {symbol}: {e}")
                             break
@@ -276,17 +328,16 @@ class AlgoTrader():
                         current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
 
                         for resistance_level in resistances:
-                            resistance_level = resistance_level - optimal_distance
                             if (current_candle["open"] < resistance_level) and (resistance_level + 3*ind.get_spread(symbol) > current_candle["close"] > resistance_level):
                                 break_long_at_resistance[symbol].append(r_s_timeframe)
                         
                         for support_level in support:
-                            support_level = support_level + optimal_distance                 
                             if (current_candle["open"] > support_level) and (support_level - 3*ind.get_spread(symbol) < current_candle["close"] < support_level):
                                 break_short_at_support[symbol].append(r_s_timeframe)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                if len(existing_positions) < len(selected_symbols):
+                existing_main_positions = list(set([i.symbol for i in mt.positions_get() if i.comment == "R>60"]))
+                if len(existing_main_positions) < 5:
                     for symbol in selected_symbols:
                         if (symbol not in existing_positions):
                             # Break Strategy
@@ -325,6 +376,16 @@ class AlgoTrader():
                                                             entry_timeframe=max_timeframe)
                             else:
                                 raise Exception("Strategy not defined!")
+                
+                need_action = self.risk_manager.risk_diffusers()
+                max_timeframe = 60
+                for symbol in need_action.keys():
+                    risk_diff_obj = need_action[symbol]
+                    action = risk_diff_obj.direction
+                    if action == "long":
+                        self.long_diffuser_entry(symbol=symbol, comment="defuser", stop_price=risk_diff_obj.stop_price, adhoc_risk=risk_diff_obj.position_risk)
+                    elif action == "short":
+                        self.short_diffuser_entry(symbol=symbol, comment="defuser", stop_price=risk_diff_obj.stop_price, adhoc_risk=risk_diff_obj.position_risk)
             
             time.sleep(self.timer)
     

@@ -378,7 +378,7 @@ def get_position_dollar_value(symbol, type, entry_price, current_price, volume):
     dollor_value = mt5.order_calc_profit(type, symbol, volume, entry_price, current_price)
     return dollor_value
 
-def adjust_positions_trailing_stops():
+def adjust_positions_trailing_stops(multiplier):
     existing_positions = mt5.positions_get()
     for position in existing_positions:
         symbol = position.symbol
@@ -395,7 +395,7 @@ def adjust_positions_trailing_stops():
         stp_candle_low = util.curr_round(position.symbol, stp_candle_low)
         stp_candle_high = util.curr_round(position.symbol, stp_candle_high)
         
-        tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=tgt_tf, multiplier=4.0)
+        tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=tgt_tf, multiplier=multiplier)
         tgt_candle_low = util.curr_round(position.symbol, tgt_candle_low)
         tgt_candle_high = util.curr_round(position.symbol, tgt_candle_high)
         

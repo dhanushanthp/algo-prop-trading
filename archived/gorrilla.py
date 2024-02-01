@@ -113,18 +113,15 @@ class AlgoTrader():
                 print(error_string)
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
-    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1, reverse=1):
+    def long_real_entry(self, symbol, comment, stop_price, target_price, double_vol=1, reverse=1):
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price and mp.get_last_trades_position(symbol, self.trading_timeframes[0]):
-            _, stop_price, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-            # entry_distance = optimal_distance*reverse
-            # optimal_distance = 3*ind.get_spread(symbol) * reverse
+            _, candle_stop_price, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], buffer_ratio=3)
+            stop_price = min(candle_stop_price, stop_price)
 
             # Shift Entries
             entry_price = self._round(symbol, entry_price) 
-
-            stop_price = entry_price - optimal_distance
             stop_price = self._round(symbol, stop_price)
             
             order_type = mt.ORDER_TYPE_BUY_LIMIT
@@ -134,7 +131,7 @@ class AlgoTrader():
             if entry_price > stop_price:
                 try:
                     print(f"{symbol.ljust(12)}: LONG")
-                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                    _, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                     
                     lots =  round(lots, 2)
                     
@@ -144,9 +141,9 @@ class AlgoTrader():
                         "volume": lots*double_vol,
                         "type": order_type,
                         "price": entry_price,
-                        "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
-                        "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
-                        "comment": f"{r_s_timeframe}",
+                        "sl": stop_price,
+                        "tp": self._round(symbol, target_price),
+                        "comment": f"{stop_price}",
                         "magic":0,
                         "type_time": mt.ORDER_TIME_GTC,
                         "type_filling": mt.ORDER_FILLING_RETURN,
@@ -161,28 +158,23 @@ class AlgoTrader():
             print(f" Skipped!")
             return False
 
-    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, double_vol=1, reverse=1):
+    def short_real_entry(self, symbol, comment, stop_price, target_price, double_vol=1, reverse=1):
         entry_price = self.get_entry_price(symbol)
         
         if entry_price and mp.get_last_trades_position(symbol, self.trading_timeframes[0]):
-            stop_price, _, _, _, optimal_distance = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], n_spreds=3)
-            # entry_distance = optimal_distance*reverse
-            # optimal_distance = 3*ind.get_spread(symbol) * reverse
+            canldle_stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframes[0], buffer_ratio=3)
+            stop_price = max(canldle_stop_price, stop_price)
             
             # Shift Entries
             entry_price = self._round(symbol, entry_price) 
-
-            stop_price = entry_price + optimal_distance
             stop_price = self._round(symbol, stop_price)
 
             order_type = mt.ORDER_TYPE_SELL_LIMIT
-            if reverse < 0:
-                order_type = mt.ORDER_TYPE_SELL_STOP
 
             if stop_price > entry_price:
                 try:
                     print(f"{symbol.ljust(12)}: SHORT")      
-                    points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                    _, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                     
                     lots =  round(lots, 2)
 
@@ -192,9 +184,9 @@ class AlgoTrader():
                         "volume": lots*double_vol,
                         "type": order_type,
                         "price": entry_price,
-                        "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
-                        "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
-                        "comment": f"{r_s_timeframe}",
+                        "sl": stop_price,
+                        "tp": self._round(symbol, target_price),
+                        "comment": f"{stop_price}",
                         "magic":0,
                         "type_time": mt.ORDER_TIME_GTC,
                         "type_filling": mt.ORDER_FILLING_RETURN,
@@ -218,15 +210,7 @@ class AlgoTrader():
             is_market_open, is_market_close = util.get_market_status()
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
-            mp.close_all_positions_by_time(self.trading_timeframes[0])
-
-            if False:
-                resis_level = 0.66156
-                total_resistance_tf_long = [resis_level]
-                self.short_real_entry(symbol="EURJPY",
-                                                    comment="R>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                    r_s_timeframe=resis_level, 
-                                                    entry_timeframe=resis_level, reverse=1)
+            # mp.close_all_positions_by_time(self.trading_timeframes[0])
             
             if self.enable_trail:
                 mp.adjust_positions_trailing_stops() # Each position trail stop
@@ -269,34 +253,38 @@ class AlgoTrader():
                 print(f"RR:{round(rr, 3)}, Pnl: {round(self.pnl, 2)}, Initial: {round(self.fixed_initial_account_size)}, Equity: {equity}")                    
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                if len(existing_positions) < config.position_split_of_account_risk - 1:
+                if len(existing_positions) < len(selected_symbols):
                     for symbol in selected_symbols:
-                        if symbol not in self.trade_tracker:
-                            self.trade_tracker[symbol] = None
-
                         if (symbol not in existing_positions):
-                            resis_level = ""
-                            previous_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(self.trading_timeframes[0]), 2, 1)[-1]
-                            current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(self.trading_timeframes[0]), 1, 1)[-1]
+                            try:
+                                # Incase if it failed to request the symbol price
+                                levels = ind.support_resistance_levels(symbol, self.trading_timeframes[0])
+                            except Exception as e:
+                                self.alert.send_msg(f"{self.account_name}: {symbol}: {e}")
+                                break
 
-                            previous_bar_length = abs(previous_candle["open"] - previous_candle["close"]) > 3 * ind.get_spread(symbol)
-                            current_bar_length = abs(current_candle["open"] - current_candle["close"]) > 3 * ind.get_spread(symbol)
+                            resistances = levels["resistance"]
+                            support = levels["support"]
 
-                            if previous_bar_length and current_bar_length and util.get_current_time().minute%15 > 0 and util.get_current_time().minute%15 < 14:
-                                # Previous bull candle
-                                if previous_candle["open"] < previous_candle["close"]:
-                                    if previous_candle["close"] > current_candle["low"]  and  previous_candle["open"] < current_candle["high"]:
-                                        self.long_real_entry(symbol=symbol, 
+                            if len(resistances) > 0 and len(support) > 0:
+                                resistance_level = min(resistances)
+                                support_level = max(support)
+
+                                mid_price = ind.get_mid_price(symbol)
+                                distance_from_resistance = abs(resistance_level - mid_price)
+                                distance_from_support = abs(support_level - mid_price)
+
+                                if distance_from_resistance < distance_from_support:
+                                    # The price is near resistance
+                                    self.short_real_entry(symbol=symbol, 
                                                                 comment="short", 
-                                                                r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level)
-                                elif previous_candle["open"] > previous_candle["close"]:
-                                    # Previous bear candle
-                                    if previous_candle["close"] < current_candle["high"]  and  previous_candle["open"] > current_candle["low"]:
-                                        self.short_real_entry(symbol=symbol, 
+                                                                stop_price=resistance_level, 
+                                                                target_price=support_level)
+                                else:
+                                    self.long_real_entry(symbol=symbol, 
                                                                 comment="long", 
-                                                                r_s_timeframe=resis_level, 
-                                                                entry_timeframe=resis_level)
+                                                                stop_price=support_level, 
+                                                                target_price=resistance_level)
                 else:
                     mp.cancel_all_pending_orders()
             
