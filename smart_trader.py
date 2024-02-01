@@ -96,7 +96,7 @@ class AlgoTrader():
     def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol=symbol)
 
-        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
+        if entry_price and mp.get_last_trades_position(symbol):
             _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe)
             
             if is_strong_candle:
@@ -135,7 +135,7 @@ class AlgoTrader():
     def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
         entry_price = self.get_entry_price(symbol)
         
-        if entry_price and mp.get_last_trades_position(symbol, entry_timeframe):
+        if entry_price and mp.get_last_trades_position(symbol):
             stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe)
             
             if is_strong_candle:
@@ -218,11 +218,9 @@ class AlgoTrader():
 
                 break_long_at_resistance = {}
                 reverse_long_at_support = {}
-                reverse_long_at_support_v2 = {}
 
                 break_short_at_support = {}
                 reverse_short_at_resistance = {}
-                reverse_short_at_resistance_v2 = {}
 
                 for symbol in selected_symbols:
 
