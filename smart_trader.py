@@ -178,24 +178,26 @@ class AlgoTrader():
         while True:
             print(f"\n-------  {self.strategy.upper()} @ {datetime.now().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs------------------")
             is_market_open, is_market_close = util.get_market_status()
+            _,equity,_,_ = ind.get_account_details()
+            rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
+            pnl = (equity - self.fixed_initial_account_size)
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
             print(f"{'Next Trail at'.ljust(20)}: ${'{:,}'.format(round(self.risk_manager.get_max_loss() + self.risk_manager.risk_of_an_account))}")
-            
+            print(f"{'Risk:Reward'.ljust(20)}: {round(rr, 3)}")
+            print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
+
             mp.adjust_positions_trailing_stops(self.target_ratio) # Each position trail stop
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
                 mp.close_all_with_condition()
                 time.sleep(30) # Take some time for the account to digest the positions
-                current_account_size,_,_,_ = ind.get_account_details()
 
-                # The risk reward calclualted based on initial risk
-                rr = (current_account_size - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
-                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {round(rr, 2)}")
+                # The risk reward calclualted based on initial risk                
+                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {round(rr, 2)}, PnL: {round(pnl, 2)}")
                 
-                # if rr >= 2 or rr <= -1:
                 if rr <= 0:
                     self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
                     self.immidiate_exit = True
@@ -214,6 +216,7 @@ class AlgoTrader():
                 self.immidiate_exit = False
             
             num_existing_positions = len(mt.positions_get())
+
             if is_market_open and (not is_market_close) and (not self.immidiate_exit) and (num_existing_positions <= config.position_split_of_account_risk):
                 mp.cancel_all_pending_orders()
 
@@ -262,6 +265,7 @@ class AlgoTrader():
 
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+
                 if len(existing_positions) < len(selected_symbols):
                     for symbol in selected_symbols:
                         if (symbol not in existing_positions):
@@ -288,20 +292,6 @@ class AlgoTrader():
                                                             comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
-                                # elif len(total_resistance_tf_short_v2) >= 1:
-                                #     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short_v2)).ljust(10)}")
-                                #     max_timeframe = max(total_resistance_tf_short_v2)
-                                #     self.short_real_entry(symbol=symbol, 
-                                #                             comment="RS>" + '|'.join(map(str, total_resistance_tf_short_v2)), 
-                                #                             r_s_timeframe=max_timeframe, 
-                                #                             entry_timeframe=max_timeframe)
-                                # elif len(total_support_tf_long_v2) >= 1:
-                                #     print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long_v2)).ljust(10)}")
-                                #     max_timeframe = max(total_support_tf_long_v2)
-                                #     self.long_real_entry(symbol=symbol, 
-                                #                             comment="SL>" + '|'.join(map(str, total_support_tf_long_v2)), 
-                                #                             r_s_timeframe=max_timeframe, 
-                                #                             entry_timeframe=max_timeframe)
                             elif self.strategy == "reverse":
                                 if len(total_resistance_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
@@ -317,70 +307,6 @@ class AlgoTrader():
                                                             comment="SL>" + '|'.join(map(str, total_support_tf_long)), 
                                                             r_s_timeframe=max_timeframe, 
                                                             entry_timeframe=max_timeframe)
-                            elif self.strategy == "auto":
-                                timeframe_seperator = [5, 15, 30]
-                                # Breakout should have less than 30 and 15 and 5
-                                total_resistance_tf_long = [i for i in total_resistance_tf_long if i in timeframe_seperator]
-                                total_support_tf_short = [i for i in total_support_tf_short if i in timeframe_seperator]
-
-
-                                # Reverse should have more than 30 min
-                                total_support_tf_long = [i for i in total_support_tf_long if i not in timeframe_seperator]
-                                total_resistance_tf_short = [i for i in total_resistance_tf_short if i not in timeframe_seperator]
-
-                                if len(total_resistance_tf_long) >= 2:
-                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    self.long_real_entry(symbol=symbol, 
-                                                            comment="B>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=max(total_resistance_tf_long), 
-                                                            entry_timeframe=max(total_resistance_tf_long))
-                                elif len(total_support_tf_short) >= 2:
-                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    self.short_real_entry(symbol=symbol, 
-                                                            comment="B>" + '|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=max(total_support_tf_short), 
-                                                            entry_timeframe=max(total_support_tf_short))
-                                elif len(total_resistance_tf_short) >= 2:
-                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
-                                    self.short_real_entry(symbol=symbol, 
-                                                            comment="R>" + '|'.join(map(str, total_resistance_tf_short)), 
-                                                            r_s_timeframe=max(total_resistance_tf_short), 
-                                                            entry_timeframe=max(total_resistance_tf_short))
-                                elif len(total_support_tf_long) >= 2:
-                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
-                                    self.long_real_entry(symbol=symbol, 
-                                                            comment="R>" + '|'.join(map(str, total_support_tf_long)), 
-                                                            r_s_timeframe=max(total_support_tf_long), 
-                                                            entry_timeframe=max(total_support_tf_long))
-                            elif self.strategy == "ema":
-                                if len(total_resistance_tf_long) >= 2:
-                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    if ind.ema_direction(symbol, total_resistance_tf_long) == "L":
-                                        self.long_real_entry(symbol=symbol, 
-                                                            comment="LB>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=max(total_resistance_tf_long), 
-                                                            entry_timeframe=max(total_resistance_tf_long))
-                                elif len(total_support_tf_short) >= 2:
-                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    if ind.ema_direction(symbol, total_support_tf_short) == "S":
-                                        self.short_real_entry(symbol=symbol, 
-                                                            comment="SB>" + '|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=max(total_support_tf_short), 
-                                                            entry_timeframe=max(total_support_tf_short))
-                                elif len(total_resistance_tf_short) >= 2:
-                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
-                                    if ind.ema_direction(symbol, total_resistance_tf_short) == "S":
-                                        self.short_real_entry(symbol=symbol, 
-                                                            comment="SR>" + '|'.join(map(str, total_resistance_tf_short)), 
-                                                            r_s_timeframe=max(total_resistance_tf_short), 
-                                                            entry_timeframe=max(total_resistance_tf_short))
-                                elif len(total_support_tf_long) >= 2: 
-                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
-                                    if ind.ema_direction(symbol, total_support_tf_long) == "L":
-                                        self.long_real_entry(symbol=symbol, 
-                                                            comment="LR>" + '|'.join(map(str, total_support_tf_long)), 
-                                                            r_s_timeframe=max(total_support_tf_long), 
-                                                            entry_timeframe=max(total_support_tf_long))
                             elif self.strategy == "smart":
                                 level_price = ind.get_mid_price(symbol)
                                 if len(total_resistance_tf_long) >= 1:
