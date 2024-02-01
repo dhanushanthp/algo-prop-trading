@@ -265,7 +265,7 @@ def find_reversal_zones(symbol, timeframe, reversal_looks_back=20):
 
     return {"support": clean_support, "resistance": clean_resistance}
 
-def understand_direction(symbol, timeframe, level, num_past_candles=8):
+def understand_direction(symbol, timeframe, level, num_past_candles=24):
     """
     Determines the market direction based on candlestick analysis.
 
