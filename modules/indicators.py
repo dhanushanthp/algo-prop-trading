@@ -88,10 +88,6 @@ def get_stop_range(symbol, timeframe, buffer_ratio=config.buffer_ratio, multipli
     if current_candle["low"] < lower_stop:
         # Updating the previous_low if the condition is met
         lower_stop = current_candle["low"]
-
-    # Adding buffer to candle based high and low
-    # higher_stop = higher_stop + (higher_stop*buffer_ratio)
-    # lower_stop = lower_stop - (lower_stop*buffer_ratio)
     
     mid_price = get_mid_price(symbol)
     
