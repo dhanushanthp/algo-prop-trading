@@ -57,7 +57,7 @@ def get_ordered_symbols(without_index=False):
     return sorted_list
 
 
-def get_stop_range(symbol, timeframe, n_spreds=10, multiplier=1):
+def get_stop_range(symbol, timeframe, buffer_ratio=0.5, multiplier=1):
     
     selected_time = match_timeframe(timeframe)
     
@@ -71,7 +71,7 @@ def get_stop_range(symbol, timeframe, n_spreds=10, multiplier=1):
     is_strong_candle = None
 
     # Current candle should atleaat 3 times more than the spread (Avoid ranging behaviour)
-    if (current_candle_body > 3 * spread) :
+    if (current_candle_body > spread) :
         is_strong_candle = True
 
     # Extracting high and low values from the previous candle
@@ -87,10 +87,10 @@ def get_stop_range(symbol, timeframe, n_spreds=10, multiplier=1):
     if current_candle["low"] < lower_stop:
         # Updating the previous_low if the condition is met
         lower_stop = current_candle["low"]
-    
+
     # Adding buffer to candle based high and low
-    higher_stop = higher_stop + (n_spreds * spread)
-    lower_stop = lower_stop - (n_spreds * spread)
+    higher_stop = higher_stop + (higher_stop*buffer_ratio)
+    lower_stop = lower_stop - (lower_stop*buffer_ratio)
     
     mid_price = get_mid_price(symbol)
     
@@ -619,14 +619,14 @@ if __name__ == "__main__":
     # print(mt5.TIMEFRAME_M15)
     # print(get_candle_signal("EURJPY"))
     # print(get_account_name())
-    for symbol in get_ordered_symbols():
-        print(symbol)
-        # dict_values = support_resistance_levels(symbol, 60)
-        # close_b = close_based_reversals(symbol, 60)
-        # print(dict_values)
-        # print(close_b)
-        print(candle_based_trade(symbol, 60))
-        print()
+    # for symbol in get_ordered_symbols():
+    #     print(symbol)
+    #     # dict_values = support_resistance_levels(symbol, 60)
+    #     # close_b = close_based_reversals(symbol, 60)
+    #     # print(dict_values)
+    #     # print(close_b)
+    #     print(candle_based_trade(symbol, 60))
+    #     print()
         
         # support = dict_values["support"]
         # resistance = dict_values["resistance"]
@@ -639,3 +639,4 @@ if __name__ == "__main__":
     # print(close_based_reversals("EURNZD", 60))
     # print(ema_direction("AUDJPY", [240, 60, 30]))
     # print(understand_direction("AUDCHF", 60, 0.56882))
+    print(support_resistance_levels("EURUSD", 15))

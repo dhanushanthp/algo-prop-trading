@@ -213,11 +213,11 @@ def stop_round(symbol, stop_price):
         return round(stop_price, 2)
 
 
-def get_last_trades_position(symbol, current_trade_timeframe):
+def get_last_trades_position(symbol):
     """
     If you already have made some money. Then don't entry this for another time peroid based on last entered timeframe
     """
-
+    
     tm_zone = pytz.timezone('Etc/GMT-2')
     start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=2)
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
@@ -391,11 +391,11 @@ def adjust_positions_trailing_stops():
         tgt_tf = 60
         
         # Increase the range of the spread to eliminate the sudden stopouts
-        stp_candle_high, stp_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=stp_tf, n_spreds=3)
+        stp_candle_high, stp_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=stp_tf)
         stp_candle_low = util.curr_round(position.symbol, stp_candle_low)
         stp_candle_high = util.curr_round(position.symbol, stp_candle_high)
         
-        tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=tgt_tf, n_spreds=3, multiplier=1.0)
+        tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=tgt_tf, multiplier=4.0)
         tgt_candle_low = util.curr_round(position.symbol, tgt_candle_low)
         tgt_candle_high = util.curr_round(position.symbol, tgt_candle_high)
         
