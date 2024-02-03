@@ -4,3 +4,4 @@ analysis
 equity.csv
 modules/__pycache__/*
 objects/__pycache__/*
+*.ipynb_checkpoints
