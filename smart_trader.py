@@ -179,11 +179,11 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit: {self.partial_profit_rr}------------------")
+            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit: {self.partial_profit_rr} ------------------")
             is_market_open, is_market_close = util.get_market_status()
             _,equity,_,_ = ind.get_account_details()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
-            pnl = (equity - self.fixed_initial_account_size)
+            pnl = (equity - self.risk_manager.account_size)
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'Acc at Risk'.ljust(20)}: {'{:,}'.format(round(((self.risk_manager.get_max_loss() - self.fixed_initial_account_size)/self.fixed_initial_account_size) * 100, 2))}%, ${self.risk_manager.get_max_loss()}")
@@ -198,6 +198,17 @@ class AlgoTrader():
 
             # Each position trail stop
             mp.adjust_positions_trailing_stops(self.target_ratio) 
+
+            # Phoenix Strategy
+            if self.partial_profit_rr:
+                if rr > 0.3:
+                    mp.close_all_positions()
+                    time.sleep(30) # Take some time for the account to digest the positions
+                    current_account_size,_,_,_ = ind.get_account_details()
+                    # Set the balance as current account size, This will reset the RR
+                    self.fixed_initial_account_size = current_account_size
+                    # Don't change the risk of an account. Until next day, So we don't need to reinitialize risk manager
+
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.retries += 1
