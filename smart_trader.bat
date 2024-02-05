@@ -1,1 +1,1 @@
-python smart_trader.py smart 60
+python smart_trader.py --strategy smart --timeframe 60 --partial_profit_rr no

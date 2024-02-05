@@ -1,0 +1,1 @@
+python smart_trader.py --strategy smart --timeframe 60 --partial_profit_rr yes
