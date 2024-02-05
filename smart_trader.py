@@ -193,7 +193,7 @@ class AlgoTrader():
 
             # Record PnL
             if pnl != 0:
-                with open(f'{config.local_ip}.csv', 'a') as file:
+                with open(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', 'a') as file:
                     file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
 
             # Each position trail stop
