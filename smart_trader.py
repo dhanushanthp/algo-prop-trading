@@ -49,6 +49,7 @@ class AlgoTrader():
 
         # Take the profit as specific RR ratio
         self.partial_profit_rr = False
+        self.partial_rr=0.1
     
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -179,7 +180,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit: {self.partial_profit_rr} ------------------")
+            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr} ------------------")
             is_market_open, is_market_close = util.get_market_status()
             _,equity,_,_ = ind.get_account_details()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -201,7 +202,7 @@ class AlgoTrader():
 
             # Phoenix Strategy
             if self.partial_profit_rr:
-                if rr > 0.3:
+                if rr > self.partial_rr:
                     mp.close_all_positions()
                     time.sleep(30) # Take some time for the account to digest the positions
                     current_account_size,_,_,_ = ind.get_account_details()
@@ -373,12 +374,14 @@ if __name__ == "__main__":
 
     parser.add_argument('--strategy', type=str, help='Strategy Selection')
     parser.add_argument('--partial_profit_rr', type=str, help='Partial Profit RR')
+    parser.add_argument('--partial_rr', type=float, help='Partial Profit RR')
     parser.add_argument('--timeframe', type=str, help='Selected timeframe for trade')
     args = parser.parse_args()
     
     win.strategy = args.strategy        
     win.trading_timeframes = [int(i) for i in args.timeframe.split(",")]
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
+    win.partial_rr = args.partial_rr     
 
     win.main()
 
