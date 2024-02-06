@@ -46,6 +46,8 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol in ["CADJPY", "CADCHF"]:
                 return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD")
+            elif symbol in ["CHFJPY"]:
+                return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCHF")
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -80,6 +82,8 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol in ["CADJPY", "CADCHF"]:
                 return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD")
+            elif symbol in ["CHFJPY"]:
+                return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCHF")
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -118,6 +122,8 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("NZDUSD_raw") # TODO, This fix number 1.6 has to be changed!
             elif symbol in ["CADJPY_raw", "CADCHF_raw"]:
                 return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCAD_raw")
+            elif symbol in ["CHFJPY_raw"]:
+                return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCHF_raw")
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
@@ -156,6 +162,8 @@ def get_dollar_value(symbol):
                 return 1.6 * get_exchange_price("NZDUSDx") # TODO, This fix number 1.6 has to be changed!
             elif symbol in ["CADJPYx", "CADCHFx"]:
                 return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCADx")
+            elif symbol in ["CHFJPYx"]:
+                return (1/get_exchange_price(symbol)) * 1/get_exchange_price(f"USDCHFx")
             elif symbol_lead == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
