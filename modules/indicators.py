@@ -57,6 +57,11 @@ def get_ordered_symbols(without_index=False):
     
     return sorted_list
 
+def get_king_of_levels(symbol):
+    previous_day = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_D1 , 1, 1)[0]
+    high = previous_day["high"]
+    low = previous_day["low"]
+    return high, low
 
 def get_stop_range(symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1):
     
@@ -638,4 +643,6 @@ if __name__ == "__main__":
     # print(close_based_reversals("EURNZD", 60))
     # print(ema_direction("AUDJPY", [240, 60, 30]))
     # print(understand_direction("AUDCHF", 60, 0.56882))
-    print(support_resistance_levels("EURUSD", 15))
+    # print(support_resistance_levels("EURUSD", 15))
+    get_king_of_levels("XAUUSD")
+    

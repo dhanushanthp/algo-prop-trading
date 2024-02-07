@@ -13,6 +13,6 @@ else:
 position_split_of_account_risk = 20 # Number of positions can risk as per total account risk
 server_timezone=2
 
-buffer_ratio=0.50
+buffer_ratio=0.25
 
 local_ip = socket.gethostbyname(socket.gethostname()).replace(".", "_")
