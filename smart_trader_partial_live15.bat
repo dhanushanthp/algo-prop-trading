@@ -1,0 +1,1 @@
+python smart_trader.py --strategy smart --timeframe 15 --partial_profit_rr yes --partial_rr 0.1 --partial_live_actual yes

@@ -24,6 +24,7 @@ class RiskManager:
         self.max_risk_hit_counter = 0
         self.enable_half_trail = self.risk_of_an_account + round(ACCOUNT_SIZE/100*0.25) # Add addtional 0.25 to cover commision
         self.max_account_risk = round(ACCOUNT_SIZE/100)
+        self.partial_profit = round(ACCOUNT_SIZE/1000)
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
@@ -130,5 +131,5 @@ class RiskManager:
 if __name__ == "__main__":
     obj = RiskManager(profit_split=0.5)
     while True:
-        print(f"Current Risk: {obj.risk_of_a_position}")
+        print(f"Current Risk: {obj.partial_profit}")
         time.sleep(30)
