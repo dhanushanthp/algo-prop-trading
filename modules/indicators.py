@@ -85,7 +85,7 @@ def get_king_of_levels(symbol):
         previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
         off_hour_highs = max(previous_bars["high"])
         off_hour_lows = min(previous_bars["low"])
-        print(symbol, off_hour_highs, off_hour_lows)
+        # print(symbol, off_hour_highs, off_hour_lows)
         high.append(off_hour_highs); low.append(off_hour_lows)
 
     return high, low
