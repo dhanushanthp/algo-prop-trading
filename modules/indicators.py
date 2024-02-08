@@ -65,22 +65,30 @@ def get_king_of_levels(symbol):
     low = [previous_day["low"]]
 
     # Current US time
-    current_time = datetime.now(pytz.timezone('US/Eastern'))
-    today_year = int(current_time.year)
-    today_month = int(current_time.month)
-    today_date = int(current_time.day)
+    current_us_time = datetime.now(pytz.timezone('US/Eastern'))
+    today_year = int(current_us_time.year)
+    today_month = int(current_us_time.month)
+    today_date = int(current_us_time.day)
 
     # Check US Time
     # Added 4 minute delta, Sincd some reason the timezone is 4 min back compared to current time
-    check_time = datetime(today_year, today_month, today_date, hour=9, minute=30, 
+    check_us_time_start = datetime(today_year, today_month, today_date, hour=9, minute=30, 
                               tzinfo=pytz.timezone('US/Eastern')) + timedelta(minutes=4)
     
-    if current_time >= check_time:
+    check_us_time_end = datetime(today_year, today_month, today_date, hour=15, 
+                              tzinfo=pytz.timezone('US/Eastern')) + timedelta(minutes=4)
+    
+    if (current_us_time >= check_us_time_start) and (current_us_time < check_us_time_end):
+
+        # Current GMT time
+        tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
+        current_gmt_time = datetime.now(tm_zone)
+
         # Generate off market hours high and lows
-        start_time = datetime(today_year, today_month, today_date, hour=0, minute=0, 
+        start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), hour=0, minute=0, 
                               tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
         
-        end_time = check_time.astimezone(pytz.timezone(f'Etc/GMT-{config.server_timezone}')) - timedelta(hours=1)
+        end_time = check_us_time_start.astimezone(pytz.timezone(f'Etc/GMT-{config.server_timezone}')) - timedelta(hours=1)
         
         previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
         off_hour_highs = max(previous_bars["high"])

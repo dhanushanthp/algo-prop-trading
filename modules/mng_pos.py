@@ -223,28 +223,33 @@ def stop_round(symbol, stop_price):
 
 
 def get_previous_trades():
-    tm_zone = pytz.timezone('Etc/GMT-2')
-    start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=2)
-    end_time = datetime.now(tm_zone) + timedelta(hours=4)
-    today_date = datetime.now(tm_zone).date()
+    tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
+    start_gmt_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=2)
+    end_gmt_time = datetime.now(tm_zone) + timedelta(hours=4)
+    today_gmt_date = datetime.now(tm_zone).date()
 
-    current_time = util.get_current_time()
-    today_year = int(current_time.year)
-    today_month = int(current_time.month)
-    today_date = int(current_time.day)
+    # TODO This can be moved as a seperate function
+    # Current US time
+    current_us_time = datetime.now(pytz.timezone('US/Eastern'))
+    today_year = int(current_us_time.year)
+    today_month = int(current_us_time.month)
+    today_date = int(current_us_time.day)
 
-    check_time = datetime(today_year, today_month, today_date, hour=14, minute=30, 
-                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
-    
+    # Check US Time
     # Reset the positions on US market hours
-    if current_time >= check_time:
-        # Generate off market hours high and lows
-        start_time = datetime(today_year, today_month, today_date, hour=14, minute=0, 
-                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
-        end_time = current_time
+    check_us_time_start = datetime(today_year, today_month, today_date, hour=9, minute=30, 
+                              tzinfo=pytz.timezone('US/Eastern')) + timedelta(minutes=4)
+    
+    check_us_time_end = datetime(today_year, today_month, today_date, hour=15, 
+                              tzinfo=pytz.timezone('US/Eastern')) + timedelta(minutes=4)
+    
+    if (current_us_time >= check_us_time_start) and (current_us_time < check_us_time_end):
+        start_gmt_time = check_us_time_start.astimezone(tm_zone)
+        end_gmt_time = current_us_time.astimezone(tm_zone) + timedelta(hours=4)
 
+    
     # Check the existing positions based on the given time
-    exit_traded_position = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1]
+    exit_traded_position = [i for i in mt5.history_deals_get(start_gmt_time,  end_gmt_time) if i.entry==1]
     symbol_counter = Counter([i.symbol for i in exit_traded_position])
 
     win_positions = []
@@ -255,7 +260,7 @@ def get_previous_trades():
         last_traded_date = (datetime.fromtimestamp(last_traded_time, tz=tm_zone) - timedelta(hours=2)).date()
 
         # This is considered as new day
-        if last_traded_date == today_date:
+        if last_traded_date == today_gmt_date:
             if position.profit > 0:
                 win_positions.append(position.symbol)
             else:
