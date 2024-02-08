@@ -64,25 +64,28 @@ def get_king_of_levels(symbol):
     high = [previous_day["high"]]
     low = [previous_day["low"]]
 
-    current_time = util.get_current_time()
+    # Current US time
+    current_time = datetime.now(pytz.timezone('US/Eastern'))
     today_year = int(current_time.year)
     today_month = int(current_time.month)
     today_date = int(current_time.day)
 
-    check_time = datetime(today_year, today_month, today_date, hour=14, minute=30, 
-                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+    # Check US Time
+    # Added 4 minute delta, Sincd some reason the timezone is 4 min back compared to current time
+    check_time = datetime(today_year, today_month, today_date, hour=9, minute=30, 
+                              tzinfo=pytz.timezone('US/Eastern')) + timedelta(minutes=4)
     
     if current_time >= check_time:
         # Generate off market hours high and lows
         start_time = datetime(today_year, today_month, today_date, hour=0, minute=0, 
                               tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
-        end_time = datetime(today_year, today_month, today_date, hour=13, minute=0, 
-                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+        
+        end_time = check_time.astimezone(pytz.timezone(f'Etc/GMT-{config.server_timezone}')) - timedelta(hours=1)
         
         previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
         off_hour_highs = max(previous_bars["high"])
         off_hour_lows = min(previous_bars["low"])
-        print(off_hour_highs, off_hour_lows)
+        print(symbol, off_hour_highs, off_hour_lows)
         high.append(off_hour_highs); low.append(off_hour_lows)
 
     return high, low
