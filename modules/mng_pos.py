@@ -6,6 +6,7 @@ import numpy as np
 import pytz
 from datetime import datetime, timedelta, time
 import modules.config as config
+from collections import Counter
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -219,6 +220,46 @@ def stop_round(symbol, stop_price):
         return round(stop_price, 5)
     else:
         return round(stop_price, 2)
+
+
+def get_previous_trades():
+    tm_zone = pytz.timezone('Etc/GMT-2')
+    start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=2)
+    end_time = datetime.now(tm_zone) + timedelta(hours=4)
+    today_date = datetime.now(tm_zone).date()
+
+    exit_traded_position = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1]
+    symbol_counter = Counter([i.symbol for i in exit_traded_position])
+
+    win_positions = []
+    loss_positions =  dict()
+
+    for position in exit_traded_position:
+        last_traded_time = position.time
+        last_traded_date = (datetime.fromtimestamp(last_traded_time, tz=tm_zone) - timedelta(hours=2)).date()
+
+        # This is considered as new day
+        if last_traded_date == today_date:
+            if position.profit > 0:
+                win_positions.append(position.symbol)
+            else:
+                # This will always update the last traded tick
+                loss_positions[position.symbol] = position.type
+
+    # Get Unique symbols
+    win_positions = list(set(win_positions))
+
+    items_to_remove = []
+
+    for win_symbol in win_positions:
+        for loss_symbol in loss_positions.keys():
+            if loss_symbol == win_symbol:
+                items_to_remove.append(loss_symbol)
+    
+    for i in items_to_remove:
+        loss_positions.pop(i)
+
+    return win_positions, loss_positions, symbol_counter
 
 
 def get_last_trades_position(symbol):
@@ -649,5 +690,6 @@ if __name__ == "__main__":
     # print(get_continues_wins())
     # print(exist_on_initial_plan_changed_ema())
     # print(get_last_trades_position("GBPUSD", 15))
-    print(get_dollar_value("AUS200.cash"))
-    print(get_exchange_price("CADJPY"))
+    # print(get_dollar_value("AUS200.cash"))
+    # print(get_exchange_price("CADJPY"))
+    print(get_previous_trades())

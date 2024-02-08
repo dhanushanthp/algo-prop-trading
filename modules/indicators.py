@@ -2,9 +2,11 @@ from datetime import datetime,  timedelta
 import MetaTrader5 as mt5
 import pytz
 import numpy as np
+import pandas as pd
 import modules.currency_pairs as curr
 import collections
 import modules.config as config
+import modules.util as util
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():
@@ -59,8 +61,30 @@ def get_ordered_symbols(without_index=False):
 
 def get_king_of_levels(symbol):
     previous_day = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_D1 , 1, 1)[0]
-    high = previous_day["high"]
-    low = previous_day["low"]
+    high = [previous_day["high"]]
+    low = [previous_day["low"]]
+
+    current_time = util.get_current_time()
+    today_year = int(current_time.year)
+    today_month = int(current_time.month)
+    today_date = int(current_time.day)
+
+    check_time = datetime(today_year, today_month, today_date, hour=14, minute=30, 
+                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+    
+    if current_time >= check_time:
+        # Generate off market hours high and lows
+        start_time = datetime(today_year, today_month, today_date, hour=0, minute=0, 
+                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+        end_time = datetime(today_year, today_month, today_date, hour=14, minute=0, 
+                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+        
+        previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
+        off_hour_highs = max(previous_bars["high"])
+        off_hour_lows = min(previous_bars["low"])
+        print(off_hour_highs, off_hour_lows)
+        # high.append(off_hour_highs); low.append(off_hour_lows)
+
     return high, low
 
 def get_stop_range(symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1):
@@ -644,5 +668,5 @@ if __name__ == "__main__":
     # print(ema_direction("AUDJPY", [240, 60, 30]))
     # print(understand_direction("AUDCHF", 60, 0.56882))
     # print(support_resistance_levels("EURUSD", 15))
-    get_king_of_levels("XAUUSD")
+    print(get_king_of_levels("GBPJPY"))
     

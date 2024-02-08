@@ -53,8 +53,7 @@ def boolean(input):
     return False
 
 def get_gmt_time():
-    tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
-    local_time = datetime.now(tm_zone)
+    local_time = get_current_time()
     day_of_week = local_time.strftime('%A')
     hour = int(local_time.strftime('%H'))
     minute = int(local_time.strftime('%M'))

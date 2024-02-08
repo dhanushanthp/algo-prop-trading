@@ -25,7 +25,7 @@ class AlgoTrader():
 
         # Default values
         self.strategy = None  # Default to 15 min
-        self.target_ratio = 4.0  # Default 1:0.5 Ratio
+        self.target_ratio = 3.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
         self.timer = 30
@@ -276,8 +276,8 @@ class AlgoTrader():
 
                     r_s_timeframe = 60
 
-                    resistances = [king_leveles[0]]
-                    support = [king_leveles[1]]
+                    resistances = king_leveles[0]
+                    support = king_leveles[1]
 
                     current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
 
@@ -298,9 +298,28 @@ class AlgoTrader():
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
+                win_positions, loss_positions, symbol_counter = mp.get_previous_trades()
+                # If break failed then this will trade on opposite direction until it wins
+                for symbol, direction  in loss_positions.items():
+                    if (symbol not in existing_positions) and (symbol not in win_positions) and (symbol_counter[symbol] < 2):
+                        max_timeframe = 60
+                        if direction == 1:
+                            print(f"{symbol.ljust(12)} REV_L:")
+                            self.long_real_entry(symbol=symbol,
+                                                comment="REV_L>", 
+                                                r_s_timeframe=max_timeframe, 
+                                                entry_timeframe=max_timeframe)
+                        else:
+                            print(f"{symbol.ljust(12)} REV_S:")
+                            self.short_real_entry(symbol=symbol, 
+                                                comment="REV_S>", 
+                                                r_s_timeframe=max_timeframe, 
+                                                entry_timeframe=max_timeframe)
+                        break
+
                 if len(existing_positions) < len(selected_symbols):
                     for symbol in selected_symbols:
-                        if (symbol not in existing_positions):
+                        if (symbol not in existing_positions) and (symbol not in win_positions):
                             # Break Strategy
                             total_resistance_tf_long = set(break_long_at_resistance[symbol])
                             total_support_tf_short = set(break_short_at_support[symbol])
