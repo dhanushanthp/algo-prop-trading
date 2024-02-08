@@ -228,6 +228,22 @@ def get_previous_trades():
     end_time = datetime.now(tm_zone) + timedelta(hours=4)
     today_date = datetime.now(tm_zone).date()
 
+    current_time = util.get_current_time()
+    today_year = int(current_time.year)
+    today_month = int(current_time.month)
+    today_date = int(current_time.day)
+
+    check_time = datetime(today_year, today_month, today_date, hour=14, minute=30, 
+                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+    
+    # Reset the positions on US market hours
+    if current_time >= check_time:
+        # Generate off market hours high and lows
+        start_time = datetime(today_year, today_month, today_date, hour=14, minute=0, 
+                              tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+        end_time = current_time
+
+    # Check the existing positions based on the given time
     exit_traded_position = [i for i in mt5.history_deals_get(start_time,  end_time) if i.entry==1]
     symbol_counter = Counter([i.symbol for i in exit_traded_position])
 
