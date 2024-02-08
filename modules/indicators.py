@@ -76,7 +76,7 @@ def get_king_of_levels(symbol):
         # Generate off market hours high and lows
         start_time = datetime(today_year, today_month, today_date, hour=0, minute=0, 
                               tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
-        end_time = datetime(today_year, today_month, today_date, hour=14, minute=0, 
+        end_time = datetime(today_year, today_month, today_date, hour=13, minute=0, 
                               tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
         
         previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
