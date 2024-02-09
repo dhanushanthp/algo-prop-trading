@@ -204,16 +204,12 @@ class AlgoTrader():
             mp.adjust_positions_trailing_stops(self.target_ratio) 
 
             if self.partial_live_actual:
-                # Take profit at every 0.1% with 20 position split
-                if profit > self.risk_manager.partial_profit:
-                    self.alert.send_msg(f"{self.account_name} Live actual triggered, {pnl}")
+                if rr > 1.2:
+                    self.immidiate_exit = True
                     mp.close_all_positions()
                     time.sleep(30) # Take some time for the account to digest the positions
                     current_account_size,_,_,_ = ind.get_account_details()
-                    # Set the balance as current account size, This will reset the RR
-                    self.fixed_initial_account_size = current_account_size
-                    # Don't change the risk of an account. Until next day, So we don't need to reinitialize risk manager
-                    self.retries += 1
+                    self.alert.send_msg(f"{self.account_name} Early Exit with {current_account_size}")
 
 
             # Phoenix Strategy
