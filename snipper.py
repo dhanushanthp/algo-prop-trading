@@ -393,7 +393,7 @@ class AlgoTrader():
                                 raise Exception("Strategy not defined!")
 
                 print("SNIPER LEVELS:", self.snipper_levels)
-
+                symbols_to_remove = []
                 for symbol in self.snipper_levels.keys():
                     if symbol not in existing_positions:
                         object_tup = self.snipper_levels[symbol]
@@ -414,6 +414,13 @@ class AlgoTrader():
                                                         r_s_timeframe=max_timeframe, 
                                                         entry_timeframe=max_timeframe,
                                                         trade=True)
+                    else:
+                        symbols_to_remove.append(symbol)
+                
+                # Remove the exisiting positions
+                for i in symbols_to_remove:
+                    if i in self.snipper_levels:
+                        del self.snipper_levels[i]
 
             time.sleep(self.timer)
     
