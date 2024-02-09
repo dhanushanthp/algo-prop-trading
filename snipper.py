@@ -3,6 +3,7 @@ from statistics import mean
 import math
 import sys
 import MetaTrader5 as mt
+import pandas as pd
 from datetime import datetime, timedelta
 import pytz
 import time
@@ -391,7 +392,7 @@ class AlgoTrader():
                             else:
                                 raise Exception("Strategy not defined!")
 
-                print("SNIPER LEVELS:", self.snipper_levels)
+                print(pd.DataFrame.from_dict(self.snipper_levels, orient='index', columns=['Trade Level', 'Direction']))
                 symbols_to_remove = []
                 for symbol in self.snipper_levels.keys():
                     if symbol not in existing_positions:
