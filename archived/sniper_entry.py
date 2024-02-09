@@ -294,7 +294,7 @@ class AlgoTrader():
                                 break_short_at_support[symbol].append(support_level)
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-                if len(existing_positions) < config.position_split_of_account_risk - 1:
+                if len(existing_positions) < config.num_positions_at_risk - 1:
                     for symbol in selected_symbols:
                         if symbol not in self.trade_tracker:
                             self.trade_tracker[symbol] = None
