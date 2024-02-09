@@ -150,7 +150,6 @@ class AlgoTrader():
                     except Exception as e:
                         print(f"Long entry exception: {e}")
             else:
-                print(f" Candle not strong!")
                 return False
 
     def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, trade=False):
@@ -192,7 +191,6 @@ class AlgoTrader():
                     except Exception as e:
                         print(e)
             else:
-                print(f" Candle not strong!")
                 return False
     
     def main(self):
@@ -392,6 +390,7 @@ class AlgoTrader():
                             else:
                                 raise Exception("Strategy not defined!")
 
+                print()
                 print(pd.DataFrame.from_dict(self.snipper_levels, orient='index', columns=['Trade Level', 'Direction']))
                 symbols_to_remove = []
                 for symbol in self.snipper_levels.keys():
