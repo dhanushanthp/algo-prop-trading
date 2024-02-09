@@ -51,7 +51,17 @@ class AlgoTrader():
         self.partial_profit_rr = False
         self.partial_live_actual = False
         self.partial_rr=0.1
+
+        self.snipper_levels = {}
     
+    def set_snipper_levels(self, symbol, level, direction):
+        if symbol not in self.snipper_levels:
+            self.snipper_levels[symbol] = (level, direction)
+        else:
+            existing_direction = self.snipper_levels[symbol][1]
+            if existing_direction != direction:
+                self.snipper_levels[symbol] = (level, direction)
+   
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
         round_factor = 2 if symbol == "XAUUSD" else round_factor
@@ -99,7 +109,7 @@ class AlgoTrader():
                 print(error_string)
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
-    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
+    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, trade=False):
         entry_price = self.get_entry_price(symbol=symbol)
 
         # and mp.get_last_trades_position(symbol)
@@ -108,8 +118,11 @@ class AlgoTrader():
             
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
+
+                if not trade:
+                    self.set_snipper_levels(symbol, stop_price, "long")
                 
-                if entry_price > stop_price:                
+                if entry_price > stop_price and trade:                
                     try:
                         print(f"{symbol.ljust(12)}: LONG")        
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
@@ -139,7 +152,7 @@ class AlgoTrader():
                 print(f" Candle not strong!")
                 return False
 
-    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe):
+    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, trade=False):
         entry_price = self.get_entry_price(symbol)
         
         #  and mp.get_last_trades_position(symbol)
@@ -149,7 +162,10 @@ class AlgoTrader():
             if is_strong_candle:
                 stop_price = self._round(symbol, stop_price)
 
-                if stop_price > entry_price:
+                if not trade:
+                    self.set_snipper_levels(symbol, stop_price, "short")
+
+                if stop_price > entry_price and trade:
                     try:
                         print(f"{symbol.ljust(12)}: SHORT")      
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
@@ -295,28 +311,9 @@ class AlgoTrader():
                 
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
-                win_positions, loss_positions, symbol_counter = mp.get_previous_trades()
-                # If break failed then this will trade on opposite direction until it wins
-                for symbol, direction  in loss_positions.items():
-                    if (symbol not in existing_positions) and (symbol not in win_positions) and (symbol_counter[symbol] < 2):
-                        max_timeframe = 60
-                        if direction == 1:
-                            print(f"{symbol.ljust(12)} REV_L:")
-                            self.long_real_entry(symbol=symbol,
-                                                comment="REV_L>", 
-                                                r_s_timeframe=max_timeframe, 
-                                                entry_timeframe=max_timeframe)
-                        else:
-                            print(f"{symbol.ljust(12)} REV_S:")
-                            self.short_real_entry(symbol=symbol, 
-                                                comment="REV_S>", 
-                                                r_s_timeframe=max_timeframe, 
-                                                entry_timeframe=max_timeframe)
-                        break
-
                 if len(existing_positions) < len(selected_symbols):
                     for symbol in selected_symbols:
-                        if (symbol not in existing_positions) and (symbol not in win_positions):
+                        if (symbol not in existing_positions):
                             # Break Strategy
                             total_resistance_tf_long = set(break_long_at_resistance[symbol])
                             total_support_tf_short = set(break_short_at_support[symbol])
@@ -328,18 +325,21 @@ class AlgoTrader():
                             if self.strategy == "break":
                                 if len(total_resistance_tf_long) >= 1:
                                     print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
+                                    
                                     max_timeframe = max(total_resistance_tf_long)
                                     self.long_real_entry(symbol=symbol,
                                                          comment="RL>" + '|'.join(map(str, total_resistance_tf_long)), 
                                                          r_s_timeframe=max_timeframe, 
-                                                         entry_timeframe=max_timeframe)
+                                                         entry_timeframe=max_timeframe,
+                                                         trade=False)
                                 elif len(total_support_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
                                     max_timeframe = max(total_support_tf_short)
                                     self.short_real_entry(symbol=symbol, 
                                                           comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
                                                           r_s_timeframe=max_timeframe, 
-                                                          entry_timeframe=max_timeframe)
+                                                          entry_timeframe=max_timeframe,
+                                                          trade=False)
                             elif self.strategy == "reverse":
                                 if len(total_resistance_tf_short) >= 1:
                                     print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
@@ -391,7 +391,30 @@ class AlgoTrader():
                                                             entry_timeframe=max_timeframe)
                             else:
                                 raise Exception("Strategy not defined!")
-            
+
+                print("SNIPER LEVELS:", self.snipper_levels)
+
+                for symbol in self.snipper_levels.keys():
+                    if symbol not in existing_positions:
+                        object_tup = self.snipper_levels[symbol]
+                        level = object_tup[0]
+                        direction = object_tup[1]
+                        max_timeframe = 60
+                        current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
+                        if (current_candle["open"] > level and current_candle["close"] < level) or (current_candle["open"] < level and current_candle["close"] > level):
+                            if direction == "long":
+                                self.long_real_entry(symbol=symbol,
+                                                        comment=f"{level}", 
+                                                        r_s_timeframe=max_timeframe, 
+                                                        entry_timeframe=max_timeframe,
+                                                        trade=True)
+                            else:
+                                self.short_real_entry(symbol=symbol,
+                                                        comment=f"{level}", 
+                                                        r_s_timeframe=max_timeframe, 
+                                                        entry_timeframe=max_timeframe,
+                                                        trade=True)
+
             time.sleep(self.timer)
     
 if __name__ == "__main__":
