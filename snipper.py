@@ -59,9 +59,26 @@ class AlgoTrader():
         if symbol not in self.snipper_levels:
             self.snipper_levels[symbol] = (level, direction)
         else:
+            existing_level = self.snipper_levels[symbol][0]
             existing_direction = self.snipper_levels[symbol][1]
+            # If direction is opposite then update the whole object
             if existing_direction != direction:
                 self.snipper_levels[symbol] = (level, direction)
+            #  If the direction is same
+            elif existing_direction == direction:
+                # Pick the lower snipper value for long
+                if direction == "long":
+                    min_level = min(existing_level, level)
+                    if min_level != existing_level:
+                        print(f"{symbol.ljust(12)}: Update Sniper Long")      
+                        self.snipper_levels[symbol] = (level, direction)
+
+                # Pick the higher snipper value for long 
+                elif direction == "short":
+                    max_level = max(existing_level, level)
+                    if max_level != existing_level:
+                        print(f"{symbol.ljust(12)}: Update Sniper Short")      
+                        self.snipper_levels[symbol] = (level, direction)
    
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -391,7 +408,7 @@ class AlgoTrader():
                                 raise Exception("Strategy not defined!")
 
                 print()
-                print(pd.DataFrame.from_dict(self.snipper_levels, orient='index', columns=['Trade Level', 'Direction']))
+                print(pd.DataFrame.from_dict(self.snipper_levels, orient='index', columns=['Trade Level', 'Direction']).sort_index())
                 symbols_to_remove = []
                 for symbol in self.snipper_levels.keys():
                     if symbol not in existing_positions:
