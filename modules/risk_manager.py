@@ -15,7 +15,7 @@ class RiskManager:
         self.account_size  = ACCOUNT_SIZE
         self.account_risk_percentage = config.account_risk_percentage * profit_split
         self.risk_of_an_account = round(ACCOUNT_SIZE/100*self.account_risk_percentage)
-        self.position_risk_percentage = self.account_risk_percentage/config.position_split_of_account_risk
+        self.position_risk_percentage = config.risk_of_a_position
         self.risk_of_a_position = round(ACCOUNT_SIZE/100*self.position_risk_percentage)
         self.previous_time = None
         self.first_max_profit_check = True
