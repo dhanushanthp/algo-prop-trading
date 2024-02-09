@@ -116,13 +116,13 @@ class AlgoTrader():
         if entry_price :
             _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe)
             
-            if is_strong_candle:
-                stop_price = self._round(symbol, stop_price)
+            stop_price = self._round(symbol, stop_price)
 
-                if not trade:
-                    self.set_snipper_levels(symbol, stop_price, "long")
-                
-                if entry_price > stop_price and trade:                
+            if not trade:
+                self.set_snipper_levels(symbol, stop_price, "long")
+
+            if is_strong_candle and trade:    
+                if entry_price > stop_price:
                     try:
                         print(f"{symbol.ljust(12)}: LONG")        
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
@@ -158,14 +158,13 @@ class AlgoTrader():
         #  and mp.get_last_trades_position(symbol)
         if entry_price:
             stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe)
-            
-            if is_strong_candle:
-                stop_price = self._round(symbol, stop_price)
+            stop_price = self._round(symbol, stop_price)
 
-                if not trade:
-                    self.set_snipper_levels(symbol, stop_price, "short")
+            if not trade:
+                self.set_snipper_levels(symbol, stop_price, "short")
 
-                if stop_price > entry_price and trade:
+            if is_strong_candle and trade:
+                if stop_price > entry_price:
                     try:
                         print(f"{symbol.ljust(12)}: SHORT")      
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
