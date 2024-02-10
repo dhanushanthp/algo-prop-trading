@@ -1,11 +1,4 @@
-import os
-from statistics import mean 
-import math
-import sys
 import MetaTrader5 as mt
-import pandas as pd
-from datetime import datetime, timedelta
-import pytz
 import time
 import argparse
 
@@ -16,8 +9,6 @@ import modules.risk_manager as risk_manager
 import modules.config as config
 import modules.mng_pos as mp
 from modules.slack_msg import Slack
-from modules.monitor import Monitor
-from modules.file_utils import FileUtils
 from objects.Magazine import Magazine
 from objects.Directions import Directions
 
@@ -34,15 +25,12 @@ class SniperReloaded():
         self.retries = 0
 
         # External dependencies
-        self.risk_manager = risk_manager.RiskManager(profit_split=1)
+        self.risk_manager = risk_manager.RiskManager()
         self.magazine = Magazine()
         self.alert = Slack()
-        self.monitor = Monitor()
-        self.file_util = FileUtils()
 
         # Account information
         self.account_name = ind.get_account_name()
-        self.previous_equity = None
 
         # Expected reward for the day
         self.fixed_initial_account_size = self.risk_manager.account_size
@@ -52,10 +40,7 @@ class SniperReloaded():
 
         # Take the profit as specific RR ratio
         self.partial_profit_rr = False
-        self.partial_live_actual = False
-        self.partial_rr=0.1
-
-        self.snipper_levels = {}
+        self.partial_rr=self.risk_manager.account_risk_percentage
    
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -94,6 +79,8 @@ class SniperReloaded():
         if symbol in ['NIKKEI_raw']:
             lots = lots/1000
         
+        lots = round(lots, 2)
+
         return points_in_stop, lots
 
    
@@ -104,12 +91,11 @@ class SniperReloaded():
                 print(error_string)
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
-    def long_real_entry(self, symbol, break_level):
+    def long_entry(self, symbol, break_level):
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price :
             _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-            
             stop_price = self._round(symbol, stop_price)
 
             if is_strong_candle:    
@@ -117,8 +103,6 @@ class SniperReloaded():
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.LONG}")        
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
-                        
-                        lots =  round(lots, 2)
                         
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
@@ -136,13 +120,10 @@ class SniperReloaded():
                         
                         request_log = mt.order_send(order_request)
                         self.error_logging(request_log, order_request)
-                        return True
                     except Exception as e:
                         print(f"Long entry exception: {e}")
-            else:
-                return False
 
-    def short_real_entry(self, symbol, break_level):
+    def short_entry(self, symbol, break_level):
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
@@ -154,8 +135,6 @@ class SniperReloaded():
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
-                        
-                        lots =  round(lots, 2)
 
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
@@ -173,19 +152,16 @@ class SniperReloaded():
                         
                         request_log = mt.order_send(order_request)
                         self.error_logging(request_log, order_request)
-                        return True
                     except Exception as e:
                         print(e)
-            else:
-                return False
     
     def main(self):
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip} {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr} {self.partial_live_actual}------------------")
+            print(f"\n------- {config.local_ip.replace("_", ".")} {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr}------------------")
             is_market_open, is_market_close = util.get_market_status()
-            _,equity,_,profit = ind.get_account_details()
+            _,equity,_,_ = ind.get_account_details()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
             pnl = (equity - self.risk_manager.account_size)
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
@@ -203,57 +179,26 @@ class SniperReloaded():
             # Each position trail stop
             mp.adjust_positions_trailing_stops(self.target_ratio) 
 
-            if self.partial_live_actual:
-                if rr > 1.2:
-                    self.immidiate_exit = True
-                    mp.close_all_positions()
-                    time.sleep(30) # Take some time for the account to digest the positions
-                    current_account_size,_,_,_ = ind.get_account_details()
-                    self.alert.send_msg(f"{self.account_name} Early Exit with {current_account_size}")
-
-
-            # Phoenix Strategy
             if self.partial_profit_rr:
                 if rr > self.partial_rr:
-                    self.alert.send_msg(f"{self.account_name} RR triggered, {pnl}")
+                    self.immidiate_exit = True
                     mp.close_all_positions()
-                    time.sleep(30) # Take some time for the account to digest the positions
-                    current_account_size,_,_,_ = ind.get_account_details()
-                    # Set the balance as current account size, This will reset the RR
-                    self.fixed_initial_account_size = current_account_size
-                    # Don't change the risk of an account. Until next day, So we don't need to reinitialize risk manager
-                    self.retries += 1
-
 
             if self.risk_manager.has_daily_maximum_risk_reached():
-                self.retries += 1
+                self.immidiate_exit = True
                 mp.close_all_with_condition()
-                time.sleep(30) # Take some time for the account to digest the positions
-
-                # The risk reward calclualted based on initial risk                
-                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {round(rr, 2)}, PnL: {round(pnl, 2)}")
-                
-                if rr <= 0:
-                    self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
-                    self.immidiate_exit = True
-                
-                # Re initiate the object
-                self.risk_manager = risk_manager.RiskManager(profit_split=0.5)
-                self.fixed_initial_account_size = self.risk_manager.account_size
+                time.sleep(30) # Take some time for the account to digest the positions                
+                self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager = risk_manager.RiskManager(profit_split=1) # Reset the risk for the day
+                self.risk_manager = risk_manager.RiskManager() # Reset the risk for the day
                 mp.close_all_positions()
                 
                 # Reset account size for next day
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
             
-            num_existing_positions = len(mt.positions_get())
-            
-
-            #  and (num_existing_positions <= config.position_split_of_account_risk)
             if is_market_open and (not is_market_close) and (not self.immidiate_exit):
                 mp.cancel_all_pending_orders()
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
@@ -302,14 +247,16 @@ class SniperReloaded():
 
                         # Trade Decision
                         if (current_candle["open"] > break_level and current_candle["close"] < break_level) or (current_candle["open"] < break_level and current_candle["close"] > break_level):
-                            if direction == "long":
-                                self.long_real_entry(symbol=symbol, break_level=break_level)
-                            else:
-                                self.short_real_entry(symbol=symbol, break_level=break_level)
+                            
+                            if direction == Directions.LONG:
+                                self.long_entry(symbol=symbol, break_level=break_level)
+                            
+                            if direction == Directions.SHORT:
+                                self.short_entry(symbol=symbol, break_level=break_level)
                     else:
                         symbols_to_remove.append(symbol)
 
-                #Remove the exisiting positions
+                # Remove the exisiting positions
                 for symbol in symbols_to_remove:
                     self.magazine.unload_magazine(symbol)
 
@@ -321,7 +268,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
     parser.add_argument('--partial_profit_rr', type=str, help='Partial Profit RR')
-    parser.add_argument('--partial_live_actual', type=str, help='Partial Profit RR')
     parser.add_argument('--partial_rr', type=float, help='Partial Profit RR')
     parser.add_argument('--timeframe', type=str, help='Selected timeframe for trade')
     args = parser.parse_args()
@@ -329,7 +275,6 @@ if __name__ == "__main__":
     win.trading_timeframe = int(args.timeframe)
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
     win.partial_rr = args.partial_rr 
-    win.partial_live_actual = util.boolean(args.partial_live_actual)
 
     win.main()
 
