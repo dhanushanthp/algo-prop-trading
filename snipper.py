@@ -12,7 +12,7 @@ import argparse
 import modules.indicators as ind
 import modules.util as util
 import objects.Currencies as curr
-import modules.risk_manager as risk_manager
+import objects.RiskManager as RiskManager
 import modules.config as config
 import modules.mng_pos as mp
 from modules.slack_msg import Slack
@@ -33,7 +33,7 @@ class AlgoTrader():
         self.retries = 0
 
         # External dependencies
-        self.risk_manager = risk_manager.RiskManager(profit_split=1)
+        self.risk_manager = RiskManager.RiskManager(profit_split=1)
         self.alert = Slack()
         self.monitor = Monitor()
         self.file_util = FileUtils()
@@ -269,12 +269,12 @@ class AlgoTrader():
                     self.immidiate_exit = True
                 
                 # Re initiate the object
-                self.risk_manager = risk_manager.RiskManager(profit_split=0.5)
+                self.risk_manager = RiskManager.RiskManager(profit_split=0.5)
                 self.fixed_initial_account_size = self.risk_manager.account_size
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager = risk_manager.RiskManager(profit_split=1) # Reset the risk for the day
+                self.risk_manager = RiskManager.RiskManager(profit_split=1) # Reset the risk for the day
                 mp.close_all_positions()
                 
                 # Reset account size for next day

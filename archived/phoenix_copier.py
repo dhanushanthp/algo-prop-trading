@@ -4,7 +4,7 @@ import modules.indicators as ind
 import modules.util as util
 import objects.Currencies as curr
 import sys
-import modules.risk_manager as risk_manager
+import objects.RiskManager as RiskManager
 
 from datetime import datetime, timedelta
 import modules.config as config
@@ -33,7 +33,7 @@ class AlgoTrader():
         self.retries = 0
 
         # External dependencies
-        self.risk_manager = risk_manager.RiskManager(profit_split=1)
+        self.risk_manager = RiskManager.RiskManager(profit_split=1)
         self.alert = Slack()
         self.monitor = Monitor()
         self.file_util = FileUtils()
@@ -201,7 +201,7 @@ class AlgoTrader():
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager = risk_manager.RiskManager(profit_split=1) # Reset the risk for the day
+                self.risk_manager = RiskManager.RiskManager(profit_split=1) # Reset the risk for the day
                 mp.close_all_positions()
                 
                 # Reset account size for next day
@@ -244,7 +244,7 @@ class AlgoTrader():
                 if rr > 0.6 or rr < -0.3:
                     mp.close_all_positions()
                     time.sleep(30) # Take some time for the account to digest the positions
-                    self.risk_manager = risk_manager.RiskManager(profit_split=1)
+                    self.risk_manager = RiskManager.RiskManager(profit_split=1)
                     self.fixed_initial_account_size = self.risk_manager.account_size
 
                     if rr > 0.5:

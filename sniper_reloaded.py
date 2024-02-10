@@ -5,7 +5,7 @@ import argparse
 import modules.indicators as ind
 import modules.util as util
 import objects.Currencies as curr
-import modules.risk_manager as risk_manager
+from objects.RiskManager import RiskManager
 import modules.config as config
 from modules.slack_msg import Slack
 from objects.Magazine import Magazine
@@ -25,7 +25,7 @@ class SniperReloaded():
         self.retries = 0
 
         # External dependencies
-        self.risk_manager = risk_manager.RiskManager()
+        self.risk_manager = RiskManager()
         self.magazine = Magazine()
         self.alert = Slack()
         self.prices = Prices()
@@ -193,7 +193,7 @@ class SniperReloaded():
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager = risk_manager.RiskManager() # Reset the risk for the day
+                self.risk_manager = RiskManager() # Reset the risk for the day
                 self.risk_manager.close_all_positions()
                 
                 # Reset account size for next day
