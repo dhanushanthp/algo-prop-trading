@@ -1,5 +1,6 @@
 from Bullet import Bullet
 from Directions import Directions
+from tabulate import tabulate
 
 class Magazine:
     def __init__(self):
@@ -8,7 +9,7 @@ class Magazine:
     def get_magazine(self):
         return self.magazine
     
-    def load_magazine(self, target, sniper_trigger_level, sniper_level, shoot_direction):
+    def load_magazine(self, target:str, sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions):
         active_bullet = Bullet(target, sniper_trigger_level, sniper_level, shoot_direction)
 
         if target not in self.magazine:
@@ -38,7 +39,7 @@ class Magazine:
     def unload_magazine(self, target):
         self.magazine.pop(target)
     
-    def get_table(self):
+    def show_magazine(self):
         # Convert dictionary to lists for DataFrame construction
         data = {
             'Target': [self.magazine[key].target for key in self.magazine],
@@ -49,16 +50,17 @@ class Magazine:
 
         df = pd.DataFrame(data)
         df.set_index('Target', inplace=True)
-        return df
+        print()
+        print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
 
 if __name__ == "__main__":
     import time
     import pandas as pd
     magazine = Magazine()
     magazine.load_magazine("A", 10, 10, Directions.LONG)
-    print(magazine.get_table())
+    magazine.show_magazine()
     magazine.load_magazine("A", 10, 11, Directions.LONG)
-    print(magazine.get_table())
+    magazine.show_magazine()
     magazine.load_magazine("A", 10, 9, Directions.LONG)
     print(magazine.get_magazine())
     magazine.load_magazine("A", 10, 9, Directions.SHORT)
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     magazine.load_magazine("B", 10, 8, Directions.SHORT)
     print(magazine.get_magazine())
     magazine.load_magazine("A", 10, 9, Directions.LONG)
-    print(magazine.get_table())
+    magazine.show_magazine()
     magazine.unload_magazine("A")
     print(magazine.get_magazine())
     magazine.unload_magazine("B")
