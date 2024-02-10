@@ -6,13 +6,19 @@ class Prices:
     def __init__(self):
         pass
     
-    def _get_exchange_price(self, symbol):
+    def _get_exchange_price(self, symbol) -> float:
         ask_price = mt5.symbol_info_tick(symbol).ask
         bid_price = mt5.symbol_info_tick(symbol).bid
         exchange_rate = round((bid_price + ask_price)/2, 4)
         return exchange_rate
+    
+    def round(self, symbol, price) -> float:
+        round_factor = 5 if symbol in curr.currencies else 2
+        round_factor = 2 if symbol == "XAUUSD" else round_factor
+        round_factor = 3 if symbol in curr.jpy_currencies else round_factor
+        return round(price, round_factor)
 
-    def get_dollar_value(self, symbol):
+    def get_dollar_value(self, symbol) -> float:
         """"
         The dollar value received is inversely proportional to the estimated number of lots. Therefore, 
         increasing the dollar value will lead to a decrease in lots, ultimately reducing the overall risk
@@ -23,7 +29,7 @@ class Prices:
 
         if curr.company == "FTMO S.R.O.":
             if symbol == "US500.cash":
-                return 1
+                return 1.0
             elif symbol == "UK100.cash":
                 return self._get_exchange_price("GBPUSD")
             elif symbol == "HK50.cash":
@@ -63,7 +69,7 @@ class Prices:
             
         elif curr.company == "Black Bull Group Limited":
             if symbol == "SPX500":
-                return 1
+                return 1.0
             elif symbol == "FTSE100":
                 return self._get_exchange_price("GBPUSD")
             elif symbol == "JP225":
@@ -99,7 +105,7 @@ class Prices:
             
         elif curr.company == "AXSE Brokerage Ltd.":
             if symbol == "SP_raw":
-                return 1
+                return 1.0
             elif symbol == "FTSE_raw":
                 return self._get_exchange_price("GBPUSD_raw")
             elif symbol == "HK50_raw":
@@ -139,7 +145,7 @@ class Prices:
             
         elif curr.company == "TF Global Markets (Aust) Pty Ltd":
             if symbol == "SPX500x":
-                return 1
+                return 1.0
             elif symbol == "UK100x":
                 return self._get_exchange_price("GBPUSDx")
             elif symbol == "HK50.cash":

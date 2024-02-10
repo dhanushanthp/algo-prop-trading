@@ -42,19 +42,13 @@ class SniperReloaded():
         # Take the profit as specific RR ratio
         self.partial_profit_rr = False
         self.partial_rr=self.risk_manager.account_risk_percentage
-   
-    def _round(self, symbol, price):
-        round_factor = 5 if symbol in curr.currencies else 2
-        round_factor = 2 if symbol == "XAUUSD" else round_factor
-        round_factor = 3 if symbol in curr.jpy_currencies else round_factor
-        return round(price, round_factor)
-            
+              
     def get_entry_price(self, symbol):
         try:
             ask_price = mt.symbol_info_tick(symbol).ask
             bid_price = mt.symbol_info_tick(symbol).bid
             mid_price = (ask_price + bid_price)/2
-            return self._round(symbol=symbol, price=mid_price)
+            return self.prices.round(symbol=symbol, price=mid_price)
         except Exception:
             return None
     
@@ -97,7 +91,7 @@ class SniperReloaded():
 
         if entry_price :
             _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-            stop_price = self._round(symbol, stop_price)
+            stop_price = self.prices.round(symbol, stop_price)
 
             if is_strong_candle:    
                 if entry_price > stop_price:
@@ -111,8 +105,8 @@ class SniperReloaded():
                             "volume": lots,
                             "type": mt.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
-                            "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
-                            "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
+                            "sl": self.prices.round(symbol, entry_price - self.stop_ratio * points_in_stop),
+                            "tp": self.prices.round(symbol, entry_price + self.target_ratio * points_in_stop),
                             "comment": f"{break_level}",
                             "magic": self.trading_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
@@ -129,7 +123,7 @@ class SniperReloaded():
         
         if entry_price:
             stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-            stop_price = self._round(symbol, stop_price)
+            stop_price = self.prices.round(symbol, stop_price)
 
             if is_strong_candle:
                 if stop_price > entry_price:
@@ -143,8 +137,8 @@ class SniperReloaded():
                             "volume": lots,
                             "type": mt.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
-                            "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
-                            "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
+                            "sl": self.prices.round(symbol, entry_price + self.stop_ratio * points_in_stop),
+                            "tp": self.prices.round(symbol, entry_price - self.target_ratio * points_in_stop),
                             "comment": f"{break_level}",
                             "magic":self.trading_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
@@ -222,7 +216,7 @@ class SniperReloaded():
                         if current_candle["open"] < resistance_level and current_candle["close"] > resistance_level:
                             print(f"{symbol.ljust(12)} Resistance: {resistance_level}")
                             _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-                            stop_price = self._round(symbol, stop_price)
+                            stop_price = self.prices.round(symbol, stop_price)
                             self.magazine.load_magazine(target=symbol, sniper_trigger_level=resistance_level, sniper_level=stop_price, shoot_direction=Directions.LONG)
                             break
                     
@@ -230,7 +224,7 @@ class SniperReloaded():
                         if current_candle["open"] > support_level and current_candle["close"] < support_level:
                             print(f"{symbol.ljust(12)} Support: {support_level}")
                             stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-                            stop_price = self._round(symbol, stop_price)
+                            stop_price = self.prices.round(symbol, stop_price)
                             self.magazine.load_magazine(target=symbol, sniper_trigger_level=support_level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
 
