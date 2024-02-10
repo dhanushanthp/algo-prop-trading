@@ -7,10 +7,10 @@ import modules.util as util
 import modules.currency_pairs as curr
 import modules.risk_manager as risk_manager
 import modules.config as config
-import modules.mng_pos as mp
 from modules.slack_msg import Slack
 from objects.Magazine import Magazine
 from objects.Directions import Directions
+from objects.Prices import Prices
 
 class SniperReloaded():
     def __init__(self):
@@ -28,6 +28,7 @@ class SniperReloaded():
         self.risk_manager = risk_manager.RiskManager()
         self.magazine = Magazine()
         self.alert = Slack()
+        self.prices = Prices()
 
         # Account information
         self.account_name = ind.get_account_name()
@@ -58,7 +59,7 @@ class SniperReloaded():
             return None
     
     def get_lot_size(self, symbol, entry_price, stop_price):
-        dollor_value = mp.get_dollar_value(symbol)
+        dollor_value = self.prices.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price)
         lots = self.risk_manager.risk_of_a_position/(points_in_stop * dollor_value)
         
@@ -177,30 +178,30 @@ class SniperReloaded():
                     file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},break,{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
 
             # Each position trail stop
-            mp.adjust_positions_trailing_stops(self.target_ratio) 
+            self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
 
             if self.partial_profit_rr:
                 if rr > self.partial_rr:
                     self.immidiate_exit = True
-                    mp.close_all_positions()
+                    self.risk_manager.close_all_positions()
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.immidiate_exit = True
-                mp.close_all_with_condition()
+                self.risk_manager.close_all_positions()
                 time.sleep(30) # Take some time for the account to digest the positions                
                 self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
 
             if is_market_close:
                 print("Market Close!")
                 self.risk_manager = risk_manager.RiskManager() # Reset the risk for the day
-                mp.close_all_positions()
+                self.risk_manager.close_all_positions()
                 
                 # Reset account size for next day
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
             
             if is_market_open and (not is_market_close) and (not self.immidiate_exit):
-                mp.cancel_all_pending_orders()
+                self.risk_manager.cancel_all_pending_orders()
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
                 break_long_at_resistance = {}

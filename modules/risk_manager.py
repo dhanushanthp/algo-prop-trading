@@ -6,6 +6,7 @@ import time
 import MetaTrader5 as mt5
 import modules.mng_pos as mp
 import modules.slack_msg as slack_msg
+import modules.util as util
 from collections import Counter
 from objects.risk_diffuser import RiskDiffuser
 
@@ -116,6 +117,97 @@ class RiskManager:
         # Return False if daily maximum risk has not been reached
         return False
 
+    def adjust_positions_trailing_stops(self, target_multiplier:float, trading_timeframe:int):
+        existing_positions = mt5.positions_get()
+        for position in existing_positions:
+            symbol = position.symbol
+            stop_price = position.sl
+            target_price = position.tp
+            
+            # Increase the range of the spread to eliminate the sudden stopouts
+            stp_candle_high, stp_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
+            stp_candle_low = util.curr_round(position.symbol, stp_candle_low)
+            stp_candle_high = util.curr_round(position.symbol, stp_candle_high)
+            
+            tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
+            tgt_candle_low = util.curr_round(position.symbol, tgt_candle_low)
+            tgt_candle_high = util.curr_round(position.symbol, tgt_candle_high)
+            
+            if position.type == 0:
+                # Long Position
+                trail_stop = max(stop_price, stp_candle_low)
+                trail_target = min(target_price, tgt_candle_high)
+            else:
+                # Short Position
+                trail_stop = min(stop_price, stp_candle_high)
+                trail_target = max(target_price, tgt_candle_low)
+
+            if (trail_stop != stop_price) or (target_price != trail_target):
+                print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
+
+                modify_request = {
+                    "action": mt5.TRADE_ACTION_SLTP,
+                    "symbol": position.symbol,
+                    "volume": position.volume,
+                    "type": position.type,
+                    "position": position.ticket,
+                    "sl": trail_stop,
+                    "tp": trail_target,
+                    "comment": position.comment,
+                    "magic": position.magic,
+                    "type_time": mt5.ORDER_TIME_GTC,
+                    "type_filling": mt5.ORDER_FILLING_FOK,
+                    "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+                }
+                
+                result = mt5.order_send(modify_request)
+                
+                if result.retcode != mt5.TRADE_RETCODE_DONE:
+                    if result.comment != "No changes":
+                        print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
+
+    def close_single_position(self, obj):        
+        order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
+        exist_price = mt5.symbol_info_tick(obj.symbol).bid if obj.type == 1 else mt5.symbol_info_tick(obj.symbol).ask
+        
+        close_request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": obj.symbol,
+            "volume": obj.volume,
+            "type": order_type,
+            "position": obj.ticket,
+            "price": exist_price,
+            "deviation": 20,
+            "magic": 234000,
+            "comment": 'close_trail_version',
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_IOC, # also tried with ORDER_FILLING_RETURN
+        }
+        
+        result = mt5.order_send(close_request) # send order to close a position
+        
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            print("Close Order "+obj.symbol+" failed!!...comment Code: "+str(result.comment))
+    
+    def close_all_positions(self):
+        positions = mt5.positions_get()
+        for obj in positions: 
+            self.close_single_position(obj=obj)
+
+    def cancel_all_pending_orders(self):
+        active_orders = mt5.orders_get()
+
+        # Cancell all pending orders regadless of trial or real
+        for active_order in active_orders:
+            request = {
+                "action": mt5.TRADE_ACTION_REMOVE,
+                "order": active_order.ticket,
+            }
+
+            result = mt5.order_send(request)
+
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
     
     def update_to_half_trail(self):
         _, equity, _,_ = ind.get_account_details()
