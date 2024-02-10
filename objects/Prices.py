@@ -17,6 +17,12 @@ class Prices:
         round_factor = 2 if symbol == "XAUUSD" else round_factor
         round_factor = 3 if symbol in curr.jpy_currencies else round_factor
         return round(price, round_factor)
+    
+    def get_spread(self, symbol) -> float:
+        ask_price = mt5.symbol_info_tick(symbol).ask
+        bid_price = mt5.symbol_info_tick(symbol).bid
+        spread = ask_price - bid_price
+        return spread
 
     def get_dollar_value(self, symbol) -> float:
         """"
