@@ -1,0 +1,1 @@
+python sniper_reloaded.py --timeframe 60 --partial_profit_rr no --partial_rr 0.1  --partial_live_actual no
