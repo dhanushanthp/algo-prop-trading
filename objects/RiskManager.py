@@ -1,14 +1,9 @@
-import modules.indicators as ind
 import modules.config as config
-import pytz
-import datetime
 import time
 import MetaTrader5 as mt5
 import modules.mng_pos as mp
 import modules.slack_msg as slack_msg
 import modules.util as util
-from collections import Counter
-from objects.risk_diffuser import RiskDiffuser
 from objects.Prices import Prices
 from typing import Tuple
 import objects.Currencies as curr
@@ -19,7 +14,7 @@ from objects.Account import Account
 mt5.initialize()
 
 class RiskManager:
-    def __init__(self, profit_split=1) -> None:
+    def __init__(self, profit_split=1, stop_ratio=1, target_ratio=3) -> None:
         self.account = Account()
         ACCOUNT_SIZE = self.account.get_liquid_balance()
         self.account_size  = ACCOUNT_SIZE
@@ -36,6 +31,8 @@ class RiskManager:
         self.max_account_risk = round(ACCOUNT_SIZE/100)
         self.partial_profit = round(ACCOUNT_SIZE/1000)
         self.prices = Prices()
+        self.stop_ratio = stop_ratio
+        self.target_ratio = target_ratio
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account

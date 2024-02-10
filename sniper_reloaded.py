@@ -15,7 +15,7 @@ from objects.Orders import Orders
 from objects.Account import Account
 
 class SniperReloaded():
-    def __init__(self):
+    def __init__(self, trading_timeframe:int):
         # MetaTrader initialization
         mt.initialize()
 
@@ -27,12 +27,13 @@ class SniperReloaded():
         self.retries = 0
 
         # External dependencies
-        self.risk_manager = RiskManager()
+        self.risk_manager = RiskManager(stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
+        self.prices = Prices()
+        self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager)
         self.targets = Targets()
         self.alert = Slack()
-        self.prices = Prices()
-        self.orders = Orders()
         self.account = Account()
+        
 
         # Account information
         self.account_name = self.account.get_account_name()
@@ -41,75 +42,11 @@ class SniperReloaded():
         self.fixed_initial_account_size = self.risk_manager.account_size
 
         # Default
-        self.trading_timeframe = 60
+        self.trading_timeframe = trading_timeframe
 
         # Take the profit as specific RR ratio
         self.partial_profit_rr = False
         self.partial_rr=self.risk_manager.account_risk_percentage
-
-    def long_entry(self, symbol, break_level):
-        entry_price = self.prices.get_entry_price(symbol=symbol)
-
-        if entry_price:
-            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-            stop_price = self.prices.round(symbol, shield_object.long_range)
-
-            if shield_object.is_strong_signal:    
-                if entry_price > stop_price:
-                    try:
-                        print(f"{symbol.ljust(12)}: {Directions.LONG}")        
-                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
-                        
-                        order_request = {
-                            "action": mt.TRADE_ACTION_PENDING,
-                            "symbol": symbol,
-                            "volume": lots,
-                            "type": mt.ORDER_TYPE_BUY_LIMIT,
-                            "price": entry_price,
-                            "sl": self.prices.round(symbol, entry_price - self.stop_ratio * points_in_stop),
-                            "tp": self.prices.round(symbol, entry_price + self.target_ratio * points_in_stop),
-                            "comment": f"{break_level}",
-                            "magic": self.trading_timeframe,
-                            "type_time": mt.ORDER_TIME_GTC,
-                            "type_filling": mt.ORDER_FILLING_RETURN,
-                        }
-                        
-                        request_log = mt.order_send(order_request)
-                        util.error_logging(request_log, order_request)
-                    except Exception as e:
-                        print(f"Long entry exception: {e}")
-
-    def short_entry(self, symbol, break_level):
-        entry_price = self.prices.get_entry_price(symbol)
-        
-        if entry_price:
-            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-            stop_price = self.prices.round(symbol, shield_object.short_range)
-
-            if shield_object.is_strong_signal:
-                if stop_price > entry_price:
-                    try:
-                        print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
-                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
-
-                        order_request = {
-                            "action": mt.TRADE_ACTION_PENDING,
-                            "symbol": symbol,
-                            "volume": lots,
-                            "type": mt.ORDER_TYPE_SELL_LIMIT,
-                            "price": entry_price,
-                            "sl": self.prices.round(symbol, entry_price + self.stop_ratio * points_in_stop),
-                            "tp": self.prices.round(symbol, entry_price - self.target_ratio * points_in_stop),
-                            "comment": f"{break_level}",
-                            "magic":self.trading_timeframe,
-                            "type_time": mt.ORDER_TIME_GTC,
-                            "type_filling": mt.ORDER_FILLING_RETURN,
-                        }
-                        
-                        request_log = mt.order_send(order_request)
-                        util.error_logging(request_log, order_request)
-                    except Exception as e:
-                        print(e)
     
     def main(self):
         selected_symbols = ind.get_ordered_symbols()
@@ -205,10 +142,10 @@ class SniperReloaded():
                         if (current_candle["open"] > break_level and current_candle["close"] < break_level) or (current_candle["open"] < break_level and current_candle["close"] > break_level):
                             
                             if direction == Directions.LONG:
-                                self.long_entry(symbol=symbol, break_level=break_level)
+                                self.orders.long_entry(symbol=symbol, break_level=break_level, trading_timeframe=self.trading_timeframe)
                             
                             if direction == Directions.SHORT:
-                                self.short_entry(symbol=symbol, break_level=break_level)
+                                self.orders.short_entry(symbol=symbol, break_level=break_level, trading_timeframe=self.trading_timeframe)
                     else:
                         symbols_to_remove.append(symbol)
 
@@ -219,8 +156,6 @@ class SniperReloaded():
             time.sleep(self.timer)
     
 if __name__ == "__main__":
-    win = SniperReloaded()
-
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
     parser.add_argument('--partial_profit_rr', type=str, help='Partial Profit RR')
@@ -228,7 +163,10 @@ if __name__ == "__main__":
     parser.add_argument('--timeframe', type=str, help='Selected timeframe for trade')
     args = parser.parse_args()
     
-    win.trading_timeframe = int(args.timeframe)
+    
+    trading_timeframe = int(args.timeframe)
+    win = SniperReloaded(trading_timeframe=trading_timeframe)
+
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
     win.partial_rr = args.partial_rr 
 
