@@ -11,6 +11,7 @@ from modules.slack_msg import Slack
 from objects.Magazine import Magazine
 from objects.Directions import Directions
 from objects.Prices import Prices
+from objects.Orders import Orders
 
 class SniperReloaded():
     def __init__(self):
@@ -29,6 +30,7 @@ class SniperReloaded():
         self.magazine = Magazine()
         self.alert = Slack()
         self.prices = Prices()
+        self.orders = Orders()
 
         # Account information
         self.account_name = ind.get_account_name()
@@ -177,25 +179,25 @@ class SniperReloaded():
             if self.partial_profit_rr:
                 if rr > self.partial_rr:
                     self.immidiate_exit = True
-                    self.risk_manager.close_all_positions()
+                    self.orders.close_all_positions()
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.immidiate_exit = True
-                self.risk_manager.close_all_positions()
+                self.orders.close_all_positions()
                 time.sleep(30) # Take some time for the account to digest the positions                
                 self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
 
             if is_market_close:
                 print("Market Close!")
                 self.risk_manager = RiskManager() # Reset the risk for the day
-                self.risk_manager.close_all_positions()
+                self.orders.close_all_positions()
                 
                 # Reset account size for next day
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
             
             if is_market_open and (not is_market_close) and (not self.immidiate_exit):
-                self.risk_manager.cancel_all_pending_orders()
+                self.orders.cancel_all_pending_orders()
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
                 break_long_at_resistance = {}
