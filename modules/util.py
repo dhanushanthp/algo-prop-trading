@@ -6,6 +6,14 @@ mt5.initialize()
 import objects.Currencies as curr
 import modules.config as config
 
+
+def error_logging(result, request_str={}):
+    if result:
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            error_string = f"{result.comment}"
+            print(error_string)
+            # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
+
 def match_timeframe(timeframe):
     if timeframe == 1:
         selected_time = mt5.TIMEFRAME_M1

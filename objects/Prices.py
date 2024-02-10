@@ -11,6 +11,13 @@ class Prices:
         bid_price = mt5.symbol_info_tick(symbol).bid
         exchange_rate = round((bid_price + ask_price)/2, 4)
         return exchange_rate
+
+    def get_entry_price(self, symbol) -> float:
+        try:
+            entry_price = self.get_exchange_price(symbol=symbol)
+            return self.round(symbol=symbol, price=entry_price)
+        except Exception:
+            return None
     
     def round(self, symbol, price) -> float:
         round_factor = 5 if symbol in curr.currencies else 2

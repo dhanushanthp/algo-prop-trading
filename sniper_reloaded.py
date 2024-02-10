@@ -44,52 +44,9 @@ class SniperReloaded():
         # Take the profit as specific RR ratio
         self.partial_profit_rr = False
         self.partial_rr=self.risk_manager.account_risk_percentage
-              
-    def get_entry_price(self, symbol):
-        try:
-            ask_price = mt.symbol_info_tick(symbol).ask
-            bid_price = mt.symbol_info_tick(symbol).bid
-            mid_price = (ask_price + bid_price)/2
-            return self.prices.round(symbol=symbol, price=mid_price)
-        except Exception:
-            return None
-    
-    def get_lot_size(self, symbol, entry_price, stop_price):
-        dollor_value = self.prices.get_dollar_value(symbol)
-        points_in_stop = abs(entry_price-stop_price)
-        lots = self.risk_manager.risk_of_a_position/(points_in_stop * dollor_value)
-        
-        if symbol in curr.currencies:
-            points_in_stop = round(points_in_stop, 5)
-            lots = lots/10**5
-        
-        # This change made of fundedEngineer account!
-        if symbol in ['ASX_raw', 'FTSE_raw', 'FTSE100']:
-            lots = lots/10
-        
-        if symbol in ['SP_raw', "SPX500"]:
-            lots = lots/40
-        
-        if symbol in ['HK50_raw']:
-            lots = lots/100
-        
-        if symbol in ['NIKKEI_raw']:
-            lots = lots/1000
-        
-        lots = round(lots, 2)
-
-        return points_in_stop, lots
-
-   
-    def error_logging(self, result, request_str={}):
-        if result:
-            if result.retcode != mt.TRADE_RETCODE_DONE:
-                error_string = f"{result.comment}"
-                print(error_string)
-                # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
     def long_entry(self, symbol, break_level):
-        entry_price = self.get_entry_price(symbol=symbol)
+        entry_price = self.prices.get_entry_price(symbol=symbol)
 
         if entry_price :
             _, stop_price, is_strong_candle, _ = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
@@ -116,12 +73,12 @@ class SniperReloaded():
                         }
                         
                         request_log = mt.order_send(order_request)
-                        self.error_logging(request_log, order_request)
+                        util.error_logging(request_log, order_request)
                     except Exception as e:
                         print(f"Long entry exception: {e}")
 
     def short_entry(self, symbol, break_level):
-        entry_price = self.get_entry_price(symbol)
+        entry_price = self.prices.get_entry_price(symbol)
         
         if entry_price:
             stop_price, _, is_strong_candle, _ = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
@@ -148,7 +105,7 @@ class SniperReloaded():
                         }
                         
                         request_log = mt.order_send(order_request)
-                        self.error_logging(request_log, order_request)
+                        util.error_logging(request_log, order_request)
                     except Exception as e:
                         print(e)
     
