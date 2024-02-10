@@ -1,5 +1,6 @@
 import MetaTrader5 as mt5
 import objects.Currencies as curr
+from typing import Tuple
 mt5.initialize()
 
 class Prices:
@@ -11,6 +12,11 @@ class Prices:
         bid_price = mt5.symbol_info_tick(symbol).bid
         exchange_rate = round((bid_price + ask_price)/2, 4)
         return exchange_rate
+
+    def get_bid_ask(self, symbol) -> Tuple[float, float]:
+        ask_price = mt5.symbol_info_tick(symbol).ask
+        bid_price = mt5.symbol_info_tick(symbol).bid
+        return bid_price, ask_price
 
     def get_entry_price(self, symbol) -> float:
         try:

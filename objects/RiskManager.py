@@ -182,7 +182,18 @@ class RiskManager:
 
 
 if __name__ == "__main__":
-    obj = RiskManager(profit_split=0.5)
-    while True:
-        print(f"Current Risk: {obj.partial_profit}")
-        time.sleep(30)
+    obj = RiskManager(profit_split=0.5, stop_ratio=1, target_ratio=3)
+    test_symbol = "AUDCHF"
+
+    # Test: Stop Ranges
+    stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
+    print(stp_range)
+
+    # Test: Target Ranges 
+    tgt_range = obj.get_stop_range(symbol=test_symbol, timeframe=60, multiplier=3)
+    print(tgt_range)
+
+    # Test: Lot Size
+    entry_price = obj.prices.get_entry_price(symbol=test_symbol)
+    size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
+    print(size)
