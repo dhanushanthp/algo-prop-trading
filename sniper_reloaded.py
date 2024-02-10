@@ -8,7 +8,7 @@ import objects.Currencies as curr
 from objects.RiskManager import RiskManager
 import modules.config as config
 from modules.slack_msg import Slack
-from objects.Magazine import Magazine
+from objects.Targets import Targets
 from objects.Directions import Directions
 from objects.Prices import Prices
 from objects.Orders import Orders
@@ -28,7 +28,7 @@ class SniperReloaded():
 
         # External dependencies
         self.risk_manager = RiskManager()
-        self.magazine = Magazine()
+        self.targets = Targets()
         self.alert = Slack()
         self.prices = Prices()
         self.orders = Orders()
@@ -178,7 +178,7 @@ class SniperReloaded():
                             print(f"{symbol.ljust(12)} Resistance: {resistance_level}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).long_range
                             stop_price = self.prices.round(symbol, stop_price)
-                            self.magazine.load_magazine(target=symbol, sniper_trigger_level=resistance_level, sniper_level=stop_price, shoot_direction=Directions.LONG)
+                            self.targets.load_targets(target=symbol, sniper_trigger_level=resistance_level, sniper_level=stop_price, shoot_direction=Directions.LONG)
                             break
                     
                     for support_level in support:               
@@ -186,15 +186,15 @@ class SniperReloaded():
                             print(f"{symbol.ljust(12)} Support: {support_level}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).short_range
                             stop_price = self.prices.round(symbol, stop_price)
-                            self.magazine.load_magazine(target=symbol, sniper_trigger_level=support_level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
+                            self.targets.load_targets(target=symbol, sniper_trigger_level=support_level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
 
-                self.magazine.show_magazine()
+                self.targets.show_targets()
                 symbols_to_remove = []
 
-                for symbol in self.magazine.get_magazine():
+                for symbol in self.targets.get_targets():
                     if symbol not in existing_positions:
-                        bullet = self.magazine.get_magazine()[symbol]
+                        bullet = self.targets.get_targets()[symbol]
                         break_level = bullet.sniper_trigger_level
                         direction = bullet.shoot_direction
 
@@ -214,7 +214,7 @@ class SniperReloaded():
 
                 # Remove the exisiting positions
                 for symbol in symbols_to_remove:
-                    self.magazine.unload_magazine(symbol)
+                    self.targets.unload_targets(symbol)
 
             time.sleep(self.timer)
     
