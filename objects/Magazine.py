@@ -4,6 +4,9 @@ from Directions import Directions
 class Magazine:
     def __init__(self):
         self.magazine = dict()
+
+    def get_magazine(self):
+        return self.magazine
     
     def load_magazine(self, target, sniper_trigger_level, sniper_level, shoot_direction):
         active_bullet = Bullet(target, sniper_trigger_level, sniper_level, shoot_direction)
@@ -57,22 +60,22 @@ if __name__ == "__main__":
     magazine.load_magazine("A", 10, 11, Directions.LONG)
     print(magazine.get_table())
     magazine.load_magazine("A", 10, 9, Directions.LONG)
-    print(magazine.magazine)
+    print(magazine.get_magazine())
     magazine.load_magazine("A", 10, 9, Directions.SHORT)
-    print(magazine.magazine)
+    print(magazine.get_magazine())
     magazine.load_magazine("A", 10, 15, Directions.SHORT)
-    print(magazine.magazine)
+    print(magazine.get_magazine())
     magazine.load_magazine("A", 10, 8, Directions.SHORT)
-    print(magazine.magazine)
+    print(magazine.get_magazine())
     magazine.load_magazine("B", 10, 8, Directions.SHORT)
-    print(magazine.magazine)
+    print(magazine.get_magazine())
     magazine.load_magazine("A", 10, 9, Directions.LONG)
     print(magazine.get_table())
     magazine.unload_magazine("A")
-    print(magazine.magazine)
+    print(magazine.get_magazine())
     magazine.unload_magazine("B")
-    print(magazine.magazine)
+    print(magazine.get_magazine())
     if "A" in magazine.magazine:
         magazine.unload_magazine("A")
-    print(magazine.magazine)
+    print(magazine.get_magazine())
     
