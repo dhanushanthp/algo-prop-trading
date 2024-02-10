@@ -1,4 +1,4 @@
-from Directions import Directions
+from objects.Directions import Directions
 
 class Bullet:
     def __init__(self, target:str, sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions):

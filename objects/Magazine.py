@@ -1,5 +1,5 @@
-from Bullet import Bullet
-from Directions import Directions
+from objects.Bullet import Bullet
+from objects.Directions import Directions
 from tabulate import tabulate
 from typing import Dict
 
