@@ -12,6 +12,7 @@ from objects.Magazine import Magazine
 from objects.Directions import Directions
 from objects.Prices import Prices
 from objects.Orders import Orders
+from objects.Account import Account
 
 class SniperReloaded():
     def __init__(self):
@@ -31,9 +32,10 @@ class SniperReloaded():
         self.alert = Slack()
         self.prices = Prices()
         self.orders = Orders()
+        self.account = Account()
 
         # Account information
-        self.account_name = ind.get_account_name()
+        self.account_name = self.account.get_account_name()
 
         # Expected reward for the day
         self.fixed_initial_account_size = self.risk_manager.account_size
@@ -115,7 +117,7 @@ class SniperReloaded():
         while True:
             print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF & PartialProfit:{self.partial_profit_rr} with ({self.partial_rr} RR) ------------------")
             is_market_open, is_market_close = util.get_market_status()
-            _,equity,_,_ = ind.get_account_details()
+            _,equity,_,_ = self.account.get_account_details()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
             pnl = (equity - self.risk_manager.account_size)
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
