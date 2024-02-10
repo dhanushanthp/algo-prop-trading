@@ -10,6 +10,8 @@ import modules.util as util
 from collections import Counter
 from objects.risk_diffuser import RiskDiffuser
 
+mt5.initialize()
+
 class RiskManager:
     def __init__(self, profit_split=1) -> None:
         ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
@@ -29,10 +31,7 @@ class RiskManager:
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
-        self.account_name = ind.get_account_name()
-
-        # The max profit split is 100% of risking the account
-        # assert profit_split <= 1
+        self.account_name = ind.get_account_name()      
     
     def get_max_loss(self):
         return self.account_trail_loss
