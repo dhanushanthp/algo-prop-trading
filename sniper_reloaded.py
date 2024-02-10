@@ -171,12 +171,12 @@ class SniperReloaded():
                     resistances = king_of_levels[0]
                     support = king_of_levels[1]
 
-                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(self.trading_timeframe), 0, 1)[-1]
+                    current_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 0, 1)[-1]
 
                     for resistance_level in resistances:
                         if current_candle["open"] < resistance_level and current_candle["close"] > resistance_level:
                             print(f"{symbol.ljust(12)} Resistance: {resistance_level}")
-                            _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+                            stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).long_range
                             stop_price = self.prices.round(symbol, stop_price)
                             self.magazine.load_magazine(target=symbol, sniper_trigger_level=resistance_level, sniper_level=stop_price, shoot_direction=Directions.LONG)
                             break
@@ -184,7 +184,7 @@ class SniperReloaded():
                     for support_level in support:               
                         if current_candle["open"] > support_level and current_candle["close"] < support_level:
                             print(f"{symbol.ljust(12)} Support: {support_level}")
-                            stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+                            stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).short_range
                             stop_price = self.prices.round(symbol, stop_price)
                             self.magazine.load_magazine(target=symbol, sniper_trigger_level=support_level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
@@ -199,7 +199,7 @@ class SniperReloaded():
                         direction = bullet.shoot_direction
 
                         # Get current candle OHLC
-                        current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(self.trading_timeframe), 0, 1)[-1]
+                        current_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 0, 1)[-1]
 
                         # Trade Decision
                         if (current_candle["open"] > break_level and current_candle["close"] < break_level) or (current_candle["open"] < break_level and current_candle["close"] > break_level):
