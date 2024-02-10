@@ -1,5 +1,5 @@
 import MetaTrader5 as mt
-mt.initialize()
+from typing import Tuple
 
 class Account:
     def __init__(self) -> None:
@@ -10,7 +10,7 @@ class Account:
         balance = round(info.balance/1000)
         return f"{info.name} {balance}K "
 
-    def get_account_details():
+    def get_account_details() -> Tuple[float, float, float, float]:
         """
         Retrieves and returns essential details of the trading account.
 
