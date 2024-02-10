@@ -19,7 +19,7 @@ from modules.slack_msg import Slack
 from modules.monitor import Monitor
 from modules.file_utils import FileUtils
 
-class AlgoTrader():
+class SniperReloaded():
     def __init__(self):
         # MetaTrader initialization
         mt.initialize()
@@ -441,7 +441,7 @@ class AlgoTrader():
             time.sleep(self.timer)
     
 if __name__ == "__main__":
-    win = AlgoTrader()
+    win = SniperReloaded()
 
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
