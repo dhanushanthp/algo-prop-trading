@@ -13,13 +13,15 @@ from objects.Prices import Prices
 from typing import Tuple
 import objects.Currencies as curr
 from objects.Shield import Shield
+from objects.Account import Account
 
 
 mt5.initialize()
 
 class RiskManager:
     def __init__(self, profit_split=1) -> None:
-        ACCOUNT_SIZE,_, _,_ = ind.get_account_details()
+        self.account = Account()
+        ACCOUNT_SIZE = self.account.get_liquid_balance()
         self.account_size  = ACCOUNT_SIZE
         self.account_risk_percentage = config.account_risk_percentage * profit_split
         self.risk_of_an_account = round(ACCOUNT_SIZE/100*self.account_risk_percentage)
@@ -37,7 +39,7 @@ class RiskManager:
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
-        self.account_name = ind.get_account_name()      
+        self.account_name = self.account.get_account_name()      
     
     def get_max_loss(self):
         return self.account_trail_loss
@@ -51,7 +53,7 @@ class RiskManager:
         """
 
         # Retrieve account details including equity
-        _, equity, _, _ = ind.get_account_details()
+        equity = self.account.get_equity()
 
         # Calculate trail loss, where equity will increase based on positive returns
         trail_loss = equity - self.risk_of_an_account
@@ -75,11 +77,11 @@ class RiskManager:
             target_price = position.tp
             
             # Increase the range of the spread to eliminate the sudden stopouts
-            stp_candle_high, stp_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
+            stp_candle_high, stp_candle_low, _, _, _ = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
             stp_candle_low = util.curr_round(position.symbol, stp_candle_low)
             stp_candle_high = util.curr_round(position.symbol, stp_candle_high)
             
-            tgt_candle_high, tgt_candle_low, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
+            tgt_candle_high, tgt_candle_low, _, _, _ = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
             tgt_candle_low = util.curr_round(position.symbol, tgt_candle_low)
             tgt_candle_high = util.curr_round(position.symbol, tgt_candle_high)
             

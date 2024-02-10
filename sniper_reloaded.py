@@ -50,7 +50,7 @@ class SniperReloaded():
     def long_entry(self, symbol, break_level):
         entry_price = self.prices.get_entry_price(symbol=symbol)
 
-        if entry_price :
+        if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
             stop_price = self.prices.round(symbol, shield_object.long_range)
 
@@ -117,7 +117,7 @@ class SniperReloaded():
         while True:
             print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF & PartialProfit:{self.partial_profit_rr} with ({self.partial_rr} RR) ------------------")
             is_market_open, is_market_close = util.get_market_status()
-            _,equity,_,_ = self.account.get_account_details()
+            equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
             pnl = (equity - self.risk_manager.account_size)
             print(f"{'Acc Trail Loss'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
