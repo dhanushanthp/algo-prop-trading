@@ -1,5 +1,5 @@
 import MetaTrader5 as mt5
-import modules.currency_pairs as curr
+import objects.Currencies as curr
 
 class Prices:
     def __init__(self):

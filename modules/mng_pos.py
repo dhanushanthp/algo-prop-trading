@@ -1,7 +1,7 @@
 import MetaTrader5 as mt5
 import modules.indicators as ind
 import modules.util as util
-import modules.currency_pairs as curr
+import objects.Currencies as curr
 import numpy as np
 import pytz
 from datetime import datetime, timedelta, time

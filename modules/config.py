@@ -1,4 +1,4 @@
-import modules.currency_pairs as curr
+import objects.Currencies as curr
 import socket
 
 account_risk_percentage = 1.0 # Value in %

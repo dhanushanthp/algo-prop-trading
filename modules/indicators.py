@@ -3,7 +3,7 @@ import MetaTrader5 as mt5
 import pytz
 import numpy as np
 import pandas as pd
-import modules.currency_pairs as curr
+import objects.Currencies as curr
 import collections
 import modules.config as config
 import modules.util as util

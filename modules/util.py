@@ -3,7 +3,7 @@ import pytz
 
 import MetaTrader5 as mt5
 mt5.initialize()
-import modules.currency_pairs as curr
+import objects.Currencies as curr
 import modules.config as config
 
 def get_local_time(city):

@@ -4,7 +4,7 @@ import argparse
 
 import modules.indicators as ind
 import modules.util as util
-import modules.currency_pairs as curr
+import objects.Currencies as curr
 import modules.risk_manager as risk_manager
 import modules.config as config
 from modules.slack_msg import Slack

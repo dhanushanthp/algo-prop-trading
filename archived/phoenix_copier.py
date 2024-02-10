@@ -2,7 +2,7 @@ from statistics import mean
 import math
 import modules.indicators as ind
 import modules.util as util
-import modules.currency_pairs as curr
+import objects.Currencies as curr
 import sys
 import modules.risk_manager as risk_manager
 
