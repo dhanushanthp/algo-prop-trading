@@ -9,6 +9,10 @@ import modules.slack_msg as slack_msg
 import modules.util as util
 from collections import Counter
 from objects.risk_diffuser import RiskDiffuser
+from objects.Prices import Prices
+from typing import Tuple
+import objects.Currencies as curr
+
 
 mt5.initialize()
 
@@ -28,6 +32,7 @@ class RiskManager:
         self.enable_half_trail = self.risk_of_an_account + round(ACCOUNT_SIZE/100*0.25) # Add addtional 0.25 to cover commision
         self.max_account_risk = round(ACCOUNT_SIZE/100)
         self.partial_profit = round(ACCOUNT_SIZE/1000)
+        self.prices = Prices()
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
@@ -165,6 +170,76 @@ class RiskManager:
                     if result.comment != "No changes":
                         print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
     
+    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1) -> Tuple[float, float, bool, float]:
+        selected_time = util.match_timeframe(timeframe)
+        
+        previous_candle = mt5.copy_rates_from_pos(symbol, selected_time, 1, 1)[0]
+        
+        current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
+        current_candle_body = abs(current_candle["close"] - current_candle["open"])
+
+        spread = self.prices.get_spread(symbol)
+
+        is_strong_candle = None
+
+        # Current candle should atleaat 3 times more than the spread (Avoid ranging behaviour)
+        if (current_candle_body > spread) :
+            is_strong_candle = True
+
+        # Extracting high and low values from the previous candle
+        higher_stop = previous_candle["high"]
+        lower_stop = previous_candle["low"]
+
+        # Checking if the high value of the current candle is greater than the previous high
+        if current_candle["high"] > higher_stop:
+            # Updating the previous_high if the condition is met
+            higher_stop = current_candle["high"]
+
+        # Checking if the low value of the current candle is less than the previous low
+        if current_candle["low"] < lower_stop:
+            # Updating the previous_low if the condition is met
+            lower_stop = current_candle["low"]
+        
+        mid_price = self.prices.get_exchange_price(symbol)
+        
+        distance_from_high = abs(higher_stop-mid_price)
+        distance_from_low = abs(lower_stop-mid_price)
+
+        optimal_distance = max(distance_from_high, distance_from_low) * multiplier
+        optimal_distance = optimal_distance + (optimal_distance*buffer_ratio)
+        
+        lower_stop = mid_price - optimal_distance
+        higher_stop = mid_price + optimal_distance
+        
+        return higher_stop, lower_stop, is_strong_candle, optimal_distance
+
+
+    def get_lot_size(self, symbol, entry_price, stop_price):
+        dollor_value = self.prices.get_dollar_value(symbol)
+        points_in_stop = abs(entry_price-stop_price)
+        lots = self.risk_of_a_position/(points_in_stop * dollor_value)
+        
+        if symbol in curr.currencies:
+            points_in_stop = round(points_in_stop, 5)
+            lots = lots/10**5
+        
+        # This change made of fundedEngineer account!
+        if symbol in ['ASX_raw', 'FTSE_raw', 'FTSE100']:
+            lots = lots/10
+        
+        if symbol in ['SP_raw', "SPX500"]:
+            lots = lots/40
+        
+        if symbol in ['HK50_raw']:
+            lots = lots/100
+        
+        if symbol in ['NIKKEI_raw']:
+            lots = lots/1000
+        
+        lots = round(lots, 2)
+
+        return points_in_stop, lots
+
     def update_to_half_trail(self):
         _, equity, _,_ = ind.get_account_details()
         # Reduce the trail distance when the price cross first profit target

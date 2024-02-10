@@ -6,6 +6,31 @@ mt5.initialize()
 import objects.Currencies as curr
 import modules.config as config
 
+def match_timeframe(timeframe):
+    if timeframe == 1:
+        selected_time = mt5.TIMEFRAME_M1
+    elif timeframe == 5:
+        selected_time = mt5.TIMEFRAME_M5
+    elif timeframe == 15:
+        selected_time = mt5.TIMEFRAME_M15
+    elif timeframe == 30:
+        selected_time = mt5.TIMEFRAME_M30
+    elif timeframe == 60:
+        selected_time = mt5.TIMEFRAME_H1
+    elif timeframe == 120:
+        selected_time = mt5.TIMEFRAME_H2
+    elif timeframe == 180:
+        selected_time = mt5.TIMEFRAME_H3
+    elif timeframe == 240:
+        selected_time = mt5.TIMEFRAME_H4
+    elif timeframe == 480:
+        selected_time = mt5.TIMEFRAME_H8
+    elif timeframe == 1440:
+        selected_time = mt5.TIMEFRAME_D1
+    else:
+        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+    return selected_time
+
 def get_local_time(city):
     # Create a dictionary to map cities to their respective time zones
     timezones = {

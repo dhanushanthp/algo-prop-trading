@@ -92,14 +92,14 @@ class SniperReloaded():
         entry_price = self.get_entry_price(symbol=symbol)
 
         if entry_price :
-            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+            _, stop_price, is_strong_candle, _ = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
             stop_price = self.prices.round(symbol, stop_price)
 
             if is_strong_candle:    
                 if entry_price > stop_price:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.LONG}")        
-                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
@@ -124,14 +124,14 @@ class SniperReloaded():
         entry_price = self.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+            stop_price, _, is_strong_candle, _ = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
             stop_price = self.prices.round(symbol, stop_price)
 
             if is_strong_candle:
                 if stop_price > entry_price:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
-                        points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
 
                         order_request = {
                             "action": mt.TRADE_ACTION_PENDING,
