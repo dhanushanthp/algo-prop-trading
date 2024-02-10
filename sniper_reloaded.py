@@ -18,6 +18,8 @@ import modules.mng_pos as mp
 from modules.slack_msg import Slack
 from modules.monitor import Monitor
 from modules.file_utils import FileUtils
+from objects.Magazine import Magazine
+from objects.Directions import Directions
 
 class SniperReloaded():
     def __init__(self):
@@ -25,7 +27,6 @@ class SniperReloaded():
         mt.initialize()
 
         # Default values
-        self.strategy = None  # Default to 15 min
         self.target_ratio = 3.0  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
@@ -34,6 +35,7 @@ class SniperReloaded():
 
         # External dependencies
         self.risk_manager = risk_manager.RiskManager(profit_split=1)
+        self.magazine = Magazine()
         self.alert = Slack()
         self.monitor = Monitor()
         self.file_util = FileUtils()
@@ -46,7 +48,7 @@ class SniperReloaded():
         self.fixed_initial_account_size = self.risk_manager.account_size
 
         # Default
-        self.trading_timeframes = [60]
+        self.trading_timeframe = 60
 
         # Take the profit as specific RR ratio
         self.partial_profit_rr = False
@@ -54,31 +56,6 @@ class SniperReloaded():
         self.partial_rr=0.1
 
         self.snipper_levels = {}
-    
-    def set_snipper_levels(self, symbol, level, direction):
-        if symbol not in self.snipper_levels:
-            self.snipper_levels[symbol] = (level, direction)
-        else:
-            existing_level = self.snipper_levels[symbol][0]
-            existing_direction = self.snipper_levels[symbol][1]
-            # If direction is opposite then update the whole object
-            if existing_direction != direction:
-                self.snipper_levels[symbol] = (level, direction)
-            #  If the direction is same
-            elif existing_direction == direction:
-                # Pick the lower snipper value for long
-                if direction == "long":
-                    min_level = min(existing_level, level)
-                    if min_level != existing_level:
-                        print(f"{symbol.ljust(12)}: Update Sniper Long")      
-                        self.snipper_levels[symbol] = (level, direction)
-
-                # Pick the higher snipper value for long 
-                elif direction == "short":
-                    max_level = max(existing_level, level)
-                    if max_level != existing_level:
-                        print(f"{symbol.ljust(12)}: Update Sniper Short")      
-                        self.snipper_levels[symbol] = (level, direction)
    
     def _round(self, symbol, price):
         round_factor = 5 if symbol in curr.currencies else 2
@@ -127,22 +104,18 @@ class SniperReloaded():
                 print(error_string)
                 # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
-    def long_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, trade=False):
+    def long_real_entry(self, symbol, break_level):
         entry_price = self.get_entry_price(symbol=symbol)
 
-        # and mp.get_last_trades_position(symbol)
         if entry_price :
-            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe)
+            _, stop_price, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
             
             stop_price = self._round(symbol, stop_price)
 
-            if not trade:
-                self.set_snipper_levels(symbol, stop_price, "long")
-
-            if is_strong_candle and trade:    
+            if is_strong_candle:    
                 if entry_price > stop_price:
                     try:
-                        print(f"{symbol.ljust(12)}: LONG")        
+                        print(f"{symbol.ljust(12)}: {Directions.LONG}")        
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         lots =  round(lots, 2)
@@ -155,8 +128,8 @@ class SniperReloaded():
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price - self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price + self.target_ratio * points_in_stop),
-                            "comment": f"{comment}",
-                            "magic":r_s_timeframe,
+                            "comment": f"{break_level}",
+                            "magic": self.trading_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
                         }
@@ -169,21 +142,17 @@ class SniperReloaded():
             else:
                 return False
 
-    def short_real_entry(self, symbol, comment, r_s_timeframe, entry_timeframe, trade=False):
+    def short_real_entry(self, symbol, break_level):
         entry_price = self.get_entry_price(symbol)
         
-        #  and mp.get_last_trades_position(symbol)
         if entry_price:
-            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=entry_timeframe)
+            stop_price, _, is_strong_candle, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
             stop_price = self._round(symbol, stop_price)
 
-            if not trade:
-                self.set_snipper_levels(symbol, stop_price, "short")
-
-            if is_strong_candle and trade:
+            if is_strong_candle:
                 if stop_price > entry_price:
                     try:
-                        print(f"{symbol.ljust(12)}: SHORT")      
+                        print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
                         points_in_stop, lots = self.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
                         
                         lots =  round(lots, 2)
@@ -196,8 +165,8 @@ class SniperReloaded():
                             "price": entry_price,
                             "sl": self._round(symbol, entry_price + self.stop_ratio * points_in_stop),
                             "tp": self._round(symbol, entry_price - self.target_ratio * points_in_stop),
-                            "comment": f"{comment}",
-                            "magic":r_s_timeframe,
+                            "comment": f"{break_level}",
+                            "magic":self.trading_timeframe,
                             "type_time": mt.ORDER_TIME_GTC,
                             "type_filling": mt.ORDER_FILLING_RETURN,
                         }
@@ -214,7 +183,7 @@ class SniperReloaded():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr} {self.partial_live_actual}------------------")
+            print(f"\n------- {config.local_ip} {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr} {self.partial_live_actual}------------------")
             is_market_open, is_market_close = util.get_market_status()
             _,equity,_,profit = ind.get_account_details()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -229,7 +198,7 @@ class SniperReloaded():
             # Record PnL
             if pnl != 0:
                 with open(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', 'a') as file:
-                    file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},{self.strategy},{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
+                    file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},break,{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
 
             # Each position trail stop
             mp.adjust_positions_trailing_stops(self.target_ratio) 
@@ -282,161 +251,67 @@ class SniperReloaded():
                 self.immidiate_exit = False
             
             num_existing_positions = len(mt.positions_get())
+            
 
             #  and (num_existing_positions <= config.position_split_of_account_risk)
             if is_market_open and (not is_market_close) and (not self.immidiate_exit):
                 mp.cancel_all_pending_orders()
+                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
                 break_long_at_resistance = {}
-                reverse_long_at_support = {}
-
                 break_short_at_support = {}
-                reverse_short_at_resistance = {}
 
                 for symbol in selected_symbols:
                     break_long_at_resistance[symbol] = []
                     break_short_at_support[symbol] = []
 
-                    reverse_long_at_support[symbol] = []
-                    reverse_short_at_resistance[symbol] = []
+                    king_of_levels = ind.get_king_of_levels(symbol=symbol)
 
-                    king_leveles = ind.get_king_of_levels(symbol)
+                    resistances = king_of_levels[0]
+                    support = king_of_levels[1]
 
-                    r_s_timeframe = 60
-
-                    resistances = king_leveles[0]
-                    support = king_leveles[1]
-
-                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
+                    current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(self.trading_timeframe), 0, 1)[-1]
 
                     for resistance_level in resistances:
-                        if (current_candle["open"] > resistance_level) and current_candle["close"] < resistance_level:
-                            reverse_short_at_resistance[symbol].append(r_s_timeframe)
-                        
                         if current_candle["open"] < resistance_level and current_candle["close"] > resistance_level:
-                            break_long_at_resistance[symbol].append(r_s_timeframe)
+                            print(f"{symbol.ljust(12)} Resistance: {resistance_level}")
+                            _, stop_price, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+                            stop_price = self._round(symbol, stop_price)
+                            self.magazine.load_magazine(target=symbol, sniper_trigger_level=resistance_level, sniper_level=stop_price, shoot_direction=Directions.LONG)
+                            break
                     
-                    for support_level in support:                            
+                    for support_level in support:               
                         if current_candle["open"] > support_level and current_candle["close"] < support_level:
-                            break_short_at_support[symbol].append(r_s_timeframe)
-                        
-                        if current_candle["open"] < support_level and current_candle["close"] > support_level:
-                            reverse_long_at_support[symbol].append(r_s_timeframe)
+                            print(f"{symbol.ljust(12)} Support: {support_level}")
+                            stop_price, _, _, _, _ = ind.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+                            stop_price = self._round(symbol, stop_price)
+                            self.magazine.load_magazine(target=symbol, sniper_trigger_level=support_level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
+                            break
 
-                
-                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
-
-                if len(existing_positions) < len(selected_symbols):
-                    for symbol in selected_symbols:
-                        if (symbol not in existing_positions):
-                            # Break Strategy
-                            total_resistance_tf_long = set(break_long_at_resistance[symbol])
-                            total_support_tf_short = set(break_short_at_support[symbol])
-
-                            # Reverse Strategy
-                            total_support_tf_long = set(reverse_long_at_support[symbol])
-                            total_resistance_tf_short = set(reverse_short_at_resistance[symbol])
-
-                            if self.strategy == "break":
-                                if len(total_resistance_tf_long) >= 1:
-                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    
-                                    max_timeframe = max(total_resistance_tf_long)
-                                    self.long_real_entry(symbol=symbol,
-                                                         comment="RL>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                         r_s_timeframe=max_timeframe, 
-                                                         entry_timeframe=max_timeframe,
-                                                         trade=False)
-                                elif len(total_support_tf_short) >= 1:
-                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    max_timeframe = max(total_support_tf_short)
-                                    self.short_real_entry(symbol=symbol, 
-                                                          comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
-                                                          r_s_timeframe=max_timeframe, 
-                                                          entry_timeframe=max_timeframe,
-                                                          trade=False)
-                            elif self.strategy == "reverse":
-                                if len(total_resistance_tf_short) >= 1:
-                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
-                                    max_timeframe = max(total_resistance_tf_short)
-                                    self.short_real_entry(symbol=symbol, 
-                                                          comment="RS>" + '|'.join(map(str, total_resistance_tf_short)), 
-                                                          r_s_timeframe=max_timeframe, 
-                                                          entry_timeframe=max_timeframe)
-                                elif len(total_support_tf_long) >= 1:
-                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
-                                    max_timeframe = max(total_support_tf_long)
-                                    self.long_real_entry(symbol=symbol, 
-                                                         comment="SL>" + '|'.join(map(str, total_support_tf_long)), 
-                                                         r_s_timeframe=max_timeframe, 
-                                                         entry_timeframe=max_timeframe)
-                            elif self.strategy == "smart":
-                                level_price = ind.get_mid_price(symbol)
-                                if len(total_resistance_tf_long) >= 1:
-                                    print(f"{symbol.ljust(12)} RL: {'|'.join(map(str, total_resistance_tf_long)).ljust(10)}")
-                                    max_timeframe = max(total_resistance_tf_long)
-                                    if ind.understand_direction(symbol, max_timeframe, level_price) is not None:
-                                        self.long_real_entry(symbol=symbol, 
-                                                            comment="RL>" + '|'.join(map(str, total_resistance_tf_long)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                                elif len(total_support_tf_short) >= 1:
-                                    print(f"{symbol.ljust(12)} SS: {'|'.join(map(str, total_support_tf_short)).ljust(10)}")
-                                    max_timeframe = max(total_support_tf_short)
-                                    if ind.understand_direction(symbol, max_timeframe, level_price) is not None:
-                                        self.short_real_entry(symbol=symbol, 
-                                                            comment="SS>" + '|'.join(map(str, total_support_tf_short)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                                elif len(total_resistance_tf_short) >= 1:
-                                    print(f"{symbol.ljust(12)} RS: {'|'.join(map(str, total_resistance_tf_short)).ljust(10)}")
-                                    max_timeframe = max(total_resistance_tf_short)
-                                    if ind.understand_direction(symbol, max_timeframe, level_price) is None:
-                                        self.short_real_entry(symbol=symbol, 
-                                                            comment="RS>" + '|'.join(map(str, total_resistance_tf_short)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                                elif len(total_support_tf_long) >= 1: 
-                                    print(f"{symbol.ljust(12)} SL: {'|'.join(map(str, total_support_tf_long)).ljust(10)}")
-                                    max_timeframe = max(total_support_tf_long)
-                                    if ind.understand_direction(symbol, max_timeframe, level_price) is None:
-                                        self.long_real_entry(symbol=symbol, 
-                                                            comment="SL>" + '|'.join(map(str, total_support_tf_long)), 
-                                                            r_s_timeframe=max_timeframe, 
-                                                            entry_timeframe=max_timeframe)
-                            else:
-                                raise Exception("Strategy not defined!")
-
-                print()
-                print(pd.DataFrame.from_dict(self.snipper_levels, orient='index', columns=['Trade Level', 'Direction']).sort_index())
+                self.magazine.show_magazine()
                 symbols_to_remove = []
-                for symbol in self.snipper_levels.keys():
+
+                for symbol in self.magazine.get_magazine():
                     if symbol not in existing_positions:
-                        object_tup = self.snipper_levels[symbol]
-                        level = object_tup[0]
-                        direction = object_tup[1]
-                        max_timeframe = 60
-                        current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(r_s_timeframe), 0, 1)[-1]
-                        if (current_candle["open"] > level and current_candle["close"] < level) or (current_candle["open"] < level and current_candle["close"] > level):
+                        bullet = self.magazine.get_magazine()[symbol]
+                        break_level = bullet.sniper_trigger_level
+                        direction = bullet.shoot_direction
+
+                        # Get current candle OHLC
+                        current_candle = mt.copy_rates_from_pos(symbol, ind.match_timeframe(self.trading_timeframe), 0, 1)[-1]
+
+                        # Trade Decision
+                        if (current_candle["open"] > break_level and current_candle["close"] < break_level) or (current_candle["open"] < break_level and current_candle["close"] > break_level):
                             if direction == "long":
-                                self.long_real_entry(symbol=symbol,
-                                                        comment=f"{level}", 
-                                                        r_s_timeframe=max_timeframe, 
-                                                        entry_timeframe=max_timeframe,
-                                                        trade=True)
+                                self.long_real_entry(symbol=symbol, break_level=break_level)
                             else:
-                                self.short_real_entry(symbol=symbol,
-                                                        comment=f"{level}", 
-                                                        r_s_timeframe=max_timeframe, 
-                                                        entry_timeframe=max_timeframe,
-                                                        trade=True)
+                                self.short_real_entry(symbol=symbol, break_level=break_level)
                     else:
                         symbols_to_remove.append(symbol)
-                
-                # Remove the exisiting positions
-                for i in symbols_to_remove:
-                    if i in self.snipper_levels:
-                        del self.snipper_levels[i]
+
+                #Remove the exisiting positions
+                for symbol in symbols_to_remove:
+                    self.magazine.unload_magazine(symbol)
 
             time.sleep(self.timer)
     
@@ -445,15 +320,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
-    parser.add_argument('--strategy', type=str, help='Strategy Selection')
     parser.add_argument('--partial_profit_rr', type=str, help='Partial Profit RR')
     parser.add_argument('--partial_live_actual', type=str, help='Partial Profit RR')
     parser.add_argument('--partial_rr', type=float, help='Partial Profit RR')
     parser.add_argument('--timeframe', type=str, help='Selected timeframe for trade')
     args = parser.parse_args()
     
-    win.strategy = args.strategy        
-    win.trading_timeframes = [int(i) for i in args.timeframe.split(",")]
+    win.trading_timeframe = int(args.timeframe)
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
     win.partial_rr = args.partial_rr 
     win.partial_live_actual = util.boolean(args.partial_live_actual)
