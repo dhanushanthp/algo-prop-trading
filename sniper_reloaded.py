@@ -49,10 +49,10 @@ class SniperReloaded():
         entry_price = self.prices.get_entry_price(symbol=symbol)
 
         if entry_price :
-            _, stop_price, is_strong_candle, _ = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-            stop_price = self.prices.round(symbol, stop_price)
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+            stop_price = self.prices.round(symbol, shield_object.long_range)
 
-            if is_strong_candle:    
+            if shield_object.is_strong_signal:    
                 if entry_price > stop_price:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.LONG}")        
@@ -81,10 +81,10 @@ class SniperReloaded():
         entry_price = self.prices.get_entry_price(symbol)
         
         if entry_price:
-            stop_price, _, is_strong_candle, _ = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-            stop_price = self.prices.round(symbol, stop_price)
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+            stop_price = self.prices.round(symbol, shield_object.short_range)
 
-            if is_strong_candle:
+            if shield_object.is_strong_signal:
                 if stop_price > entry_price:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.SHORT}")      

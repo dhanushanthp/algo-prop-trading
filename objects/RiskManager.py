@@ -12,6 +12,7 @@ from objects.risk_diffuser import RiskDiffuser
 from objects.Prices import Prices
 from typing import Tuple
 import objects.Currencies as curr
+from objects.Shield import Shield
 
 
 mt5.initialize()
@@ -115,7 +116,7 @@ class RiskManager:
                     if result.comment != "No changes":
                         print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
     
-    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1) -> Tuple[float, float, bool, float]:
+    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1) -> Shield:
         selected_time = util.match_timeframe(timeframe)
         
         previous_candle = mt5.copy_rates_from_pos(symbol, selected_time, 1, 1)[0]
@@ -156,7 +157,7 @@ class RiskManager:
         lower_stop = mid_price - optimal_distance
         higher_stop = mid_price + optimal_distance
         
-        return higher_stop, lower_stop, is_strong_candle, optimal_distance
+        return Shield(long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
 
 
     def get_lot_size(self, symbol, entry_price, stop_price):
