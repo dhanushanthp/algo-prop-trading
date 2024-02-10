@@ -74,22 +74,17 @@ class RiskManager:
             target_price = position.tp
             
             # Increase the range of the spread to eliminate the sudden stopouts
-            stp_candle_high, stp_candle_low, _, _, _ = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
-            stp_candle_low = util.curr_round(position.symbol, stp_candle_low)
-            stp_candle_high = util.curr_round(position.symbol, stp_candle_high)
-            
-            tgt_candle_high, tgt_candle_low, _, _, _ = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
-            tgt_candle_low = util.curr_round(position.symbol, tgt_candle_low)
-            tgt_candle_high = util.curr_round(position.symbol, tgt_candle_high)
+            stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
+            tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
             
             if position.type == 0:
                 # Long Position
-                trail_stop = max(stop_price, stp_candle_low)
-                trail_target = min(target_price, tgt_candle_high)
+                trail_stop = max(stop_price, stp_shield_obj.get_long_stop)
+                trail_target = min(target_price, tgt_shield_obj.get_short_stop)
             else:
                 # Short Position
-                trail_stop = min(stop_price, stp_candle_high)
-                trail_target = max(target_price, tgt_candle_low)
+                trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
+                trail_target = max(target_price, tgt_shield_obj.get_long_stop)
 
             if (trail_stop != stop_price) or (target_price != trail_target):
                 print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
@@ -153,8 +148,8 @@ class RiskManager:
         optimal_distance = max(distance_from_high, distance_from_low) * multiplier
         optimal_distance = optimal_distance + (optimal_distance*buffer_ratio)
         
-        lower_stop = mid_price - optimal_distance
-        higher_stop = mid_price + optimal_distance
+        lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
+        higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
         
         return Shield(long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
 

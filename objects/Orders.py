@@ -62,13 +62,12 @@ class Orders:
 
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
-            stop_price = self.prices.round(symbol, shield_object.get_long_stop)
             
             if shield_object.get_signal_strength:    
-                if entry_price > stop_price:
+                if entry_price > shield_object.get_long_stop:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.LONG}")        
-                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_long_stop)
                         
                         order_request = {
                             "action": mt5.TRADE_ACTION_PENDING,
@@ -97,13 +96,12 @@ class Orders:
         
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
-            stop_price = self.prices.round(symbol, shield_object.get_short_stop)
 
             if shield_object.get_signal_strength:
-                if stop_price > entry_price:
+                if entry_price < shield_object.get_short_stop:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
-                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=stop_price)
+                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_short_stop)
 
                         order_request = {
                             "action": mt5.TRADE_ACTION_PENDING,

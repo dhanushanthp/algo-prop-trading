@@ -96,13 +96,7 @@ class SniperReloaded():
                 self.orders.cancel_all_pending_orders()
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
-                break_long_at_resistance = {}
-                break_short_at_support = {}
-
                 for symbol in selected_symbols:
-                    break_long_at_resistance[symbol] = []
-                    break_short_at_support[symbol] = []
-
                     king_of_levels = ind.get_king_of_levels(symbol=symbol)
 
                     resistances = king_of_levels[0]
@@ -113,16 +107,14 @@ class SniperReloaded():
                     for resistance_level in resistances:
                         if current_candle["open"] < resistance_level and current_candle["close"] > resistance_level:
                             print(f"{symbol.ljust(12)} Resistance: {resistance_level}")
-                            stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).long_range
-                            stop_price = self.prices.round(symbol, stop_price)
+                            stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
                             self.targets.load_targets(target=symbol, sniper_trigger_level=resistance_level, sniper_level=stop_price, shoot_direction=Directions.LONG)
                             break
                     
                     for support_level in support:               
                         if current_candle["open"] > support_level and current_candle["close"] < support_level:
                             print(f"{symbol.ljust(12)} Support: {support_level}")
-                            stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).short_range
-                            stop_price = self.prices.round(symbol, stop_price)
+                            stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
                             self.targets.load_targets(target=symbol, sniper_trigger_level=support_level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
 
