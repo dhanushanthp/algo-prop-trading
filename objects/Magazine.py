@@ -1,12 +1,13 @@
 from Bullet import Bullet
 from Directions import Directions
 from tabulate import tabulate
+from typing import Dict
 
 class Magazine:
     def __init__(self):
-        self.magazine = dict()
+        self.magazine:Dict[str, Bullet] = dict()
 
-    def get_magazine(self):
+    def get_magazine(self) -> Dict[str, Bullet]:
         return self.magazine
     
     def load_magazine(self, target:str, sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions):
@@ -36,11 +37,11 @@ class Magazine:
                     if max_level != previous_sniper_level:
                         self.magazine[target] = active_bullet
         
-    def unload_magazine(self, target):
-        self.magazine.pop(target)
+    def unload_magazine(self, target:str):
+        if target in self.magazine:
+            self.magazine.pop(target)
     
     def show_magazine(self):
-        # Convert dictionary to lists for DataFrame construction
         data = {
             'Target': [self.magazine[key].target for key in self.magazine],
             'SN Break': [self.magazine[key].sniper_trigger_level for key in self.magazine],
@@ -50,8 +51,9 @@ class Magazine:
 
         df = pd.DataFrame(data)
         df.set_index('Target', inplace=True)
-        print()
-        print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
+        if not df.empty:
+            print()
+            print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
 
 if __name__ == "__main__":
     import time
@@ -77,7 +79,7 @@ if __name__ == "__main__":
     print(magazine.get_magazine())
     magazine.unload_magazine("B")
     print(magazine.get_magazine())
-    if "A" in magazine.magazine:
-        magazine.unload_magazine("A")
+    magazine.unload_magazine("A")
     print(magazine.get_magazine())
+    magazine.show_magazine()
     
