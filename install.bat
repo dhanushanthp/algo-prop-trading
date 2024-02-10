@@ -1,5 +1,6 @@
 pip install pandas
 pip install numpy
+pip install tabulate
 pip install MetaTrader5
 pip install slackclient
 pip install psutil
