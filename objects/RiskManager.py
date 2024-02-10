@@ -41,61 +41,6 @@ class RiskManager:
     def get_max_loss(self):
         return self.account_trail_loss
     
-    def profit_day_checker(self):
-        account_size, equity, _, _ = ind.get_account_details()
-        if equity > account_size + self.risk_of_a_position:
-            # Creates a new file
-            with open('enabler.txt', 'w') as fp:
-                pass
-
-            return True
-
-    def get_max_profit(self):
-        return self.account_size + self.risk_of_an_account
-    
-    def diffuser_profits(self):
-        existing_positions = mt5.positions_get()
-        counter = Counter([i.symbol for i in existing_positions])
-        diffuser_positions = {item: count for item, count in counter.items() if count >= 2}
-        for symbol in diffuser_positions.keys():
-            print(symbol)
-
-    def risk_diffusers(self):
-        internal_existing_positions = mt5.positions_get()
-        counter = Counter([i.symbol for i in internal_existing_positions])
-        orders = {}
-        for position in internal_existing_positions:
-            pos_symbol = position.symbol
-            if counter[pos_symbol] < 2 and position.comment == "R>60" and position.comment != "defuser":
-                order_type = position.type
-                entry_price = position.price_open
-                stop_price = position.sl
-                volume = position.volume
-                bid, ask = ind.get_bid_ask(pos_symbol)
-                if order_type == 0:
-                    current_price = bid
-                else:
-                    current_price = ask
-
-                points_in_stop = abs(current_price - stop_price)
-                diffuser_enabler = abs(entry_price - stop_price)/2
-
-                positional_risk = mp.get_position_dollar_value(pos_symbol, order_type, entry_price, current_price, volume) * 2
-                print(f"{pos_symbol}:{positional_risk/2}")
-
-                if order_type == 0:
-                    decision_point = entry_price - diffuser_enabler
-                    print(f"{pos_symbol}: {decision_point}->{current_price}")
-                    if current_price < decision_point:
-                        orders[pos_symbol] = RiskDiffuser("short", pos_symbol, ask + points_in_stop, positional_risk)
-                else:
-                    decision_point = entry_price + diffuser_enabler
-                    print(f"{pos_symbol}: {decision_point}->{current_price}")
-                    if current_price > decision_point:
-                        orders[pos_symbol] = RiskDiffuser("long", pos_symbol, bid - points_in_stop, positional_risk)
-        
-        return orders
-    
     def has_daily_maximum_risk_reached(self):
         """
         Check if the daily maximum risk has been reached based on the account's equity and trail loss.
@@ -239,16 +184,6 @@ class RiskManager:
         lots = round(lots, 2)
 
         return points_in_stop, lots
-
-    def update_to_half_trail(self):
-        _, equity, _,_ = ind.get_account_details()
-        # Reduce the trail distance when the price cross first profit target
-        print(f"{'Half trail at'.ljust(20)}: ${'{:,}'.format(round(self.account_size + self.enable_half_trail))}", "\n")
-        if (equity > self.account_size + self.enable_half_trail) and self.first_max_profit_check:
-            self.alert.send_msg(f"{self.account_name}: First target max triggered!")
-            self.risk_of_an_account = self.risk_of_a_position
-            self.first_max_profit_check = False
-            return True
 
 
 if __name__ == "__main__":
