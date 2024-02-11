@@ -214,7 +214,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr} {self.partial_live_actual}------------------")
+            print(f"\n------- {config.local_ip}  SNIPER @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr} {self.partial_live_actual}------------------")
             is_market_open, is_market_close = util.get_market_status()
             _,equity,_,profit = ind.get_account_details()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -408,7 +408,10 @@ class AlgoTrader():
                                 raise Exception("Strategy not defined!")
 
                 print()
-                print(pd.DataFrame.from_dict(self.snipper_levels, orient='index', columns=['Trade Level', 'Direction']).sort_index())
+                targets = pd.DataFrame.from_dict(self.snipper_levels, orient='index', columns=['Trade Level', 'Direction']).sort_index()
+                if not targets.empty:
+                    print(targets)
+                    
                 symbols_to_remove = []
                 for symbol in self.snipper_levels.keys():
                     if symbol not in existing_positions:
