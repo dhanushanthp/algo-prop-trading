@@ -8,8 +8,6 @@ import objects.Currencies as curr
 from objects.RiskManager import RiskManager
 import modules.config as config
 from modules.slack_msg import Slack
-from objects.Targets import Targets
-from objects.Directions import Directions
 from objects.Prices import Prices
 from objects.Orders import Orders
 from objects.Account import Account
@@ -30,7 +28,6 @@ class MachineReloaded():
         self.risk_manager = RiskManager(stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
         self.prices = Prices()
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager)
-        self.targets = Targets()
         self.alert = Slack()
         self.account = Account()
         
