@@ -2,6 +2,7 @@ from objects.Bullet import Bullet
 from objects.Directions import Directions
 from tabulate import tabulate
 from typing import Dict
+import pandas as pd
 
 class Targets:
     def __init__(self):

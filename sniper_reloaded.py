@@ -97,6 +97,10 @@ class SniperReloaded():
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
                 for symbol in selected_symbols:
+                    # If the positions is already in trade, then don't check for signal
+                    if symbol in existing_positions:
+                        continue
+
                     king_of_levels = ind.get_king_of_levels(symbol=symbol)
 
                     resistances = king_of_levels[0]
@@ -124,7 +128,7 @@ class SniperReloaded():
                 for symbol in self.targets.get_targets():
                     if symbol not in existing_positions:
                         bullet = self.targets.get_targets()[symbol]
-                        break_level = bullet.sniper_trigger_level
+                        break_level = bullet.sniper_level
                         direction = bullet.shoot_direction
 
                         # Get current candle OHLC
