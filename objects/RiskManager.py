@@ -148,7 +148,6 @@ class RiskManager:
         
         return Shield(long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
 
-
     def get_lot_size(self, symbol, entry_price, stop_price) -> Tuple[float, float]:
         dollor_value = self.prices.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price)
