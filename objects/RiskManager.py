@@ -22,12 +22,7 @@ class RiskManager:
         self.risk_of_an_account = round(ACCOUNT_SIZE/100*self.account_risk_percentage)
         self.position_risk_percentage = config.risk_of_a_position
         self.risk_of_a_position = round(ACCOUNT_SIZE/100*self.position_risk_percentage)
-        self.previous_time = None
-        self.first_max_profit_check = True
-        self.second_max_profit_check = True
         self.alert = slack_msg.Slack()
-        self.max_risk_hit_counter = 0
-        self.enable_half_trail = self.risk_of_an_account + round(ACCOUNT_SIZE/100*0.25) # Add addtional 0.25 to cover commision
         self.max_account_risk = round(ACCOUNT_SIZE/100)
         self.partial_profit = round(ACCOUNT_SIZE/1000)
         self.prices = Prices()
