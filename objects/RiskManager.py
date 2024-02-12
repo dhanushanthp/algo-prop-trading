@@ -9,6 +9,7 @@ from typing import Tuple
 import objects.Currencies as curr
 from objects.Shield import Shield
 from objects.Account import Account
+import modules.indicators as ind
 
 
 mt5.initialize()
@@ -137,8 +138,10 @@ class RiskManager:
         
         mid_price = self.prices.get_exchange_price(symbol)
         
-        distance_from_high = abs(higher_stop-mid_price)
-        distance_from_low = abs(lower_stop-mid_price)
+        # In cooprate ATR along with candle high/low when the candle length is too small/ price ranging
+        atr = ind.get_atr(symbol, selected_time)
+        distance_from_high = max(atr, abs(higher_stop-mid_price))
+        distance_from_low = max(atr, abs(lower_stop-mid_price))
 
         optimal_distance = max(distance_from_high, distance_from_low) * multiplier
         optimal_distance = optimal_distance + (optimal_distance*buffer_ratio)
@@ -177,7 +180,7 @@ class RiskManager:
 
 if __name__ == "__main__":
     obj = RiskManager(profit_split=0.5, stop_ratio=1, target_ratio=3)
-    test_symbol = "AUDCHF"
+    test_symbol = "CADJPY"
 
     # Test: Stop Ranges
     stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
