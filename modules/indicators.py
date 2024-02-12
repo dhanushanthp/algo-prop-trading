@@ -679,5 +679,6 @@ if __name__ == "__main__":
     # print(ema_direction("AUDJPY", [240, 60, 30]))
     # print(understand_direction("AUDCHF", 60, 0.56882))
     # print(support_resistance_levels("EURUSD", 15))
-    print(get_king_of_levels("GBPJPY"))
+    # print(get_king_of_levels("GBPJPY"))
+    print(get_stop_range("CADJPY", 60, multiplier=3))
     
