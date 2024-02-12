@@ -647,7 +647,8 @@ def get_account_details():
 
 if __name__ == "__main__":
     # close_positions_with_half_profit()
-    # print(get_atr("US500.cash"))
+    
+    print(get_atr("CADJPY", util.match_timeframe(60)))
     # [print(round(i, 5)) for i in list(get_stop_range("AUDNZD"))]
     # print(find_r_s("XAUUSD", 15))
     # print(match_timeframe(15))
@@ -680,5 +681,5 @@ if __name__ == "__main__":
     # print(understand_direction("AUDCHF", 60, 0.56882))
     # print(support_resistance_levels("EURUSD", 15))
     # print(get_king_of_levels("GBPJPY"))
-    print(get_stop_range("CADJPY", 60, multiplier=3))
+    print(get_stop_range("CADJPY", 60, multiplier=1))
     

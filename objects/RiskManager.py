@@ -9,7 +9,7 @@ from typing import Tuple
 import objects.Currencies as curr
 from objects.Shield import Shield
 from objects.Account import Account
-import modules.indicators as ind
+from objects.Indicators import Indicators
 
 
 mt5.initialize()
@@ -29,6 +29,7 @@ class RiskManager:
         self.prices = Prices()
         self.stop_ratio = stop_ratio
         self.target_ratio = target_ratio
+        self.indicators = Indicators()
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
@@ -139,7 +140,7 @@ class RiskManager:
         mid_price = self.prices.get_exchange_price(symbol)
         
         # In cooprate ATR along with candle high/low when the candle length is too small/ price ranging
-        atr = ind.get_atr(symbol, selected_time)
+        atr = self.indicators.get_atr(symbol=symbol, timeframe=timeframe)
         distance_from_high = max(atr, abs(higher_stop-mid_price))
         distance_from_low = max(atr, abs(lower_stop-mid_price))
 
