@@ -2,7 +2,6 @@ import MetaTrader5 as mt
 import time
 import argparse
 
-import modules.indicators as ind
 import modules.util as util
 import objects.Currencies as curr
 from objects.RiskManager import RiskManager
@@ -51,7 +50,7 @@ class SniperReloaded():
         self.partial_rr=self.risk_manager.account_risk_percentage
     
     def main(self):
-        selected_symbols = ind.get_ordered_symbols()
+        selected_symbols = curr.get_ordered_symbols()
         
         while True:
             print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF & PartialProfit:{self.partial_profit_rr} with ({self.partial_rr} RR) ------------------")
@@ -112,14 +111,14 @@ class SniperReloaded():
 
                     for resistance in resistances:
                         if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
-                            print(f"{symbol.ljust(12)} Resistance: {resistance}")
+                            # print(f"{symbol.ljust(12)} Resistance: {resistance}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
                             self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.LONG)
                             break
                     
                     for support in supports:               
                         if current_candle["open"] > support.level and current_candle["close"] < support.level:
-                            print(f"{symbol.ljust(12)} Support: {support}")
+                            # print(f"{symbol.ljust(12)} Support: {support}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
                             self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break

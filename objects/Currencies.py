@@ -1,4 +1,3 @@
-
 import MetaTrader5 as mt
 mt.initialize()
 
@@ -136,3 +135,31 @@ def get_symbol_mapping(symbol):
             return f"{symbol}x"
         else:
             print(f"Currency Pair No defined in manage_positions.py {symbol}")
+
+def get_ordered_symbols(without_index=False):
+    """
+    Retrieves a list of trading symbols ordered by the absolute value of their price changes.
+    
+    Returns:
+        List[str]: A list of trading symbols in descending order of absolute price changes.
+    """
+    if without_index:
+        ticks = (currencies)
+    else:
+        ticks = (currencies + indexes)
+    
+    symbol_change = []    
+    for tick in ticks:
+        symbol_info = mt.symbol_info(tick)
+        symbol_change.append((tick, abs(symbol_info.price_change)))
+        
+    # Sorting the list based on the second element of each tuple in descending order
+    sorted_list_desc = sorted(symbol_change, key=lambda x: x[1], reverse=True)
+
+    # Extracting the first values from the sorted list
+    sorted_list = [item[0] for item in sorted_list_desc]
+    
+    return sorted_list
+
+if __name__ == "__main__":
+    print(get_ordered_symbols())
