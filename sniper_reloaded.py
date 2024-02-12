@@ -13,6 +13,7 @@ from objects.Directions import Directions
 from objects.Prices import Prices
 from objects.Orders import Orders
 from objects.Account import Account
+from objects.Indicators import Indicators
 
 class SniperReloaded():
     def __init__(self, trading_timeframe:int):
@@ -33,6 +34,7 @@ class SniperReloaded():
         self.targets = Targets()
         self.alert = Slack()
         self.account = Account()
+        self.indicators = Indicators()
         
 
         # Account information
@@ -101,25 +103,25 @@ class SniperReloaded():
                     if symbol in existing_positions:
                         continue
 
-                    king_of_levels = ind.get_king_of_levels(symbol=symbol)
+                    king_of_levels = self.indicators.get_king_of_levels(symbol=symbol)
 
                     resistances = king_of_levels[0]
-                    support = king_of_levels[1]
+                    supports = king_of_levels[1]
 
                     current_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 0, 1)[-1]
 
-                    for resistance_level in resistances:
-                        if current_candle["open"] < resistance_level and current_candle["close"] > resistance_level:
-                            print(f"{symbol.ljust(12)} Resistance: {resistance_level}")
+                    for resistance in resistances:
+                        if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
+                            print(f"{symbol.ljust(12)} Resistance: {resistance}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
-                            self.targets.load_targets(target=symbol, sniper_trigger_level=resistance_level, sniper_level=stop_price, shoot_direction=Directions.LONG)
+                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.LONG)
                             break
                     
-                    for support_level in support:               
-                        if current_candle["open"] > support_level and current_candle["close"] < support_level:
-                            print(f"{symbol.ljust(12)} Support: {support_level}")
+                    for support in supports:               
+                        if current_candle["open"] > support.level and current_candle["close"] < support.level:
+                            print(f"{symbol.ljust(12)} Support: {support}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
-                            self.targets.load_targets(target=symbol, sniper_trigger_level=support_level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
+                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
 
                 self.targets.show_targets()
@@ -130,6 +132,7 @@ class SniperReloaded():
                         bullet = self.targets.get_targets()[symbol]
                         break_level = bullet.sniper_level
                         direction = bullet.shoot_direction
+                        reference = bullet.reference
 
                         # Get current candle OHLC
                         current_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 0, 1)[-1]
@@ -137,11 +140,11 @@ class SniperReloaded():
                         # Trade Decision
                         if (current_candle["open"] > break_level and current_candle["close"] < break_level) or (current_candle["open"] < break_level and current_candle["close"] > break_level):
                             
-                            if direction == Directions.LONG:
-                                self.orders.long_entry(symbol=symbol, break_level=break_level, trading_timeframe=self.trading_timeframe)
-                            
                             if direction == Directions.SHORT:
-                                self.orders.short_entry(symbol=symbol, break_level=break_level, trading_timeframe=self.trading_timeframe)
+                                self.orders.long_entry(symbol=symbol, reference=reference, break_level=break_level, trading_timeframe=self.trading_timeframe)
+                            
+                            if direction == Directions.LONG:
+                                self.orders.short_entry(symbol=symbol, reference=reference, break_level=break_level, trading_timeframe=self.trading_timeframe)
                     else:
                         symbols_to_remove.append(symbol)
 

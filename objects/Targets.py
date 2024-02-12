@@ -11,8 +11,8 @@ class Targets:
     def get_targets(self) -> Dict[str, Bullet]:
         return self.targets
     
-    def load_targets(self, target:str, sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions):
-        active_bullet = Bullet(target, sniper_trigger_level, sniper_level, shoot_direction)
+    def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions):
+        active_bullet = Bullet(target, reference, sniper_trigger_level, sniper_level, shoot_direction)
 
         if target not in self.targets:
             self.targets[target] = active_bullet
@@ -28,13 +28,13 @@ class Targets:
             elif previous_shoot_direction == shoot_direction:
                 # Pick the lower snipper value for long
                 if shoot_direction == Directions.LONG:
-                    min_level = min(previous_sniper_level, sniper_level)
+                    min_level = max(previous_sniper_level, sniper_level)
                     if min_level != previous_sniper_level:
                         self.targets[target] = active_bullet
 
                 # Pick the higher snipper value for long 
                 elif shoot_direction == Directions.SHORT:
-                    max_level = max(previous_sniper_level, sniper_level)
+                    max_level = min(previous_sniper_level, sniper_level)
                     if max_level != previous_sniper_level:
                         self.targets[target] = active_bullet
         
@@ -45,6 +45,7 @@ class Targets:
     def show_targets(self):
         data = {
             'Target': [self.targets[key].target for key in self.targets],
+            'Reference': [self.targets[key].reference for key in self.targets],
             'SN Break': [self.targets[key].sniper_trigger_level for key in self.targets],
             'SN Entry': [self.targets[key].sniper_level for key in self.targets],
             'Direction': [self.targets[key].shoot_direction for key in self.targets]

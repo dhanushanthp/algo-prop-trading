@@ -57,7 +57,7 @@ class Orders:
                 print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
     
 
-    def long_entry(self, symbol:str, break_level:float, trading_timeframe:int):
+    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int):
         entry_price = self.prices.get_entry_price(symbol=symbol)
 
         if entry_price:
@@ -77,7 +77,7 @@ class Orders:
                             "price": entry_price,
                             "sl": self.prices.round(symbol, entry_price - self.risk_manager.stop_ratio * points_in_stop),
                             "tp": self.prices.round(symbol, entry_price + self.risk_manager.target_ratio * points_in_stop),
-                            "comment": f"{break_level}",
+                            "comment": f"{reference}-{break_level}",
                             "magic": trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_RETURN,
@@ -91,7 +91,7 @@ class Orders:
                 print(f"{symbol.ljust(12)}: Waiting for signal strength...")
     
 
-    def short_entry(self, symbol:str, break_level:float, trading_timeframe:int):
+    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int):
         entry_price = self.prices.get_entry_price(symbol)
         
         if entry_price:
@@ -111,7 +111,7 @@ class Orders:
                             "price": entry_price,
                             "sl": self.prices.round(symbol, entry_price + self.risk_manager.stop_ratio * points_in_stop),
                             "tp": self.prices.round(symbol, entry_price - self.risk_manager.target_ratio * points_in_stop),
-                            "comment": f"{break_level}",
+                            "comment": f"{reference}-{break_level}",
                             "magic":trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_RETURN,
