@@ -8,7 +8,7 @@ from modules import config
 import pandas as pd
 from objects.Signal import Signal
 from typing import Tuple, List, Dict
-
+from objects import logme
 
 class Indicators:
     def __init__(self) -> None:
@@ -70,7 +70,9 @@ class Indicators:
                 off_hour_highs = Signal(reference="OMH", level=max(previous_bars["high"])) 
                 off_hour_lows = Signal(reference="OML", level=min(previous_bars["low"])) 
                 return off_hour_highs, off_hour_lows
-            
+            else:
+                logme.logger.debug(f"{symbol}, {start_time}, {end_time}")
+
             return None, None
         
         return None, None
