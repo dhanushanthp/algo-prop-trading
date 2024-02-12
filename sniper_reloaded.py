@@ -113,14 +113,14 @@ class SniperReloaded():
                         if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
                             # print(f"{symbol.ljust(12)} Resistance: {resistance}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
-                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.LONG)
+                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
                     
                     for support in supports:               
                         if current_candle["open"] > support.level and current_candle["close"] < support.level:
                             # print(f"{symbol.ljust(12)} Support: {support}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
-                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
+                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.LONG)
                             break
 
                 self.targets.show_targets()
@@ -139,10 +139,10 @@ class SniperReloaded():
                         # Trade Decision
                         if (current_candle["open"] > break_level and current_candle["close"] < break_level) or (current_candle["open"] < break_level and current_candle["close"] > break_level):
                             
-                            if direction == Directions.SHORT:
+                            if direction == Directions.LONG:
                                 self.orders.long_entry(symbol=symbol, reference=reference, break_level=break_level, trading_timeframe=self.trading_timeframe)
                             
-                            if direction == Directions.LONG:
+                            if direction == Directions.SHORT:
                                 self.orders.short_entry(symbol=symbol, reference=reference, break_level=break_level, trading_timeframe=self.trading_timeframe)
                     else:
                         symbols_to_remove.append(symbol)
