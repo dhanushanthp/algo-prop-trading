@@ -28,13 +28,13 @@ class Targets:
             elif previous_shoot_direction == shoot_direction:
                 # Pick the lower snipper value for long
                 if shoot_direction == Directions.LONG:
-                    min_level = max(previous_sniper_level, sniper_level)
+                    min_level = min(previous_sniper_level, sniper_level)
                     if min_level != previous_sniper_level:
                         self.targets[target] = active_bullet
 
                 # Pick the higher snipper value for long 
                 elif shoot_direction == Directions.SHORT:
-                    max_level = min(previous_sniper_level, sniper_level)
+                    max_level = max(previous_sniper_level, sniper_level)
                     if max_level != previous_sniper_level:
                         self.targets[target] = active_bullet
         
