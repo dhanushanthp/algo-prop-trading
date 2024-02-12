@@ -121,7 +121,7 @@ class SniperReloaded():
                         if current_candle["open"] > support.level and current_candle["close"] < support.level:
                             print(f"{symbol.ljust(12)} Support: {support}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
-                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
+                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
 
                 self.targets.show_targets()
