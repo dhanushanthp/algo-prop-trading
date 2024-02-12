@@ -104,19 +104,16 @@ class SniperReloaded():
 
                     king_of_levels = self.indicators.get_king_of_levels(symbol=symbol)
 
-                    resistances = king_of_levels[0]
-                    supports = king_of_levels[1]
-
                     current_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 0, 1)[-1]
 
-                    for resistance in resistances:
+                    for resistance in king_of_levels["resistance"]:
                         if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
                             # print(f"{symbol.ljust(12)} Resistance: {resistance}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
                             self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
                     
-                    for support in supports:               
+                    for support in king_of_levels["support"]:       
                         if current_candle["open"] > support.level and current_candle["close"] < support.level:
                             # print(f"{symbol.ljust(12)} Support: {support}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop

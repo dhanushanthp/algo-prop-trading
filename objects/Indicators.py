@@ -7,7 +7,7 @@ import pytz
 from modules import config
 import pandas as pd
 from objects.Signal import Signal
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 
 class Indicators:
@@ -76,7 +76,7 @@ class Indicators:
         return None, None
 
 
-    def get_king_of_levels(self, symbol) -> Tuple[List[Signal], List[Signal]]:
+    def get_king_of_levels(self, symbol) -> Dict[str, List[Signal]]:
         highs = []
         lows = []
         pdh, pdl = self.get_previous_day_levels(symbol=symbol)
@@ -94,8 +94,7 @@ class Indicators:
         if ofl:
             lows.append(ofl)
 
-
-        return highs, lows
+        return {"resistance": highs, "support": lows}
 
 if __name__ == "__main__":
     indi_obj = Indicators()
