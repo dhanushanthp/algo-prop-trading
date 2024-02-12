@@ -65,10 +65,13 @@ class Indicators:
             end_time = check_us_time_start.astimezone(pytz.timezone(f'Etc/GMT-{config.server_timezone}')) - timedelta(hours=1)
             
             previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
-            off_hour_highs = Signal(reference="OMH", level=max(previous_bars["high"])) 
-            off_hour_lows = Signal(reference="OML", level=max(previous_bars["low"])) 
-
-            return off_hour_highs, off_hour_lows
+            
+            if not previous_bars.empty:
+                off_hour_highs = Signal(reference="OMH", level=max(previous_bars["high"])) 
+                off_hour_lows = Signal(reference="OML", level=min(previous_bars["low"])) 
+                return off_hour_highs, off_hour_lows
+            
+            return None, None
         
         return None, None
 
@@ -97,4 +100,5 @@ class Indicators:
 if __name__ == "__main__":
     indi_obj = Indicators()
     print(indi_obj.get_atr("EURUSD", 60))
+    print(indi_obj.get_off_market_levels("EURUSD"))
     print(indi_obj.get_king_of_levels("EURUSD"))
