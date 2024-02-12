@@ -183,7 +183,7 @@ class AlgoTrader():
         selected_symbols = ind.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip}  {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr} {self.partial_live_actual}------------------")
+            print(f"\n------- {config.local_ip}  TRADE KING @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframes} TFs & PartialProfit ({self.partial_rr} RR): {self.partial_profit_rr} {self.partial_live_actual}------------------")
             is_market_open, is_market_close = util.get_market_status()
             _,equity,_,profit = ind.get_account_details()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -225,21 +225,21 @@ class AlgoTrader():
                     self.retries += 1
 
 
-            if self.risk_manager.has_daily_maximum_risk_reached():
-                self.retries += 1
-                mp.close_all_with_condition()
-                time.sleep(30) # Take some time for the account to digest the positions
+            # if self.risk_manager.has_daily_maximum_risk_reached():
+            #     self.retries += 1
+            #     mp.close_all_with_condition()
+            #     time.sleep(30) # Take some time for the account to digest the positions
 
-                # The risk reward calclualted based on initial risk                
-                self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {round(rr, 2)}, PnL: {round(pnl, 2)}")
+            #     # The risk reward calclualted based on initial risk                
+            #     self.alert.send_msg(f"{self.account_name}: Exit {self.retries}, RR: {round(rr, 2)}, PnL: {round(pnl, 2)}")
                 
-                if rr <= 0:
-                    self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
-                    self.immidiate_exit = True
+            #     if rr <= 0:
+            #         self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
+            #         self.immidiate_exit = True
                 
-                # Re initiate the object
-                self.risk_manager = RiskManager.RiskManager(profit_split=0.5)
-                self.fixed_initial_account_size = self.risk_manager.account_size
+            #     # Re initiate the object
+            #     self.risk_manager = RiskManager.RiskManager(profit_split=0.5)
+            #     self.fixed_initial_account_size = self.risk_manager.account_size
 
             if is_market_close:
                 print("Market Close!")
