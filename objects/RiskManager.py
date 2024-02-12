@@ -150,7 +150,7 @@ class RiskManager:
         lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
         higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
         
-        return Shield(long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
+        return Shield(symbol=symbol, long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
 
     def get_lot_size(self, symbol, entry_price, stop_price) -> Tuple[float, float]:
         dollor_value = self.prices.get_dollar_value(symbol)
@@ -181,7 +181,7 @@ class RiskManager:
 
 if __name__ == "__main__":
     obj = RiskManager(profit_split=0.5, stop_ratio=1, target_ratio=3)
-    test_symbol = "CADJPY"
+    test_symbol = "EURUSD"
 
     # Test: Stop Ranges
     stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
