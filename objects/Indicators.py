@@ -31,10 +31,27 @@ class Indicators:
         return round(atr, 5)
 
     def get_previous_day_levels(self, symbol) -> Tuple[Signal, Signal]:
-        previous_day = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_D1 , 1, 1)[0]
-        high = Signal(reference="PDH", level=previous_day["high"])
-        low = Signal(reference="PDL", level=previous_day["low"])
-        return high, low
+        # Current GMT time
+        tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
+        current_gmt_time = datetime.now(tm_zone) - timedelta(days=1)
+
+        # Generate off market hours high and lows
+        start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), hour=1, minute=0, 
+                            tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+        
+        end_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), hour=22, minute=0, 
+                            tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+        
+        previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
+        
+        if not previous_bars.empty:
+            prev_day_high = Signal(reference="PDH", level=max(previous_bars["high"])) 
+            prev_day_low = Signal(reference="PDL", level=min(previous_bars["low"])) 
+            return prev_day_high, prev_day_low
+        else:
+            logme.logger.debug(f"PreDay, {symbol}, {start_time}, {end_time}")
+
+        return None, None
     
     def get_off_market_levels(self, symbol) -> Tuple[Signal, Signal]:
         
@@ -71,7 +88,7 @@ class Indicators:
                 off_hour_lows = Signal(reference="OML", level=min(previous_bars["low"])) 
                 return off_hour_highs, off_hour_lows
             else:
-                logme.logger.debug(f"{symbol}, {start_time}, {end_time}")
+                logme.logger.debug(f"OffMar, {symbol}, {start_time}, {end_time}")
 
             return None, None
         
@@ -100,6 +117,8 @@ class Indicators:
 
 if __name__ == "__main__":
     indi_obj = Indicators()
-    print(indi_obj.get_atr("EURUSD", 60))
-    print(indi_obj.get_off_market_levels("EURUSD"))
-    print(indi_obj.get_king_of_levels("EURUSD"))
+    import sys
+    symbol = sys.argv[1]
+    print(indi_obj.get_atr(symbol, 60))
+    print(indi_obj.get_off_market_levels(symbol))
+    print(indi_obj.get_king_of_levels(symbol))

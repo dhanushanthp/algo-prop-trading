@@ -181,7 +181,8 @@ class RiskManager:
 
 if __name__ == "__main__":
     obj = RiskManager(profit_split=0.5, stop_ratio=1, target_ratio=3)
-    test_symbol = "EURUSD"
+    import sys
+    test_symbol = sys.argv[1]
 
     # Test: Stop Ranges
     stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
