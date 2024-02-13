@@ -6,7 +6,7 @@ import pandas as pd
 import objects.Currencies as curr
 import collections
 import modules.config as config
-import modules.util as util
+import objects.util as util
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():

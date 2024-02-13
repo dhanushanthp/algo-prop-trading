@@ -1,7 +1,7 @@
 import numpy as np
 import MetaTrader5 as mt5
 mt5.initialize()
-import modules.util as util
+import objects.util as util
 from datetime import datetime,  timedelta
 import pytz
 from modules import config

@@ -1,6 +1,6 @@
 import MetaTrader5 as mt5
 import modules.indicators as ind
-import modules.util as util
+import objects.util as util
 import objects.Currencies as curr
 import numpy as np
 import pytz

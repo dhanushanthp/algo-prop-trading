@@ -2,7 +2,7 @@ import MetaTrader5 as mt
 import time
 import argparse
 
-import modules.util as util
+import objects.util as util
 import objects.Currencies as curr
 from objects.RiskManager import RiskManager
 import modules.config as config

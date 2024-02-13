@@ -10,7 +10,7 @@ import time
 import argparse
 
 import modules.indicators as ind
-import modules.util as util
+import objects.util as util
 import objects.Currencies as curr
 import objects.RiskManager as RiskManager
 import modules.config as config

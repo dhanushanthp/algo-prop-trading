@@ -2,7 +2,7 @@ import MetaTrader5 as mt5
 mt5.initialize()
 from objects.RiskManager import RiskManager
 from objects.Directions import Directions
-import modules.util as util
+import objects.util as util
 from objects.Prices import Prices
 
 class Orders:

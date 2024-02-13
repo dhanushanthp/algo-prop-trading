@@ -3,7 +3,7 @@ import time
 import MetaTrader5 as mt5
 import modules.mng_pos as mp
 import objects.slack_msg as slack_msg
-import modules.util as util
+import objects.util as util
 from objects.Prices import Prices
 from typing import Tuple
 import objects.Currencies as curr
