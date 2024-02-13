@@ -30,7 +30,7 @@ class MachineReloaded():
         self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
         self.prices = Prices()
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager)
-        self.targets = Targets()
+        self.targets = Targets(risk_manager=self.risk_manager, timeframe=trading_timeframe)
         self.alert = Slack()
         self.account = Account()
         self.indicators = Indicators()

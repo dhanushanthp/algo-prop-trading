@@ -3,10 +3,13 @@ from objects.Directions import Directions
 from tabulate import tabulate
 from typing import Dict
 import pandas as pd
+from objects.RiskManager import RiskManager
 
 class Targets:
-    def __init__(self):
+    def __init__(self, risk_manager:RiskManager, timeframe:int):
         self.targets:Dict[str, Bullet] = dict()
+        self.risk_manager = risk_manager
+        self.timeframe = timeframe
 
     def get_targets(self) -> Dict[str, Bullet]:
         return self.targets
@@ -37,7 +40,26 @@ class Targets:
                     max_level = min(previous_sniper_level, sniper_level)
                     if max_level != previous_sniper_level:
                         self.targets[target] = active_bullet
-        
+
+    def trace_targets(self):
+        """
+        Keep update the entry point at the stop until it enter the trade on breakout
+        """
+        selected_targets = self.targets.keys()
+        for symbol in selected_targets:
+            shild_obj = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.timeframe)
+            target_obj = self.targets[symbol]
+            if target_obj.shoot_direction == Directions.LONG:
+                self.load_targets(target=symbol, reference=target_obj.reference, 
+                                  sniper_trigger_level=target_obj.sniper_trigger_level, 
+                                  sniper_level=shild_obj.get_long_stop, shoot_direction=target_obj.shoot_direction)
+            
+            elif target_obj.shoot_direction == Directions.SHORT:
+                self.load_targets(target=symbol, reference=target_obj.reference, 
+                                  sniper_trigger_level=target_obj.sniper_trigger_level, 
+                                  sniper_level=shild_obj.get_short_stop, shoot_direction=target_obj.shoot_direction)
+
+
     def unload_targets(self, target:str):
         if target in self.targets:
             self.targets.pop(target)
@@ -60,24 +82,27 @@ class Targets:
 if __name__ == "__main__":
     import time
     import pandas as pd
-    magazine = Targets()
-    magazine.load_targets("A", 10, 10, Directions.LONG)
+    risk_manager = RiskManager()
+    magazine = Targets(risk_manager=risk_manager, timeframe=60)
+    magazine.load_targets("USDJPY", "PDH", 10, 10, Directions.LONG)
     magazine.show_targets()
-    magazine.load_targets("A", 10, 11, Directions.LONG)
+    magazine.load_targets("USDJPY", "PDH", 10, 11, Directions.LONG)
     magazine.show_targets()
-    magazine.load_targets("A", 10, 9, Directions.LONG)
+    magazine.load_targets("USDJPY", "PDH", 10, 9, Directions.LONG)
     print(magazine.get_targets())
-    magazine.load_targets("A", 10, 9, Directions.SHORT)
+    magazine.load_targets("USDJPY", "PDH", 10, 9, Directions.SHORT)
     print(magazine.get_targets())
-    magazine.load_targets("A", 10, 15, Directions.SHORT)
+    magazine.load_targets("USDJPY", "PDH", 10, 15, Directions.SHORT)
     print(magazine.get_targets())
-    magazine.load_targets("A", 10, 8, Directions.SHORT)
+    magazine.load_targets("USDJPY", "PDH", 10, 8, Directions.SHORT)
     print(magazine.get_targets())
-    magazine.load_targets("B", 10, 8, Directions.SHORT)
+    magazine.load_targets("XAUUSD", "PDH", 10, 8, Directions.SHORT)
+    magazine.trace_targets()
     print(magazine.get_targets())
-    magazine.load_targets("A", 10, 9, Directions.LONG)
+    magazine.load_targets("USDJPY", "PDH", 10, 9, Directions.LONG)
+    magazine.trace_targets()
     magazine.show_targets()
-    magazine.unload_targets("A")
+    magazine.unload_targets("USDJPY")
     print(magazine.get_targets())
     magazine.unload_targets("B")
     print(magazine.get_targets())

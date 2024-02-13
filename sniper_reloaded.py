@@ -30,7 +30,7 @@ class SniperReloaded():
         self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
         self.prices = Prices()
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager)
-        self.targets = Targets()
+        self.targets = Targets(risk_manager=self.risk_manager, timeframe=trading_timeframe)
         self.alert = Slack()
         self.account = Account()
         self.indicators = Indicators()
@@ -110,16 +110,17 @@ class SniperReloaded():
                         if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
                             # print(f"{symbol.ljust(12)} Resistance: {resistance}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
-                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
+                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.LONG)
                             break
                     
                     for support in king_of_levels["support"]:       
                         if current_candle["open"] > support.level and current_candle["close"] < support.level:
                             # print(f"{symbol.ljust(12)} Support: {support}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
-                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.LONG)
+                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
                             break
-
+                
+                self.targets.trace_targets()
                 self.targets.show_targets()
                 symbols_to_remove = []
 
