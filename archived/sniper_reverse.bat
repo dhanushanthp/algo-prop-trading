@@ -1,1 +1,0 @@
-python sniper_entry.py --strategy reverse --timeframe 60 --rr 1.0,4.0 --enable_trail no --enable_str_switch no --incremental_risk no

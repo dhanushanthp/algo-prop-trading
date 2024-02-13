@@ -1,1 +1,0 @@
-python gorrilla.py --strategy break --timeframe 15 --rr 1.0,4.0 --enable_trail no --enable_str_switch no --incremental_risk no
