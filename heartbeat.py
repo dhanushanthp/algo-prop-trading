@@ -1,5 +1,5 @@
 import psutil
-from modules.slack_msg import Slack
+from objects.slack_msg import Slack
 alert = Slack()
 import modules.indicators as ind
 

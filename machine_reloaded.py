@@ -6,7 +6,7 @@ import modules.util as util
 import objects.Currencies as curr
 from objects.RiskManager import RiskManager
 import modules.config as config
-from modules.slack_msg import Slack
+from objects.slack_msg import Slack
 from objects.Targets import Targets
 from objects.Directions import Directions
 from objects.Prices import Prices

@@ -1,5 +1,5 @@
 import MetaTrader5 as mt5
-from modules.slack_msg import Slack
+from objects.slack_msg import Slack
 
 # establish connection to MetaTrader 5 terminal
 if not mt5.initialize():

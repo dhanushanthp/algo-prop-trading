@@ -14,7 +14,7 @@ import objects.Currencies as curr
 import objects.RiskManager as RiskManager
 import modules.config as config
 import modules.mng_pos as mp
-from modules.slack_msg import Slack
+from objects.slack_msg import Slack
 from modules.monitor import Monitor
 from modules.file_utils import FileUtils
 

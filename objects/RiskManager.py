@@ -2,7 +2,7 @@ import modules.config as config
 import time
 import MetaTrader5 as mt5
 import modules.mng_pos as mp
-import modules.slack_msg as slack_msg
+import objects.slack_msg as slack_msg
 import modules.util as util
 from objects.Prices import Prices
 from typing import Tuple
