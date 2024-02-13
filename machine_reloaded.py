@@ -2,7 +2,6 @@ import MetaTrader5 as mt
 import time
 import argparse
 
-import modules.indicators as ind
 import modules.util as util
 import objects.Currencies as curr
 from objects.RiskManager import RiskManager
@@ -11,8 +10,9 @@ from modules.slack_msg import Slack
 from objects.Prices import Prices
 from objects.Orders import Orders
 from objects.Account import Account
+from objects.Indicators import Indicators
 
-class MachineReloaded():
+class MachineReload():
     def __init__(self, trading_timeframe:int):
         # MetaTrader initialization
         mt.initialize()
@@ -30,6 +30,7 @@ class MachineReloaded():
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager)
         self.alert = Slack()
         self.account = Account()
+        self.indicators = Indicators()
         
 
         # Account information
@@ -46,7 +47,7 @@ class MachineReloaded():
         self.partial_rr=self.risk_manager.account_risk_percentage
     
     def main(self):
-        selected_symbols = ind.get_ordered_symbols()
+        selected_symbols = curr.get_ordered_symbols()
         
         while True:
             print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF & PartialProfit:{self.partial_profit_rr} with ({self.partial_rr} RR) ------------------")
@@ -94,26 +95,23 @@ class MachineReloaded():
                 existing_positions = list(set([i.symbol for i in mt.positions_get()]))
 
                 for symbol in selected_symbols:
+                    # If the positions is already in trade, then don't check for signal
                     if symbol in existing_positions:
                         continue
 
-                    king_of_levels = ind.get_king_of_levels(symbol=symbol)
-
-                    resistances = king_of_levels[0]
-                    support = king_of_levels[1]
+                    king_of_levels = self.indicators.get_king_of_levels(symbol=symbol)
 
                     current_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 0, 1)[-1]
 
-                    for resistance_level in resistances:
-                        if current_candle["open"] < resistance_level and current_candle["close"] > resistance_level:
-                            print(f"{symbol.ljust(12)} Resistance: {resistance_level}")
-                            self.orders.long_entry(symbol=symbol, break_level=resistance_level, trading_timeframe=self.trading_timeframe)
-                            break
+                    for resistance in king_of_levels["resistance"]:
+                        if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
+                            print(f"{symbol.ljust(12)} Resistance: {resistance}")
+                            self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=resistance.level, trading_timeframe=self.trading_timeframe)
                     
-                    for support_level in support:               
-                        if current_candle["open"] > support_level and current_candle["close"] < support_level:
-                            print(f"{symbol.ljust(12)} Support: {support_level}")
-                            self.orders.short_entry(symbol=symbol, break_level=support_level, trading_timeframe=self.trading_timeframe)
+                    for support in king_of_levels["support"]:       
+                        if current_candle["open"] > support.level and current_candle["close"] < support.level:
+                            print(f"{symbol.ljust(12)} Support: {support}")
+                            self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=support.level, trading_timeframe=self.trading_timeframe)
                             break
 
             time.sleep(self.timer)
@@ -128,7 +126,7 @@ if __name__ == "__main__":
     
     
     trading_timeframe = int(args.timeframe)
-    win = MachineReloaded(trading_timeframe=trading_timeframe)
+    win = MachineReload(trading_timeframe=trading_timeframe)
 
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
     win.partial_rr = args.partial_rr 
