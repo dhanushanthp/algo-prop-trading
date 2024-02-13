@@ -15,7 +15,7 @@ from objects.Account import Account
 from objects.Indicators import Indicators
 
 class SniperReloaded():
-    def __init__(self, trading_timeframe:int):
+    def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1):
         # MetaTrader initialization
         mt.initialize()
 
@@ -27,7 +27,7 @@ class SniperReloaded():
         self.retries = 0
 
         # External dependencies
-        self.risk_manager = RiskManager(stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
+        self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
         self.prices = Prices()
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager)
         self.targets = Targets()
@@ -86,7 +86,7 @@ class SniperReloaded():
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager = RiskManager() # Reset the risk for the day
+                self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
                 self.orders.close_all_positions()
                 
                 # Reset account size for next day
@@ -155,12 +155,16 @@ if __name__ == "__main__":
 
     parser.add_argument('--partial_profit_rr', type=str, help='Partial Profit RR')
     parser.add_argument('--partial_rr', type=float, help='Partial Profit RR')
-    parser.add_argument('--timeframe', type=str, help='Selected timeframe for trade')
+    parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
+    parser.add_argument('--account_risk', type=float, help='Selected timeframe for trade')
+    parser.add_argument('--each_position_risk', type=float, help='Selected timeframe for trade')
     args = parser.parse_args()
     
     
     trading_timeframe = int(args.timeframe)
-    win = SniperReloaded(trading_timeframe=trading_timeframe)
+    account_risk = float(args.account_risk)
+    each_position_risk = float(args.each_position_risk)
+    win = SniperReloaded(trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk)
 
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
     win.partial_rr = args.partial_rr 

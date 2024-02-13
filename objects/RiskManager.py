@@ -15,13 +15,13 @@ from objects.Indicators import Indicators
 mt5.initialize()
 
 class RiskManager:
-    def __init__(self, profit_split=1, stop_ratio=1, target_ratio=3) -> None:
+    def __init__(self, stop_ratio=1, target_ratio=3, account_risk:float=1, position_risk:float=0.1) -> None:
         self.account = Account()
         ACCOUNT_SIZE = self.account.get_liquid_balance()
         self.account_size  = ACCOUNT_SIZE
-        self.account_risk_percentage = config.account_risk_percentage * profit_split
+        self.account_risk_percentage = account_risk
+        self.position_risk_percentage = position_risk
         self.risk_of_an_account = round(ACCOUNT_SIZE/100*self.account_risk_percentage)
-        self.position_risk_percentage = config.risk_of_a_position
         self.risk_of_a_position = round(ACCOUNT_SIZE/100*self.position_risk_percentage)
         self.alert = slack_msg.Slack()
         self.max_account_risk = round(ACCOUNT_SIZE/100)

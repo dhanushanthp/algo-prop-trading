@@ -7,13 +7,15 @@ import objects.Currencies as curr
 from objects.RiskManager import RiskManager
 import modules.config as config
 from modules.slack_msg import Slack
+from objects.Targets import Targets
+from objects.Directions import Directions
 from objects.Prices import Prices
 from objects.Orders import Orders
 from objects.Account import Account
 from objects.Indicators import Indicators
 
-class MachineReload():
-    def __init__(self, trading_timeframe:int):
+class MachineReloaded():
+    def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1):
         # MetaTrader initialization
         mt.initialize()
 
@@ -25,9 +27,10 @@ class MachineReload():
         self.retries = 0
 
         # External dependencies
-        self.risk_manager = RiskManager(stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
+        self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
         self.prices = Prices()
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager)
+        self.targets = Targets()
         self.alert = Slack()
         self.account = Account()
         self.indicators = Indicators()
@@ -83,7 +86,7 @@ class MachineReload():
 
             if is_market_close:
                 print("Market Close!")
-                self.risk_manager = RiskManager() # Reset the risk for the day
+                self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
                 self.orders.close_all_positions()
                 
                 # Reset account size for next day
@@ -107,6 +110,7 @@ class MachineReload():
                         if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
                             print(f"{symbol.ljust(12)} Resistance: {resistance}")
                             self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=resistance.level, trading_timeframe=self.trading_timeframe)
+                            break
                     
                     for support in king_of_levels["support"]:       
                         if current_candle["open"] > support.level and current_candle["close"] < support.level:
@@ -121,12 +125,16 @@ if __name__ == "__main__":
 
     parser.add_argument('--partial_profit_rr', type=str, help='Partial Profit RR')
     parser.add_argument('--partial_rr', type=float, help='Partial Profit RR')
-    parser.add_argument('--timeframe', type=str, help='Selected timeframe for trade')
+    parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
+    parser.add_argument('--account_risk', type=float, help='Selected timeframe for trade')
+    parser.add_argument('--each_position_risk', type=float, help='Selected timeframe for trade')
     args = parser.parse_args()
     
     
     trading_timeframe = int(args.timeframe)
-    win = MachineReload(trading_timeframe=trading_timeframe)
+    account_risk = float(args.account_risk)
+    each_position_risk = float(args.each_position_risk)
+    win = MachineReloaded(trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk)
 
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
     win.partial_rr = args.partial_rr 
