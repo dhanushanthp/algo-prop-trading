@@ -48,12 +48,14 @@ class MachineReloaded():
         # Take the profit as specific RR ratio
         self.partial_profit_rr = False
         self.partial_rr=self.risk_manager.account_risk_percentage
+
+        self.strategy = None
     
     def main(self):
         selected_symbols = curr.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF & PartialProfit:{self.partial_profit_rr} with ({self.partial_rr} RR) ------------------")
+            print(f"\n{config.local_ip.replace('_', '.')} with {self.strategy.upper()} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF & PartialProfit:{self.partial_profit_rr} with ({self.partial_rr} RR)")
             is_market_open, is_market_close = util.get_market_status()
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -107,22 +109,33 @@ class MachineReloaded():
                     current_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 0, 1)[-1]
 
                     for resistance in king_of_levels["resistance"]:
-                        if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
-                            print(f"{symbol.ljust(12)} Resistance: {resistance}")
-                            self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=resistance.level, trading_timeframe=self.trading_timeframe)
-                            break
+                        if self.strategy == "break":
+                            if (current_candle["open"] < resistance.level and current_candle["close"] > resistance.level):
+                                print(f"{symbol.ljust(12)} Resistance: {resistance}")
+                                self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=resistance.level, trading_timeframe=self.trading_timeframe)
+                        elif self.strategy == "reverse":
+                            if (current_candle["open"] < resistance.level and current_candle["close"] > resistance.level) or (current_candle["open"] > resistance.level and current_candle["close"] < resistance.level):
+                                print(f"{symbol.ljust(12)} Resistance: {resistance}")
+                                self.orders.short_entry(symbol=symbol, reference=resistance.reference, break_level=resistance.level, trading_timeframe=self.trading_timeframe)
+                        break
                     
                     for support in king_of_levels["support"]:       
-                        if current_candle["open"] > support.level and current_candle["close"] < support.level:
-                            print(f"{symbol.ljust(12)} Support: {support}")
-                            self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=support.level, trading_timeframe=self.trading_timeframe)
-                            break
+                        if self.strategy == "break":
+                            if current_candle["open"] > support.level and current_candle["close"] < support.level:
+                                print(f"{symbol.ljust(12)} Support: {support}")
+                                self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=support.level, trading_timeframe=self.trading_timeframe)
+                        elif self.strategy == "reverse":
+                            if (current_candle["open"] > support.level and current_candle["close"] < support.level) or (current_candle["open"] < support.level and current_candle["close"] > support.level):
+                                print(f"{symbol.ljust(12)} Support: {support}")
+                                self.orders.long_entry(symbol=symbol, reference=support.reference, break_level=support.level, trading_timeframe=self.trading_timeframe)
+                        break
 
             time.sleep(self.timer)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
+    parser.add_argument('--strategy', type=str, help='Strategy')
     parser.add_argument('--partial_profit_rr', type=str, help='Partial Profit RR')
     parser.add_argument('--partial_rr', type=float, help='Partial Profit RR')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
@@ -138,6 +151,12 @@ if __name__ == "__main__":
 
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
     win.partial_rr = args.partial_rr 
+    win.strategy = args.strategy
+
+    # Validation
+    if win.strategy not in ["reverse", "break"]:
+        print("Plese enter valid strategy")
+        import sys; sys.exit()
 
     win.main()
 
