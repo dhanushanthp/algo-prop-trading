@@ -85,14 +85,14 @@ class Indicators:
         if pdh:
             highs.append(pdh)
         
-        if ofh:
-            highs.append(ofh)
+        # if ofh:
+        #     highs.append(ofh)
         
         if pdl:
             lows.append(pdl)
         
-        if ofl:
-            lows.append(ofl)
+        # if ofl:
+        #     lows.append(ofl)
 
         return {"resistance": highs, "support": lows}
 
