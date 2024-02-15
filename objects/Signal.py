@@ -4,3 +4,4 @@ from dataclasses import dataclass
 class Signal:
     reference:str
     level:float
+    num_breaks:int=0
