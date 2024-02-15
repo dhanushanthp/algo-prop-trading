@@ -1,7 +1,7 @@
+from datetime import datetime, timedelta, time
 import modules.config as config
-import time
 import MetaTrader5 as mt5
-import modules.mng_pos as mp
+import pytz
 import objects.slack_msg as slack_msg
 import objects.util as util
 from objects.Prices import Prices
@@ -10,7 +10,6 @@ import objects.Currencies as curr
 from objects.Shield import Shield
 from objects.Account import Account
 from objects.Indicators import Indicators
-
 
 mt5.initialize()
 
@@ -178,6 +177,45 @@ class RiskManager:
 
         return points_in_stop, lots
 
+    def check_trade_wait_time(self, symbol):
+        """
+        Magic variable is important from the history
+        If you already have made some money. Then don't entry this for another time peroid based on last entered timeframe
+        """
+        tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
+        start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone) - timedelta(hours=2)
+        end_time = datetime.now(tm_zone) + timedelta(hours=4)
+        today_date = datetime.now(tm_zone).date()
+
+        exit_traded_position = [i for i in mt5.history_deals_get(start_time,  end_time) if i.symbol== symbol and i.entry==1]
+
+        if len(exit_traded_position) > 0:
+            last_traded_time = exit_traded_position[-1].time
+            last_traded_date = (datetime.fromtimestamp(last_traded_time, tz=tm_zone) - timedelta(hours=2)).date()
+
+            # This is considered as new day
+            if last_traded_date != today_date:
+                return True
+
+            # Below logic, sameday with traded time gap
+            position_id = exit_traded_position[-1].position_id
+            entry_traded_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.position_id == position_id and i.entry == 0]
+            if len(entry_traded_object) > 0:
+                # Wait until the last traded timeframe is complete
+                previous_timeframe = int(entry_traded_object[-1].magic)  # in minutes, This was my input to the process
+                # timeframe = max(timeframe, current_trade_timeframe) # Pick the max timeframe based on previous and current suggested trade timeframe
+
+                current_time = (datetime.now(tm_zone) + timedelta(hours=2))
+                current_time_epoch = current_time.timestamp()
+
+                # Minutes from last traded time.
+                time_difference = (current_time_epoch - last_traded_time)/60
+
+                if time_difference < previous_timeframe:
+                    print(f"{symbol.ljust(12)}: Last/Current TF: {previous_timeframe} > Wait Time {round(previous_timeframe - time_difference)} Minutes!")
+                    return False
+
+        return True
 
 if __name__ == "__main__":
     obj = RiskManager(stop_ratio=1, target_ratio=3)
@@ -196,3 +234,6 @@ if __name__ == "__main__":
     entry_price = obj.prices.get_entry_price(symbol=test_symbol)
     size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
     print(size)
+
+    check_time = obj.check_trade_wait_time(symbol=test_symbol)
+    print(check_time)

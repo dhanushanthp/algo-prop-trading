@@ -10,7 +10,6 @@ class Orders:
         self.prices = prices
         self.risk_manager=risk_manager
 
-
     def close_single_position(self, obj):        
         order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
         exist_price = mt5.symbol_info_tick(obj.symbol).bid if obj.type == 1 else mt5.symbol_info_tick(obj.symbol).ask
@@ -63,7 +62,7 @@ class Orders:
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
             
-            if shield_object.get_signal_strength:    
+            if shield_object.get_signal_strength and self.risk_manager.check_trade_wait_time(symbol=symbol):
                 if entry_price > shield_object.get_long_stop:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.LONG}")        
@@ -97,7 +96,7 @@ class Orders:
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
 
-            if shield_object.get_signal_strength:
+            if shield_object.get_signal_strength and self.risk_manager.check_trade_wait_time(symbol=symbol):
                 if entry_price < shield_object.get_short_stop:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.SHORT}")      

@@ -77,8 +77,9 @@ class MachineReloaded():
 
             if self.partial_profit_rr:
                 if rr > self.partial_rr:
-                    self.immidiate_exit = True
+                    # self.immidiate_exit = True
                     self.orders.close_all_positions()
+                    self.alert.send_msg(f"{self.account_name}: Profit @ {self.partial_rr}RR: {round(rr, 2)}")
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.immidiate_exit = True
