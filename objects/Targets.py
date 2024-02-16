@@ -14,14 +14,21 @@ class Targets:
     def get_targets(self) -> Dict[str, Bullet]:
         return self.targets
     
+    def reload_targets(self):
+        # Update the targets pnl based on selected direction
+        for target in self.targets.values():
+            symbol = target.target
+            direction = target.trade_direction
+            break_level = target.sniper_break_level
+    
     def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions):
         active_bullet = Bullet(target, reference, sniper_trigger_level, sniper_level, shoot_direction)
 
         if target not in self.targets:
             self.targets[target] = active_bullet
         else:
-            previous_sniper_level = self.targets[target].sniper_level
-            previous_shoot_direction = self.targets[target].shoot_direction
+            previous_sniper_level = self.targets[target].sniper_entry_level
+            previous_shoot_direction = self.targets[target].trade_direction
             
             # If direction is opposite then update the whole object
             if previous_shoot_direction != shoot_direction:
@@ -49,15 +56,15 @@ class Targets:
         for symbol in selected_targets:
             shild_obj = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.timeframe)
             target_obj = self.targets[symbol]
-            if target_obj.shoot_direction == Directions.LONG:
+            if target_obj.trade_direction == Directions.LONG:
                 self.load_targets(target=symbol, reference=target_obj.reference, 
-                                  sniper_trigger_level=target_obj.sniper_trigger_level, 
-                                  sniper_level=shild_obj.get_long_stop, shoot_direction=target_obj.shoot_direction)
+                                  sniper_trigger_level=target_obj.sniper_break_level, 
+                                  sniper_level=shild_obj.get_long_stop, shoot_direction=target_obj.trade_direction)
             
-            elif target_obj.shoot_direction == Directions.SHORT:
+            elif target_obj.trade_direction == Directions.SHORT:
                 self.load_targets(target=symbol, reference=target_obj.reference, 
-                                  sniper_trigger_level=target_obj.sniper_trigger_level, 
-                                  sniper_level=shild_obj.get_short_stop, shoot_direction=target_obj.shoot_direction)
+                                  sniper_trigger_level=target_obj.sniper_break_level, 
+                                  sniper_level=shild_obj.get_short_stop, shoot_direction=target_obj.trade_direction)
 
 
     def unload_targets(self, target:str):
@@ -68,9 +75,9 @@ class Targets:
         data = {
             'Target': [self.targets[key].target for key in self.targets],
             'Reference': [self.targets[key].reference for key in self.targets],
-            'SN Break': [self.targets[key].sniper_trigger_level for key in self.targets],
-            'SN Entry': [self.targets[key].sniper_level for key in self.targets],
-            'Direction': [self.targets[key].shoot_direction for key in self.targets]
+            'SN Break': [self.targets[key].sniper_break_level for key in self.targets],
+            'SN Entry': [self.targets[key].sniper_entry_level for key in self.targets],
+            'Direction': [self.targets[key].trade_direction for key in self.targets]
         }
 
         df = pd.DataFrame(data)

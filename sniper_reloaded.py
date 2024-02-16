@@ -127,8 +127,8 @@ class SniperReloaded():
                 for symbol in self.targets.get_targets():
                     if symbol not in existing_positions:
                         bullet = self.targets.get_targets()[symbol]
-                        break_level = bullet.sniper_level
-                        direction = bullet.shoot_direction
+                        break_level = bullet.sniper_entry_level
+                        direction = bullet.trade_direction
                         reference = bullet.reference
 
                         # Get current candle OHLC
