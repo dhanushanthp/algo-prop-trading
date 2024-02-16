@@ -30,11 +30,42 @@ class Indicators:
 
         return round(atr, 5)
 
+
+    def get_all_previous_bars_for_hours(self, symbol):
+        # Current GMT time
+        tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
+        current_gmt_time = datetime.now(tm_zone)
+
+        # Generate off market hours high and lows
+        # Ignore the candle which is in middle of the day close and open
+        start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+                              hour=1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
+        
+        end_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day),
+                            hour=int(current_gmt_time.hour) - 1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
+        
+        previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
+
+        return previous_bars
+
+
     def get_previous_day_levels(self, symbol) -> Tuple[Signal, Signal]:
         previous_day = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_D1 , 1, 1)[0]
-        high = Signal(reference="PDH", level=previous_day["high"])
-        low = Signal(reference="PDL", level=previous_day["low"])
-        return high, low
+
+        all_previous_bars = self.get_all_previous_bars_for_hours(symbol=symbol)
+
+        if not all_previous_bars.empty:
+            high_break_counter = all_previous_bars[all_previous_bars["high"] > previous_day["high"]]["time"].count()
+            low_break_counter = all_previous_bars[all_previous_bars["low"] < previous_day["low"]]["time"].count()
+        else:
+            high_break_counter = 0
+            low_break_counter = 0
+
+
+        high_signal = Signal(reference="PDH", level=previous_day["high"], num_breaks=high_break_counter)
+        low_signal = Signal(reference="PDL", level=previous_day["low"], num_breaks=low_break_counter)
+
+        return high_signal, low_signal
     
     def get_off_market_levels(self, symbol) -> Tuple[Signal, Signal]:
         current_us_time = datetime.now(pytz.timezone('US/Eastern'))
@@ -57,10 +88,11 @@ class Indicators:
             current_gmt_time = datetime.now(tm_zone)
 
             # Generate off market hours high and lows
-            start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), hour=0, minute=0, 
-                                tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+            start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+                                  hour=0, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
             
-            end_time = check_us_time_start.astimezone(pytz.timezone(f'Etc/GMT-{config.server_timezone}')) - timedelta(hours=1)
+            end_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day),
+                            hour=int(current_gmt_time.hour) - 1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
             
             previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
             
@@ -100,6 +132,7 @@ if __name__ == "__main__":
     indi_obj = Indicators()
     import sys
     symbol = sys.argv[1]
-    print(indi_obj.get_atr(symbol, 60))
-    print(indi_obj.get_off_market_levels(symbol))
-    print(indi_obj.get_king_of_levels(symbol))
+    print("ATR" ,indi_obj.get_atr(symbol, 60))
+    print(indi_obj.get_all_previous_bars_for_hours(symbol))
+    # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
+    print("KING LEVELS", indi_obj.get_king_of_levels(symbol))
