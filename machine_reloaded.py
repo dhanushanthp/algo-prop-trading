@@ -80,6 +80,9 @@ class MachineReloaded():
                     # self.immidiate_exit = True
                     self.orders.close_all_positions()
                     self.alert.send_msg(f"{self.account_name}: Profit @ {self.partial_rr}RR: {round(rr, 2)}")
+                    self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
+                    self.fixed_initial_account_size = self.risk_manager.account_size
+
 
             if self.risk_manager.has_daily_maximum_risk_reached():
                 self.immidiate_exit = True
@@ -102,7 +105,8 @@ class MachineReloaded():
 
                 for symbol in selected_symbols:
                     # If the positions is already in trade, then don't check for signal
-                    if symbol in existing_positions:
+                    active_orders = mt.orders_get()
+                    if (symbol in existing_positions):
                         continue
 
                     king_of_levels = self.indicators.get_king_of_levels(symbol=symbol)
@@ -111,22 +115,24 @@ class MachineReloaded():
 
                     for resistance in king_of_levels["resistance"]:
                         if self.strategy == "break":
-                            if (current_candle["open"] < resistance.level and current_candle["close"] > resistance.level):
+                            if (current_candle["open"] < resistance.level and current_candle["close"] > resistance.level) and resistance.num_breaks >= 1:
                                 print(f"{symbol.ljust(12)} Resistance: {resistance}")
                                 self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=resistance.level, trading_timeframe=self.trading_timeframe)
                         elif self.strategy == "reverse":
-                            if (current_candle["open"] < resistance.level and current_candle["close"] > resistance.level) or (current_candle["open"] > resistance.level and current_candle["close"] < resistance.level):
+                            if ((current_candle["open"] < resistance.level and current_candle["close"] > resistance.level) or \
+                                  (current_candle["open"] > resistance.level and current_candle["close"] < resistance.level)) and resistance.num_breaks >= 1:
                                 print(f"{symbol.ljust(12)} Resistance: {resistance}")
                                 self.orders.short_entry(symbol=symbol, reference=resistance.reference, break_level=resistance.level, trading_timeframe=self.trading_timeframe)
                         break
                     
                     for support in king_of_levels["support"]:       
                         if self.strategy == "break":
-                            if current_candle["open"] > support.level and current_candle["close"] < support.level:
+                            if (current_candle["open"] > support.level and current_candle["close"] < support.level) and support.num_breaks >= 1:
                                 print(f"{symbol.ljust(12)} Support: {support}")
                                 self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=support.level, trading_timeframe=self.trading_timeframe)
                         elif self.strategy == "reverse":
-                            if (current_candle["open"] > support.level and current_candle["close"] < support.level) or (current_candle["open"] < support.level and current_candle["close"] > support.level):
+                            if ((current_candle["open"] > support.level and current_candle["close"] < support.level) or \
+                                  (current_candle["open"] < support.level and current_candle["close"] > support.level)) and support.num_breaks >= 1:
                                 print(f"{symbol.ljust(12)} Support: {support}")
                                 self.orders.long_entry(symbol=symbol, reference=support.reference, break_level=support.level, trading_timeframe=self.trading_timeframe)
                         break
