@@ -1,1 +1,0 @@
-python trading_king.py --strategy break --timeframe 60 --partial_profit_rr no --partial_rr 0.1  --partial_live_actual no
