@@ -19,6 +19,9 @@ class Prices:
         return bid_price, ask_price
 
     def get_entry_price(self, symbol) -> float:
+        """
+        Rounded according to Symbol
+        """
         try:
             entry_price = self.get_exchange_price(symbol=symbol)
             return self.round(symbol=symbol, price=entry_price)

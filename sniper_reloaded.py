@@ -110,14 +110,16 @@ class SniperReloaded():
                         if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
                             # print(f"{symbol.ljust(12)} Resistance: {resistance}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
-                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.LONG)
+                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, 
+                                                      sniper_level=stop_price, shoot_direction=Directions.LONG, num_prev_breaks=resistance.num_breaks)
                             break
                     
                     for support in king_of_levels["support"]:       
                         if current_candle["open"] > support.level and current_candle["close"] < support.level:
                             # print(f"{symbol.ljust(12)} Support: {support}")
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
-                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT)
+                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, 
+                                                      sniper_level=stop_price, shoot_direction=Directions.SHORT, num_prev_breaks=support.num_breaks)
                             break
                 
                 self.targets.trace_targets()
@@ -127,7 +129,7 @@ class SniperReloaded():
                 for symbol in self.targets.get_targets():
                     if symbol not in existing_positions:
                         bullet = self.targets.get_targets()[symbol]
-                        break_level = bullet.sniper_entry_level
+                        break_level = bullet.entry_level
                         direction = bullet.trade_direction
                         reference = bullet.reference
 
