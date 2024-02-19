@@ -25,6 +25,8 @@ class SniperReloaded():
         self.immidiate_exit = False
         self.timer = 30
         self.retries = 0
+        self.persist_data = False
+        self.trace_exit = False
 
         # External dependencies
         self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
@@ -66,9 +68,9 @@ class SniperReloaded():
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
 
             # Record PnL
-            if pnl != 0:
-                with open(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', 'a') as file:
-                    file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},break,{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
+            # if pnl != 0:
+            #     with open(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', 'a') as file:
+            #         file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},break,{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
 
             # Each position trail stop
             self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
@@ -78,7 +80,7 @@ class SniperReloaded():
                     self.immidiate_exit = True
                     self.orders.close_all_positions()
 
-            if self.risk_manager.has_daily_maximum_risk_reached():
+            if self.risk_manager.has_daily_maximum_risk_reached() and self.trace_exit:
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
                 time.sleep(30) # Take some time for the account to digest the positions                
@@ -122,7 +124,7 @@ class SniperReloaded():
                 
                 
                 self.targets.reload_targets()
-                self.targets.show_targets()
+                self.targets.show_targets(persist=self.persist_data)
                 symbols_to_remove = []
 
                 for symbol in self.targets.get_targets():
@@ -143,7 +145,8 @@ class SniperReloaded():
                                 self.orders.short_entry(symbol=symbol, reference=reference, break_level=bullet.num_prev_breaks, trading_timeframe=self.trading_timeframe)
 
                     else:
-                        symbols_to_remove.append(symbol)
+                        if not self.persist_data:
+                            symbols_to_remove.append(symbol)
 
                 # Remove the exisiting positions
                 for symbol in symbols_to_remove:
@@ -159,6 +162,8 @@ if __name__ == "__main__":
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
     parser.add_argument('--account_risk', type=float, help='Selected timeframe for trade')
     parser.add_argument('--each_position_risk', type=float, help='Selected timeframe for trade')
+    parser.add_argument('--persist_data', type=str, help='Selected timeframe for trade')
+    parser.add_argument('--trace_exit', type=str, help='Selected timeframe for trade')
     args = parser.parse_args()
     
     
@@ -169,6 +174,8 @@ if __name__ == "__main__":
 
     win.partial_profit_rr = util.boolean(args.partial_profit_rr)
     win.partial_rr = args.partial_rr 
+    win.persist_data = util.boolean(args.persist_data)
+    win.trace_exit = util.boolean(args.trace_exit)
 
     win.main()
 

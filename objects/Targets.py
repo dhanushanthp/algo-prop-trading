@@ -5,6 +5,8 @@ from typing import Dict
 import pandas as pd
 from objects.RiskManager import RiskManager
 from objects. Prices import Prices
+from objects import util
+from modules import config
 
 class Targets:
     def __init__(self, risk_manager:RiskManager, timeframe:int):
@@ -92,8 +94,9 @@ class Targets:
             self.targets.pop(target)
 
     
-    def show_targets(self):
+    def show_targets(self, persist=False):
         data = {
+            'Time' : [util.get_current_time()] * len(self.targets),
             'Target': [self.targets[key].symbol for key in self.targets],
             'Reference': [self.targets[key].reference for key in self.targets],
             'SN Break': [self.targets[key].break_level for key in self.targets],
@@ -106,7 +109,10 @@ class Targets:
         df.set_index('Target', inplace=True)
         if not df.empty:
             print()
-            print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
+            print(tabulate(df.drop("Time", axis=1), headers='keys', tablefmt='fancy_grid'))
+
+            if persist:
+                df.to_csv(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', mode='a', header=False)
 
 if __name__ == "__main__":
     import time
