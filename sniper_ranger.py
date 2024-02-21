@@ -36,6 +36,8 @@ class SniperReloaded():
         self.alert = Slack()
         self.account = Account()
         self.indicators = Indicators()
+
+        self.strategy = None
         
 
         # Account information
@@ -55,7 +57,7 @@ class SniperReloaded():
         selected_symbols = curr.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF & PartialProfit:{self.partial_profit_rr} with ({self.partial_rr} RR) ------------------")
+            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF & PartialProfit:{self.partial_profit_rr} with ({self.partial_rr} RR) -----------")
             is_market_open, is_market_close = util.get_market_status()
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -121,7 +123,7 @@ class SniperReloaded():
                             break
                 
                 
-                self.targets.reload_targets()
+                # self.targets.reload_targets()
                 self.targets.show_targets(persist=self.persist_data)
                 symbols_to_remove = []
 
@@ -130,11 +132,19 @@ class SniperReloaded():
                         bullet = self.targets.get_targets()[symbol]
 
                         if bullet.hour_gap > 2:
-                            if bullet.trade_direction == Directions.LONG:
-                                self.orders.long_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
+                            if self.strategy == "break":
+                                if bullet.trade_direction == Directions.LONG:
+                                    self.orders.long_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
+                                
+                                if bullet.trade_direction == Directions.SHORT:
+                                    self.orders.short_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
                             
-                            if bullet.trade_direction == Directions.SHORT:
-                                self.orders.short_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
+                            if self.strategy == "reverse":
+                                if bullet.trade_direction == Directions.SHORT:
+                                    self.orders.long_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
+                                
+                                if bullet.trade_direction == Directions.LONG:
+                                    self.orders.short_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
 
                     else:
                         symbols_to_remove.append(symbol)
@@ -155,6 +165,7 @@ if __name__ == "__main__":
     parser.add_argument('--each_position_risk', type=float, help='Selected timeframe for trade')
     parser.add_argument('--persist_data', type=str, help='Selected timeframe for trade')
     parser.add_argument('--trace_exit', type=str, help='Selected timeframe for trade')
+    parser.add_argument('--strategy', type=str, help='Partial Profit RR')
     args = parser.parse_args()
     
     
@@ -167,6 +178,7 @@ if __name__ == "__main__":
     win.partial_rr = args.partial_rr 
     win.persist_data = util.boolean(args.persist_data)
     win.trace_exit = util.boolean(args.trace_exit)
+    win.strategy = args.strategy
 
     win.main()
 

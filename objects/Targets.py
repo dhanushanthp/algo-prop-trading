@@ -118,7 +118,6 @@ class Targets:
             'SN Break': [self.targets[key].break_level for key in self.targets],
             'SN Entry': [self.targets[key].entry_level for key in self.targets],
             'Direction': [self.targets[key].trade_direction for key in self.targets],
-            'PnL Ratio': [self.targets[key].price_moved_ratio for key in self.targets],
             'Num Breaks': [self.targets[key].num_prev_breaks for key in self.targets],
             'Break Hour': [self.targets[key].first_break_hour for key in self.targets],
             'Max Gap': [self.targets[key].hour_gap for key in self.targets],
