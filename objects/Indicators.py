@@ -106,25 +106,56 @@ class Indicators:
             return None, None
         
         return None, None
+    
+    def get_current_day_levels(self, symbol) -> Tuple[Signal, Signal]:
+        current_gmt_time = util.get_current_time()
+        if int(current_gmt_time.hour) >= 2:
+            # Generate off market hours high and lows
+            start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+                                  hour=1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
+            
+            end_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day),
+                            hour=int(current_gmt_time.hour) - 1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
+            
+            previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
+            
+            if not previous_bars.empty:
+                off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"])) 
+                off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"])) 
+                return off_hour_highs, off_hour_lows
+            else:
+                logme.logger.debug(f"OffMar, {symbol}, {start_time}, {end_time}")
+
+            return None, None
+        
+        return None, None
 
 
     def get_king_of_levels(self, symbol) -> Dict[str, List[Signal]]:
         highs = []
         lows = []
         pdh, pdl = self.get_previous_day_levels(symbol=symbol)
-        ofh, ofl = self.get_off_market_levels(symbol=symbol)
+        ofh, ofl = self.get_current_day_levels(symbol=symbol)
 
         if pdh:
             highs.append(pdh)
         
-        # if ofh:
-        #     highs.append(ofh)
+        if ofh:
+            # When todays high is higher than previous day high, ignore the previous day high
+            if ofh.level > pdh.level:
+                highs.remove(pdh)
+                
+            highs.append(ofh)
         
         if pdl:
             lows.append(pdl)
         
-        # if ofl:
-        #     lows.append(ofl)
+        if ofl:
+            # When todays low is lower than previous day low, ignore the previous day low
+            if ofl.level < pdl.level:
+                lows.remove(pdl)
+
+            lows.append(ofl)
 
         return {"resistance": highs, "support": lows}
 
@@ -133,6 +164,6 @@ if __name__ == "__main__":
     import sys
     symbol = sys.argv[1]
     print("ATR" ,indi_obj.get_atr(symbol, 60))
-    print(indi_obj.get_all_previous_bars_for_hours(symbol))
+    print(indi_obj.get_current_day_levels(symbol))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
     print("KING LEVELS", indi_obj.get_king_of_levels(symbol))

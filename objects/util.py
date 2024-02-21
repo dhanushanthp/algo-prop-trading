@@ -5,6 +5,7 @@ import MetaTrader5 as mt5
 mt5.initialize()
 import objects.Currencies as curr
 import modules.config as config
+from typing import Tuple
 
 
 def error_logging(result, request_str={}):
@@ -39,7 +40,7 @@ def match_timeframe(timeframe):
         raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
     return selected_time
 
-def get_local_time(city):
+def get_local_time(city) -> Tuple[int, int, int]:
     # Create a dictionary to map cities to their respective time zones
     timezones = {
         'New York': 'America/New_York',
@@ -61,11 +62,11 @@ def get_local_time(city):
     
     return day_of_week, hour, minute
 
-def get_traded_time(epoch):
+def get_traded_time(epoch)-> datetime:
     normal_time = datetime.fromtimestamp(epoch, pytz.timezone('Etc/GMT'))
     return normal_time
 
-def get_current_time():
+def get_current_time() -> datetime:
     current_time =  datetime.now(pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
     return current_time
 
@@ -85,7 +86,7 @@ def boolean(input):
 
     return False
 
-def get_gmt_time():
+def get_gmt_time() -> Tuple[int, int, int]:
     local_time = get_current_time()
     day_of_week = local_time.strftime('%A')
     hour = int(local_time.strftime('%H'))
@@ -106,7 +107,7 @@ def get_today_profit():
     output = round(sum([i.profit + i.commission for i in data]))
     return output
 
-def get_market_status():
+def get_market_status() -> Tuple[bool, bool]:
     market_open = False
     market_about_to_close= False
     day, hour, minute = get_gmt_time()

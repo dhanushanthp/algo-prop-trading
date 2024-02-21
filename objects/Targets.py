@@ -38,16 +38,29 @@ class Targets:
 
     
     def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions, num_prev_breaks:int):
+        _, current_break_hour, _ = util.get_gmt_time()
+
         active_bullet = Bullet(target, reference, sniper_trigger_level, sniper_level, shoot_direction, num_prev_breaks)
+        active_bullet.set_break_hour(break_hour=current_break_hour)
 
         if target not in self.targets:
             self.targets[target] = active_bullet
         else:
+            previous_bullet = self.targets[target]
             previous_sniper_level = self.targets[target].entry_level
             previous_shoot_direction = self.targets[target].trade_direction
+            previous_break_hour = self.targets[target].first_break_hour
+
+            # The gap should not have the abs, because the upcoming hour shouor be > current hour
+            if current_break_hour != previous_break_hour:
+                previous_bullet.set_hour_gap(current_break_hour - previous_break_hour)
+            
+            # Then update the latest break
+            previous_bullet.set_break_hour(break_hour=current_break_hour)
             
             # If direction is opposite then update the whole object
-            if previous_shoot_direction != shoot_direction:
+            # If the Level of break don't match the current one, consider new level
+            if (previous_shoot_direction != shoot_direction) or (previous_bullet.reference != reference):
                 self.targets[target] = active_bullet
             
             #  If the direction is same
@@ -56,13 +69,15 @@ class Targets:
                 if shoot_direction == Directions.LONG:
                     min_level = min(previous_sniper_level, sniper_level)
                     if min_level != previous_sniper_level:
-                        self.targets[target] = active_bullet
+                        previous_bullet.update_entry_level(sniper_level)
+                        self.targets[target] = previous_bullet
 
                 # Pick the higher snipper value for short
                 elif shoot_direction == Directions.SHORT:
                     max_level = max(previous_sniper_level, sniper_level)
                     if max_level != previous_sniper_level:
-                        self.targets[target] = active_bullet
+                        previous_bullet.update_entry_level(sniper_level)
+                        self.targets[target] = previous_bullet
 
 
     def trace_targets(self):
@@ -91,7 +106,8 @@ class Targets:
 
     def unload_targets(self, target:str):
         if target in self.targets:
-            self.targets.pop(target)
+            # self.targets.pop(target)
+            self.targets[target].set_hour_gap(0)
 
     
     def show_targets(self, persist=False):
@@ -103,13 +119,16 @@ class Targets:
             'SN Entry': [self.targets[key].entry_level for key in self.targets],
             'Direction': [self.targets[key].trade_direction for key in self.targets],
             'PnL Ratio': [self.targets[key].price_moved_ratio for key in self.targets],
+            'Num Breaks': [self.targets[key].num_prev_breaks for key in self.targets],
+            'Break Hour': [self.targets[key].first_break_hour for key in self.targets],
+            'Max Gap': [self.targets[key].hour_gap for key in self.targets],
         }
 
         df = pd.DataFrame(data)
         df.set_index('Target', inplace=True)
         if not df.empty:
             print()
-            print(tabulate(df.drop("Time", axis=1), headers='keys', tablefmt='fancy_grid'))
+            print(tabulate(df.drop("Time", axis=1).sort_values(by="Target"), headers='keys', tablefmt='fancy_grid'))
 
             if persist:
                 df.to_csv(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', mode='a', header=False)
@@ -119,29 +138,14 @@ if __name__ == "__main__":
     import pandas as pd
     risk_manager = RiskManager()
     magazine = Targets(risk_manager=risk_manager, timeframe=60)
-    magazine.load_targets("USDJPY", "PDH", 10, 10, Directions.LONG)
+    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 1)
     magazine.show_targets()
-    magazine.load_targets("USDJPY", "PDH", 10, 11, Directions.LONG)
+    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 4)
     magazine.show_targets()
-    magazine.load_targets("USDJPY", "PDH", 10, 9, Directions.LONG)
-    print(magazine.get_targets())
-    magazine.load_targets("USDJPY", "PDH", 10, 9, Directions.SHORT)
-    print(magazine.get_targets())
-    magazine.load_targets("USDJPY", "PDH", 10, 15, Directions.SHORT)
-    print(magazine.get_targets())
-    magazine.load_targets("USDJPY", "PDH", 10, 8, Directions.SHORT)
-    print(magazine.get_targets())
-    magazine.load_targets("XAUUSD", "PDH", 10, 8, Directions.SHORT)
-    magazine.trace_targets()
-    print(magazine.get_targets())
-    magazine.load_targets("USDJPY", "PDH", 10, 9, Directions.LONG)
-    magazine.trace_targets()
+    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 5)
     magazine.show_targets()
-    magazine.unload_targets("USDJPY")
-    print(magazine.get_targets())
-    magazine.unload_targets("B")
-    print(magazine.get_targets())
-    magazine.unload_targets("A")
-    print(magazine.get_targets())
+    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 7)
     magazine.show_targets()
-    
+    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 1)
+    magazine.show_targets()
+
