@@ -37,11 +37,11 @@ class Targets:
                 target.set_price_moved_ratio(price_moved_ratio=moved_ratio)
 
     
-    def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions, num_prev_breaks:int):
-        _, current_break_hour, _ = util.get_gmt_time()
+    def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions, num_prev_breaks:int, timeframe:int=60):
+        nth_break_bar = util.get_nth_bar(symbol=target, timeframe=timeframe)
 
         active_bullet = Bullet(target, reference, sniper_trigger_level, sniper_level, shoot_direction, num_prev_breaks)
-        active_bullet.set_break_hour(break_hour=current_break_hour)
+        active_bullet.set_break_nth_bar(break_hour=nth_break_bar)
 
         if target not in self.targets:
             self.targets[target] = active_bullet
@@ -49,14 +49,14 @@ class Targets:
             previous_bullet = self.targets[target]
             previous_sniper_level = self.targets[target].entry_level
             previous_shoot_direction = self.targets[target].trade_direction
-            previous_break_hour = self.targets[target].first_break_hour
+            previous_break_bar = self.targets[target].first_break_hour
 
             # The gap should not have the abs, because the upcoming hour shouor be > current hour
-            if current_break_hour != previous_break_hour:
-                previous_bullet.set_hour_gap(current_break_hour - previous_break_hour)
+            if nth_break_bar != previous_break_bar:
+                previous_bullet.set_bar_gap(nth_break_bar - previous_break_bar)
             
             # Then update the latest break
-            previous_bullet.set_break_hour(break_hour=current_break_hour)
+            previous_bullet.set_break_nth_bar(break_hour=nth_break_bar)
             
             # If direction is opposite then update the whole object
             # If the Level of break don't match the current one, consider new level
@@ -107,7 +107,7 @@ class Targets:
     def unload_targets(self, target:str):
         if target in self.targets:
             # self.targets.pop(target)
-            self.targets[target].set_hour_gap(0)
+            self.targets[target].set_bar_gap(0)
 
     
     def show_targets(self, persist=False):

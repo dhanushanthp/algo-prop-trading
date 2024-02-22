@@ -13,10 +13,10 @@ class Bullet:
         self.first_break_hour:int = 0
         self.hour_gap:int = 0
     
-    def set_hour_gap(self, hour_gap):
+    def set_bar_gap(self, hour_gap):
         self.hour_gap = hour_gap
 
-    def set_break_hour(self, break_hour:int):
+    def set_break_nth_bar(self, break_hour:int):
         self.first_break_hour = max(self.first_break_hour, break_hour)
 
     def update_entry_level(self, entry_level):

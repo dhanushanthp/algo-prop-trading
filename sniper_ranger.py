@@ -113,13 +113,15 @@ class SniperReloaded():
                     for resistance in king_of_levels["resistance"]:
                         if previous_candle["open"] < resistance.level and previous_candle["close"] > resistance.level:
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
-                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.LONG, num_prev_breaks=resistance.num_breaks)
+                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, 
+                                                      sniper_level=stop_price, shoot_direction=Directions.LONG, num_prev_breaks=resistance.num_breaks, timeframe=self.trading_timeframe)
                             break
                     
                     for support in king_of_levels["support"]:
                         if previous_candle["open"] > support.level and previous_candle["close"] < support.level:
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
-                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT, num_prev_breaks=support.num_breaks)
+                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, 
+                                                      sniper_level=stop_price, shoot_direction=Directions.SHORT, num_prev_breaks=support.num_breaks, timeframe=self.trading_timeframe)
                             break
                 
                 
