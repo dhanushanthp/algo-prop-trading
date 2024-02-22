@@ -1,1 +1,1 @@
-python sniper_ranger.py --timeframe 60 --partial_profit_rr no --partial_rr 1.2 --account_risk 2.0 --each_position_risk 0.5 --persist_data yes --trace_exit no --strategy %1
+python sniper_ranger.py --timeframe 60 --early_profit no --target_ratio 2.0 --partial_rr 1.2 --account_risk 2.0 --each_position_risk 0.5 --persist_data yes --trace_exit no --strategy %1

@@ -15,12 +15,12 @@ from objects.Account import Account
 from objects.Indicators import Indicators
 
 class SniperReloaded():
-    def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1):
+    def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
         # MetaTrader initialization
         mt.initialize()
 
         # Default values
-        self.target_ratio = 3.0  # Default 1:0.5 Ratio
+        self.target_ratio = target_ratio  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
         self.timer = 30
@@ -50,14 +50,14 @@ class SniperReloaded():
         self.trading_timeframe = trading_timeframe
 
         # Take the profit as specific RR ratio
-        self.partial_profit_rr = False
-        self.partial_rr=self.risk_manager.account_risk_percentage
+        self.early_profit = False
+        self.early_rr=self.risk_manager.account_risk_percentage
     
     def main(self):
         selected_symbols = curr.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF {self.strategy.upper()}, Trace Exit:{self.trace_exit}, Early Profit:{self.partial_profit_rr} ({self.partial_rr} RR) -----------")
+            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF {self.strategy.upper()}, Trace Exit:{self.trace_exit}, Early Profit:{self.early_profit} ({self.early_rr} RR) -----------")
             is_market_open, is_market_close = util.get_market_status()
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -77,8 +77,8 @@ class SniperReloaded():
             # Each position trail stop
             self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
 
-            if self.partial_profit_rr:
-                if rr > self.partial_rr:
+            if self.early_profit:
+                if rr > self.early_rr:
                     self.immidiate_exit = True
                     self.orders.close_all_positions()
 
@@ -108,16 +108,16 @@ class SniperReloaded():
 
                     king_of_levels = self.indicators.get_king_of_levels(symbol=symbol)
 
-                    current_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 0, 1)[-1]
+                    previous_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 1, 1)[-1]
 
                     for resistance in king_of_levels["resistance"]:
-                        if current_candle["open"] < resistance.level and current_candle["close"] > resistance.level:
+                        if previous_candle["open"] < resistance.level and previous_candle["close"] > resistance.level:
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
                             self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, sniper_level=stop_price, shoot_direction=Directions.LONG, num_prev_breaks=resistance.num_breaks)
                             break
                     
                     for support in king_of_levels["support"]:
-                        if current_candle["open"] > support.level and current_candle["close"] < support.level:
+                        if previous_candle["open"] > support.level and previous_candle["close"] < support.level:
                             stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
                             self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, sniper_level=stop_price, shoot_direction=Directions.SHORT, num_prev_breaks=support.num_breaks)
                             break
@@ -158,24 +158,27 @@ class SniperReloaded():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
-    parser.add_argument('--partial_profit_rr', type=str, help='Partial Profit RR')
-    parser.add_argument('--partial_rr', type=float, help='Partial Profit RR')
+    parser.add_argument('--early_profit', type=str, help='Enable/Disable Early Profit')
+    parser.add_argument('--partial_rr', type=float, help='Early Profit RR')
+    parser.add_argument('--target_ratio', type=float, help='Target ratio, assume stop is 1')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
-    parser.add_argument('--account_risk', type=float, help='Selected timeframe for trade')
-    parser.add_argument('--each_position_risk', type=float, help='Selected timeframe for trade')
-    parser.add_argument('--persist_data', type=str, help='Selected timeframe for trade')
-    parser.add_argument('--trace_exit', type=str, help='Selected timeframe for trade')
-    parser.add_argument('--strategy', type=str, help='Partial Profit RR')
+    parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')
+    parser.add_argument('--each_position_risk', type=float, help='Each Position risk percentage w.r.t account size')
+    parser.add_argument('--persist_data', type=str, help='Do we store data on backend')
+    parser.add_argument('--trace_exit', type=str, help='Trade the profit and exit when it hit the traced stop')
+    parser.add_argument('--strategy', type=str, help='Selected strategy')
     args = parser.parse_args()
     
     
     trading_timeframe = int(args.timeframe)
     account_risk = float(args.account_risk)
+    target_ratio = float(args.target_ratio)
     each_position_risk = float(args.each_position_risk)
-    win = SniperReloaded(trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk)
+    win = SniperReloaded(trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
 
-    win.partial_profit_rr = util.boolean(args.partial_profit_rr)
-    win.partial_rr = args.partial_rr 
+    win.early_profit = util.boolean(args.early_profit)
+    win.early_rr = float(args.partial_rr)
+
     win.persist_data = util.boolean(args.persist_data)
     win.trace_exit = util.boolean(args.trace_exit)
     win.strategy = args.strategy

@@ -60,7 +60,7 @@ class Targets:
             
             # If direction is opposite then update the whole object
             # If the Level of break don't match the current one, consider new level
-            if (previous_shoot_direction != shoot_direction) or (previous_bullet.reference != reference):
+            if (previous_shoot_direction != shoot_direction):
                 self.targets[target] = active_bullet
             
             #  If the direction is same

@@ -115,7 +115,7 @@ class Indicators:
                                   hour=1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
             
             end_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day),
-                            hour=int(current_gmt_time.hour) - 1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
+                            hour=int(current_gmt_time.hour) - 2, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
             
             previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
             
