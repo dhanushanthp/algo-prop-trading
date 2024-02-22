@@ -107,6 +107,20 @@ def get_today_profit():
     output = round(sum([i.profit + i.commission for i in data]))
     return output
 
+def get_nth_bar(symbol:str, timeframe:int) -> int:
+    """
+    Count the bars in a days
+    """
+    current_gmt_time = get_current_time()
+
+    # Generate off market hours high and lows
+    start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+                            hour=1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
+    
+    previous_bars = mt5.copy_rates_range(symbol, match_timeframe(timeframe=timeframe), start_time , current_gmt_time)
+
+    return len(previous_bars)
+
 def get_market_status() -> Tuple[bool, bool]:
     market_open = False
     market_about_to_close= False
@@ -133,7 +147,11 @@ def is_c_pair_active(currency_pair):
         return symbol_info.session_open, symbol_info.session_close
 
 if __name__ == "__main__":
+    import sys
+    symbol = sys.argv[1]
+    timeframe = int(sys.argv[2])
     # print(is_c_pair_active("US500.cash"))   
     # print(get_gmt_time())
-    print(get_market_status())
-    print(get_today_profit())
+    # print(get_market_status())
+    # print(get_today_profit())
+    print(get_nth_bar(symbol, timeframe))
