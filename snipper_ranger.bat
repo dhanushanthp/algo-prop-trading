@@ -6,5 +6,5 @@ python sniper_ranger.py ^
     --target_ratio 1.0 ^
     --early_profit no ^
     --trace_exit no ^
-    --persist_data yes ^
+    --persist_data no ^
     --partial_rr 1.2
