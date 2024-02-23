@@ -115,11 +115,14 @@ def get_nth_bar(symbol:str, timeframe:int) -> int:
 
     # Generate off market hours high and lows
     start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
-                            hour=1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
+                            hour=0, minute=0, tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
     
-    previous_bars = mt5.copy_rates_range(symbol, match_timeframe(timeframe=timeframe), start_time , current_gmt_time)
+    previous_bars = list(mt5.copy_rates_range(symbol, match_timeframe(timeframe=timeframe), start_time , current_gmt_time))
 
-    return len(previous_bars)
+    if previous_bars != None:
+        return len(previous_bars)
+    
+    return 0
 
 def get_market_status() -> Tuple[bool, bool]:
     market_open = False

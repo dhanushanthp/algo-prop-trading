@@ -106,7 +106,7 @@ class SniperReloaded():
                     if symbol in existing_positions:
                         continue
 
-                    king_of_levels = self.indicators.get_king_of_levels(symbol=symbol)
+                    king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
 
                     previous_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 1, 1)[-1]
 

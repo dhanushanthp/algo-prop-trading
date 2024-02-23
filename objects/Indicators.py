@@ -107,35 +107,24 @@ class Indicators:
         
         return None, None
     
-    def get_current_day_levels(self, symbol) -> Tuple[Signal, Signal]:
-        current_gmt_time = util.get_current_time()
-        if int(current_gmt_time.hour) >= 2:
-            # Generate off market hours high and lows
-            start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
-                                  hour=1, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
-            
-            end_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day),
-                            hour=int(current_gmt_time.hour) - 2, minute=0, tzinfo=pytz.timezone(f'Etc/GMT'))
-            
-            previous_bars = pd.DataFrame(mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H1, start_time , end_time))
-            
-            if not previous_bars.empty:
-                off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"])) 
-                off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"])) 
-                return off_hour_highs, off_hour_lows
-            else:
-                logme.logger.debug(f"OffMar, {symbol}, {start_time}, {end_time}")
+    def get_current_day_levels(self, symbol, timeframe) -> Tuple[Signal, Signal]:
+        n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
 
-            return None, None
-        
+        previous_bars = pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 2, n_bars-2))
+
+        if not previous_bars.empty:
+            off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"]))
+            off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"]))
+            return off_hour_highs, off_hour_lows
+
         return None, None
 
 
-    def get_king_of_levels(self, symbol) -> Dict[str, List[Signal]]:
+    def get_king_of_levels(self, symbol, timeframe) -> Dict[str, List[Signal]]:
         highs = []
         lows = []
         pdh, pdl = self.get_previous_day_levels(symbol=symbol)
-        ofh, ofl = self.get_current_day_levels(symbol=symbol)
+        ofh, ofl = self.get_current_day_levels(symbol=symbol, timeframe=timeframe)
 
         if pdh:
             highs.append(pdh)
@@ -163,7 +152,8 @@ if __name__ == "__main__":
     indi_obj = Indicators()
     import sys
     symbol = sys.argv[1]
-    print("ATR" ,indi_obj.get_atr(symbol, 60))
-    print(indi_obj.get_current_day_levels(symbol))
+    timeframe = int(sys.argv[2])
+    # print("ATR" ,indi_obj.get_atr(symbol, 60))
+    print(indi_obj.get_current_day_levels(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
-    print("KING LEVELS", indi_obj.get_king_of_levels(symbol))
+    # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
