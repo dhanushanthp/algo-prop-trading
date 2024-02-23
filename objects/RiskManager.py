@@ -109,7 +109,8 @@ class RiskManager:
     def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1) -> Shield:
         selected_time = util.match_timeframe(timeframe)
         
-        previous_candle = mt5.copy_rates_from_pos(symbol, selected_time, 1, 1)[0]
+        # Pick last 3 candles to find high and low
+        previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, 3)
         
         current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
         current_candle_body = abs(current_candle["close"] - current_candle["open"])
@@ -123,18 +124,8 @@ class RiskManager:
             is_strong_candle = True
 
         # Extracting high and low values from the previous candle
-        higher_stop = previous_candle["high"]
-        lower_stop = previous_candle["low"]
-
-        # Checking if the high value of the current candle is greater than the previous high
-        if current_candle["high"] > higher_stop:
-            # Updating the previous_high if the condition is met
-            higher_stop = current_candle["high"]
-
-        # Checking if the low value of the current candle is less than the previous low
-        if current_candle["low"] < lower_stop:
-            # Updating the previous_low if the condition is met
-            lower_stop = current_candle["low"]
+        higher_stop = max([i["high"] for i in previous_candles])
+        lower_stop = min([i["low"] for i in previous_candles])
         
         mid_price = self.prices.get_exchange_price(symbol)
         
