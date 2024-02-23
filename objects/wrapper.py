@@ -27,6 +27,22 @@ class Wrapper:
 
         return pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), candle_index_start, candle_index_end))
 
+    def get_previous_candle(self, symbol, timeframe):
+        """
+        Returns:
+        Object which contains time, open, close, high, low
+        Can be accessed as dictioanry e.g obj["close"]
+        """
+        return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 1, 1)[-1]
+    
+    def get_current_candle(self, symbol, timeframe):
+        """
+        Returns:
+        Object which contains time, open, close, high, low
+        Can be accessed as dictioanry e.g obj["close"]
+        """
+        return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 0, 1)[-1]
+
 
 if "__main__" == __name__:
     obj = Wrapper()
@@ -34,3 +50,5 @@ if "__main__" == __name__:
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
     print(obj.get_candles_by_index(symbol=symbol, candle_index_start=0, candle_index_end=10, timeframe=timeframe))
+    print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
+    print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
