@@ -1,4 +1,5 @@
 import MetaTrader5 as mt
+mt.initialize()
 import time
 import argparse
 
@@ -13,12 +14,10 @@ from objects.Prices import Prices
 from objects.Orders import Orders
 from objects.Account import Account
 from objects.Indicators import Indicators
+from objects.wrapper import Wrapper
 
 class SniperReloaded():
     def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
-        # MetaTrader initialization
-        mt.initialize()
-
         # Default values
         self.target_ratio = target_ratio  # Default 1:0.5 Ratio
         self.stop_ratio = 1.0
@@ -36,9 +35,9 @@ class SniperReloaded():
         self.alert = Slack()
         self.account = Account()
         self.indicators = Indicators()
+        self.wrapper = Wrapper()
 
         self.strategy:str = None
-        
 
         # Account information
         self.account_name = self.account.get_account_name()
@@ -99,7 +98,7 @@ class SniperReloaded():
             
             if is_market_open and (not is_market_close) and (not self.immidiate_exit):
                 self.orders.cancel_all_pending_orders()
-                existing_positions = list(set([i.symbol for i in mt.positions_get()]))
+                existing_positions = self.wrapper.get_existing_symbols()
 
                 for symbol in selected_symbols:
                     # If the positions is already in trade, then don't check for signal
@@ -107,8 +106,7 @@ class SniperReloaded():
                         continue
 
                     king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
-
-                    previous_candle = mt.copy_rates_from_pos(symbol, util.match_timeframe(self.trading_timeframe), 1, 1)[-1]
+                    previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
 
                     for resistance in king_of_levels["resistance"]:
                         if previous_candle["open"] < resistance.level and previous_candle["close"] > resistance.level:

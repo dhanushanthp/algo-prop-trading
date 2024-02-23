@@ -42,6 +42,12 @@ class Wrapper:
         Can be accessed as dictioanry e.g obj["close"]
         """
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 0, 1)[-1]
+    
+    def get_existing_symbols(self):
+        """
+        List all the symbols which are in trade
+        """
+        return list(set([i.symbol for i in mt5.positions_get()]))
 
 
 if "__main__" == __name__:
@@ -52,3 +58,4 @@ if "__main__" == __name__:
     print(obj.get_candles_by_index(symbol=symbol, candle_index_start=0, candle_index_end=10, timeframe=timeframe))
     print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
+    print(obj.get_existing_symbols())
