@@ -1,12 +1,16 @@
 import MetaTrader5 as mt5
 from objects import util
 import pandas as pd
+import pytz
+from datetime import datetime, timedelta, time
+from modules import config
 mt5.initialize()
 
 class Wrapper:
     def __init__(self) -> None:
         pass
 
+    
     def get_candles_by_index(self, symbol:str, candle_index_start:int, candle_index_end:int, timeframe:int):
         """
         Retrieves historical candle data for a specific symbol within a given index range.
@@ -27,6 +31,7 @@ class Wrapper:
 
         return pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), candle_index_start, candle_index_end))
 
+    
     def get_previous_candle(self, symbol, timeframe):
         """
         Returns:
@@ -34,6 +39,7 @@ class Wrapper:
         Can be accessed as dictioanry e.g obj["close"]
         """
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 1, 1)[-1]
+    
     
     def get_current_candle(self, symbol, timeframe):
         """
@@ -43,11 +49,25 @@ class Wrapper:
         """
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 0, 1)[-1]
     
+
     def get_existing_symbols(self):
         """
         List all the symbols which are in trade
         """
         return list(set([i.symbol for i in mt5.positions_get()]))
+    
+
+    def get_todays_trades(self) -> pd.DataFrame:
+        tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
+        start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone)
+        end_time = datetime.now(tm_zone)
+        position_deals = mt5.history_deals_get(start_time,  end_time)
+        
+        if len(position_deals) > 0:
+            return pd.DataFrame(position_deals, columns=position_deals[0]._asdict().keys())
+        
+        # return empty dataframe
+        return pd.DataFrame()
 
 
 if "__main__" == __name__:
@@ -59,3 +79,4 @@ if "__main__" == __name__:
     print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
     print(obj.get_existing_symbols())
+    print(obj.get_todays_trades())
