@@ -3,7 +3,8 @@ python sniper_ranger.py ^
     --timeframe %2 ^
     --account_risk 2.0 ^
     --each_position_risk 0.5 ^
-    --target_ratio 1.0 ^
-    --early_profit no --early_rr 1.2 ^
-    --trace_exit no ^
+    --target_ratio 1.3 ^
+    --early_profit yes ^
+    --early_rr 1.2 ^
+    --trace_exit yes ^
     --persist_data no ^
