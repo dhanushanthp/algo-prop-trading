@@ -1,1 +1,0 @@
-python machine_reloaded.py --strategy %1 --timeframe 60 --partial_profit_rr yes --partial_rr 0.5 --account_risk 1.0 --each_position_risk 0.1
