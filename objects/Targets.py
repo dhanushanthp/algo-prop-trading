@@ -43,6 +43,7 @@ class Targets:
         current_break_bar_index = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 3
         candle_gap = current_break_bar_index - past_break_index
         
+        # if (timeframe == 15 and 5 > candle_gap > 2) or (timeframe == 60 and candle_gap > 2):
         if candle_gap > 2:
             # Check does this already has trades on same direction, Load Passed Data
             todays_trades = self.wrapper.get_todays_trades()

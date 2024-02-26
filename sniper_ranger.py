@@ -50,7 +50,7 @@ class SniperReloaded():
 
         # Take the profit as specific RR ratio
         self.early_profit = False
-        self.early_rr=self.risk_manager.account_risk_percentage
+        self.early_rr=self.risk_manager.account_risk_percentage # Default
     
     def main(self):
         selected_symbols = curr.get_ordered_symbols()
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
     parser.add_argument('--early_profit', type=str, help='Enable/Disable Early Profit')
-    parser.add_argument('--partial_rr', type=float, help='Early Profit RR')
+    parser.add_argument('--early_rr', type=float, help='Early Profit RR')
     parser.add_argument('--target_ratio', type=float, help='Target ratio, assume stop is 1')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
     parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     win = SniperReloaded(trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
 
     win.early_profit = util.boolean(args.early_profit)
-    win.early_rr = float(args.partial_rr)
+    win.early_rr = float(args.early_rr)
 
     win.persist_data = util.boolean(args.persist_data)
     win.trace_exit = util.boolean(args.trace_exit)
