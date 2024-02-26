@@ -1,17 +1,17 @@
 from objects.Directions import Directions
 
 class Bullet:
-    def __init__(self, symbol:str, reference:str, break_level:float, entry_level:float, trade_direction:Directions, num_prev_breaks:int):
+    def __init__(self, symbol:str, reference:str, break_level:float, entry_level:int, trade_direction:Directions, num_prev_breaks:int):
         self.symbol:str = symbol
         self.reference = reference
         self.break_level:float = break_level
-        self.entry_level:float  = entry_level
+        self.entry_level:int  = entry_level
         self.trade_direction:Directions = trade_direction
         self.points_in_stop:float = abs(break_level - entry_level)
         self.price_moved_ratio:float = 0
         self.num_prev_breaks:int = num_prev_breaks
         self.first_break_hour:int = 0
-        self.hour_gap:int = 0
+        self.hour_gap:int = entry_level - num_prev_breaks
     
     def set_bar_gap(self, hour_gap):
         self.hour_gap = hour_gap

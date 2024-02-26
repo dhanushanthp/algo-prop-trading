@@ -7,6 +7,7 @@ from objects.RiskManager import RiskManager
 from objects. Prices import Prices
 from objects import util
 from modules import config
+from objects.wrapper import Wrapper
 
 class Targets:
     def __init__(self, risk_manager:RiskManager, timeframe:int):
@@ -14,6 +15,7 @@ class Targets:
         self.risk_manager = risk_manager
         self.timeframe = timeframe
         self.prices = Prices()
+        self.wrapper = Wrapper()
 
 
     def get_targets(self) -> Dict[str, Bullet]:
@@ -37,6 +39,37 @@ class Targets:
                 target.set_price_moved_ratio(price_moved_ratio=moved_ratio)
 
     
+    def check_signal_validity(self, symbol:str, reference:str, break_level:float, shoot_direction:Directions, past_break_index:int, timeframe:int=60):
+        current_break_bar_index = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 3
+        candle_gap = current_break_bar_index - past_break_index
+        
+        if candle_gap > 2:
+            # Check does this already has trades on same direction, Load Passed Data
+            todays_trades = self.wrapper.get_todays_trades()
+
+            # If the symbol is not already traded, then take the trade
+            if todays_trades.empty or (symbol not in todays_trades["symbol"]):
+                active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
+                self.targets[symbol] = active_bullet
+                return True, candle_gap
+            else:
+                if shoot_direction == Directions.LONG:
+                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) and todays_trades["type"] == 0 and todays_trades["entry"] == 0]
+                    if len(traded_symbol) < 0:
+                        active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
+                        self.targets[symbol] = active_bullet
+                        return True, candle_gap
+                elif shoot_direction == Directions.SHORT:
+                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) and todays_trades["type"] == 1 and todays_trades["entry"] == 0]
+                    if len(traded_symbol) < 0:
+                        active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
+                        self.targets[symbol] = active_bullet
+                        return True, candle_gap
+
+        return False, candle_gap           
+
+
+
     def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions, num_prev_breaks:int, timeframe:int=60):
         nth_break_bar = util.get_nth_bar(symbol=target, timeframe=timeframe)
 
@@ -114,12 +147,11 @@ class Targets:
         data = {
             'Time' : [util.get_current_time()] * len(self.targets),
             'Target': [self.targets[key].symbol for key in self.targets],
+            'Direction': [self.targets[key].trade_direction for key in self.targets],
             'Reference': [self.targets[key].reference for key in self.targets],
             'SN Break': [self.targets[key].break_level for key in self.targets],
-            'SN Entry': [self.targets[key].entry_level for key in self.targets],
-            'Direction': [self.targets[key].trade_direction for key in self.targets],
-            'Num Breaks': [self.targets[key].num_prev_breaks for key in self.targets],
-            'Break Hour': [self.targets[key].first_break_hour for key in self.targets],
+            'Past Index': [self.targets[key].num_prev_breaks for key in self.targets],
+            'Current Index': [self.targets[key].entry_level for key in self.targets],
             'Max Gap': [self.targets[key].hour_gap for key in self.targets],
         }
 

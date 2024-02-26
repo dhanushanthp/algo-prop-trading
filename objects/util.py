@@ -70,6 +70,10 @@ def get_current_time() -> datetime:
     current_time =  datetime.now(pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
     return current_time
 
+def get_current_gmt_time() -> datetime:
+    current_time =  datetime.now(pytz.timezone('Etc/GMT'))
+    return current_time
+
 def get_time_difference(epoch):
     traded_time = get_traded_time(epoch)
     traded_hour = traded_time.hour
@@ -111,11 +115,11 @@ def get_nth_bar(symbol:str, timeframe:int) -> int:
     """
     Count the bars in a days
     """
-    current_gmt_time = get_current_time()
+    current_gmt_time = get_current_time() + timedelta(hours=2)
 
     # Generate off market hours high and lows
     start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
-                            hour=0, minute=0, tzinfo=pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
+                            hour=0, minute=0, tzinfo=pytz.timezone('Etc/GMT'))
     
     previous_bars = list(mt5.copy_rates_range(symbol, match_timeframe(timeframe=timeframe), start_time , current_gmt_time))
 

@@ -9,10 +9,11 @@ import pandas as pd
 from objects.Signal import Signal
 from typing import Tuple, List, Dict
 from objects import logme
+from objects.wrapper import Wrapper
 
 class Indicators:
     def __init__(self) -> None:
-        pass
+        self.wrapper = Wrapper()
 
     def get_atr(self, symbol:str, timeframe:int) -> float:
         """
@@ -110,11 +111,14 @@ class Indicators:
     def get_current_day_levels(self, symbol, timeframe) -> Tuple[Signal, Signal]:
         n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
 
-        previous_bars = pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 2, n_bars-2))
+        previous_bars = pd.DataFrame(self.wrapper.get_candles_by_index(symbol=symbol, 
+                                                                       timeframe=timeframe, 
+                                                                       candle_index_start=2, 
+                                                                       candle_index_end=n_bars-3))
 
         if not previous_bars.empty:
-            off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"]))
-            off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"]))
+            off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax())
+            off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin())
             return off_hour_highs, off_hour_lows
 
         return None, None
@@ -123,26 +127,26 @@ class Indicators:
     def get_king_of_levels(self, symbol, timeframe) -> Dict[str, List[Signal]]:
         highs = []
         lows = []
-        pdh, pdl = self.get_previous_day_levels(symbol=symbol)
+        # pdh, pdl = self.get_previous_day_levels(symbol=symbol)
         ofh, ofl = self.get_current_day_levels(symbol=symbol, timeframe=timeframe)
 
-        if pdh:
-            highs.append(pdh)
+        # if pdh:
+        #     highs.append(pdh)
         
         if ofh:
             # When todays high is higher than previous day high, ignore the previous day high
-            if ofh.level > pdh.level:
-                highs.remove(pdh)
+            # if ofh.level > pdh.level:
+            #     highs.remove(pdh)
                 
             highs.append(ofh)
         
-        if pdl:
-            lows.append(pdl)
+        # if pdl:
+        #     lows.append(pdl)
         
         if ofl:
             # When todays low is lower than previous day low, ignore the previous day low
-            if ofl.level < pdl.level:
-                lows.remove(pdl)
+            # if ofl.level < pdl.level:
+            #     lows.remove(pdl)
 
             lows.append(ofl)
 

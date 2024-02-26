@@ -57,14 +57,23 @@ class Wrapper:
         return list(set([i.symbol for i in mt5.positions_get()]))
     
 
-    def get_todays_trades(self) -> pd.DataFrame:
-        tm_zone = pytz.timezone(f'Etc/GMT-{config.server_timezone}')
-        start_time = datetime.combine(datetime.now(tm_zone).date(), time()).replace(tzinfo=tm_zone)
-        end_time = datetime.now(tm_zone)
-        position_deals = mt5.history_deals_get(start_time,  end_time)
+    def get_todays_trades(self, us_market_seperator=False) -> pd.DataFrame:
+
+        current_gmt_time = util.get_current_time() + timedelta(hours=2)
+
+        # Generate off market hours high and lows
+        start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+                                hour=0, minute=0, tzinfo=pytz.timezone('Etc/GMT'))
         
+        tm_zone = pytz.timezone('Etc/GMT')
+        end_time = datetime.now(tm_zone) + timedelta(hours=2)
+
+        position_deals = mt5.history_deals_get(start_time,  end_time)
+
         if len(position_deals) > 0:
-            return pd.DataFrame(position_deals, columns=position_deals[0]._asdict().keys())
+            df = pd.DataFrame(position_deals, columns=position_deals[0]._asdict().keys())
+            # df = df[df["entry"] == 1].copy()
+            return df
         
         # return empty dataframe
         return pd.DataFrame()
@@ -75,8 +84,8 @@ if "__main__" == __name__:
     import sys
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
-    print(obj.get_candles_by_index(symbol=symbol, candle_index_start=0, candle_index_end=10, timeframe=timeframe))
-    print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
-    print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
-    print(obj.get_existing_symbols())
+    # print(obj.get_candles_by_index(symbol=symbol, candle_index_start=0, candle_index_end=10, timeframe=timeframe))
+    # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
+    # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
+    # print(obj.get_existing_symbols())
     print(obj.get_todays_trades())

@@ -110,48 +110,33 @@ class SniperReloaded():
 
                     for resistance in king_of_levels["resistance"]:
                         if previous_candle["open"] < resistance.level and previous_candle["close"] > resistance.level:
-                            stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_long_stop
-                            self.targets.load_targets(target=symbol, reference=resistance.reference, sniper_trigger_level=resistance.level, 
-                                                      sniper_level=stop_price, shoot_direction=Directions.LONG, num_prev_breaks=resistance.num_breaks, timeframe=self.trading_timeframe)
+                            is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                             past_break_index=resistance.break_bar_index, 
+                                                                                             timeframe=self.trading_timeframe,
+                                                                                             shoot_direction=Directions.LONG, 
+                                                                                             break_level=resistance.level, 
+                                                                                             reference=resistance.reference)
+
+                            if is_valid_signal:
+                                self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
+
                             break
                     
                     for support in king_of_levels["support"]:
                         if previous_candle["open"] > support.level and previous_candle["close"] < support.level:
-                            stop_price = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe).get_short_stop
-                            self.targets.load_targets(target=symbol, reference=support.reference, sniper_trigger_level=support.level, 
-                                                      sniper_level=stop_price, shoot_direction=Directions.SHORT, num_prev_breaks=support.num_breaks, timeframe=self.trading_timeframe)
+                            is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                             past_break_index=support.break_bar_index, 
+                                                                                             timeframe=self.trading_timeframe,
+                                                                                             shoot_direction=Directions.SHORT, 
+                                                                                             break_level=support.level, 
+                                                                                             reference=support.reference)
+
+                            if is_valid_signal:
+                                self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
+
                             break
                 
-                
-                # self.targets.reload_targets()
                 self.targets.show_targets(persist=self.persist_data)
-                symbols_to_remove = []
-
-                for symbol in self.targets.get_targets():
-                    if symbol not in existing_positions:
-                        bullet = self.targets.get_targets()[symbol]
-
-                        if bullet.hour_gap > 2:
-                            if self.strategy == "break":
-                                if bullet.trade_direction == Directions.LONG:
-                                    self.orders.long_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
-                                
-                                if bullet.trade_direction == Directions.SHORT:
-                                    self.orders.short_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
-                            
-                            if self.strategy == "reverse":
-                                if bullet.trade_direction == Directions.SHORT:
-                                    self.orders.long_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
-                                
-                                if bullet.trade_direction == Directions.LONG:
-                                    self.orders.short_entry(symbol=symbol, reference=bullet.reference, break_level=bullet.hour_gap, trading_timeframe=self.trading_timeframe)
-
-                    else:
-                        symbols_to_remove.append(symbol)
-
-                # Remove the exisiting positions
-                for symbol in symbols_to_remove:
-                    self.targets.unload_targets(symbol)
 
             time.sleep(self.timer)
     

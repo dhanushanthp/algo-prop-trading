@@ -5,6 +5,7 @@ class Signal:
     reference:str
     level:float
     num_breaks:int=0
+    break_bar_index:int=-1
 
 
 if __name__ == "__main__":

@@ -109,7 +109,7 @@ class RiskManager:
     def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1) -> Shield:
         selected_time = util.match_timeframe(timeframe)
         
-        # Pick last 3 candles to find high and low
+        # Pick last 3 candles (Including current one) to find high and low
         previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, 3)
         
         current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
