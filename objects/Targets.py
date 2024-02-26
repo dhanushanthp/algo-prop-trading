@@ -48,20 +48,20 @@ class Targets:
             todays_trades = self.wrapper.get_todays_trades()
 
             # If the symbol is not already traded, then take the trade
-            if todays_trades.empty or (symbol not in todays_trades["symbol"]):
+            if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
                 active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
                 self.targets[symbol] = active_bullet
                 return True, candle_gap
             else:
                 if shoot_direction == Directions.LONG:
-                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) and todays_trades["type"] == 0 and todays_trades["entry"] == 0]
-                    if len(traded_symbol) < 0:
+                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
+                    if traded_symbol.empty:
                         active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
                         self.targets[symbol] = active_bullet
                         return True, candle_gap
                 elif shoot_direction == Directions.SHORT:
-                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) and todays_trades["type"] == 1 and todays_trades["entry"] == 0]
-                    if len(traded_symbol) < 0:
+                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
+                    if traded_symbol.empty:
                         active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
                         self.targets[symbol] = active_bullet
                         return True, candle_gap
@@ -167,16 +167,21 @@ class Targets:
 if __name__ == "__main__":
     import time
     import pandas as pd
+    import sys
+    symbol = sys.argv[1]
+    timeframe = int(sys.argv[2])
     risk_manager = RiskManager()
-    magazine = Targets(risk_manager=risk_manager, timeframe=60)
-    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 1)
-    magazine.show_targets()
-    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 4)
-    magazine.show_targets()
-    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 5)
-    magazine.show_targets()
-    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 7)
-    magazine.show_targets()
-    magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 1)
-    magazine.show_targets()
+    magazine = Targets(risk_manager=risk_manager, timeframe=timeframe)
+    # magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 1)
+    # magazine.show_targets()
+    # magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 4)
+    # magazine.show_targets()
+    # magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 5)
+    # magazine.show_targets()
+    # magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 7)
+    # magazine.show_targets()
+    # magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 1)
+    # magazine.show_targets()
 
+    print(magazine.check_signal_validity(symbol=symbol, reference="PDH", break_level=9.090, shoot_direction=Directions.LONG, past_break_index=0, timeframe=timeframe))
+    print(magazine.check_signal_validity(symbol=symbol, reference="PDH", break_level=9.090, shoot_direction=Directions.SHORT, past_break_index=0, timeframe=timeframe))
