@@ -52,7 +52,7 @@ class RiskManager:
         trail_loss = equity - self.risk_of_an_account
 
         # Update account trail loss with the maximum value between current trail loss and previous maximum
-        self.account_trail_loss = max(trail_loss, self.account_trail_loss)
+        # self.account_trail_loss = max(trail_loss, self.account_trail_loss)
 
         # Check if the daily maximum risk has been reached by comparing equity with account trail loss
         if equity < self.account_trail_loss:

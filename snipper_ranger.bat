@@ -5,6 +5,6 @@ python sniper_ranger.py ^
     --each_position_risk 0.5 ^
     --target_ratio 1.3 ^
     --early_profit yes ^
-    --early_rr 1.2 ^
+    --early_rr 0.5 ^
     --trace_exit yes ^
     --persist_data no ^

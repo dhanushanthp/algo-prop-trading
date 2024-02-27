@@ -76,16 +76,22 @@ class SniperReloaded():
             # Each position trail stop
             self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
 
-            if self.early_profit:
+            if self.early_profit and (not self.immidiate_exit):
                 if rr > self.early_rr:
-                    self.immidiate_exit = True
+                    # self.immidiate_exit = True
                     self.orders.close_all_positions()
+                    # Reset account size for next round
+                    time.sleep(30)
+                    self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
+                    self.fixed_initial_account_size = self.risk_manager.account_size
 
             if self.risk_manager.has_daily_maximum_risk_reached() and self.trace_exit:
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
-                time.sleep(30) # Take some time for the account to digest the positions                
-                self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
+                import sys
+                sys.exit()
+                # time.sleep(30) # Take some time for the account to digest the positions                
+                # self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
 
             if is_market_close:
                 print("Market Close!")
@@ -109,7 +115,7 @@ class SniperReloaded():
                     previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
 
                     for resistance in king_of_levels["resistance"]:
-                        if previous_candle["open"] < resistance.level and previous_candle["close"] > resistance.level:
+                        if previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level:
                             is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
                                                                                              past_break_index=resistance.break_bar_index, 
                                                                                              timeframe=self.trading_timeframe,
@@ -123,7 +129,7 @@ class SniperReloaded():
                             break
                     
                     for support in king_of_levels["support"]:
-                        if previous_candle["open"] > support.level and previous_candle["close"] < support.level:
+                        if previous_candle["high"] > support.level and previous_candle["close"] < support.level:
                             is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
                                                                                              past_break_index=support.break_bar_index, 
                                                                                              timeframe=self.trading_timeframe,
