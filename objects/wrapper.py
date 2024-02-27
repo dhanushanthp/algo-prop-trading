@@ -40,6 +40,14 @@ class Wrapper:
         """
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 1, 1)[-1]
     
+    def get_previous_candle_i(self, symbol, timeframe, i=0):
+        """
+        0: Current candle
+        1: Previous candle
+        2: 2 Bar behind from current candle (e.g. Day before yesterday)
+        """
+        return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), i, 1)[-1]
+    
     
     def get_current_candle(self, symbol, timeframe):
         """
