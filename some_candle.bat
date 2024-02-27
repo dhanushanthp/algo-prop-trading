@@ -1,0 +1,10 @@
+python some_candle.py ^
+    --strategy %1 ^
+    --timeframe %2 ^
+    --account_risk 2.0 ^
+    --each_position_risk 0.5 ^
+    --target_ratio 2.0 ^
+    --early_profit no ^
+    --early_rr 0.5 ^
+    --trace_exit yes ^
+    --persist_data no ^
