@@ -1,6 +1,7 @@
 import MetaTrader5 as mt
 mt.initialize()
 import time
+import sys
 import argparse
 
 import objects.util as util
@@ -84,11 +85,12 @@ class SniperReloaded():
                     time.sleep(30)
                     self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
                     self.fixed_initial_account_size = self.risk_manager.account_size
+                    if self.trace_exit:
+                        sys.exit()
 
-            if self.risk_manager.has_daily_maximum_risk_reached() and self.trace_exit:
+            if self.risk_manager.has_daily_maximum_risk_reached():
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
-                import sys
                 sys.exit()
                 # time.sleep(30) # Take some time for the account to digest the positions                
                 # self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
