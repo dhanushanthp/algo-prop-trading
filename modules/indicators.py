@@ -648,8 +648,10 @@ def get_account_details():
 
 if __name__ == "__main__":
     # close_positions_with_half_profit()
-    
-    print(get_atr("EURUSD", util.match_timeframe(60)))
+    import sys
+    symbol = sys.argv[1]
+    timeframe = int(sys.argv[2])
+    # print(get_atr("EURUSD", util.match_timeframe(60)))
     # [print(round(i, 5)) for i in list(get_stop_range("AUDNZD"))]
     # print(find_r_s("XAUUSD", 15))
     # print(match_timeframe(15))
@@ -680,7 +682,7 @@ if __name__ == "__main__":
     # print(close_based_reversals("EURNZD", 60))
     # print(ema_direction("AUDJPY", [240, 60, 30]))
     # print(understand_direction("AUDCHF", 60, 0.56882))
-    # print(support_resistance_levels("EURUSD", 15))
+    print(support_resistance_levels(symbol, timeframe))
     # print(get_king_of_levels("GBPJPY"))
-    print(get_stop_range("EURUSD", 60, multiplier=1))
+    # print(get_stop_range("EURUSD", 60, multiplier=1))
     
