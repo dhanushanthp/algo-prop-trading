@@ -54,6 +54,22 @@ class SniperReloaded():
         # Take the profit as specific RR ratio
         self.early_profit = False
         self.early_rr=self.risk_manager.account_risk_percentage # Default
+
+    def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
+        """
+        This will take the trade based on given strategy
+        """
+        method_name = None
+        if self.strategy == "break":
+            method_name = "long_entry" if direction == Directions.LONG else "short_entry"
+        elif self.strategy == "reverse":
+            method_name = "short_entry" if direction == Directions.LONG else "long_entry"
+        
+        method = getattr(self.orders, method_name, None)
+
+        if method:
+            method(symbol=symbol, reference=reference, break_level=break_level, trading_timeframe=self.trading_timeframe)
+
     
     def main(self):
         selected_symbols = curr.get_ordered_symbols()
@@ -131,14 +147,11 @@ class SniperReloaded():
                                                                                              reference=resistance.reference)
 
                             if is_valid_signal:
-                                if self.strategy == "break":
-                                    self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
-                                elif self.strategy == "reverse":
-                                    self.orders.short_entry(symbol=symbol, reference=resistance.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
+                                self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap)
                             elif self.addtional_levels:
                                 for resistance_level in pivot_levels["resistance"]:
                                     if previous_candle["low"] < resistance_level and previous_candle["close"] > resistance_level:
-                                        self.orders.long_entry(symbol=symbol, reference="PIV", break_level=0, trading_timeframe=self.trading_timeframe)
+                                        self.trade(direction=Directions.LONG, symbol=symbol, reference="PIV", break_level=0)
                                         break
                             break
                     
@@ -152,14 +165,11 @@ class SniperReloaded():
                                                                                              reference=support.reference)
 
                             if is_valid_signal:
-                                if self.strategy == "break":
-                                    self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
-                                elif self.strategy == "reverse":
-                                    self.orders.long_entry(symbol=symbol, reference=support.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
+                                self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap)
                             elif self.addtional_levels:
                                 for support_level in pivot_levels["support"]:
                                     if previous_candle["high"] > support_level and previous_candle["close"] < support_level:
-                                        self.orders.short_entry(symbol=symbol, reference="PIV", break_level=0, trading_timeframe=self.trading_timeframe)
+                                        self.trade(direction=Directions.SHORT, symbol=symbol, reference="PIV", break_level=0)
                                         break
                             break
                 
