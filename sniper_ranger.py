@@ -71,10 +71,10 @@ class SniperReloaded():
             print(f"{'Risk:Reward'.ljust(20)}: {round(rr, 3)}")
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
 
-            # Record PnL
-            # if pnl != 0:
-            #     with open(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', 'a') as file:
-            #         file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},break,{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
+            # Record PnL, understand combined price movement on winning and lossing days
+            if pnl != 0:
+                with open(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', 'a') as file:
+                    file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},break,{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
 
             # Each position trail stop
             self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
