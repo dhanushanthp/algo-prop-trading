@@ -89,7 +89,7 @@ class SniperReloaded():
 
             # Record PnL, understand combined price movement on winning and lossing days
             if pnl != 0:
-                with open(f'{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}.csv', 'a') as file:
+                with open(f'data/{config.local_ip}_{util.get_current_time().strftime("%Y%m%d")}_{self.strategy}.csv', 'a') as file:
                     file.write(f"{util.get_current_time().strftime('%Y/%m/%d %H:%M:%S')},break,{self.retries},{round(rr, 3)},{round(pnl, 3)}\n")
 
             # Each position trail stop
@@ -97,10 +97,9 @@ class SniperReloaded():
 
             if self.early_profit and (not self.immidiate_exit):
                 if rr > self.early_rr:
-                    # self.immidiate_exit = True
                     self.orders.close_all_positions()
-                    # Reset account size for next round
                     time.sleep(30)
+                    # Reset account size for next round
                     self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
                     self.fixed_initial_account_size = self.risk_manager.account_size
                     if self.trace_exit:
