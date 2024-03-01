@@ -131,7 +131,10 @@ class SniperReloaded():
                                                                                              reference=resistance.reference)
 
                             if is_valid_signal:
-                                self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
+                                if self.strategy == "break":
+                                    self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
+                                elif self.strategy == "reverse":
+                                    self.orders.short_entry(symbol=symbol, reference=resistance.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
                             elif self.addtional_levels:
                                 for resistance_level in pivot_levels["resistance"]:
                                     if previous_candle["low"] < resistance_level and previous_candle["close"] > resistance_level:
@@ -149,7 +152,10 @@ class SniperReloaded():
                                                                                              reference=support.reference)
 
                             if is_valid_signal:
-                                self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
+                                if self.strategy == "break":
+                                    self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
+                                elif self.strategy == "reverse":
+                                    self.orders.long_entry(symbol=symbol, reference=support.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
                             elif self.addtional_levels:
                                 for support_level in pivot_levels["support"]:
                                     if previous_candle["high"] > support_level and previous_candle["close"] < support_level:

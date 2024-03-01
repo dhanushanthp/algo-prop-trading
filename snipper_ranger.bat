@@ -1,11 +1,11 @@
 python sniper_ranger.py ^
-    --strategy break ^
+    --strategy %1 ^
     --timeframe 60 ^
     --account_risk 2.0 ^
     --each_position_risk 0.5 ^
     --target_ratio 2.0 ^
     --early_profit yes ^
     --early_rr 0.6 ^
-    --trace_exit %1 ^
+    --trace_exit %2 ^
     --persist_data no ^
-    --addtional_levels %2
+    --addtional_levels %3
