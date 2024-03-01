@@ -16,6 +16,7 @@ from objects.Orders import Orders
 from objects.Account import Account
 from objects.Indicators import Indicators
 from objects.wrapper import Wrapper
+from modules import indicators
 
 class SniperReloaded():
     def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
@@ -37,6 +38,7 @@ class SniperReloaded():
         self.account = Account()
         self.indicators = Indicators()
         self.wrapper = Wrapper()
+        self.addtional_levels = False
 
         self.strategy:str = None
 
@@ -57,7 +59,7 @@ class SniperReloaded():
         selected_symbols = curr.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF {self.strategy.upper()}, Trace Exit:{self.trace_exit}, Early Profit:{self.early_profit} ({self.early_rr} RR) -----------")
+            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF {self.strategy.upper()}, Pivot: {self.addtional_levels}, Trace Exit:{self.trace_exit}, Early Profit:{self.early_profit} ({self.early_rr} RR) -----------")
             is_market_open, is_market_close = util.get_market_status()
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -116,6 +118,9 @@ class SniperReloaded():
                     king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
                     previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
 
+                    if self.addtional_levels:
+                        pivot_levels = indicators.support_resistance_levels(symbol=symbol, timeframe=self.trading_timeframe)
+
                     for resistance in king_of_levels["resistance"]:
                         if previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level:
                             is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
@@ -127,7 +132,11 @@ class SniperReloaded():
 
                             if is_valid_signal:
                                 self.orders.long_entry(symbol=symbol, reference=resistance.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
-
+                            elif self.addtional_levels:
+                                for resistance_level in pivot_levels["resistance"]:
+                                    if previous_candle["low"] < resistance_level and previous_candle["close"] > resistance_level:
+                                        self.orders.long_entry(symbol=symbol, reference="PIV", break_level=0, trading_timeframe=self.trading_timeframe)
+                                        break
                             break
                     
                     for support in king_of_levels["support"]:
@@ -141,7 +150,11 @@ class SniperReloaded():
 
                             if is_valid_signal:
                                 self.orders.short_entry(symbol=symbol, reference=support.reference, break_level=candle_gap, trading_timeframe=self.trading_timeframe)
-
+                            elif self.addtional_levels:
+                                for support_level in pivot_levels["support"]:
+                                    if previous_candle["high"] > support_level and previous_candle["close"] < support_level:
+                                        self.orders.short_entry(symbol=symbol, reference="PIV", break_level=0, trading_timeframe=self.trading_timeframe)
+                                        break
                             break
                 
                 self.targets.show_targets(persist=self.persist_data)
@@ -160,6 +173,7 @@ if __name__ == "__main__":
     parser.add_argument('--persist_data', type=str, help='Do we store data on backend')
     parser.add_argument('--trace_exit', type=str, help='Trade the profit and exit when it hit the traced stop')
     parser.add_argument('--strategy', type=str, help='Selected strategy')
+    parser.add_argument('--addtional_levels', type=str, help='Selected strategy')
     args = parser.parse_args()
     
     
@@ -175,6 +189,8 @@ if __name__ == "__main__":
     win.persist_data = util.boolean(args.persist_data)
     win.trace_exit = util.boolean(args.trace_exit)
     win.strategy = args.strategy
+
+    win.addtional_levels = util.boolean(args.addtional_levels)
 
     win.main()
 
