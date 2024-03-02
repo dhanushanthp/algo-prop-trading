@@ -1,3 +1,6 @@
+@REM test: sniper_ranger.bat break no yes
+@REM real: sniper_ranger.bat break yes no
+
 python sniper_ranger.py ^
     --strategy %1 ^
     --timeframe 60 ^
