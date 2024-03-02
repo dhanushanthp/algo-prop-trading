@@ -10,6 +10,7 @@ from objects.Signal import Signal
 from typing import Tuple, List, Dict
 from objects import logme
 from objects.wrapper import Wrapper
+from objects.Directions import Directions
 
 class Indicators:
     def __init__(self) -> None:
@@ -68,6 +69,23 @@ class Indicators:
 
         return high_signal, low_signal
     
+
+    def is_strong_previous_bar(self, symbol, timeframe) -> Directions:
+        """
+        When previous bar is bearish, then the high and open price of that bar will be same
+        When previous bar is bullish, then the low and open price of that bar will be same
+        """
+        previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
+
+        # Long Signal
+        if (previous_bar["close"]  > previous_bar["open"]) and (previous_bar["open"] == previous_bar["low"]):
+            return Directions.LONG
+        
+        # Short Signal
+        elif (previous_bar["close"]  < previous_bar["open"]) and (previous_bar["open"] == previous_bar["high"]):
+            return Directions.SHORT
+
+
     def get_off_market_levels(self, symbol) -> Tuple[Signal, Signal]:
         current_us_time = datetime.now(pytz.timezone('US/Eastern'))
         today_year = int(current_us_time.year)
