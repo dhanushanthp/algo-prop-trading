@@ -90,7 +90,11 @@ def boolean(input):
 
     return False
 
-def get_gmt_time() -> Tuple[int, int, int]:
+def get_current_day_hour_min() -> Tuple[int, int, int]:
+    """
+    Returns Day Of Week, Hour, Minute
+    This calls the current time with GMT offset
+    """
     local_time = get_current_time()
     day_of_week = local_time.strftime('%A')
     hour = int(local_time.strftime('%H'))
@@ -131,7 +135,7 @@ def get_nth_bar(symbol:str, timeframe:int) -> int:
 def get_market_status() -> Tuple[bool, bool]:
     market_open = False
     market_about_to_close= False
-    day, hour, minute = get_gmt_time()
+    day, hour, minute = get_current_day_hour_min()
     print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
 
     if day not in ["Saturday","Sunday"]:

@@ -75,15 +75,19 @@ class Indicators:
         When previous bar is bearish, then the high and open price of that bar will be same
         When previous bar is bullish, then the low and open price of that bar will be same
         """
-        previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
-
-        # Long Signal
-        if (previous_bar["close"]  > previous_bar["open"]) and (previous_bar["open"] == previous_bar["low"]):
-            return Directions.LONG
+        _,hour,_ = util.get_current_day_hour_min()
         
-        # Short Signal
-        elif (previous_bar["close"]  < previous_bar["open"]) and (previous_bar["open"] == previous_bar["high"]):
-            return Directions.SHORT
+        # Consider the bars 3 hours after the market open
+        if hour > 2:
+            previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
+
+            # Long Signal
+            if (previous_bar["close"]  > previous_bar["open"]) and (previous_bar["open"] == previous_bar["low"]):
+                return Directions.LONG
+            
+            # Short Signal
+            elif (previous_bar["close"]  < previous_bar["open"]) and (previous_bar["open"] == previous_bar["high"]):
+                return Directions.SHORT
 
 
     def get_off_market_levels(self, symbol) -> Tuple[Signal, Signal]:
