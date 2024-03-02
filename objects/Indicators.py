@@ -70,7 +70,7 @@ class Indicators:
         return high_signal, low_signal
     
 
-    def is_strong_previous_bar(self, symbol, timeframe) -> Directions:
+    def solid_open_bar(self, symbol, timeframe) -> Directions:
         """
         When previous bar is bearish, then the high and open price of that bar will be same
         When previous bar is bullish, then the low and open price of that bar will be same

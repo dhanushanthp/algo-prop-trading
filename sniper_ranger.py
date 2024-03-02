@@ -134,7 +134,8 @@ class SniperReloaded():
                     previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
 
                     if self.addtional_levels:
-                        pivot_levels = indicators.support_resistance_levels(symbol=symbol, timeframe=self.trading_timeframe)
+                        # pivot_levels = indicators.support_resistance_levels(symbol=symbol, timeframe=self.trading_timeframe)
+                        prev_solid_open_bar = self.indicators.solid_open_bar(symbol=symbol, timeframe=self.trading_timeframe)
 
                     for resistance in king_of_levels["resistance"]:
                         if previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level:
@@ -148,10 +149,13 @@ class SniperReloaded():
                             if is_valid_signal:
                                 self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap)
                             elif self.addtional_levels:
-                                for resistance_level in pivot_levels["resistance"]:
-                                    if previous_candle["low"] < resistance_level and previous_candle["close"] > resistance_level:
-                                        self.trade(direction=Directions.LONG, symbol=symbol, reference="PIV", break_level=0)
-                                        break
+                                if prev_solid_open_bar and prev_solid_open_bar == Directions.LONG:
+                                    self.trade(direction=Directions.LONG, symbol=symbol, reference="PREV", break_level=0)
+
+                                # for resistance_level in pivot_levels["resistance"]:
+                                #     if previous_candle["low"] < resistance_level and previous_candle["close"] > resistance_level:
+                                #         self.trade(direction=Directions.LONG, symbol=symbol, reference="PIV", break_level=0)
+                                #         break
                             break
                     
                     for support in king_of_levels["support"]:
@@ -166,10 +170,13 @@ class SniperReloaded():
                             if is_valid_signal:
                                 self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap)
                             elif self.addtional_levels:
-                                for support_level in pivot_levels["support"]:
-                                    if previous_candle["high"] > support_level and previous_candle["close"] < support_level:
-                                        self.trade(direction=Directions.SHORT, symbol=symbol, reference="PIV", break_level=0)
-                                        break
+                                if prev_solid_open_bar and prev_solid_open_bar == Directions.SHORT:
+                                    self.trade(direction=Directions.SHORT, symbol=symbol, reference="PREV", break_level=0)
+
+                                # for support_level in pivot_levels["support"]:
+                                #     if previous_candle["high"] > support_level and previous_candle["close"] < support_level:
+                                #         self.trade(direction=Directions.SHORT, symbol=symbol, reference="PIV", break_level=0)
+                                #         break
                             break
                 
                 self.targets.show_targets(persist=self.persist_data)
