@@ -180,6 +180,7 @@ if __name__ == "__main__":
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
     # print("ATR" ,indi_obj.get_atr(symbol, 60))
-    print(indi_obj.get_current_day_levels(symbol, timeframe))
+    # print(indi_obj.get_current_day_levels(symbol, timeframe))
+    print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
     # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
