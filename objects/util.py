@@ -66,6 +66,15 @@ def get_traded_time(epoch)-> datetime:
     normal_time = datetime.fromtimestamp(epoch, pytz.timezone('Etc/GMT'))
     return normal_time
 
+
+def get_us_time()-> datetime:
+    current_time =  datetime.now(pytz.timezone("US/Eastern"))
+    return current_time
+
+def get_us_hour() -> int:
+    current_time = get_us_time()
+    return int(current_time.strftime("%H"))
+
 def get_current_time() -> datetime:
     current_time =  datetime.now(pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
     return current_time
@@ -165,4 +174,5 @@ if __name__ == "__main__":
     # print(get_gmt_time())
     # print(get_market_status())
     # print(get_today_profit())
-    print(get_nth_bar(symbol, timeframe))
+    # print(get_nth_bar(symbol, timeframe))
+    print(get_us_hour())
