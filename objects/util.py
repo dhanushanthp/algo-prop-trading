@@ -125,10 +125,10 @@ def get_nth_bar(symbol:str, timeframe:int) -> int:
     start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
                             hour=0, minute=0, tzinfo=pytz.timezone('Etc/GMT'))
     
-    previous_bars = list(mt5.copy_rates_range(symbol, match_timeframe(timeframe=timeframe), start_time , current_gmt_time))
+    previous_bars = mt5.copy_rates_range(symbol, match_timeframe(timeframe=timeframe), start_time , current_gmt_time)
 
-    if previous_bars != None:
-        return len(previous_bars)
+    if previous_bars is not None:
+        return len(list(previous_bars))
     
     return 0
 
