@@ -31,6 +31,16 @@ class Wrapper:
 
         return pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), candle_index_start, candle_index_end))
 
+    def get_spread(self, symbol) -> float:
+        ask_price = mt5.symbol_info_tick(symbol).ask
+        bid_price = mt5.symbol_info_tick(symbol).bid
+        spread = ask_price - bid_price
+        return spread
+
+    def pre_candle_body(self, symbol, timeframe):
+        previous_candle = self.get_previous_candle(symbol=symbol, timeframe=timeframe)
+        body_size = abs(previous_candle["open"] - previous_candle["close"])
+        return body_size
     
     def get_previous_candle(self, symbol, timeframe):
         """
@@ -96,4 +106,6 @@ if "__main__" == __name__:
     # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_existing_symbols())
-    print(obj.get_todays_trades())
+    # print(obj.get_todays_trades())
+    print(obj.pre_candle_body(symbol, timeframe))
+    print(obj.get_spread(symbol))

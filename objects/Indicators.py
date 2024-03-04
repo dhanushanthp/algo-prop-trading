@@ -76,9 +76,11 @@ class Indicators:
         When previous bar is bullish, then the low and open price of that bar will be same
         """
         _,hour,_ = util.get_current_day_hour_min()
+        spread = self.wrapper.get_spread(symbol=symbol)
+        previoud_cdl_body = self.wrapper.pre_candle_body(symbol=symbol, timeframe=timeframe)
         
         # Consider the bars 3 hours after the market open
-        if hour > 2:
+        if hour > 2 and (previoud_cdl_body > spread):
             previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
 
             # Long Signal
