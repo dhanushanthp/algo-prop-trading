@@ -182,7 +182,7 @@ class SniperReloaded():
                                 self.trade(direction=Directions.SHORT, symbol=symbol, reference="PIV", break_level=0)
                                 break
                 
-                self.targets.show_targets(persist=self.persist_data)
+                # self.targets.show_targets(persist=self.persist_data)
 
             time.sleep(self.timer)
     
