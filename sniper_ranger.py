@@ -204,8 +204,8 @@ if __name__ == "__main__":
     
     trading_timeframe = int(args.timeframe)
     account_risk = float(args.account_risk)
+    each_position_risk = account_risk/2 # float(args.each_position_risk)
     target_ratio = float(args.target_ratio)
-    each_position_risk = float(args.each_position_risk)
     win = SniperReloaded(trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
 
     win.early_profit = util.boolean(args.early_profit)
