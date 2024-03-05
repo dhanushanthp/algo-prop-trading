@@ -80,7 +80,7 @@ class Indicators:
         previoud_cdl_body = self.wrapper.pre_candle_body(symbol=symbol, timeframe=timeframe)
         
         # Consider the bars 3 hours after the market open
-        if hour > 2 and (previoud_cdl_body > spread):
+        if hour > 4 and (previoud_cdl_body > spread):
             previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
 
             # Long Signal
