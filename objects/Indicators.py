@@ -151,27 +151,12 @@ class Indicators:
     def get_king_of_levels(self, symbol, timeframe) -> Dict[str, List[Signal]]:
         highs = []
         lows = []
-        # pdh, pdl = self.get_previous_day_levels(symbol=symbol)
         ofh, ofl = self.get_current_day_levels(symbol=symbol, timeframe=timeframe)
-
-        # if pdh:
-        #     highs.append(pdh)
         
-        if ofh:
-            # When todays high is higher than previous day high, ignore the previous day high
-            # if ofh.level > pdh.level:
-            #     highs.remove(pdh)
-                
+        if ofh:                
             highs.append(ofh)
         
-        # if pdl:
-        #     lows.append(pdl)
-        
         if ofl:
-            # When todays low is lower than previous day low, ignore the previous day low
-            # if ofl.level < pdl.level:
-            #     lows.remove(pdl)
-
             lows.append(ofl)
 
         return {"resistance": highs, "support": lows}
