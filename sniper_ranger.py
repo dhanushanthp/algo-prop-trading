@@ -133,19 +133,6 @@ class SniperReloaded():
                     previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
                     
                     """
-                    Prevous bar open and low price should be equal for long position, and Open and high should be equal for 
-                    short position
-                    """
-                    prev_solid_open_bar = self.indicators.solid_open_bar(symbol=symbol, timeframe=self.trading_timeframe)
-                    if prev_solid_open_bar and prev_solid_open_bar == Directions.LONG:
-                        self.trade(direction=Directions.LONG, symbol=symbol, reference="PREV", break_level=0)
-                        break # Break the symbol list loop
-                    elif prev_solid_open_bar and prev_solid_open_bar == Directions.SHORT:
-                        self.trade(direction=Directions.SHORT, symbol=symbol, reference="PREV", break_level=0)
-                        break # Break the symbol list loop
-
-                    
-                    """
                     Levels such as High of the Day, Low of the day will be checked with previous bar close
                     """
                     king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
