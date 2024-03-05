@@ -106,11 +106,20 @@ class SniperReloaded():
                         sys.exit()
 
             if self.risk_manager.has_daily_maximum_risk_reached():
-                self.immidiate_exit = True
+                self.retries += 1
+                self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
                 self.orders.close_all_positions()
-                sys.exit()
-                # time.sleep(30) # Take some time for the account to digest the positions                
-                # self.alert.send_msg(f"{self.account_name}: Done for today!, Account RR: {round(rr, 2)}")
+                
+                # Reset account size for next run
+                time.sleep(30)
+                self.fixed_initial_account_size = self.risk_manager.account_size
+
+                if self.retries > 1:
+                    self.immidiate_exit = True
+                    print("Exit on Max Tries")
+                
+                if self.trace_exit:
+                    sys.exit()
 
             if is_market_close:
                 print("Market Close!")
