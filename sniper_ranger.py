@@ -75,7 +75,7 @@ class SniperReloaded():
         selected_symbols = curr.get_ordered_symbols()
         
         while True:
-            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF {self.strategy.upper()}, Pivot: {self.addtional_levels}, Trace Exit:{self.trace_exit}, Early Profit:{self.early_profit} ({self.early_rr} RR) -----------")
+            print(f"\n------- {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in {self.trading_timeframe} TF {self.strategy.upper()}, Adddtional: {self.addtional_levels}, Trace Exit:{self.trace_exit}, Early Profit:{self.early_profit} ({self.early_rr} RR) -----------")
             is_market_open, is_market_close = util.get_market_status()
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -161,26 +161,6 @@ class SniperReloaded():
                             if is_valid_signal:
                                 self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap)
                             break # Break the support loop
-                    
-                    
-                    if self.addtional_levels:
-                        # Get current hour
-                        # _,hour,_ = util.get_current_day_hour_min()
-
-                        # if hour > 10:
-                        #     self.strategy = "reverse"
-
-                        pivot_levels = indicators.support_resistance_levels(symbol=symbol, timeframe=self.trading_timeframe)
-                        
-                        for resistance_level in pivot_levels["resistance"]:
-                            if previous_candle["low"] < resistance_level and previous_candle["close"] > resistance_level:
-                                self.trade(direction=Directions.LONG, symbol=symbol, reference="PIV", break_level=0)
-                                break
-                        
-                        for support_level in pivot_levels["support"]:
-                            if previous_candle["high"] > support_level and previous_candle["close"] < support_level:
-                                self.trade(direction=Directions.SHORT, symbol=symbol, reference="PIV", break_level=0)
-                                break
                 
                 # self.targets.show_targets(persist=self.persist_data)
 
