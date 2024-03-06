@@ -48,6 +48,13 @@ elif company == "TF Global Markets (Aust) Pty Ltd":
     indexes = ['SPX500x', "UK100x" ] # 'JPN225X',
     support_pairs = ["NZDUSDx", "USDCADx"]
 
+# FundedNext
+elif company == "GrowthNext - F.Z.C":
+    currencies = master_currencies 
+    jpy_currencies = master_jpy_pairs
+    indexes = ['SPX500', "UK100", "JP225", "HK50", "AUS200"] 
+    support_pairs = ["NZDUSD", "USDCAD"]
+
 else:
     raise Exception(f"The << {company} >> Trading platform not found")
 
@@ -102,6 +109,24 @@ def get_symbol_mapping(symbol):
             return "JPN225x"
         elif symbol in master_currencies:
             return f"{symbol}x"
+        else:
+            print(f"Currency Pair No defined in manage_positions.py {symbol}")
+    elif company == "GrowthNext - F.Z.C":
+        """
+        PurpleTrading [FundedEngineer, SFT, Blueguardian, Thefundedtrader]
+        """
+        if symbol == "US500.cash":
+            return "SPX500"
+        elif symbol == "UK100.cash":
+            return "UK100"
+        elif symbol == "HK50.cash":
+            return "HK50"
+        elif symbol == "JP225.cash":
+            return "JP225"
+        elif symbol == "AUS200.cash":
+            return "AUS200"
+        elif symbol in master_currencies:
+            return f"{symbol}_raw"
         else:
             print(f"Currency Pair No defined in manage_positions.py {symbol}")
 
