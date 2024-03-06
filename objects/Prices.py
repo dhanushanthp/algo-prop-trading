@@ -204,9 +204,52 @@ class Prices:
                 None of the currency lead by USD
                 """
                 return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USDx")
+        
+        elif curr.company == "GrowthNext - F.Z.C":
+            if symbol == "SPX500":
+                return 1.0
+            elif symbol == "UK100":
+                return self.get_exchange_price("GBPUSD")
+            elif symbol == "JP225":
+                return round(1/self.get_exchange_price("USDJPY"), 4)
+            elif symbol == "HK50":
+                return round(1/self.get_exchange_price("USDHKD"), 4)
+            elif symbol == "AUS200":
+                return self.get_exchange_price("AUDUSD")
+            elif symbol == "XAUUSD":
+                return 2/self.get_exchange_price("XAUUSD")
+            elif symbol == "AUDUSD":
+                return 1.6 * self.get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "NZDUSD":
+                return 1.6 * self.get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol in ["CADJPY", "CADCHF"]:
+                return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCAD")
+            elif symbol in ["CHFJPY"]:
+                return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCHF")
+            elif symbol_lead == "USD":
+                """
+                e.g USDJPY, USDCAD, USDCHF, USDHKD
+                If the currency is lead by USD then we just calculate the inverse of the exchange
+                """
+                return 1/self.get_exchange_price(symbol)
+            elif symbol_follow == "USD":
+                """
+                e.g GBPUSD, EURUSD
+                If the currency is followed by USD then we just calculate the exchange
+                """
+                return self.get_exchange_price(symbol)
+            else:
+                """
+                e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
+                None of the currency lead by USD
+                """
+                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USD")
+        else:
+            raise Exception(f"The << {curr.company} >> Trading platform not found")
 
 if __name__ == "__main__":
     price_obj = Prices()
     import sys
     symbol = sys.argv[1]
     print(price_obj.get_dollar_value(symbol=symbol))
+    # print(price_obj.get_exchange_price(symbol))
