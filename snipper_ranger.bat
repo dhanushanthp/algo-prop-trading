@@ -1,5 +1,5 @@
-@REM test: sniper_ranger.bat break no yes
-@REM real: sniper_ranger.bat break yes no
+@REM test: sniper_ranger.bat break 60 no
+@REM real: sniper_ranger.bat break 60 yes
 
 set account_risk=1.0
 set timeframe=%2
