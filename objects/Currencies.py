@@ -10,7 +10,7 @@ jpy_currencies = None
 support_pairs = None
 
 
-master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF',
+master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
                 'CHFJPY', "CADCHF", "CADJPY",
                 'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
                 'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
@@ -20,7 +20,7 @@ master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF',
 
 # Funded Engineer
 if company == "AXSE Brokerage Ltd.":
-    currencies = ['AUDJPY_raw', 'AUDNZD_raw', 'AUDUSD_raw',  'AUDCHF_raw',
+    currencies = ['AUDJPY_raw', 'AUDNZD_raw', 'AUDUSD_raw',  'AUDCHF_raw', "AUDCAD_raw",
                 'CHFJPY_raw', "CADCHF_raw", "CADJPY_raw",
                 'EURJPY_raw', 'EURNZD_raw', 'EURUSD_raw', 'EURCAD_raw', "EURAUD_raw", "EURCHF_raw",
                 'GBPUSD_raw', 'GBPJPY_raw', "GBPAUD_raw", "GBPCHF_raw",
@@ -35,7 +35,7 @@ if company == "AXSE Brokerage Ltd.":
     support_pairs = ["NZDUSD_raw", "USDHKD_raw", "USDCAD_raw"]
 
 elif company == "FTMO S.R.O.":
-    currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF',
+    currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF',  "AUDCAD",
                 'CHFJPY', "CADCHF", "CADJPY",
                 'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
                 'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
@@ -50,7 +50,7 @@ elif company == "FTMO S.R.O.":
     support_pairs = ["NZDUSD", "USDHKD", "USDCAD"]
 # FundingPips
 elif company == "Black Bull Group Limited":
-    currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF',
+    currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
                 'CHFJPY', "CADCHF", "CADJPY",
                 'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
                 'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
@@ -65,7 +65,7 @@ elif company == "Black Bull Group Limited":
     support_pairs = ["NZDUSD", "USDHKD", "USDCAD"]
 # FundedFor
 elif company == "TF Global Markets (Aust) Pty Ltd":
-    currencies = ['AUDJPYx', 'AUDNZDx', 'AUDUSDx', 'AUDCHFx',
+    currencies = ['AUDJPYx', 'AUDNZDx', 'AUDUSDx', 'AUDCHFx', "AUDCADx",
                 'CHFJPYx', "CADCHFx", "CADJPYx",
                 'EURJPYx', 'EURNZDx', 'EURUSDx', 'EURCADx', "EURAUDx", "EURCHFx",
                 'GBPUSDx', 'GBPJPYx', "GBPAUDx", "GBPCHFx",

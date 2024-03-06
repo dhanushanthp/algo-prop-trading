@@ -85,7 +85,7 @@ class Prices:
             else:
                 """
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
-                Non of the currency lead by USD
+                None of the currency lead by USD
                 """
                 return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USD")
             
@@ -121,7 +121,7 @@ class Prices:
             else:
                 """
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
-                Non of the currency lead by USD
+                None of the currency lead by USD
                 """
                 return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USD")
             
@@ -161,7 +161,7 @@ class Prices:
             else:
                 """
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
-                Non of the currency lead by USD
+                None of the currency lead by USD
                 """
                 return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USD_raw")
             
@@ -201,6 +201,12 @@ class Prices:
             else:
                 """
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
-                Non of the currency lead by USD
+                None of the currency lead by USD
                 """
                 return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USDx")
+
+if __name__ == "__main__":
+    price_obj = Prices()
+    import sys
+    symbol = sys.argv[1]
+    print(price_obj.get_dollar_value(symbol=symbol))
