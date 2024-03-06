@@ -17,7 +17,7 @@ class Wrapper:
 
         Parameters:
         - symbol (str): The symbol for which to retrieve candle data.
-        - candle_index_start (int): Initial bar index, Which more close to current time, 0 will be the current bar, 1 will be previous to current bar
+        - candle_index_start (int): Start from initial bar index (includes), Which more close to current time, 0 will be the current bar, 1 will be previous to current bar
         - candle_index_end (int): Number of bars, Get all pervious bars from 
         - timeframe (str): The timeframe of the candles (e.g 15, 60, 120, 240 minutes)
 
