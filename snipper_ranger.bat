@@ -2,11 +2,12 @@
 @REM real: sniper_ranger.bat break 60 yes
 
 set account_risk=1.0
+set strategy=%1
 set timeframe=%2
 set target_ratio=2.0
 
 python sniper_ranger.py ^
-    --strategy %1 ^
+    --strategy %strategy% ^
     --timeframe %timeframe% ^
     --account_risk %account_risk% ^
     --each_position_risk 0.5 ^
