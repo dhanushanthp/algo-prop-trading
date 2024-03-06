@@ -73,7 +73,10 @@ class SniperReloaded():
     
     def main(self):
         selected_symbols = curr.get_ordered_symbols()
-        # selected_symbols = ["US500.cash"]
+
+        # Only trade US futures when the TF is 5
+        if self.trading_timeframe == 5:
+            selected_symbols = ["US500.cash"]
         
         while True:
             # {config.local_ip.replace('_', '.')} @ {util.get_current_time().strftime('%H:%M:%S')} in 
