@@ -52,7 +52,7 @@ elif company == "TF Global Markets (Aust) Pty Ltd":
 elif company == "GrowthNext - F.Z.C":
     currencies = master_currencies 
     jpy_currencies = master_jpy_pairs
-    indexes = ['SPX500', "UK100", "JP225", "HK50", "AUS200"] 
+    indexes = ['SPX500', "UK100", "HK50", "AUS200"] # "JP225"
     support_pairs = ["NZDUSD", "USDCAD"]
 
 else:
