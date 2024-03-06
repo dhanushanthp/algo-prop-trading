@@ -15,7 +15,7 @@ master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
                 'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
                 'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
                 'NZDJPY', "NZDCAD", "NZDUSD",
-                'USDCAD', 'USDJPY', 'USDCHF', 
+                'USDCAD', 'USDJPY', 'USDCHF', "USDHKD",
                 'XAUUSD']
 
 # Funded Engineer
@@ -25,14 +25,14 @@ if company == "AXSE Brokerage Ltd.":
                 'EURJPY_raw', 'EURNZD_raw', 'EURUSD_raw', 'EURCAD_raw', "EURAUD_raw", "EURCHF_raw",
                 'GBPUSD_raw', 'GBPJPY_raw', "GBPAUD_raw", "GBPCHF_raw",
                 'NZDJPY_raw', "NZDCAD_raw", "NZDUSD_raw",
-                'USDCAD_raw', 'USDJPY_raw', 'USDCHF_raw', 
+                'USDCAD_raw', 'USDJPY_raw', 'USDCHF_raw',  "USDHKD_raw",
                 'XAUUSD_raw']
     # 'ASX_raw'
     indexes = ['HK50_raw', 'NIKKEI_raw',  'SP_raw', 'FTSE_raw']
 
     jpy_currencies = ['AUDJPY_raw', 'CHFJPY_raw', 'EURJPY_raw', 'GBPJPY_raw' , 'NZDJPY_raw', 'USDJPY_raw', "CADJPY_raw"]
 
-    support_pairs = ["NZDUSD_raw", "USDHKD_raw", "USDCAD_raw"]
+    support_pairs = ["NZDUSD_raw", "USDCAD_raw"]
 
 elif company == "FTMO S.R.O.":
     currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF',  "AUDCAD",
@@ -40,14 +40,14 @@ elif company == "FTMO S.R.O.":
                 'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
                 'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
                 'NZDJPY', "NZDCAD", "NZDUSD",
-                'USDCAD', 'USDJPY', 'USDCHF', 
+                'USDCAD', 'USDJPY', 'USDCHF', "USDHKD",
                 'XAUUSD']
 
     indexes = ['AUS200.cash', 'HK50.cash', 'JP225.cash',  'US500.cash', 'UK100.cash']
 
     jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
 
-    support_pairs = ["NZDUSD", "USDHKD", "USDCAD"]
+    support_pairs = ["NZDUSD", "USDCAD"]
 # FundingPips
 elif company == "Black Bull Group Limited":
     currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
@@ -55,14 +55,14 @@ elif company == "Black Bull Group Limited":
                 'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
                 'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
                 'NZDJPY', "NZDCAD", "NZDUSD",
-                'USDCAD', 'USDJPY', 'USDCHF', 
+                'USDCAD', 'USDJPY', 'USDCHF', "USDHKD",
                 'XAUUSD']
     # TODO JP225 is removed, because of invalid volume, which is working for FTMO
     indexes = ['SPX500', 'FTSE100'] # 'JP225',
 
     jpy_currencies = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
 
-    support_pairs = ["NZDUSD", "USDHKD", "USDCAD"]
+    support_pairs = ["NZDUSD", "USDCAD"]
 # FundedFor
 elif company == "TF Global Markets (Aust) Pty Ltd":
     currencies = ['AUDJPYx', 'AUDNZDx', 'AUDUSDx', 'AUDCHFx', "AUDCADx",
@@ -70,14 +70,14 @@ elif company == "TF Global Markets (Aust) Pty Ltd":
                 'EURJPYx', 'EURNZDx', 'EURUSDx', 'EURCADx', "EURAUDx", "EURCHFx",
                 'GBPUSDx', 'GBPJPYx', "GBPAUDx", "GBPCHFx",
                 'NZDJPYx', "NZDCADx", "NZDUSDx",
-                'USDCADx', 'USDJPYx', 'USDCHFx', 
+                'USDCADx', 'USDJPYx', 'USDCHFx', "USDHKDx",
                 'XAUUSDx']
     
     indexes = ['SPX500x', "UK100x" ] # 'JPN225X',
 
     jpy_currencies = ['AUDJPYx', 'CHFJPYx', 'EURJPYx', 'GBPJPYx' , 'NZDJPYx', 'USDJPYx', "CADJPYx"]
 
-    support_pairs = ["NZDUSDx", "USDHKDx", "USDCADx"]
+    support_pairs = ["NZDUSDx", "USDCADx"]
 
 else:
     raise Exception(f"The << {company} >> Trading platform not found")

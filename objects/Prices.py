@@ -108,7 +108,7 @@ class Prices:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCHF")
             elif symbol_lead == "USD":
                 """
-                e.g USDJPY, USDCAD, USDCHF
+                e.g USDJPY, USDCAD, USDCHF, USDHKD
                 If the currency is lead by USD then we just calculate the inverse of the exchange
                 """
                 return 1/self.get_exchange_price(symbol)
