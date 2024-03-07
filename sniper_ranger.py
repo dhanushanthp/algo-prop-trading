@@ -203,4 +203,3 @@ if __name__ == "__main__":
     win.addtional_levels = util.boolean(args.addtional_levels)
 
     win.main()
-
