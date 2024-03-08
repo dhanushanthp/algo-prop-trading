@@ -1,7 +1,7 @@
 @REM test: sniper_ranger.bat break 60 no
 @REM real: sniper_ranger.bat break 60 yes
 
-set account_risk=1.0
+set account_risk=2.0
 set strategy=%1
 set timeframe=%2
 set target_ratio=2.0
