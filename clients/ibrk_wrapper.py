@@ -1,0 +1,72 @@
+import ib_insync as ibi
+ib = ibi.IB()
+client_id = 1232
+import pandas as pd
+import pytz
+from datetime import datetime, timedelta,  time
+
+class IBRK:
+    def __init__(self) -> None:
+        self.ib:ibi.IB = ib.connect('127.0.0.1',7497, client_id)
+
+    def match_timeframe(self, timeframe:int):
+        if timeframe == 60:
+            return "1 hour"
+        elif timeframe == 15:
+            return "15 mins"
+        elif timeframe == 5:
+            return "5 mins"
+        else:
+            raise Exception(f"Timeframe {timeframe} is not defined!")
+
+
+    def get_candles(self, symbol, timeframe):
+        """
+        Get all previous candles per day
+        """
+        contract = ibi.Forex(symbol)
+        bars = ib.reqHistoricalData(
+                contract, 
+                endDateTime='', 
+                durationStr='1 D',
+                barSizeSetting=self.match_timeframe(timeframe), 
+                whatToShow='MIDPOINT', useRTH=False)
+
+        df = pd.DataFrame(bars)
+        df["date"] = df["date"] + timedelta(hours=2)
+        return df
+
+    def get_previous_candle(self, symbol, timeframe):
+        """
+        Return previous candle
+        """
+        candles = self.get_candles(symbol=symbol, timeframe=timeframe)
+        return candles.iloc[-2]
+
+    def get_current_candle(self, symbol, timeframe):
+        """
+        Return Current candle
+        """
+        candles = self.get_candles(symbol=symbol, timeframe=timeframe)
+        return candles.iloc[-1]
+
+    def get_bid_ask(self, symbol):
+        """
+        Get bid and ask prices
+        """
+        contract = ibi.Forex(symbol)
+        bid_ask = self.ib.reqTickers(contract)[0]
+        mid_price = (bid_ask.bid + bid_ask.ask)/2
+        return mid_price
+
+if __name__ == "__main__":
+    obj = IBRK()
+    # print(obj.get_candles("EURUSD", 60))
+    # print(obj.get_previous_candle("EURUSD", 60))
+    # print(obj.get_current_candle("EURUSD", 60))
+    # print(obj.get_bid_ask("EURUSD"))
+
+# eastern = pytz.timezone('US/Eastern')
+# df.index = df.index.tz_localize(pytz.utc).tz_convert(eastern)
+        
+
