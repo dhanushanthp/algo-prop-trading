@@ -11,8 +11,8 @@ from ib_objects.Indicators import Indicators
 from clients.ibrk_wrapper import IBRK
 
 class RiskManager:
-    def __init__(self, stop_ratio=1, target_ratio=3, account_risk:float=1, position_risk:float=0.1) -> None:
-        self.ibrk = IBRK()
+    def __init__(self, ibrk, stop_ratio=1, target_ratio=3, account_risk:float=1, position_risk:float=0.1) -> None:
+        self.ibrk:IBRK = ibrk
         self.account = Account(self.ibrk)
         ACCOUNT_SIZE = self.account.get_liquid_balance()
         self.account_size  = ACCOUNT_SIZE
