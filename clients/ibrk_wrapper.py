@@ -4,6 +4,7 @@ client_id = 1232
 import pandas as pd
 import pytz
 from datetime import datetime, timedelta,  time
+from typing import Tuple
 
 class IBRK:
     def __init__(self) -> None:
@@ -50,14 +51,13 @@ class IBRK:
         candles = self.get_candles(symbol=symbol, timeframe=timeframe)
         return candles.iloc[-1]
 
-    def get_bid_ask(self, symbol):
+    def get_bid_ask(self, symbol) -> Tuple[float, float]:
         """
         Get bid and ask prices
         """
         contract = ibi.Forex(symbol)
         bid_ask = self.ib.reqTickers(contract)[0]
-        mid_price = (bid_ask.bid + bid_ask.ask)/2
-        return mid_price
+        return bid_ask.bid, bid_ask.ask
 
     def get_account(self):
         account = self.ib.accountValues()
@@ -100,8 +100,8 @@ if __name__ == "__main__":
     # print(obj.get_candles("EURUSD", 60))
     # print(obj.get_previous_candle("EURUSD", 60))
     # print(obj.get_current_candle("EURUSD", 60))
-    # print(obj.get_bid_ask("EURUSD"))
-    print(obj.get_account())
+    print(obj.get_bid_ask("EURUSD"))
+    # print(obj.get_account())
     # print(obj.get_active_orders())
     # print(obj.get_existing_positions())
 
