@@ -1,21 +1,19 @@
 from datetime import datetime, timedelta, time
 import modules.config as config
-import MetaTrader5 as mt5
 import pytz
 import objects.slack_msg as slack_msg
-import objects.util as util
-from objects.Prices import Prices
+from ib_objects.Prices import Prices
 from typing import Tuple
-import objects.Currencies as curr
+import ib_objects.Currencies as curr
 from objects.Shield import Shield
-from objects.Account import Account
-from objects.Indicators import Indicators
-
-mt5.initialize()
+from ib_objects.Account import Account
+from ib_objects.Indicators import Indicators
+from clients.ibrk_wrapper import IBRK
 
 class RiskManager:
     def __init__(self, stop_ratio=1, target_ratio=3, account_risk:float=1, position_risk:float=0.1) -> None:
-        self.account = Account()
+        self.ibrk = IBRK()
+        self.account = Account(self.ibrk)
         ACCOUNT_SIZE = self.account.get_liquid_balance()
         self.account_size  = ACCOUNT_SIZE
         self.account_risk_percentage = account_risk
@@ -25,14 +23,14 @@ class RiskManager:
         self.alert = slack_msg.Slack()
         self.max_account_risk = round(ACCOUNT_SIZE/100)
         self.partial_profit = round(ACCOUNT_SIZE/1000)
-        self.prices = Prices()
+        self.prices = Prices(self.ibrk)
         self.stop_ratio = stop_ratio
         self.target_ratio = target_ratio
-        self.indicators = Indicators()
+        self.indicators = Indicators(self.ibrk)
+        
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
-        self.account_name = self.account.get_account_name()      
     
     def get_max_loss(self):
         return self.account_trail_loss
@@ -63,7 +61,7 @@ class RiskManager:
         return False
 
     def adjust_positions_trailing_stops(self, target_multiplier:float, trading_timeframe:int):
-        existing_positions = mt5.positions_get()
+        existing_positions = self.ibrk.get_existing_positions()
         for position in existing_positions:
             symbol = position.symbol
             stop_price = position.sl
@@ -85,34 +83,34 @@ class RiskManager:
             if (trail_stop != stop_price) or (target_price != trail_target):
                 print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
 
-                modify_request = {
-                    "action": mt5.TRADE_ACTION_SLTP,
-                    "symbol": position.symbol,
-                    "volume": position.volume,
-                    "type": position.type,
-                    "position": position.ticket,
-                    "sl": trail_stop,
-                    "tp": trail_target,
-                    "comment": position.comment,
-                    "magic": position.magic,
-                    "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": mt5.ORDER_FILLING_FOK,
-                    "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
-                }
+                # modify_request = {
+                #     "action": mt5.TRADE_ACTION_SLTP,
+                #     "symbol": position.symbol,
+                #     "volume": position.volume,
+                #     "type": position.type,
+                #     "position": position.ticket,
+                #     "sl": trail_stop,
+                #     "tp": trail_target,
+                #     "comment": position.comment,
+                #     "magic": position.magic,
+                #     "type_time": mt5.ORDER_TIME_GTC,
+                #     "type_filling": mt5.ORDER_FILLING_FOK,
+                #     "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+                # }
                 
-                result = mt5.order_send(modify_request)
+                # result = mt5.order_send(modify_request)
                 
-                if result.retcode != mt5.TRADE_RETCODE_DONE:
-                    if result.comment != "No changes":
-                        print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
+                # if result.retcode != mt5.TRADE_RETCODE_DONE:
+                #     if result.comment != "No changes":
+                #         print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
     
     def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1) -> Shield:
-        selected_time = util.match_timeframe(timeframe)
         
         # Pick last 3 candles (Including current one) to find high and low
-        previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, 3)
+        previous_candles = self.ibrk.get_candles_by_index(symbol=symbol, timeframe=timeframe, 
+                                                          prev_candle_count=3)
         
-        current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
+        current_candle = self.ibrk.get_current_candle(symbol=symbol, timeframe=timeframe)
         current_candle_body = abs(current_candle["close"] - current_candle["open"])
 
         spread = self.prices.get_spread(symbol)
@@ -124,8 +122,8 @@ class RiskManager:
             is_strong_candle = True
 
         # Extracting high and low values from the previous candle
-        higher_stop = max([i["high"] for i in previous_candles])
-        lower_stop = min([i["low"] for i in previous_candles])
+        higher_stop = previous_candles["high"].max()
+        lower_stop = previous_candles["low"].min()
         
         mid_price = self.prices.get_exchange_price(symbol)
         
@@ -151,19 +149,6 @@ class RiskManager:
             points_in_stop = round(points_in_stop, 5)
             lots = lots/10**5
         
-        # This change made of fundedEngineer account!
-        if symbol in ['ASX_raw', 'FTSE_raw', 'FTSE100']:
-            lots = lots/10
-        
-        if symbol in ['SP_raw', "SPX500"]:
-            lots = lots/40
-        
-        if symbol in ['HK50_raw']:
-            lots = lots/100
-        
-        if symbol in ['NIKKEI_raw']:
-            lots = lots/1000
-        
         lots = round(lots, 2)
 
         return points_in_stop, lots
@@ -178,7 +163,8 @@ class RiskManager:
         end_time = datetime.now(tm_zone) + timedelta(hours=4)
         today_date = datetime.now(tm_zone).date()
 
-        exit_traded_position = [i for i in mt5.history_deals_get(start_time,  end_time) if i.symbol== symbol and i.entry==1]
+        # exit_traded_position = [i for i in mt5.history_deals_get(start_time,  end_time) if i.symbol== symbol and i.entry==1]
+        exit_traded_position = []
 
         if len(exit_traded_position) > 0:
             last_traded_time = exit_traded_position[-1].time
@@ -190,7 +176,8 @@ class RiskManager:
 
             # Below logic, sameday with traded time gap
             position_id = exit_traded_position[-1].position_id
-            entry_traded_object = [i for i in mt5.history_deals_get(start_time,  end_time) if i.position_id == position_id and i.entry == 0]
+            # exit_traded_position = [i for i in mt5.history_deals_get(start_time,  end_time) if i.position_id == position_id and i.entry == 0]
+            entry_traded_object = []
             if len(entry_traded_object) > 0:
                 # Wait until the last traded timeframe is complete
                 previous_timeframe = int(entry_traded_object[-1].magic)  # in minutes, This was my input to the process
@@ -217,14 +204,14 @@ if __name__ == "__main__":
     stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
     print(stp_range)
 
-    # Test: Target Ranges 
-    tgt_range = obj.get_stop_range(symbol=test_symbol, timeframe=60, multiplier=3)
-    print(tgt_range)
+    # # Test: Target Ranges 
+    # tgt_range = obj.get_stop_range(symbol=test_symbol, timeframe=60, multiplier=3)
+    # print(tgt_range)
 
-    # Test: Lot Size
-    entry_price = obj.prices.get_entry_price(symbol=test_symbol)
-    size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
-    print(size)
+    # # Test: Lot Size
+    # entry_price = obj.prices.get_entry_price(symbol=test_symbol)
+    # size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
+    # print(size)
 
-    check_time = obj.check_trade_wait_time(symbol=test_symbol)
-    print(check_time)
+    # check_time = obj.check_trade_wait_time(symbol=test_symbol)
+    # print(check_time)

@@ -4,8 +4,8 @@ from typing import Tuple, List, Dict
 from clients.ibrk_wrapper import IBRK
 
 class Indicators:
-    def __init__(self):
-        self.ibrk = IBRK()
+    def __init__(self, ibrk):
+        self.ibrk:IBRK = ibrk
 
     def get_atr(self, symbol:str, timeframe:int) -> float:
         """

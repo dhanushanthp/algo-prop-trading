@@ -3,8 +3,8 @@ from typing import Tuple
 from clients.ibrk_wrapper import IBRK
 
 class Prices:
-    def __init__(self):
-        self.ibrk = IBRK()
+    def __init__(self, ibrk):
+        self.ibrk:IBRK = ibrk
     
     def get_exchange_price(self, symbol) -> float:
         bid_price, ask_price = self.ibrk.get_bid_ask(symbol=symbol)

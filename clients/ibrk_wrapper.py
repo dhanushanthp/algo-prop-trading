@@ -104,14 +104,14 @@ class IBRK:
 
 if __name__ == "__main__":
     obj = IBRK()
-    # print(obj.get_candles("EURUSD", 60))
+    print(obj.get_candles("EURUSD", 60))
     # print(obj.get_previous_candle("EURUSD", 60))
     # print(obj.get_current_candle("EURUSD", 60))
     # print(obj.get_bid_ask("EURUSD"))
     # print(obj.get_account())
     # print(obj.get_active_orders())
     # print(obj.get_existing_positions())
-    print(obj.get_candles_by_index("EURUSD", 60, 3)["high"].max())
+    # print(obj.get_candles_by_index("EURUSD", 60, 3)["high"].max())
 
         
 
