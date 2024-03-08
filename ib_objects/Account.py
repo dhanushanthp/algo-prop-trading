@@ -1,36 +1,20 @@
-import MetaTrader5 as mt
-from typing import Tuple
+from clients.ibrk_wrapper import IBRK
 
 class Account:
-    def __init__(self) -> None:
-        pass
-
-    def get_account_name(self):
-        info = mt.account_info()
-        balance = round(info.balance/1000)
-        return f"{info.name} {balance}K "
-
-    def get_account_details(self):
-        """
-        Retrieves and returns essential details of the trading account.
-
-        This function fetches information such as balance, equity, margin-free funds,
-        and profit from the MetaTrader 5 trading account. If the account information is
-        successfully obtained, it returns a Object containing these values.
-
-        Returns:
-            Object: Object of balance, equity, margin_free, profit.
-                Returns None if account information retrieval fails.
-        """
-        
-        account_info=mt.account_info()
-        return account_info
+    def __init__(self):
+        self.ibrk = IBRK()
 
     def get_liquid_balance(self) -> float:
-        return self.get_account_details().balance
+        return self.ibrk.get_account()["liquidity"]
     
     def get_equity(self) -> float:
-        return self.get_account_details().equity
+        return self.ibrk.get_account()["accout_value"]
     
     def get_profit(self) -> float:
-        return self.get_account_details().profit
+        return self.ibrk.get_account()["unrealized_pnl"]
+
+if __name__ == "__main__":
+    obj = Account()
+    print(obj.get_liquid_balance())
+    print(obj.get_equity())
+    print(obj.get_profit())

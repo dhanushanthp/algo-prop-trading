@@ -59,14 +59,51 @@ class IBRK:
         mid_price = (bid_ask.bid + bid_ask.ask)/2
         return mid_price
 
+    def get_account(self):
+        account = self.ib.accountValues()
+        account_value = None
+        buying_power = None
+        cash_balance = None
+        liquidity = None
+        unrealizedPnL=  None
+        for i in account:
+            if i.tag == "AvailableFunds" and i.currency == "USD":
+                account_value = i.value
+
+            if i.tag == "BuyingPower" and i.currency == "USD":
+                buying_power = i.value
+            
+            if i.tag == "CashBalance" and i.currency == "BASE":
+                cash_balance = i.value
+            
+            if i.tag == "ExcessLiquidity" and i.currency == "USD":
+                liquidity = i.value
+            
+            if i.tag == "UnrealizedPnL" and i.currency == "USD":
+                unrealizedPnL = i.value
+
+        ouput_dict = {"account_value":account_value ,"buy_power": buying_power, "cash_balance":cash_balance, 
+                      "liquidity": liquidity, "unrealized_pnl": unrealizedPnL}
+        
+        return ouput_dict
+
+    def get_active_orders(self):
+        open_orders = self.ib.openOrders()
+        return open_orders
+    
+    def get_existing_positions(self):
+        existing_orders = self.ib.positions()
+        return existing_orders
+
 if __name__ == "__main__":
     obj = IBRK()
     # print(obj.get_candles("EURUSD", 60))
     # print(obj.get_previous_candle("EURUSD", 60))
     # print(obj.get_current_candle("EURUSD", 60))
     # print(obj.get_bid_ask("EURUSD"))
+    print(obj.get_account())
+    # print(obj.get_active_orders())
+    # print(obj.get_existing_positions())
 
-# eastern = pytz.timezone('US/Eastern')
-# df.index = df.index.tz_localize(pytz.utc).tz_convert(eastern)
         
 
