@@ -6,3 +6,4 @@ pip install slackclient
 pip install psutil
 pip install Flask
 pip install requests
+pip install ib-insync
