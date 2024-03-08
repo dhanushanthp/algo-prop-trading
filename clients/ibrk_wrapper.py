@@ -21,7 +21,7 @@ class IBRK:
             raise Exception(f"Timeframe {timeframe} is not defined!")
 
 
-    def get_candles(self, symbol, timeframe):
+    def get_candles(self, symbol, timeframe, days=1):
         """
         Get all previous candles per day
         """
@@ -29,13 +29,20 @@ class IBRK:
         bars = ib.reqHistoricalData(
                 contract, 
                 endDateTime='', 
-                durationStr='1 D',
+                durationStr=f'{days} D',
                 barSizeSetting=self.match_timeframe(timeframe), 
                 whatToShow='MIDPOINT', useRTH=False)
 
         df = pd.DataFrame(bars)
         df["date"] = df["date"] + timedelta(hours=2)
         return df
+
+    def get_candles_by_index(self, symbol, timeframe, prev_candle_count):
+        """
+        Get last n candles from the selected candles
+        """
+        candles = self.get_candles(symbol=symbol, timeframe=timeframe)
+        return candles.tail(prev_candle_count)
 
     def get_previous_candle(self, symbol, timeframe):
         """
@@ -100,10 +107,11 @@ if __name__ == "__main__":
     # print(obj.get_candles("EURUSD", 60))
     # print(obj.get_previous_candle("EURUSD", 60))
     # print(obj.get_current_candle("EURUSD", 60))
-    print(obj.get_bid_ask("EURUSD"))
+    # print(obj.get_bid_ask("EURUSD"))
     # print(obj.get_account())
     # print(obj.get_active_orders())
     # print(obj.get_existing_positions())
+    print(obj.get_candles_by_index("EURUSD", 60, 3)["high"].max())
 
         
 
