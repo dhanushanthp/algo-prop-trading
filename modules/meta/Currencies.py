@@ -138,9 +138,9 @@ def get_ordered_symbols(without_index=False):
         List[str]: A list of trading symbols in descending order of absolute price changes.
     """
     if without_index:
-        ticks = (currencies)
+        ticks = currencies
     else:
-        ticks = (currencies + indexes)
+        ticks = currencies + indexes
     
     symbol_change = []    
     for tick in ticks:

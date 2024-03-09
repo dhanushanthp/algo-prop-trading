@@ -18,7 +18,7 @@ from modules.meta.wrapper import Wrapper
 class SniperReloaded():
     def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
         # Default values
-        self.target_ratio = target_ratio  # Default 1:0.5 Ratio
+        self.target_ratio = target_ratio  # Default 1:2.0 Ratio
         self.stop_ratio = 1.0
         self.immidiate_exit = False
         self.timer = 30
@@ -65,7 +65,7 @@ class SniperReloaded():
 
     
     def main(self):
-        selected_symbols = curr.get_ordered_symbols()
+        selected_symbols = curr.get_ordered_symbols(without_index=True)
         
         while True:
             print(f"\n------- Status: {not self.immidiate_exit}, {self.trading_timeframe} TF {self.strategy.upper()}, Profit: {self.early_rr} RR -----------")
@@ -156,10 +156,9 @@ if __name__ == "__main__":
     account_risk = float(args.account_risk)
     each_position_risk = account_risk/2 # float(args.each_position_risk)
     target_ratio = float(args.target_ratio)
+
     win = SniperReloaded(trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
-
     win.early_rr = float(args.early_rr)
-
     win.strategy = args.strategy
 
     win.main()
