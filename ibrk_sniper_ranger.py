@@ -1,21 +1,20 @@
 import MetaTrader5 as mt
 mt.initialize()
 import time
-import sys
 import argparse
 
-import objects.util as util
-import objects.Currencies as curr
-from objects.RiskManager import RiskManager
+import modules.meta.util as util
+import modules.ibrk.Currencies as curr
+from modules.ibrk.RiskManager import RiskManager
 import modules.config as config
-from objects.slack_msg import Slack
-from objects.Targets import Targets
-from objects.Directions import Directions
-from objects.Prices import Prices
-from objects.Orders import Orders
-from objects.Account import Account
-from objects.Indicators import Indicators
-from objects.wrapper import Wrapper
+from modules.common.slack_msg import Slack
+from modules.meta.Targets import Targets
+from modules.common.Directions import Directions
+from modules.ibrk.Prices import Prices
+from modules.ibrk.Orders import Orders
+from modules.ibrk.Account import Account
+from modules.ibrk.Indicators import Indicators
+from modules.ibrk.wrapper import IBRK
 
 class SniperReloaded():
     def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
@@ -34,7 +33,7 @@ class SniperReloaded():
         self.alert = Slack()
         self.account = Account()
         self.indicators = Indicators()
-        self.wrapper = Wrapper()
+        self.wrapper = IBRK()
 
         self.strategy:str = None
 
