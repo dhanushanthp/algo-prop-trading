@@ -5,7 +5,7 @@ import objects.Currencies as curr
 import numpy as np
 import pytz
 from datetime import datetime, timedelta, time
-import modules_old.config as config
+import modules.config as config
 from collections import Counter
 
 # establish connection to MetaTrader 5 terminal

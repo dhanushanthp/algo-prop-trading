@@ -6,7 +6,7 @@ import pandas as pd
 from objects.RiskManager import RiskManager
 from objects. Prices import Prices
 from objects import util
-from modules_old import config
+from modules import config
 from objects.wrapper import Wrapper
 
 class Targets:

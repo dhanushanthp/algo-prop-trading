@@ -4,7 +4,7 @@ mt5.initialize()
 import objects.util as util
 from datetime import datetime,  timedelta
 import pytz
-from modules_old import config
+from modules import config
 import pandas as pd
 from objects.Signal import Signal
 from typing import Tuple, List, Dict

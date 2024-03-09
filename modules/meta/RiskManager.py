@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, time
-import modules_old.config as config
+import modules.config as config
 import MetaTrader5 as mt5
 import pytz
 import objects.slack_msg as slack_msg

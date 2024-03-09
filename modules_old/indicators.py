@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import objects.Currencies as curr
 import collections
-import modules_old.config as config
+import modules.config as config
 import objects.util as util
 
 # establish connection to MetaTrader 5 terminal

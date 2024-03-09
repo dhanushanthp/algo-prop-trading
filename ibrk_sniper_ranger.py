@@ -7,7 +7,7 @@ import argparse
 import objects.util as util
 import objects.Currencies as curr
 from objects.RiskManager import RiskManager
-import modules_old.config as config
+import modules.config as config
 from objects.slack_msg import Slack
 from objects.Targets import Targets
 from objects.Directions import Directions
