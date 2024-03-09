@@ -16,7 +16,6 @@ from objects.Orders import Orders
 from objects.Account import Account
 from objects.Indicators import Indicators
 from objects.wrapper import Wrapper
-from modules_old import indicators
 
 class SniperReloaded():
     def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):

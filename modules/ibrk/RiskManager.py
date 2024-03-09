@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta, time
 import modules.config as config
 import pytz
-import objects.slack_msg as slack_msg
-from ib_objects.Prices import Prices
+import modules.common.slack_msg as slack_msg
+from modules.ibrk.Prices import Prices
 from typing import Tuple
-import ib_objects.Currencies as curr
-from objects.Shield import Shield
-from ib_objects.Account import Account
-from ib_objects.Indicators import Indicators
+import modules.ibrk.Currencies as curr
+from modules.common.Shield import Shield
+from modules.ibrk.Account import Account
+from modules.ibrk.Indicators import Indicators
 from clients.ibrk_wrapper import IBRK
 
 class RiskManager:

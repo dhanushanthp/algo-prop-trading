@@ -1,4 +1,4 @@
-from ib_objects import Currencies as curr
+from modules.ibrk import Currencies as curr
 from typing import Tuple
 from clients.ibrk_wrapper import IBRK
 

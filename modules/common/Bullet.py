@@ -1,4 +1,4 @@
-from objects.Directions import Directions
+from modules.common.Directions import Directions
 
 class Bullet:
     def __init__(self, symbol:str, reference:str, break_level:float, entry_level:int, trade_direction:Directions, num_prev_breaks:int):

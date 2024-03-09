@@ -3,17 +3,17 @@ mt.initialize()
 import time
 import argparse
 
-import objects.util as util
-import objects.Currencies as curr
-from objects.RiskManager import RiskManager
-from objects.slack_msg import Slack
-from objects.Targets import Targets
-from objects.Directions import Directions
-from objects.Prices import Prices
-from objects.Orders import Orders
-from objects.Account import Account
-from objects.Indicators import Indicators
-from objects.wrapper import Wrapper
+import modules.meta.util as util
+import modules.meta.Currencies as curr
+from modules.meta.RiskManager import RiskManager
+from modules.common.slack_msg import Slack
+from modules.meta.Targets import Targets
+from modules.common.Directions import Directions
+from modules.meta.Prices import Prices
+from modules.meta.Orders import Orders
+from modules.meta.Account import Account
+from modules.meta.Indicators import Indicators
+from modules.meta.wrapper import Wrapper
 
 class SniperReloaded():
     def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):

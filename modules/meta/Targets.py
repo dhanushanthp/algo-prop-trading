@@ -1,13 +1,13 @@
-from objects.Bullet import Bullet
-from objects.Directions import Directions
+from modules.common.Bullet import Bullet
+from modules.common.Directions import Directions
 from tabulate import tabulate
 from typing import Dict
 import pandas as pd
-from objects.RiskManager import RiskManager
-from objects. Prices import Prices
-from objects import util
+from modules.meta.RiskManager import RiskManager
+from modules.meta.Prices import Prices
+from modules.meta import util
 from modules import config
-from objects.wrapper import Wrapper
+from modules.meta.wrapper import Wrapper
 
 class Targets:
     def __init__(self, risk_manager:RiskManager, timeframe:int):

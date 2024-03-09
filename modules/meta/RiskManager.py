@@ -2,14 +2,14 @@ from datetime import datetime, timedelta, time
 import modules.config as config
 import MetaTrader5 as mt5
 import pytz
-import objects.slack_msg as slack_msg
-import objects.util as util
-from objects.Prices import Prices
+import modules.common.slack_msg as slack_msg
+import modules.meta.util as util
+from modules.meta.Prices import Prices
 from typing import Tuple
-import objects.Currencies as curr
-from objects.Shield import Shield
-from objects.Account import Account
-from objects.Indicators import Indicators
+import modules.meta.Currencies as curr
+from modules.common.Shield import Shield
+from modules.meta.Account import Account
+from modules.meta.Indicators import Indicators
 
 mt5.initialize()
 

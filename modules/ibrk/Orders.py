@@ -1,6 +1,6 @@
-from ib_objects.RiskManager import RiskManager
-from objects.Directions import Directions
-from ib_objects.Prices import Prices
+from modules.ibrk.RiskManager import RiskManager
+from modules.common.Directions import Directions
+from modules.ibrk.Prices import Prices
 from clients.ibrk_wrapper import IBRK
 import ib_insync as ibi
 

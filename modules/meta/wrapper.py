@@ -1,5 +1,5 @@
 import MetaTrader5 as mt5
-from objects import util
+from modules.meta import util
 import pandas as pd
 import pytz
 from datetime import datetime, timedelta, time

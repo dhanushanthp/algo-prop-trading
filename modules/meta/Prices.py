@@ -1,5 +1,5 @@
 import MetaTrader5 as mt5
-import objects.Currencies as curr
+import modules.meta.Currencies as curr
 from typing import Tuple
 mt5.initialize()
 

@@ -1,9 +1,9 @@
 import MetaTrader5 as mt5
 mt5.initialize()
-from objects.RiskManager import RiskManager
-from objects.Directions import Directions
-import objects.util as util
-from objects.Prices import Prices
+from modules.meta.RiskManager import RiskManager
+from modules.common.Directions import Directions
+import modules.meta.util as util
+from modules.meta.Prices import Prices
 
 class Orders:
     def __init__(self, prices:Prices, risk_manager:RiskManager) -> None:

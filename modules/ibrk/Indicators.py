@@ -1,5 +1,5 @@
 import numpy as np
-from objects.Signal import Signal
+from modules.common.Signal import Signal
 from typing import Tuple, List, Dict
 from clients.ibrk_wrapper import IBRK
 

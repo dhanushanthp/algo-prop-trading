@@ -1,5 +1,5 @@
 import MetaTrader5 as mt5
-import modules_old.indicators as ind
+import archived.indicators as ind
 import objects.util as util
 import objects.Currencies as curr
 import numpy as np

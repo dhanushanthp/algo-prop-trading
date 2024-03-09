@@ -1,16 +1,16 @@
 import numpy as np
 import MetaTrader5 as mt5
 mt5.initialize()
-import objects.util as util
+import modules.meta.util as util
 from datetime import datetime,  timedelta
 import pytz
 from modules import config
 import pandas as pd
-from objects.Signal import Signal
+from modules.common.Signal import Signal
 from typing import Tuple, List, Dict
-from objects import logme
-from objects.wrapper import Wrapper
-from objects.Directions import Directions
+from modules.common import logme
+from modules.meta.wrapper import Wrapper
+from modules.common.Directions import Directions
 
 class Indicators:
     def __init__(self) -> None:
