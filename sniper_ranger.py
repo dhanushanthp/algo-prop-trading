@@ -7,7 +7,7 @@ import argparse
 import objects.util as util
 import objects.Currencies as curr
 from objects.RiskManager import RiskManager
-import modules.config as config
+import modules_old.config as config
 from objects.slack_msg import Slack
 from objects.Targets import Targets
 from objects.Directions import Directions
@@ -16,7 +16,7 @@ from objects.Orders import Orders
 from objects.Account import Account
 from objects.Indicators import Indicators
 from objects.wrapper import Wrapper
-from modules import indicators
+from modules_old import indicators
 
 class SniperReloaded():
     def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):

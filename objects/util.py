@@ -4,7 +4,7 @@ import pytz
 import MetaTrader5 as mt5
 mt5.initialize()
 import objects.Currencies as curr
-import modules.config as config
+import modules_old.config as config
 from typing import Tuple
 
 

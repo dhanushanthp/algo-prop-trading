@@ -3,7 +3,7 @@ from objects import util
 import pandas as pd
 import pytz
 from datetime import datetime, timedelta, time
-from modules import config
+from modules_old import config
 mt5.initialize()
 
 class Wrapper:

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, time
-import modules.config as config
+import modules_old.config as config
 import pytz
 import objects.slack_msg as slack_msg
 from ib_objects.Prices import Prices
