@@ -8,7 +8,7 @@ import modules.ibrk.Currencies as curr
 from modules.common.Shield import Shield
 from modules.ibrk.Account import Account
 from modules.ibrk.Indicators import Indicators
-from clients.ibrk_wrapper import IBRK
+from modules.ibrk.wrapper import IBRK
 
 class RiskManager:
     def __init__(self, ibrk:IBRK, stop_ratio=1, target_ratio=3, account_risk:float=1, position_risk:float=0.1) -> None:

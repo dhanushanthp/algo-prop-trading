@@ -1,7 +1,7 @@
 import numpy as np
 from modules.common.Signal import Signal
 from typing import Tuple, List, Dict
-from clients.ibrk_wrapper import IBRK
+from modules.ibrk.wrapper import IBRK
 
 class Indicators:
     def __init__(self, ibrk):

@@ -1,7 +1,7 @@
 from modules.ibrk.RiskManager import RiskManager
 from modules.common.Directions import Directions
 from modules.ibrk.Prices import Prices
-from clients.ibrk_wrapper import IBRK
+from modules.ibrk.wrapper import IBRK
 import ib_insync as ibi
 
 class Orders:
