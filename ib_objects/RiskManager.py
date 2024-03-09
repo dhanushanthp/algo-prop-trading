@@ -11,7 +11,7 @@ from ib_objects.Indicators import Indicators
 from clients.ibrk_wrapper import IBRK
 
 class RiskManager:
-    def __init__(self, ibrk, stop_ratio=1, target_ratio=3, account_risk:float=1, position_risk:float=0.1) -> None:
+    def __init__(self, ibrk:IBRK, stop_ratio=1, target_ratio=3, account_risk:float=1, position_risk:float=0.1) -> None:
         self.ibrk:IBRK = ibrk
         self.account = Account(self.ibrk)
         ACCOUNT_SIZE = self.account.get_liquid_balance()
@@ -144,12 +144,16 @@ class RiskManager:
         dollor_value = self.prices.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price)
         lots = self.risk_of_a_position/(points_in_stop * dollor_value)
+        """
+        1 lot is 100,000 Base currency (Below EUR is a base currency)
+        e.g If 0.5lot EURUSD = EUR 50,000
+        """
         
-        if symbol in curr.currencies:
-            points_in_stop = round(points_in_stop, 5)
-            lots = lots/10**5
+        points_in_stop = round(points_in_stop, 5)
+        # lots = lots/10**5
         
-        lots = round(lots, 2)
+        lots = int(lots)
+        lots = round(lots, 5)
 
         return points_in_stop, lots
 
@@ -196,7 +200,8 @@ class RiskManager:
         return True
 
 if __name__ == "__main__":
-    obj = RiskManager(stop_ratio=1, target_ratio=3)
+    ibrk = IBRK()
+    obj = RiskManager(ibrk=ibrk, stop_ratio=1, target_ratio=3)
     import sys
     test_symbol = sys.argv[1]
 
@@ -204,9 +209,11 @@ if __name__ == "__main__":
     stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
     print(stp_range)
 
+    entry_price = obj.prices.get_entry_price(test_symbol)
+
     # # Test: Target Ranges 
-    # tgt_range = obj.get_stop_range(symbol=test_symbol, timeframe=60, multiplier=3)
-    # print(tgt_range)
+    lots = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.long_range)
+    print(lots)
 
     # # Test: Lot Size
     # entry_price = obj.prices.get_entry_price(symbol=test_symbol)

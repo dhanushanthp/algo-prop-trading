@@ -36,6 +36,21 @@ class IBRK:
         df = pd.DataFrame(bars)
         df["date"] = df["date"] + timedelta(hours=2)
         return df
+    
+    def get_last_close_price(self, symbol):
+        """
+        Get all previous candles per day
+        """
+        contract = ibi.Forex(symbol)
+        bars = ib.reqHistoricalData(
+                contract, 
+                endDateTime='', 
+                durationStr=f'30 S',
+                barSizeSetting="5 secs", 
+                whatToShow='MIDPOINT', useRTH=False)
+
+        bars = bars[-1]
+        return bars.close
 
     def get_candles_by_index(self, symbol, timeframe, prev_candle_count):
         """
@@ -64,6 +79,10 @@ class IBRK:
         """
         contract = ibi.Forex(symbol)
         bid_ask = self.ib.reqTickers(contract)[0]
+
+        if bid_ask.bid < 0 or bid_ask.ask < 0:
+            close_price = self.get_last_close_price(symbol=symbol)
+            return close_price, close_price
         return bid_ask.bid, bid_ask.ask
 
     def get_account(self):
@@ -104,10 +123,11 @@ class IBRK:
 
 if __name__ == "__main__":
     obj = IBRK()
-    print(obj.get_candles("EURUSD", 60))
+    print(obj.get_last_close_price("EURUSD"))
+    print(obj.get_bid_ask("EURUSD"))
+    # print(obj.get_candles("EURUSD", 60))
     # print(obj.get_previous_candle("EURUSD", 60))
     # print(obj.get_current_candle("EURUSD", 60))
-    # print(obj.get_bid_ask("EURUSD"))
     # print(obj.get_account())
     # print(obj.get_active_orders())
     # print(obj.get_existing_positions())
