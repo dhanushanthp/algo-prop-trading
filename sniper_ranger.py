@@ -46,7 +46,7 @@ class SniperReloaded():
         self.trading_timeframe = trading_timeframe
 
         # Take the profit as specific RR ratio
-        self.early_rr=self.risk_manager.account_risk_percentage # Default
+        self.early_rr=1 # Default 1:1 Ratio
 
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
         """

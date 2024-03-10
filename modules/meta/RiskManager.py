@@ -49,7 +49,7 @@ class RiskManager:
         equity = self.account.get_equity()
 
         # Calculate trail loss, where equity will increase based on positive returns
-        trail_loss = equity - self.risk_of_an_account
+        # trail_loss = equity - self.risk_of_an_account
 
         # Update account trail loss with the maximum value between current trail loss and previous maximum
         # self.account_trail_loss = max(trail_loss, self.account_trail_loss)
