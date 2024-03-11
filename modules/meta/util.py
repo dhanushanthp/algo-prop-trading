@@ -71,9 +71,11 @@ def get_us_time()-> datetime:
     current_time =  datetime.now(pytz.timezone("US/Eastern"))
     return current_time
 
-def get_us_hour() -> int:
+def get_us_hour_min() -> Tuple[int, int]:
     current_time = get_us_time()
-    return int(current_time.strftime("%H"))
+    hour = int(current_time.strftime("%H"))
+    minute = int(current_time.strftime("%M"))
+    return hour, minute
 
 def get_current_time() -> datetime:
     current_time =  datetime.now(pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
@@ -175,4 +177,4 @@ if __name__ == "__main__":
     # print(get_market_status())
     # print(get_today_profit())
     # print(get_nth_bar(symbol, timeframe))
-    print(get_us_hour())
+    print(get_us_hour_min())
