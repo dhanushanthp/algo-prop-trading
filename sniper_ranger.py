@@ -81,9 +81,10 @@ class SniperReloaded():
             # Each position trail stop
             self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
 
-            # Early Profit or Exit when account reach max loss
+            # Early Profit or Exit when account reach max loss, Close when US market time 8AM to avoid the spike stop at 8:30 AM
             if not self.immidiate_exit:
-                if (rr > self.early_rr) or self.risk_manager.has_daily_maximum_risk_reached():
+                us_hour, us_min = util.get_us_hour_min()
+                if (rr > self.early_rr) or self.risk_manager.has_daily_maximum_risk_reached() or ((us_hour >= 8 and us_hour < 9) or (us_hour == 9 and us_min < 30)):
                     self.immidiate_exit = True
                     self.orders.cancel_all_pending_orders()
                     self.orders.close_all_positions()
