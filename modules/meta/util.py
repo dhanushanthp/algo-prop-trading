@@ -128,7 +128,7 @@ def get_nth_bar(symbol:str, timeframe:int) -> int:
     """
     Count the bars in a days
     """
-    current_gmt_time = get_current_time() + timedelta(hours=2)
+    current_gmt_time = get_current_time() + timedelta(hours=config.server_timezone)
 
     # Generate off market hours high and lows
     start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
