@@ -37,7 +37,7 @@ def match_timeframe(timeframe):
     elif timeframe == 1440:
         selected_time = mt5.TIMEFRAME_D1
     else:
-        raise Exception("TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED")
+        raise Exception(f"TIMEFRAME FOR PREVIOUS CANDLE NOT DEFINED: {timeframe}")
     return selected_time
 
 def get_local_time(city) -> Tuple[int, int, int]:

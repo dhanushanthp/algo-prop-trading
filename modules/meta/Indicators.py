@@ -146,6 +146,17 @@ class Indicators:
             return off_hour_highs, off_hour_lows
 
         return None, None
+    
+    def get_time_based_levels(self, symbol, timeframe, candle_start_hour, candle_end_hour) -> Tuple[Signal, Signal]:
+        previous_bars = self.wrapper.get_candles_by_time(symbol=symbol,
+                                                         timeframe=timeframe,
+                                                         candle_start_hour=candle_start_hour,
+                                                         candle_end_hour=candle_end_hour)
+                                                         
+        if not previous_bars.empty:
+            pre_market_high = Signal(reference="HOD", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax())
+            pre_market_low = Signal(reference="LOD", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin())
+            return pre_market_high, pre_market_low
 
 
     def get_king_of_levels(self, symbol, timeframe) -> Dict[str, List[Signal]]:
@@ -167,7 +178,8 @@ if __name__ == "__main__":
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
     # print("ATR" ,indi_obj.get_atr(symbol, 60))
-    print(indi_obj.get_current_day_levels(symbol, timeframe))
+    # print(indi_obj.get_current_day_levels(symbol, timeframe))
+    print(indi_obj.get_time_based_levels(symbol=symbol, timeframe=timeframe, candle_start_hour=0, candle_end_hour=9))
     # print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
     # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
