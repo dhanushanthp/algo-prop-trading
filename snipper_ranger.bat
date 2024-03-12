@@ -9,4 +9,4 @@ python sniper_ranger.py ^
     --account_risk %account_risk% ^
     --each_position_risk 0.5 ^
     --target_ratio %target_ratio% ^
-    --early_rr 1.1
+    --early_rr 1.5
