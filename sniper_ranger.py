@@ -85,9 +85,13 @@ class SniperReloaded():
             if not self.immidiate_exit:
                 
                 if self.risk_manager.reduce_risk_exposure():
-                    # Reduce the risk If it's after 5AM Trade
-                    self.risk_manager = RiskManager(account_risk=1.0, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
-                    self.fixed_initial_account_size = self.risk_manager.account_size
+                    # Reduce the risk If it's after 5AM Trade, Don't trade
+                    # self.strategy = "reverse"
+                    # self.risk_manager = RiskManager(account_risk=1.0, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
+                    # self.fixed_initial_account_size = self.risk_manager.account_size
+                    self.orders.close_all_positions()
+                    self.orders.cancel_all_pending_orders()
+                    self.immidiate_exit = True
 
                 us_hour, us_min = util.get_us_hour_min()
                 # In addtion to exit plans, Exit any trade between 8AM and 930AM US time to avoid the high volatile moves
