@@ -37,7 +37,7 @@ class RiskManager:
     def get_max_loss(self):
         return self.account_trail_loss
     
-    def pause_till_next_day(self) -> bool:
+    def reduce_risk_exposure(self) -> bool:
         """
         Atleast 1 trade would have taken on or before 5 AM Server Time
         """
@@ -245,4 +245,4 @@ if __name__ == "__main__":
     check_time = obj.check_trade_wait_time(symbol=test_symbol)
     print(check_time)
 
-    print(obj.pause_till_next_day())
+    print(obj.reduce_risk_exposure())
