@@ -14,6 +14,13 @@ from modules.meta.Orders import Orders
 from modules.meta.Account import Account
 from modules.meta.Indicators import Indicators
 from modules.meta.wrapper import Wrapper
+from modules import config
+
+"""
+IP Address
+Production: 172_16_27_130
+Test: 172_16_27_128
+"""
 
 class SniperReloaded():
     def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
@@ -84,14 +91,19 @@ class SniperReloaded():
             # Early Profit or Exit when account reach max loss, Close when US market time 8AM to avoid the spike stop at 8:30 AM
             if not self.immidiate_exit:
                 
+                # If there is no trade before 5AM Servier time
                 if self.risk_manager.reduce_risk_exposure():
-                    # Reduce the risk If it's after 5AM Trade, Don't trade
-                    # self.strategy = "reverse"
-                    # self.risk_manager = RiskManager(account_risk=1.0, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
-                    # self.fixed_initial_account_size = self.risk_manager.account_size
-                    self.orders.close_all_positions()
-                    self.orders.cancel_all_pending_orders()
-                    self.immidiate_exit = True
+                    # Production
+                    if config.local_ip == "172_16_27_130":
+                        self.orders.close_all_positions()
+                        self.orders.cancel_all_pending_orders()
+                        self.immidiate_exit = True
+                    
+                    # Test
+                    if config.local_ip == "172_16_27_128":
+                        self.strategy = "reverse"
+                        self.risk_manager = RiskManager(account_risk=1.0, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
+                        self.fixed_initial_account_size = self.risk_manager.account_size
 
                 us_hour, us_min = util.get_us_hour_min()
                 # In addtion to exit plans, Exit any trade between 8AM and 930AM US time to avoid the high volatile moves
