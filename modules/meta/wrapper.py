@@ -95,6 +95,9 @@ class Wrapper:
     
 
     def get_todays_trades(self, us_market_seperator=False) -> pd.DataFrame:
+        """
+        This include entry and exit position of a trade
+        """
 
         current_gmt_time = util.get_current_time() + timedelta(hours=config.server_timezone)
 

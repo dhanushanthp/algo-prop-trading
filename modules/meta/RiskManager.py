@@ -37,6 +37,22 @@ class RiskManager:
     def get_max_loss(self):
         return self.account_trail_loss
     
+    def pause_till_next_day(self) -> bool:
+        """
+        Atleast 1 trade would have taken on or before 5 AM Server Time
+        """
+        # check the current hour
+        _, hour, min = util.get_current_day_hour_min()
+        if hour >= 5 and min >= 45:
+            # Check existing positions
+            todays_closed_trades = self.indicators.wrapper.get_todays_trades()
+            if todays_closed_trades.empty:
+                return True
+
+            return False
+        
+        return False
+    
     def has_daily_maximum_risk_reached(self):
         """
         Check if the daily maximum risk has been reached based on the account's equity and trail loss.
@@ -228,3 +244,5 @@ if __name__ == "__main__":
 
     check_time = obj.check_trade_wait_time(symbol=test_symbol)
     print(check_time)
+
+    print(obj.pause_till_next_day())
