@@ -48,6 +48,24 @@ class Wrapper:
         candles = mt5.copy_rates_range(symbol, util.match_timeframe(timeframe), candle_start_time, candle_end_time)
         
         return pd.DataFrame(candles)
+    
+    def get_previous_day_candles_by_time(self, symbol:str, timeframe:int):
+        """
+        Defaulted to GBPUSD hours from 0 to 9
+        - candle_index_start (int): Start time includes the bar
+        - candle_index_end (int): End time includes the bar
+        """
+        current_gmt_time = util.get_current_time() + timedelta(hours=config.server_timezone) - timedelta(days=1)
+
+        candle_start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+                                        hour=1, minute=0, tzinfo=pytz.timezone('Etc/GMT'))
+        
+        candle_end_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+                                        hour=23, minute=59, tzinfo=pytz.timezone('Etc/GMT'))
+        
+        candles = mt5.copy_rates_range(symbol, util.match_timeframe(timeframe), candle_start_time, candle_end_time)
+        
+        return pd.DataFrame(candles)
 
 
     def get_spread(self, symbol) -> float:
@@ -132,4 +150,5 @@ if "__main__" == __name__:
     # print(obj.get_todays_trades())
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
-    print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
+    # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
+    print(obj.get_previous_day_candles_by_time(symbol=symbol, timeframe=timeframe))
