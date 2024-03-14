@@ -115,7 +115,14 @@ class Indicators:
         highs = []
         lows = []
         ofh, ofl = self.get_current_day_levels(symbol=symbol, timeframe=timeframe)
+        pdh, pdl = self.get_previous_day_levels(symbol=symbol, timeframe=timeframe)
         
+        if pdh:
+            highs.append(pdh)
+        
+        if pdl:
+            lows.append(pdl)
+
         if ofh:                
             highs.append(ofh)
         
@@ -130,8 +137,8 @@ if __name__ == "__main__":
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
     # print("ATR" ,indi_obj.get_atr(symbol, 60))
-    print(indi_obj.get_previous_day_levels(symbol, timeframe))
+    # print(indi_obj.get_previous_day_levels(symbol, timeframe))
     # print(indi_obj.get_time_based_levels(symbol=symbol, timeframe=timeframe, candle_start_hour=0, candle_end_hour=9))
     # print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
-    # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
+    print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
