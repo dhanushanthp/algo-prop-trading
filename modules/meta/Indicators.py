@@ -115,13 +115,13 @@ class Indicators:
         highs = []
         lows = []
         ofh, ofl = self.get_current_day_levels(symbol=symbol, timeframe=timeframe)
-        pdh, pdl = self.get_previous_day_levels(symbol=symbol, timeframe=timeframe)
+        # pdh, pdl = self.get_previous_day_levels(symbol=symbol, timeframe=timeframe)
         
-        if pdh:
-            highs.append(pdh)
+        # if pdh:
+        #     highs.append(pdh)
         
-        if pdl:
-            lows.append(pdl)
+        # if pdl:
+        #     lows.append(pdl)
 
         if ofh:                
             highs.append(ofh)
