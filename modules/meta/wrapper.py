@@ -55,7 +55,12 @@ class Wrapper:
         - candle_index_start (int): Start time includes the bar
         - candle_index_end (int): End time includes the bar
         """
-        current_gmt_time = util.get_current_time() + timedelta(hours=config.server_timezone) - timedelta(days=1)
+
+        current_gmt_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+        # Handle monday, previous trading day would be Friday
+        # TODO Load the symbol last trading data and match to that date
+        dynamic_day_delta = 1 if current_gmt_time.weekday() > 0 else 3
+        current_gmt_time = current_gmt_time - timedelta(days=dynamic_day_delta)
 
         candle_start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
                                         hour=1, minute=0, tzinfo=pytz.timezone('Etc/GMT'))
