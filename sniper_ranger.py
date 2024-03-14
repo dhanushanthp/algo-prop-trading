@@ -55,6 +55,12 @@ class SniperReloaded():
         # Take the profit as specific RR ratio
         self.early_rr=1 # Default 1:1 Ratio
 
+        # Only for testing, Majour Pairs
+        if config.local_ip == "172_16_27_128":
+            self.selected_symbols = ["GBPUSD", "EURUSD", "USDJPY"]
+        else:
+            self.selected_symbols = curr.get_ordered_symbols(without_index=True)
+
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
         """
         This will take the trade based on given strategy
@@ -72,8 +78,6 @@ class SniperReloaded():
 
     
     def main(self):
-        selected_symbols = curr.get_ordered_symbols(without_index=True)
-        
         while True:
             print(f"\n------- Status: {not self.immidiate_exit}, {self.trading_timeframe} TF {self.strategy.upper()}, Profit: {self.early_rr} RR -----------")
             is_market_open, is_market_close = util.get_market_status()
@@ -95,13 +99,6 @@ class SniperReloaded():
                 if self.risk_manager.reduce_risk_exposure():
                     # Production
                     if config.local_ip == "172_16_27_130":
-                        self.orders.close_all_positions()
-                        self.orders.cancel_all_pending_orders()
-                        self.immidiate_exit = True
-                    
-                    # Test
-                    if config.local_ip == "172_16_27_128":
-                        self.strategy = "reverse"
                         self.risk_manager = RiskManager(account_risk=1.0, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
                         self.fixed_initial_account_size = self.risk_manager.account_size
 
@@ -125,7 +122,7 @@ class SniperReloaded():
                 self.orders.cancel_all_pending_orders()
                 existing_positions = self.wrapper.get_existing_symbols()
 
-                for symbol in selected_symbols:
+                for symbol in self.selected_symbols:
                     # If the positions is already in trade, then don't check for signal
                     if symbol in existing_positions:
                         continue
