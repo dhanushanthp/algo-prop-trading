@@ -56,10 +56,10 @@ class SniperReloaded():
         self.early_rr=1 # Default 1:1 Ratio
 
         # Only for testing, Majour Pairs
-        if config.local_ip == "172_16_27_128":
-            self.selected_symbols = ["GBPUSD", "EURUSD", "USDJPY"]
-        else:
-            self.selected_symbols = curr.get_ordered_symbols(without_index=True)
+        # if config.local_ip == "172_16_27_128":
+        #     self.selected_symbols = ["GBPUSD", "EURUSD", "USDJPY"]
+        # else:
+        self.selected_symbols = curr.get_ordered_symbols(without_index=True)
 
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
         """
@@ -95,13 +95,6 @@ class SniperReloaded():
             # Early Profit or Exit when account reach max loss, Close when US market time 8AM to avoid the spike stop at 8:30 AM
             if not self.immidiate_exit:
                 
-                # If there is no trade before 5AM Servier time
-                if self.risk_manager.reduce_risk_exposure():
-                    # Production
-                    if config.local_ip == "172_16_27_130":
-                        self.risk_manager = RiskManager(account_risk=1.0, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
-                        self.fixed_initial_account_size = self.risk_manager.account_size
-
                 us_hour, us_min = util.get_us_hour_min()
                 # In addtion to exit plans, Exit any trade between 8AM and 930AM US time to avoid the high volatile moves
                 if (rr > self.early_rr) or self.risk_manager.has_daily_maximum_risk_reached() or ((us_hour >= 8 and us_hour < 9) or (us_hour == 9 and us_min < 30)):

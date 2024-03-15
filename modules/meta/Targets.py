@@ -43,7 +43,7 @@ class Targets:
         current_break_bar_index = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 3
         candle_gap = current_break_bar_index - past_break_index
         
-        dynamic_gap = 3 if timeframe==15 else 2
+        dynamic_gap = 3 if timeframe in [5, 15] else 2
 
         if candle_gap > dynamic_gap:
             # Check does this already has trades on same direction, Load Passed Data

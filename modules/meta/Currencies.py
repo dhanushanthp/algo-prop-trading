@@ -15,7 +15,7 @@ master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
                     'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
                     'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
                     'NZDJPY', "NZDCAD", "NZDUSD",
-                    'USDCAD', 'USDJPY', 'USDCHF', "USDHKD",
+                    'USDCAD', 'USDJPY', 'USDCHF',
                     'XAUUSD']
 
 master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
