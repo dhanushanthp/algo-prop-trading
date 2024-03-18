@@ -88,11 +88,11 @@ class Indicators:
     
     def get_current_day_levels(self, symbol, timeframe) -> Tuple[Signal, Signal]:
         n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
-
-        previous_bars = pd.DataFrame(self.wrapper.get_candles_by_index(symbol=symbol, 
-                                                                       timeframe=timeframe, 
-                                                                       candle_index_start=2, 
-                                                                       candle_index_end=n_bars-3))
+        start_reference_bar = 2
+        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol,
+                                                          timeframe=timeframe, 
+                                                          candle_index_start=start_reference_bar, 
+                                                          candle_index_end=n_bars-(start_reference_bar + 1))
 
         if not previous_bars.empty:
             off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax())
@@ -113,7 +113,7 @@ class Indicators:
             return pre_market_high, pre_market_low
 
 
-    def find_pivots(self, symbol, timeframe):
+    def get_pivot_levels(self, symbol:str, timeframe:int) -> Tuple[Signal, Signal]:
         """
         Identifies potential support and resistance levels based on recent price behavior.
 
@@ -141,56 +141,77 @@ class Indicators:
         Note: The function relies on a helper function, `match_timeframe`, and assumes the existence of
         another helper function, `is_number_between`.
 
-        :param symbol: Trading symbol for the financial instrument.
-        :param timeframe: Timeframe for recent price data.
-        :return: A dictionary with 'support' and 'resistance' levels.
+        :param symbol: Trading symbol for the financial instrument
+        :param timeframe: Timeframe for recent price data
+        :return: A dictionary with 'support' and 'resistance' levels
         """
-        
+        n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
+        start_reference_bar = 1
+
         # If does the mid values intersect with previous 5 bars
         # get past 5 candles and start from prevous second candle
-        past_candles = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_index_start=2, candle_index_end=30, return_type="list")
-        past_candles.reverse()
+        past_candles = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_index_start=start_reference_bar, candle_index_end=n_bars-(start_reference_bar + 1))
+        spread = self.prices.get_spread(symbol=symbol)
 
-        resistance_levels = {}
-        suport_levels = {}
+        # Define a function to compare three rows
+        def compare_three_rows(window, column) -> bool:
+            # Extract values of each row in the window
+            start_candle = window.iloc[0]
+            middle_candle = window.iloc[1]
+            end_candle = window.iloc[2]
 
-        for i in range(len(past_candles) - 2):
-            end_candle = past_candles[i]
-            middle_candle = past_candles[i+1]
-            start_candle = past_candles[i+2]
-            spread = 3 * self.prices.get_spread(symbol=symbol)
-
-            if ((middle_candle['high'] - end_candle["high"]) > spread) and ((middle_candle['high'] - start_candle["high"]) > spread):
-                resistance_levels[i] =  middle_candle["high"]
+            if column == "high" and  ((middle_candle - end_candle) > spread) and ((middle_candle - start_candle) > spread):
+                return True
             
-            if ((end_candle["low"] - middle_candle['low']) > spread) and ((start_candle["low"] - middle_candle['low']) > spread):
-                suport_levels[i] = middle_candle["low"]
-
-
-        # Filter resistance levels, The levels should not intersect with any previous candle
-        breaked_resistances = []
-        breaked_supprots = []
-
-        for res in resistance_levels.keys():
-            res_level = resistance_levels[res]
-            upcoming_candles = past_candles[:res]
-            for candle in upcoming_candles:
-                if self.is_number_between(res_level, candle["low"], candle["high"]):
-                    breaked_resistances.append(res_level)
-                    break
-
-        for supp in suport_levels.keys():
-            supp_level = suport_levels[supp]
-            upcoming_candles = past_candles[:supp]
-            for candle in upcoming_candles:
-                if self.is_number_between(supp_level, candle["low"], candle["high"]):
-                    breaked_supprots.append(supp_level)
-                    break
+            if column == "low" and ((end_candle - middle_candle) > spread) and ((start_candle - middle_candle) > spread):
+                return True
+            
+            return False
         
-        clean_resistance = [i for i in resistance_levels.values() if i not in breaked_resistances]
-        clean_support = [i for i in suport_levels.values() if i not in breaked_supprots]
+        past_candles['is_resistance'] = past_candles['high'].rolling(window=3).apply(lambda x: compare_three_rows(x, "high"), raw=False)
+        past_candles['is_support'] = past_candles['low'].rolling(window=3).apply(lambda x: compare_three_rows(x, "low"), raw=False)
+        past_candles = past_candles.reset_index()
+        past_candles["is_resistance"] = past_candles["is_resistance"].shift(-1)
+        past_candles["is_support"] = past_candles["is_support"].shift(-1)
 
-        return {"support": clean_support, "resistance": clean_resistance}
+        pivot_high = None
+        pivot_low = None
+
+        resistance_levels = past_candles[past_candles["is_resistance"] == 1][["index", "high"]]
+        resistance_levels = dict(zip(resistance_levels['index'], resistance_levels['high']))
+
+        support_levels = past_candles[past_candles["is_support"] == 1][["index", "low"]]
+        support_levels = dict(zip(support_levels['index'], support_levels['low']))
+
+        # Based on the loop, The most recent near to the current time will overwrite all the previous pivot levels
+        for index, level in resistance_levels.items():
+            upcoming_levels = past_candles["high"].tolist()[index+1:]
+            validator = []
+            for i in upcoming_levels:
+                if level > i:
+                    validator.append(True)
+                else:
+                    validator.append(False)
+            
+            # All the candles which comes after a pivot should have higher highs compared to pivot
+            if all(validator) and len(validator) > 0:
+                pivot_high = Signal(reference="PVH", level=level, break_bar_index=index)
+
+        # Based on the loop, The most recent near to the current time will overwrite all the previous pivot levels
+        for index, level in support_levels.items():
+            upcoming_levels = past_candles["low"].tolist()[index+1:]
+            validator = []
+            for i in upcoming_levels:
+                if level < i:
+                    validator.append(True)
+                else:
+                    validator.append(False)
+            
+            # All the candles which comes after a pivot should have lower lows compared to pivot
+            if all(validator) and len(validator) > 0:
+                pivot_low = Signal(reference="PVL", level=level, break_bar_index=index)
+        
+        return pivot_high, pivot_low
         
     def is_number_between(self, number, lower_limit, upper_limit):
         if lower_limit > upper_limit:
@@ -201,22 +222,24 @@ class Indicators:
     def get_king_of_levels(self, symbol, timeframe) -> Dict[str, List[Signal]]:
         highs = []
         lows = []
-        ofh, ofl = self.get_current_day_levels(symbol=symbol, timeframe=timeframe)
+        hod, lod = self.get_current_day_levels(symbol=symbol, timeframe=timeframe)
 
-
-        #     pdh, pdl = self.get_previous_day_levels(symbol=symbol, timeframe=timeframe)
-            
-        #     if pdh:
-        #         highs.append(pdh)
-            
-        #     if pdl:
-        #         lows.append(pdl)
-
-        if ofh:                
-            highs.append(ofh)
+        if hod:                
+            highs.append(hod)
         
-        if ofl:
-            lows.append(ofl)
+        if lod:
+            lows.append(lod)
+        
+        if config.local_ip == "172_16_27_128":
+            pvh, pvl = self.get_pivot_levels(symbol=symbol, timeframe=timeframe)
+            
+            # Only add when pivot level is lower than the high of the day, If pivot is higher then it would be covered by HOD
+            if pvh and (pvh.level < hod.level):
+                highs.append(pvh)
+            
+            # Only add when pivot level is high than the low of the day, If pivot is lower then it would be covered by LOD
+            if pvl and (pvl.level > lod.level):
+                lows.append(pvl)
 
         return {"resistance": highs, "support": lows}
 
@@ -231,3 +254,4 @@ if __name__ == "__main__":
     # print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
     print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
+    # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
