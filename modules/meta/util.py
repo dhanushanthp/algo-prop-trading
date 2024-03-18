@@ -143,6 +143,15 @@ def get_nth_bar(symbol:str, timeframe:int) -> int:
     
     return 0
 
+def is_us_premarket_peroid() -> bool:
+    """
+    Check is this US premarket hour
+    Exit any trade or no new trades between 8AM and 930AM US time to avoid the high volatile moves
+    """
+    us_hour, us_min = get_us_hour_min()
+    condition = ((us_hour >= 8 and us_hour < 9) or (us_hour == 9 and us_min < 30))
+    return condition 
+
 def get_market_status() -> Tuple[bool, bool]:
     market_open = False
     market_about_to_close= False
@@ -156,7 +165,7 @@ def get_market_status() -> Tuple[bool, bool]:
             market_open = True
     
     # Close all the position 30 minute before the market close
-    if (day in ["Saturday","Sunday"]) or (hour >= 23 and minute >= 15):
+    if (day in ["Saturday","Sunday"]) or (hour >= 23 and minute >= 15) or is_us_premarket_peroid():
         market_about_to_close = True
 
     return market_open, market_about_to_close

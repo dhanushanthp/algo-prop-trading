@@ -95,15 +95,15 @@ class SniperReloaded():
             # Early Profit or Exit when account reach max loss, Close when US market time 8AM to avoid the spike stop at 8:30 AM
             if not self.immidiate_exit:
                 
-                us_hour, us_min = util.get_us_hour_min()
-                # In addtion to exit plans, Exit any trade between 8AM and 930AM US time to avoid the high volatile moves
-                if (rr > self.early_rr) or self.risk_manager.has_daily_maximum_risk_reached() or ((us_hour >= 8 and us_hour < 9) or (us_hour == 9 and us_min < 30)):
+                # In addtion to exit plans
+                if (rr > self.early_rr) or self.risk_manager.has_daily_maximum_risk_reached():
                     self.immidiate_exit = True
                     self.orders.cancel_all_pending_orders()
                     self.orders.close_all_positions()
                 
             if is_market_close:
                 print("Market Close!")
+                self.orders.cancel_all_pending_orders()
                 self.orders.close_all_positions()
                 
                 # Reset account size for next day
