@@ -130,13 +130,16 @@ def get_nth_bar(symbol:str, timeframe:int) -> int:
     """
     Count the bars in a days
     """
-    current_gmt_time = get_current_time() + timedelta(hours=config.server_timezone)
+    server_date = get_current_time()
 
     # Generate off market hours high and lows
-    start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+    start_time = datetime(int(server_date.year), int(server_date.month), int(server_date.day), 
                             hour=0, minute=0, tzinfo=pytz.timezone('Etc/GMT'))
     
-    previous_bars = mt5.copy_rates_range(symbol, match_timeframe(timeframe=timeframe), start_time , current_gmt_time)
+    previous_bars = mt5.copy_rates_range(symbol, 
+                                         match_timeframe(timeframe=timeframe), 
+                                         start_time, 
+                                         server_date + timedelta(hours=config.server_timezone))
 
     if previous_bars is not None:
         return len(list(previous_bars))
@@ -185,5 +188,5 @@ if __name__ == "__main__":
     # print(get_gmt_time())
     # print(get_market_status())
     # print(get_today_profit())
-    # print(get_nth_bar(symbol, timeframe))
-    print(get_us_hour_min())
+    print(get_nth_bar(symbol, timeframe))
+    # print(get_us_hour_min())
