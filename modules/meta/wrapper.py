@@ -11,7 +11,7 @@ class Wrapper:
         pass
 
     
-    def get_candles_by_index(self, symbol:str, candle_index_start:int, candle_index_end:int, timeframe:int, return_type="df"):
+    def get_candles_by_index(self, symbol:str, candle_index_start:int, candle_index_end:int, timeframe:int):
         """
         Retrieves historical candle data for a specific symbol within a given index range.
 
@@ -30,10 +30,7 @@ class Wrapper:
         """
         data = mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), candle_index_start, candle_index_end)
 
-        if return_type == "df":
-            return pd.DataFrame(data)
-
-        return data
+        return pd.DataFrame(data)
     
     def get_candles_by_time(self, symbol:str, timeframe:int,candle_start_hour:int=0, candle_end_hour:int=9):
         """
