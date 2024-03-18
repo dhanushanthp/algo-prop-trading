@@ -123,10 +123,10 @@ class Wrapper:
         This include entry and exit position of a trade
         """
 
-        current_gmt_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+        server_date = util.get_current_time()
 
         # Generate off market hours high and lows
-        start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+        start_time = datetime(int(server_date.year), int(server_date.month), int(server_date.day), 
                                 hour=0, minute=0, tzinfo=pytz.timezone('Etc/GMT'))
         
         tm_zone = pytz.timezone('Etc/GMT')
@@ -153,8 +153,8 @@ if "__main__" == __name__:
     # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_existing_symbols())
-    # print(obj.get_todays_trades())
+    print(obj.get_todays_trades())
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
-    print(obj.get_previous_day_candles_by_time(symbol=symbol, timeframe=timeframe))
+    # print(obj.get_previous_day_candles_by_time(symbol=symbol, timeframe=timeframe))
