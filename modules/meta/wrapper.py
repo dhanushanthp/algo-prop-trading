@@ -83,7 +83,7 @@ class Wrapper:
     def pre_candle_body(self, symbol, timeframe):
         previous_candle = self.get_previous_candle(symbol=symbol, timeframe=timeframe)
         body_size = abs(previous_candle["open"] - previous_candle["close"])
-        return body_size
+        return round(body_size, 5)
     
     def get_previous_candle(self, symbol, timeframe):
         """

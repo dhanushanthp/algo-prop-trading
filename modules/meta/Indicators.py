@@ -17,17 +17,18 @@ class Indicators:
     def __init__(self) -> None:
         self.wrapper = Wrapper()
         self.prices = Prices()
-
-    def get_atr(self, symbol:str, timeframe:int) -> float:
-        """
-        Get ATR based on 4 hour
-        """    
-        selected_time = util.match_timeframe(timeframe=timeframe)
-        rates = mt5.copy_rates_from_pos(symbol, selected_time, 0, 20)
+    
+    def get_atr(self, symbol:str, timeframe:int, start_candle:int=0) -> float:
+        n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
+        start_reference_bar = 2
+        rates = self.wrapper.get_candles_by_index(symbol=symbol,
+                                                          timeframe=timeframe, 
+                                                          candle_index_start=start_candle, 
+                                                          candle_index_end=n_bars-(start_reference_bar + 1))
         
-        high = np.array([x['high'] for x in rates])
-        low = np.array([x['low'] for x in rates])
-        close = np.array([x['close'] for x in rates])
+        high = rates['high']
+        low = rates['low']
+        close = rates['close']
 
         true_range = np.maximum(high[1:] - low[1:], abs(high[1:] - close[:-1]), abs(low[1:] - close[:-1]))
         atr = np.mean(true_range[-14:])
@@ -112,6 +113,12 @@ class Indicators:
             pre_market_low = Signal(reference="LOD", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin())
             return pre_market_high, pre_market_low
 
+    def candle_move_ratio(self, symbol, timeframe):
+        # Start from 2, Since we take the trade based on previous candle, So ATR will be calculated from previous to previous candle
+        atr =  self.get_atr(symbol, timeframe, start_candle=2)
+        body =  self.wrapper.pre_candle_body(symbol, timeframe)
+        ratio = round(body/atr, 3)
+        return ratio
 
     def get_pivot_levels(self, symbol:str, timeframe:int) -> Tuple[Signal, Signal]:
         """
@@ -252,10 +259,12 @@ if __name__ == "__main__":
     import sys
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
-    # print("ATR" ,indi_obj.get_atr(symbol, 60))
+    print("ATR", indi_obj.get_atr(symbol, timeframe, 2))
+    print("Body", indi_obj.wrapper.pre_candle_body(symbol, timeframe))
+    print("Ratio", indi_obj.candle_move_ratio(symbol, timeframe))
     # print(indi_obj.get_previous_day_levels(symbol, timeframe))
     # print(indi_obj.get_time_based_levels(symbol=symbol, timeframe=timeframe, candle_start_hour=0, candle_end_hour=9))
     # print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
-    print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
+    # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))

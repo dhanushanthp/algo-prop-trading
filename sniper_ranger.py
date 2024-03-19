@@ -7,6 +7,7 @@ import modules.meta.util as util
 import modules.meta.Currencies as curr
 from modules.meta.RiskManager import RiskManager
 from modules.common.slack_msg import Slack
+from modules.common import logme
 from modules.meta.Targets import Targets
 from modules.common.Directions import Directions
 from modules.meta.Prices import Prices
@@ -55,10 +56,6 @@ class SniperReloaded():
         # Take the profit as specific RR ratio
         self.early_rr=1 # Default 1:1 Ratio
 
-        # Only for testing, Majour Pairs
-        # if config.local_ip == "172_16_27_128":
-        #     self.selected_symbols = ["GBPUSD", "EURUSD", "USDJPY"]
-        # else:
         self.selected_symbols = curr.get_ordered_symbols(without_index=True)
 
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
@@ -66,15 +63,27 @@ class SniperReloaded():
         This will take the trade based on given strategy
         """
         method_name = None
-        if self.strategy == "break":
+
+        ratio = self.indicators.candle_move_ratio(symbol=symbol, timeframe=self.trading_timeframe)
+        
+        # When the candle is 1X later than the ATR, then it should be reverse, Since it moved too much from the general range
+        if ratio > 1.5:
+            strategy = "reverse"
+        else:
+            strategy = "break"
+        
+        _,hour,_ = util.get_current_day_hour_min()
+        logme.logger.info(f"{hour}, {config.local_ip}, {symbol}, {strategy}, {ratio}")
+
+        if strategy == "break":
             method_name = "long_entry" if direction == Directions.LONG else "short_entry"
-        elif self.strategy == "reverse":
+        elif strategy == "reverse":
             method_name = "short_entry" if direction == Directions.LONG else "long_entry"
         
         method = getattr(self.orders, method_name, None)
 
         if method:
-            method(symbol=symbol, reference=f"{self.strategy.upper()[0]}-{reference}", break_level=break_level, trading_timeframe=self.trading_timeframe)
+            method(symbol=symbol, reference=f"{strategy.upper()[0]}-{reference}", break_level=break_level, trading_timeframe=self.trading_timeframe)
 
     
     def main(self):
