@@ -168,6 +168,10 @@ class Indicators:
             
             return False
         
+        if past_candles.empty:
+            print(f"DF is empty: {symbol}")
+            return None, None
+
         past_candles['is_resistance'] = past_candles['high'].rolling(window=3).apply(lambda x: compare_three_rows(x, "high"), raw=False)
         past_candles['is_support'] = past_candles['low'].rolling(window=3).apply(lambda x: compare_three_rows(x, "low"), raw=False)
         past_candles = past_candles.reset_index()
