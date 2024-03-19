@@ -83,7 +83,7 @@ class SniperReloaded():
         method = getattr(self.orders, method_name, None)
 
         if method:
-            method(symbol=symbol, reference=f"{strategy.upper()[0]}-{reference}", break_level=break_level, trading_timeframe=self.trading_timeframe)
+            method(symbol=symbol, reference=f"{strategy.upper()[0]}-{reference}-{ratio}", break_level=break_level, trading_timeframe=self.trading_timeframe)
 
     
     def main(self):
