@@ -1,9 +1,10 @@
 from modules.common.Bullet import Bullet
 from modules.common.Directions import Directions
 from tabulate import tabulate
-from typing import Dict
+from typing import Dict, Tuple
 import pandas as pd
 from modules.meta.RiskManager import RiskManager
+from modules.meta.Indicators import Indicators
 from modules.meta.Prices import Prices
 from modules.meta import util
 from modules import config
@@ -16,6 +17,7 @@ class Targets:
         self.timeframe = timeframe
         self.prices = Prices()
         self.wrapper = Wrapper()
+        self.indicator = Indicators()
 
 
     def get_targets(self) -> Dict[str, Bullet]:
@@ -40,6 +42,8 @@ class Targets:
 
     
     def check_signal_validity(self, symbol:str, reference:str, break_level:float, shoot_direction:Directions, past_break_index:int, timeframe:int=60):
+        # The reason we are using -3, it's because we wanted the index to be previous one. which is 2 (mt5 index wise it's 1 since the current candle start from 0)
+        # w.r.t hours our first hour start from 1, which is equal to 0 index in dataframe. So the 2 from mt5 and 1 from df adjustment we subtract 3
         current_break_bar_index = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 3
         candle_gap = current_break_bar_index - past_break_index
         
@@ -68,8 +72,35 @@ class Targets:
                         self.targets[symbol] = active_bullet
                         return True, candle_gap
 
-        return False, candle_gap           
+        return False, candle_gap
 
+    
+    def any_previous_breakouts(self, symbol:str, timeframe:int=60) -> list:
+        confirmation_candle = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 2
+        previous_breaks = []
+        # Find which candle has the break and it's break ID
+        # Loop through backkword to find which candle has the breakout candle w.r.t previous highs or lows
+        for candle_index in range(2, confirmation_candle):
+            breaking_candle = confirmation_candle - candle_index
+            previous_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=candle_index)
+            king_of_levels = self.indicator.get_king_of_levels(symbol=symbol, timeframe=timeframe, start_reference_bar=candle_index + 1)
+
+            for resistance in king_of_levels["resistance"]:
+                if previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level:
+                    bar_gap = breaking_candle - resistance.break_bar_index
+                    if bar_gap > 2:
+                        # "HOD", breaking_candle
+                        previous_breaks.append("HOD")
+                        
+            
+            for support in king_of_levels["support"]:
+                if previous_candle["high"] > support.level and previous_candle["close"] < support.level:
+                    bar_gap = breaking_candle - resistance.break_bar_index
+                    if bar_gap > 2:
+                        # print("LOD", breaking_candle)
+                        previous_breaks.append("LOD")
+                    
+        return previous_breaks
 
 
     def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions, num_prev_breaks:int, timeframe:int=60):
@@ -185,5 +216,5 @@ if __name__ == "__main__":
     # magazine.load_targets("AUS200.cash", "",  7666.7,  7666.7, Directions.SHORT, 1)
     # magazine.show_targets()
 
-    print(magazine.check_signal_validity(symbol=symbol, reference="PDH", break_level=9.090, shoot_direction=Directions.LONG, past_break_index=0, timeframe=timeframe))
-    print(magazine.check_signal_validity(symbol=symbol, reference="PDH", break_level=9.090, shoot_direction=Directions.SHORT, past_break_index=0, timeframe=timeframe))
+    print(magazine.any_previous_breakouts(symbol=symbol, timeframe=timeframe))
+    # print(magazine.check_signal_validity(symbol=symbol, reference="PDH", break_level=9.090, shoot_direction=Directions.SHORT, past_break_index=0, timeframe=timeframe))

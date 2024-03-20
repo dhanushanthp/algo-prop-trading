@@ -64,26 +64,15 @@ class SniperReloaded():
         """
         method_name = None
 
-        ratio = self.indicators.candle_move_ratio(symbol=symbol, timeframe=self.trading_timeframe)
-        
-        # When the candle is 1X later than the ATR, then it should be reverse, Since it moved too much from the general range
-        if ratio > 1.5:
-            strategy = "reverse"
-        else:
-            strategy = "break"
-        
-        _,hour,_ = util.get_current_day_hour_min()
-        logme.logger.info(f"{hour}, {config.local_ip}, {symbol}, {strategy}, {ratio}")
-
-        if strategy == "break":
+        if self.strategy == "break":
             method_name = "long_entry" if direction == Directions.LONG else "short_entry"
-        elif strategy == "reverse":
+        elif self.strategy == "reverse":
             method_name = "short_entry" if direction == Directions.LONG else "long_entry"
         
         method = getattr(self.orders, method_name, None)
 
         if method:
-            method(symbol=symbol, reference=f"{strategy.upper()[0]}-{reference}-{ratio}", break_level=break_level, trading_timeframe=self.trading_timeframe)
+            method(symbol=symbol, reference=f"{self.strategy.upper()[0]}-{reference}", break_level=break_level, trading_timeframe=self.trading_timeframe)
 
     
     def main(self):
@@ -135,6 +124,7 @@ class SniperReloaded():
                     Levels such as High of the Day, Low of the day will be checked with previous bar close
                     """
                     king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
+                    previous_breaks = self.targets.any_previous_breakouts(symbol=symbol, timeframe=self.trading_timeframe)
                     for resistance in king_of_levels["resistance"]:
                         if previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level:
                             is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
@@ -144,7 +134,8 @@ class SniperReloaded():
                                                                                              break_level=resistance.level, 
                                                                                              reference=resistance.reference)
 
-                            if is_valid_signal:
+                            # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
+                            if is_valid_signal and "LOD" in previous_breaks:
                                 self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap)
                             break # Break the resistance loop
                     
@@ -157,7 +148,8 @@ class SniperReloaded():
                                                                                              break_level=support.level, 
                                                                                              reference=support.reference)
 
-                            if is_valid_signal:
+                            # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
+                            if is_valid_signal and "HOD" in previous_breaks:
                                 self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap)
                             break # Break the support loop
 

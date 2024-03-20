@@ -87,9 +87,8 @@ class Indicators:
         
         return None, None
     
-    def get_current_day_levels(self, symbol, timeframe) -> Tuple[Signal, Signal]:
+    def get_current_day_levels(self, symbol, timeframe, start_reference_bar=2) -> Tuple[Signal, Signal]:
         n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
-        start_reference_bar = 2
         previous_bars = self.wrapper.get_candles_by_index(symbol=symbol,
                                                           timeframe=timeframe, 
                                                           candle_index_start=start_reference_bar, 
@@ -230,10 +229,10 @@ class Indicators:
         else:
             return lower_limit < number < upper_limit
 
-    def get_king_of_levels(self, symbol, timeframe) -> Dict[str, List[Signal]]:
+    def get_king_of_levels(self, symbol, timeframe, start_reference_bar=2) -> Dict[str, List[Signal]]:
         highs = []
         lows = []
-        hod, lod = self.get_current_day_levels(symbol=symbol, timeframe=timeframe)
+        hod, lod = self.get_current_day_levels(symbol=symbol, timeframe=timeframe, start_reference_bar=start_reference_bar)
 
         if hod:                
             highs.append(hod)
@@ -241,16 +240,16 @@ class Indicators:
         if lod:
             lows.append(lod)
         
-        if config.local_ip == "172_16_27_128":
-            pvh, pvl = self.get_pivot_levels(symbol=symbol, timeframe=timeframe)
+        # if config.local_ip == "172_16_27_128":
+        #     pvh, pvl = self.get_pivot_levels(symbol=symbol, timeframe=timeframe)
             
-            # Only add when pivot level is lower than the high of the day, If pivot is higher then it would be covered by HOD
-            if pvh and (pvh.level < hod.level):
-                highs.append(pvh)
+        #     # Only add when pivot level is lower than the high of the day, If pivot is higher then it would be covered by HOD
+        #     if pvh and (pvh.level < hod.level):
+        #         highs.append(pvh)
             
-            # Only add when pivot level is high than the low of the day, If pivot is lower then it would be covered by LOD
-            if pvl and (pvl.level > lod.level):
-                lows.append(pvl)
+        #     # Only add when pivot level is high than the low of the day, If pivot is lower then it would be covered by LOD
+        #     if pvl and (pvl.level > lod.level):
+        #         lows.append(pvl)
 
         return {"resistance": highs, "support": lows}
 
@@ -259,6 +258,7 @@ if __name__ == "__main__":
     import sys
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
+    start_reference = int(sys.argv[3])
     print("ATR", indi_obj.get_atr(symbol, timeframe, 2))
     print("Body", indi_obj.wrapper.pre_candle_body(symbol, timeframe))
     print("Ratio", indi_obj.candle_move_ratio(symbol, timeframe))
@@ -266,5 +266,5 @@ if __name__ == "__main__":
     # print(indi_obj.get_time_based_levels(symbol=symbol, timeframe=timeframe, candle_start_hour=0, candle_end_hour=9))
     # print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
-    print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
+    print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, start_reference))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
