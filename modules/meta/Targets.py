@@ -75,9 +75,10 @@ class Targets:
         return False, candle_gap
 
     
-    def any_previous_breakouts(self, symbol:str, timeframe:int=60) -> list:
+    def any_previous_breakouts(self, symbol:str, timeframe:int=60) -> Tuple[list, list]:
         confirmation_candle = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 2
         previous_breaks = []
+        previous_brk_index = []
         # Find which candle has the break and it's break ID
         # Loop through backkword to find which candle has the breakout candle w.r.t previous highs or lows
         for candle_index in range(2, confirmation_candle):
@@ -91,6 +92,7 @@ class Targets:
                     if bar_gap > 2:
                         # "HOD", breaking_candle
                         previous_breaks.append("HOD")
+                        previous_brk_index.append(breaking_candle)
                         
             
             for support in king_of_levels["support"]:
@@ -99,8 +101,9 @@ class Targets:
                     if bar_gap > 2:
                         # print("LOD", breaking_candle)
                         previous_breaks.append("LOD")
+                        previous_brk_index.append(breaking_candle)
                     
-        return previous_breaks
+        return previous_breaks, previous_brk_index
 
 
     def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions, num_prev_breaks:int, timeframe:int=60):

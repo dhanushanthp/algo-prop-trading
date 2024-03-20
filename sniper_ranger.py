@@ -124,7 +124,7 @@ class SniperReloaded():
                     Levels such as High of the Day, Low of the day will be checked with previous bar close
                     """
                     king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
-                    previous_breaks = self.targets.any_previous_breakouts(symbol=symbol, timeframe=self.trading_timeframe)
+                    previous_breaks = self.targets.any_previous_breakouts(symbol=symbol, timeframe=self.trading_timeframe)[0]
                     for resistance in king_of_levels["resistance"]:
                         if previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level:
                             is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
