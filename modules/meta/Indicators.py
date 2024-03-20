@@ -266,5 +266,5 @@ if __name__ == "__main__":
     # print(indi_obj.get_time_based_levels(symbol=symbol, timeframe=timeframe, candle_start_hour=0, candle_end_hour=9))
     # print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
-    # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
+    print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
