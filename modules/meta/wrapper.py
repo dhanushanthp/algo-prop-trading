@@ -93,7 +93,7 @@ class Wrapper:
         """
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 1, 1)[-1]
     
-    def get_previous_candle_i(self, symbol, timeframe, i=0):
+    def get_candle_i(self, symbol, timeframe, i=0):
         """
         0: Current candle
         1: Previous candle
