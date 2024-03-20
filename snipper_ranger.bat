@@ -7,6 +7,6 @@ python sniper_ranger.py ^
     --strategy %3 ^
     --timeframe %2 ^
     --account_risk %account_risk% ^
-    --each_position_risk 0.5 ^
+    --each_position_risk 0.25 ^
     --target_ratio %target_ratio% ^
     --early_rr 2.0
