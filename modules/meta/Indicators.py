@@ -19,12 +19,7 @@ class Indicators:
         self.prices = Prices()
     
     def get_atr(self, symbol:str, timeframe:int, start_candle:int=0) -> float:
-        n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
-        start_reference_bar = 2
-        rates = self.wrapper.get_candles_by_index(symbol=symbol,
-                                                          timeframe=timeframe, 
-                                                          candle_index_start=start_candle, 
-                                                          candle_index_end=n_bars-(start_reference_bar + 1))
+        rates = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_candle)
         
         high = rates['high']
         low = rates['low']
@@ -88,15 +83,11 @@ class Indicators:
         return None, None
     
     def get_current_day_levels(self, symbol, timeframe, start_reference_bar=2) -> Tuple[Signal, Signal]:
-        n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
-        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol,
-                                                          timeframe=timeframe, 
-                                                          candle_index_start=start_reference_bar, 
-                                                          candle_index_end=n_bars-(start_reference_bar + 1))
+        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_reference_bar)
 
         if not previous_bars.empty:
-            off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax())
-            off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin())
+            off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax() + 1)
+            off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin() + 1)
             return off_hour_highs, off_hour_lows
 
         return None, None
@@ -151,12 +142,11 @@ class Indicators:
         :param timeframe: Timeframe for recent price data
         :return: A dictionary with 'support' and 'resistance' levels
         """
-        n_bars = util.get_nth_bar(symbol=symbol, timeframe=timeframe)
         start_reference_bar = 1
 
         # If does the mid values intersect with previous 5 bars
         # get past 5 candles and start from prevous second candle
-        past_candles = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_index_start=start_reference_bar, candle_index_end=n_bars-(start_reference_bar + 1))
+        past_candles = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_reference_bar)
         spread = self.prices.get_spread(symbol=symbol)
 
         # Define a function to compare three rows

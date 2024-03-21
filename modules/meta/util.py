@@ -126,7 +126,7 @@ def get_today_profit():
     output = round(sum([i.profit + i.commission for i in data]))
     return output
 
-def get_nth_bar(symbol:str, timeframe:int) -> int:
+def index_of_active_bar(symbol:str, timeframe:int) -> int:
     """
     Count the bars in a days
     """
@@ -142,7 +142,7 @@ def get_nth_bar(symbol:str, timeframe:int) -> int:
                                          server_date + timedelta(hours=config.server_timezone))
 
     if previous_bars is not None:
-        return len(list(previous_bars))
+        return len(list(previous_bars)) - 1
     
     return 0
 
@@ -188,5 +188,5 @@ if __name__ == "__main__":
     # print(get_gmt_time())
     # print(get_market_status())
     # print(get_today_profit())
-    print(get_nth_bar(symbol, timeframe))
+    print(index_of_active_bar(symbol, timeframe))
     # print(get_us_hour_min())

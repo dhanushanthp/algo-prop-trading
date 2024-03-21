@@ -11,26 +11,41 @@ class Wrapper:
         pass
 
     
-    def get_candles_by_index(self, symbol:str, candle_index_start:int, candle_index_end:int, timeframe:int):
+    def get_candles_by_index(self, symbol:str, timeframe:int, candle_look_back:int=0):
         """
         Retrieves historical candle data for a specific symbol within a given index range.
-
-        Parameters:
+        
+         Parameters:
         - symbol (str): The symbol for which to retrieve candle data.
-        - candle_index_start (int): Start from initial bar index (includes), Which more close to current time, 0 will be the current bar, 1 will be previous to current bar
-        - candle_index_end (int): Number of bars, Get all pervious bars from 
         - timeframe (str): The timeframe of the candles (e.g 15, 60, 120, 240 minutes)
+        - candle_index_start (int): Start from initial bar index (includes), Which more close to current time, 0 will be the current bar, 1 will be previous to current bar
 
-        Returns:
-        - list of dict: A list of candle data represented as dictionaries.
-
-        Note:
-        The candle_index_start and candle_index_end parameters refer to the index positions of the candles,
-        with 0 being the most recent candle.
         """
-        data = mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), candle_index_start, candle_index_end)
 
-        return pd.DataFrame(data)
+        if timeframe == 60:
+            sel_hour = 1
+            sel_min = 0
+        elif timeframe == 15:
+            sel_hour = 0
+            sel_min = 15
+        elif timeframe == 5:
+            sel_hour = 0
+            sel_min = 5
+        else:
+            sel_hour = 0
+            sel_min = 0
+
+        current_gmt_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+
+        candle_start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+                                        hour=sel_hour, minute=sel_min, tzinfo=pytz.timezone('Etc/GMT'))
+        
+        candles = mt5.copy_rates_range(symbol, util.match_timeframe(timeframe), candle_start_time, current_gmt_time)
+
+        df = pd.DataFrame(candles)
+        df = df.iloc[:-candle_look_back] if candle_look_back > 0 else df
+
+        return df
     
     def get_candles_by_time(self, symbol:str, timeframe:int,candle_start_hour:int=0, candle_end_hour:int=9):
         """
@@ -148,13 +163,13 @@ if "__main__" == __name__:
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
     start_hour = int(sys.argv[3])
-    end_hour = int(sys.argv[4])
-    # print(obj.get_candles_by_index(symbol=symbol, candle_index_start=0, candle_index_end=10, timeframe=timeframe))
+    # end_hour = int(sys.argv[4])
     # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_existing_symbols())
-    print(obj.get_todays_trades())
+    # print(obj.get_todays_trades())
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
-    # print(obj.get_previous_day_candles_by_time(symbol=symbol, timeframe=timeframe))
+    print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
+

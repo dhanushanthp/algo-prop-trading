@@ -42,10 +42,8 @@ class Targets:
 
     
     def check_signal_validity(self, symbol:str, reference:str, break_level:float, shoot_direction:Directions, past_break_index:int, timeframe:int=60):
-        # The reason we are using -3, it's because we wanted the index to be previous one. which is 2 (mt5 index wise it's 1 since the current candle start from 0)
-        # w.r.t hours our first hour start from 1, which is equal to 0 index in dataframe. So the 2 from mt5 and 1 from df adjustment we subtract 3
-        current_break_bar_index = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 3
-        candle_gap = current_break_bar_index - past_break_index
+        index_of_previous_bar = util.index_of_active_bar(symbol=symbol, timeframe=timeframe) - 1
+        candle_gap = index_of_previous_bar - past_break_index
         
         dynamic_gap = 24 if timeframe in [5, 15] else 6
 
@@ -55,20 +53,20 @@ class Targets:
 
             # If the symbol is not already traded, then take the trade
             if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
-                active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
+                active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, shoot_direction, past_break_index)
                 self.targets[symbol] = active_bullet
                 return True, candle_gap
             else:
                 if shoot_direction == Directions.LONG:
                     traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
                     if traded_symbol.empty:
-                        active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
+                        active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, shoot_direction, past_break_index)
                         self.targets[symbol] = active_bullet
                         return True, candle_gap
                 elif shoot_direction == Directions.SHORT:
                     traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
                     if traded_symbol.empty:
-                        active_bullet = Bullet(symbol, reference, break_level, current_break_bar_index, shoot_direction, past_break_index)
+                        active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, shoot_direction, past_break_index)
                         self.targets[symbol] = active_bullet
                         return True, candle_gap
 
@@ -76,7 +74,7 @@ class Targets:
 
     
     def any_previous_breakouts(self, symbol:str, timeframe:int=60) -> Tuple[list, list]:
-        confirmation_candle = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 2
+        confirmation_candle = util.index_of_active_bar(symbol=symbol, timeframe=timeframe) - 2
         previous_breaks = []
         previous_brk_index = []
         # Find which candle has the break and it's break ID
@@ -107,7 +105,7 @@ class Targets:
 
 
     def load_targets(self, target:str, reference:str ,sniper_trigger_level:float, sniper_level:float, shoot_direction:Directions, num_prev_breaks:int, timeframe:int=60):
-        nth_break_bar = util.get_nth_bar(symbol=target, timeframe=timeframe)
+        nth_break_bar = util.index_of_active_bar(symbol=target, timeframe=timeframe)
 
         active_bullet = Bullet(target, reference, sniper_trigger_level, sniper_level, shoot_direction, num_prev_breaks)
         active_bullet.set_break_nth_bar(break_hour=nth_break_bar)
