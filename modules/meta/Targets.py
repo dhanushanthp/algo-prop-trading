@@ -47,7 +47,7 @@ class Targets:
         current_break_bar_index = util.get_nth_bar(symbol=symbol, timeframe=timeframe) - 3
         candle_gap = current_break_bar_index - past_break_index
         
-        dynamic_gap = 3 if timeframe in [5, 15] else 2
+        dynamic_gap = 3 if timeframe in [5, 15] else 6
 
         if candle_gap > dynamic_gap:
             # Check does this already has trades on same direction, Load Passed Data
@@ -91,7 +91,7 @@ class Targets:
                     bar_gap = breaking_candle - resistance.break_bar_index
                     if bar_gap > 2:
                         # "HOD", breaking_candle
-                        previous_breaks.append("HOD")
+                        previous_breaks.append(resistance.reference)
                         previous_brk_index.append(breaking_candle)
                         
             
@@ -100,7 +100,7 @@ class Targets:
                     bar_gap = breaking_candle - resistance.break_bar_index
                     if bar_gap > 2:
                         # print("LOD", breaking_candle)
-                        previous_breaks.append("LOD")
+                        previous_breaks.append(support.reference)
                         previous_brk_index.append(breaking_candle)
                     
         return previous_breaks, previous_brk_index
