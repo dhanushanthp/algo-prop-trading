@@ -159,6 +159,19 @@ class Wrapper:
         # return empty dataframe
         return pd.DataFrame()
 
+    def today_unique_traded_symbols(self):
+        trades = self.get_todays_trades()
+        if trades.empty:
+            return True
+        
+        symbols = list(trades["symbol"].unique())
+
+        if len(symbols) < 4:
+            return True
+        
+        return False
+
+
 
 if "__main__" == __name__:
     obj = Wrapper()
@@ -174,5 +187,6 @@ if "__main__" == __name__:
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
-    print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
+    # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
+    print(obj.today_unique_traded_symbols())
 

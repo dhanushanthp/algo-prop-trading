@@ -157,7 +157,7 @@ def get_ordered_symbols(without_index=False):
     return sorted_list
 
 def get_major_symbols():
-    main_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD"]
+    main_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF"]
     if util.is_us_active_peroid():
         main_pairs.extend(["US500.cash", "XAUUSD"])
     return main_pairs
