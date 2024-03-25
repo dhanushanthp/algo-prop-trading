@@ -1,5 +1,6 @@
 import MetaTrader5 as mt
 mt.initialize()
+from modules.meta import util
 
 account_info_dict = mt.account_info()._asdict()
 company = account_info_dict["company"]
@@ -155,5 +156,11 @@ def get_ordered_symbols(without_index=False):
     
     return sorted_list
 
+def get_major_symbols():
+    main_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD"]
+    if util.is_us_active_peroid():
+        main_pairs.extend(["US500.cash", "XAUUSD"])
+    return main_pairs
+
 if __name__ == "__main__":
-    print(get_ordered_symbols())
+    print(get_major_symbols())

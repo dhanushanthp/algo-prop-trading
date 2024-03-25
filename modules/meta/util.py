@@ -155,6 +155,15 @@ def is_us_premarket_peroid() -> bool:
     condition = ((us_hour >= 8 and us_hour < 9) or (us_hour == 9 and us_min < 30))
     return condition 
 
+def is_us_active_peroid() -> bool:
+    """
+    Check is this US premarket hour
+    Exit any trade or no new trades between 8AM and 930AM US time to avoid the high volatile moves
+    """
+    us_hour, us_min = get_us_hour_min()
+    condition = (us_hour > 9 or (us_hour == 9 and us_min >= 30)) and us_hour < 16
+    return condition 
+
 def get_market_status() -> Tuple[bool, bool]:
     market_open = False
     market_about_to_close= False
@@ -182,11 +191,13 @@ def is_c_pair_active(currency_pair):
 
 if __name__ == "__main__":
     import sys
-    symbol = sys.argv[1]
-    timeframe = int(sys.argv[2])
+    # symbol = sys.argv[1]
+    # timeframe = int(sys.argv[2])
     # print(is_c_pair_active("US500.cash"))   
     # print(get_gmt_time())
     # print(get_market_status())
     # print(get_today_profit())
-    print(index_of_active_bar(symbol, timeframe))
-    # print(get_us_hour_min())
+    # print(index_of_active_bar(symbol, timeframe))
+    # print(get_current_time())
+    # print(get_current_day_hour_min())
+    print(is_us_active_peroid())

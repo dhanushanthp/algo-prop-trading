@@ -21,6 +21,9 @@ class Indicators:
     def get_atr(self, symbol:str, timeframe:int, start_candle:int=0) -> float:
         rates = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_candle)
         
+        if rates.empty:
+            return 0
+
         high = rates['high']
         low = rates['low']
         close = rates['close']
@@ -249,9 +252,9 @@ if __name__ == "__main__":
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
     start_reference = int(sys.argv[3])
-    print("ATR", indi_obj.get_atr(symbol, timeframe, 2))
-    print("Body", indi_obj.wrapper.pre_candle_body(symbol, timeframe))
-    print("Ratio", indi_obj.candle_move_ratio(symbol, timeframe))
+    # print("ATR", indi_obj.get_atr(symbol, timeframe, 2))
+    # print("Body", indi_obj.wrapper.pre_candle_body(symbol, timeframe))
+    # print("Ratio", indi_obj.candle_move_ratio(symbol, timeframe))
     # print(indi_obj.get_previous_day_levels(symbol, timeframe))
     # print(indi_obj.get_time_based_levels(symbol=symbol, timeframe=timeframe, candle_start_hour=0, candle_end_hour=9))
     # print(indi_obj.solid_open_bar(symbol, timeframe))

@@ -45,6 +45,9 @@ class Wrapper:
         df = pd.DataFrame(candles)
         df = df.iloc[:-candle_look_back] if candle_look_back > 0 else df
 
+        if df.empty:
+            print(f"Empty DF! {symbol}")
+
         return df
     
     def get_candles_by_time(self, symbol:str, timeframe:int,candle_start_hour:int=0, candle_end_hour:int=9):
