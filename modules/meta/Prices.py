@@ -50,7 +50,7 @@ class Prices:
         symbol_follow = symbol[3:6]
 
         if curr.company == "FTMO S.R.O.":
-            if symbol == "US500.cash":
+            if symbol == "US500.cash" or (symbol in curr.master_stocks):
                 return 1.0
             elif symbol == "UK100.cash":
                 return self.get_exchange_price("GBPUSD")
