@@ -11,7 +11,7 @@ jpy_currencies = None
 support_pairs = None
 
 
-master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "AMD", "GOOG", "MSFT", "META"]
+master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
 
 master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
                     'CHFJPY', "CADCHF", "CADJPY",
