@@ -10,6 +10,8 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
+major_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF"]
+us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
 
@@ -159,9 +161,9 @@ def get_ordered_symbols(without_index=False):
     return sorted_list
 
 def get_major_symbols():
-    main_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF"]
+    main_pairs = major_pairs
     if util.is_us_premarket_peroid():
-        main_pairs.extend(["US500.cash", "XAUUSD"])
+        main_pairs.extend(us_indexes)
     return main_pairs
 
 if __name__ == "__main__":
