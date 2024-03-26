@@ -152,8 +152,8 @@ def is_us_premarket_peroid() -> bool:
     Exit any trade or no new trades between 8AM and 930AM US time to avoid the high volatile moves
     """
     us_hour, us_min = get_us_hour_min()
-    condition = ((us_hour >= 8 and us_hour < 9) or (us_hour == 9 and us_min < 30))
-    return condition 
+    condition = (us_hour > 3) and (us_hour < 16)
+    return condition
 
 def is_us_active_peroid() -> bool:
     """
@@ -161,7 +161,7 @@ def is_us_active_peroid() -> bool:
     Exit any trade or no new trades between 8AM and 930AM US time to avoid the high volatile moves
     """
     us_hour, us_min = get_us_hour_min()
-    condition = (us_hour > 3) and us_hour < 16
+    condition = (us_hour > 9 or (us_hour == 9 and us_min >= 30)) and us_hour < 16
     return condition 
 
 def get_market_status() -> Tuple[bool, bool]:
@@ -200,4 +200,4 @@ if __name__ == "__main__":
     # print(index_of_active_bar(symbol, timeframe))
     # print(get_current_time())
     # print(get_current_day_hour_min())
-    print(is_us_active_peroid())
+    print(is_us_premarket_peroid())

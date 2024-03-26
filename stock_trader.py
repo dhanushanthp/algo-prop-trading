@@ -56,7 +56,7 @@ class SniperReloaded():
         # Take the profit as specific RR ratio
         self.early_rr=1 # Default 1:1 Ratio
 
-        self.selected_symbols = curr.get_major_symbols()
+        self.selected_symbols = curr.master_stocks
 
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
         """
