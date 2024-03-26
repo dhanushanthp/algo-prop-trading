@@ -24,7 +24,7 @@ Test: 172_16_27_128
 """
 
 class SniperReloaded():
-    def __init__(self, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
+    def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
         # Default values
         self.target_ratio = target_ratio  # Default 1:2.0 Ratio
         self.stop_ratio = 1.0
@@ -43,6 +43,7 @@ class SniperReloaded():
         self.wrapper = Wrapper()
 
         self.strategy:str = None
+        self.security:str = security
 
         # Account information
         self.account_name = self.account.get_account_name()
@@ -56,7 +57,12 @@ class SniperReloaded():
         # Take the profit as specific RR ratio
         self.early_rr=1 # Default 1:1 Ratio
 
-        self.selected_symbols = curr.get_major_symbols()
+        if self.security == "FOREX":
+            self.selected_symbols = curr.get_major_symbols()
+        elif self.security == "STOCK":
+            self.selected_symbols = curr.master_stocks
+        else:
+            raise Exception("Security is not defined!")
 
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
         """
@@ -77,7 +83,7 @@ class SniperReloaded():
     
     def main(self):
         while True:
-            print(f"\n------- Status: {not self.immidiate_exit}, {self.trading_timeframe} TF {self.strategy.upper()}, Profit: {self.early_rr} RR -----------")
+            print(f"\n------- {self.security} - Status: {not self.immidiate_exit}, {self.trading_timeframe} TF {self.strategy.upper()}, Profit: {self.early_rr} RR -----------")
             is_market_open, is_market_close = util.get_market_status()
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
@@ -160,6 +166,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
     parser.add_argument('--strategy', type=str, help='Selected strategy')
+    parser.add_argument('--security', type=str, help='Selected Type')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
     parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')
     parser.add_argument('--early_rr', type=float, help='Early Profit RR')
@@ -172,8 +179,9 @@ if __name__ == "__main__":
     account_risk = float(args.account_risk)
     each_position_risk = float(args.each_position_risk)
     target_ratio = float(args.target_ratio)
+    security = str(args.security)
 
-    win = SniperReloaded(trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
+    win = SniperReloaded(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
     win.early_rr = float(args.early_rr)
     win.strategy = args.strategy
 

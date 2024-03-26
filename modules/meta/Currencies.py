@@ -61,7 +61,7 @@ elif company == "GrowthNext - F.Z.C":
 else:
     raise Exception(f"The << {company} >> Trading platform not found")
 
-for pair in (currencies + indexes + support_pairs):
+for pair in (currencies + indexes + support_pairs+ master_stocks):
     mt.symbol_select(f"{pair}", True)
 
 

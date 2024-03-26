@@ -2,9 +2,11 @@
 
 set account_risk=%1
 set target_ratio=4.0
+set security=FOREX
 
 python sniper_ranger.py ^
     --strategy %3 ^
+    --security %security% ^
     --timeframe %2 ^
     --account_risk %account_risk% ^
     --each_position_risk 0.5 ^
