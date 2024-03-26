@@ -45,7 +45,8 @@ class Targets:
         index_of_previous_bar = util.index_of_active_bar(symbol=symbol, timeframe=timeframe) - 1
         candle_gap = index_of_previous_bar - past_break_index
         
-        dynamic_gap = 8 if timeframe in [5, 15] else 2
+        # Generally 60min for forex and 5 min for stock
+        dynamic_gap = 8 if timeframe in [15] else 2
 
         if candle_gap > dynamic_gap:
             # Check does this already has trades on same direction, Load Passed Data
