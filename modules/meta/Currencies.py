@@ -15,15 +15,19 @@ us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
 
-master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
-                    'CHFJPY', "CADCHF", "CADJPY",
-                    'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
-                    'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
-                    'NZDJPY', "NZDCAD", "NZDUSD",
-                    'USDCAD', 'USDJPY', 'USDCHF',
-                    'XAUUSD']
+# master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
+#                     'CHFJPY', "CADCHF", "CADJPY",
+#                     'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
+#                     'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
+#                     'NZDJPY', "NZDCAD", "NZDUSD",
+#                     'USDCAD', 'USDJPY', 'USDCHF',
+#                     'XAUUSD']
 
-master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
+master_currencies = major_pairs
+
+# master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
+
+master_jpy_pairs = ["USDJPY"]
 
 # Funded Engineer
 if company == "AXSE Brokerage Ltd.":
@@ -63,7 +67,8 @@ elif company == "GrowthNext - F.Z.C":
 else:
     raise Exception(f"The << {company} >> Trading platform not found")
 
-for pair in (currencies + indexes + support_pairs+ master_stocks):
+# + indexes + support_pairs+
+for pair in (currencies +  master_stocks):
     mt.symbol_select(f"{pair}", True)
 
 
