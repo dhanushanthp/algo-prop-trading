@@ -56,7 +56,7 @@ class SniperReloaded():
         # Take the profit as specific RR ratio
         self.early_rr=1 # Default 1:1 Ratio
 
-        self.selected_symbols = curr.get_ordered_symbols(without_index=True)
+        self.selected_symbols = curr.get_major_symbols()
 
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
         """
@@ -91,13 +91,13 @@ class SniperReloaded():
             self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
 
             # Early Profit or Exit when account reach max loss, Close when US market time 8AM to avoid the spike stop at 8:30 AM
-            if not self.immidiate_exit:
+            # if not self.immidiate_exit:
                 
-                # In addtion to exit plans
-                if (rr > self.early_rr) or self.risk_manager.has_daily_maximum_risk_reached():
-                    self.immidiate_exit = True
-                    self.orders.cancel_all_pending_orders()
-                    self.orders.close_all_positions()
+            #     # In addtion to exit plans
+            #     if self.risk_manager.has_daily_maximum_risk_reached():
+            #         self.immidiate_exit = True
+            #         self.orders.cancel_all_pending_orders()
+            #         self.orders.close_all_positions()
                 
             if is_market_close:
                 print("Market Close!")
@@ -109,8 +109,9 @@ class SniperReloaded():
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.immidiate_exit = False
 
-            if is_market_open and (not is_market_close) and (not self.immidiate_exit):
-                self.orders.cancel_all_pending_orders()
+            self.orders.cancel_all_pending_orders()
+            
+            if is_market_open and (not is_market_close) and (not self.immidiate_exit) and self.wrapper.today_unique_traded_symbols():
                 existing_positions = self.wrapper.get_existing_symbols()
 
                 for symbol in self.selected_symbols:

@@ -97,8 +97,8 @@ class RiskManager:
                 # Short Position
                 trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
                 trail_target = max(target_price, tgt_shield_obj.get_long_stop)
-
-            if (trail_stop != stop_price) or (target_price != trail_target):
+            # (trail_stop != stop_price) or
+            if (target_price != trail_target):
                 print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
 
                 modify_request = {
@@ -107,7 +107,7 @@ class RiskManager:
                     "volume": position.volume,
                     "type": position.type,
                     "position": position.ticket,
-                    "sl": trail_stop,
+                    "sl": stop_price,
                     "tp": trail_target,
                     "comment": position.comment,
                     "magic": position.magic,
