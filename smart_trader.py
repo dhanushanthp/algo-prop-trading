@@ -53,9 +53,6 @@ class SniperReloaded():
         # Default
         self.trading_timeframe = trading_timeframe
 
-        # Take the profit as specific RR ratio
-        self.early_rr=1 # Default 1:1 Ratio
-
         if self.security == "FOREX":
             self.selected_symbols = curr.get_major_symbols()
         elif self.security == "STOCK":
@@ -82,7 +79,7 @@ class SniperReloaded():
     
     def main(self):
         while True:
-            print(f"\n------- {self.security} {self.trading_timeframe} TF {self.strategy.upper()}, Profit: {self.early_rr} RR -----------")
+            print(f"\n------- {self.security} {self.trading_timeframe} TF {self.strategy.upper()}-----------")
             is_market_open, is_market_close = util.get_market_status()
 
             if self.security == "STOCK":
@@ -163,7 +160,6 @@ if __name__ == "__main__":
     parser.add_argument('--security', type=str, help='Selected Type')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
     parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')
-    parser.add_argument('--early_rr', type=float, help='Early Profit RR')
     parser.add_argument('--target_ratio', type=float, help='Target ratio, assume stop is 1')
     parser.add_argument('--each_position_risk', type=float, help='Each Position risk percentage w.r.t account size') # Just Dummy
     
@@ -176,7 +172,6 @@ if __name__ == "__main__":
     security = str(args.security)
 
     win = SniperReloaded(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
-    win.early_rr = float(args.early_rr)
     win.strategy = args.strategy
 
     win.main()

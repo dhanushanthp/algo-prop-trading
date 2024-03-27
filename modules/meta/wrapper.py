@@ -158,6 +158,19 @@ class Wrapper:
         
         # return empty dataframe
         return pd.DataFrame()
+    
+    def get_traded_symbols(self):
+        trades = self.get_todays_trades()
+        
+        if trades.empty:
+            return True
+        
+        # Number of positions based on the trades, Not on the symbols
+        entry_positions = trades[trades["entry"]==0]
+        entry_positions["code"] = entry_positions["symbol"] + "-" + entry_positions["entry"]
+
+        return entry_positions["code"].tolist()
+
 
     def today_unique_traded_symbols(self):
         trades = self.get_todays_trades()
@@ -190,5 +203,5 @@ if "__main__" == __name__:
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
-    print(obj.today_unique_traded_symbols())
+    print(obj.get_traded_symbols())
 
