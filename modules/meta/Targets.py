@@ -46,7 +46,7 @@ class Targets:
         candle_gap = index_of_previous_bar - past_break_index
         
         # Generally 60min for forex and 5 min for stock
-        dynamic_gap = 8 if timeframe in [15] else 2
+        dynamic_gap = 2
 
         if candle_gap > dynamic_gap:
             # Check does this already has trades on same direction, Load Passed Data
