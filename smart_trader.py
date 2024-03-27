@@ -28,7 +28,6 @@ class SniperReloaded():
         # Default values
         self.target_ratio = target_ratio  # Default 1:2.0 Ratio
         self.stop_ratio = 1.0
-        self.immidiate_exit = False
         self.timer = 30
         self.retries = 0
 
@@ -83,7 +82,7 @@ class SniperReloaded():
     
     def main(self):
         while True:
-            print(f"\n------- {self.security} - Status: {not self.immidiate_exit}, {self.trading_timeframe} TF {self.strategy.upper()}, Profit: {self.early_rr} RR -----------")
+            print(f"\n------- {self.security} {self.trading_timeframe} TF {self.strategy.upper()}, Profit: {self.early_rr} RR -----------")
             is_market_open, is_market_close = util.get_market_status()
 
             if self.security == "STOCK":
@@ -100,15 +99,6 @@ class SniperReloaded():
 
             # Each position trail stop
             self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
-
-            # Early Profit or Exit when account reach max loss, Close when US market time 8AM to avoid the spike stop at 8:30 AM
-            # if not self.immidiate_exit:
-                
-            #     # In addtion to exit plans
-            #     if self.risk_manager.has_daily_maximum_risk_reached():
-            #         self.immidiate_exit = True
-            #         self.orders.cancel_all_pending_orders()
-            #         self.orders.close_all_positions()
                 
             if is_market_close:
                 print("Market Close!")
@@ -118,11 +108,10 @@ class SniperReloaded():
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
                 self.fixed_initial_account_size = self.risk_manager.account_size
-                self.immidiate_exit = False
 
             self.orders.cancel_all_pending_orders()
             
-            if is_market_open and (not is_market_close) and (not self.immidiate_exit) and self.wrapper.today_unique_traded_symbols():
+            if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols():
                 existing_positions = self.wrapper.get_existing_symbols()
 
                 for symbol in self.selected_symbols:
