@@ -23,7 +23,7 @@ Production: 172_16_27_130
 Test: 172_16_27_128
 """
 
-class SniperReloaded():
+class SmartTrader():
     def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
         # Default values
         self.target_ratio = target_ratio  # Default 1:2.0 Ratio
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     target_ratio = float(args.target_ratio)
     security = str(args.security)
 
-    win = SniperReloaded(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
+    win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
     win.strategy = args.strategy
 
     win.main()
