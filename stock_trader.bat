@@ -7,7 +7,7 @@ set security=STOCK
 python smart_trader.py ^
     --strategy break ^
     --security %security% ^
-    --timeframe 5 ^
+    --timeframe 15 ^
     --account_risk %account_risk% ^
     --each_position_risk 0.5 ^
     --target_ratio %target_ratio%
