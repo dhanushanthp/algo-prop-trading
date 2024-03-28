@@ -53,13 +53,6 @@ class SmartTrader():
         # Default
         self.trading_timeframe = trading_timeframe
 
-        if self.security == "FOREX":
-            self.selected_symbols = curr.get_major_symbols()
-        elif self.security == "STOCK":
-            self.selected_symbols = curr.master_stocks
-        else:
-            raise Exception("Security is not defined!")
-
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
         """
         This will take the trade based on given strategy
@@ -111,7 +104,7 @@ class SmartTrader():
             if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols():
                 existing_positions = self.wrapper.get_existing_symbols()
 
-                for symbol in self.selected_symbols:
+                for symbol in curr.get_major_symbols(security=self.security):
                     # If the positions is already in trade, then don't check for signal
                     if symbol in existing_positions:
                         continue

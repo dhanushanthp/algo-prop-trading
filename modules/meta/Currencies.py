@@ -165,11 +165,18 @@ def get_ordered_symbols(without_index=False):
     
     return sorted_list
 
-def get_major_symbols():
-    main_pairs = major_pairs
-    if util.is_us_premarket_peroid():
-        main_pairs.extend(us_indexes)
-    return main_pairs
+def get_major_symbols(security="FOREX"):
+    if security == "FOREX":
+        main_pairs = major_pairs
+      
+        if util.is_us_premarket_peroid():
+            main_pairs.extend(us_indexes)
+        
+        return main_pairs
+    elif security == "STOCK":
+        return master_stocks
+    else:
+        raise Exception("Security is not defined!") 
 
 if __name__ == "__main__":
     print(get_major_symbols())
