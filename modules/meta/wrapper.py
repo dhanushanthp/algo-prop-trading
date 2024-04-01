@@ -36,8 +36,9 @@ class Wrapper:
             sel_min = 0
 
         current_gmt_time = util.get_current_time() + timedelta(hours=config.server_timezone)
-
-        candle_start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+        
+        today = util.get_current_time()
+        candle_start_time = datetime(int(today.year), int(today.month), int(today.day), 
                                         hour=sel_hour, minute=sel_min, tzinfo=pytz.timezone('Etc/GMT'))
         
         candles = mt5.copy_rates_range(symbol, util.match_timeframe(timeframe), candle_start_time, current_gmt_time)
@@ -58,7 +59,8 @@ class Wrapper:
         """
         current_gmt_time = util.get_current_time() + timedelta(hours=config.server_timezone)
 
-        candle_start_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
+        today = util.get_current_time()
+        candle_start_time = datetime(int(today.year), int(today.month), int(today.day), 
                                         hour=candle_start_hour, minute=0, tzinfo=pytz.timezone('Etc/GMT'))
         
         candle_end_time = datetime(int(current_gmt_time.year), int(current_gmt_time.month), int(current_gmt_time.day), 
@@ -202,6 +204,6 @@ if "__main__" == __name__:
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
-    # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
-    print(obj.get_traded_symbols())
+    print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
+    # print(obj.get_traded_symbols())
 
