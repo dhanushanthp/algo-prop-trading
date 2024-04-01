@@ -10,4 +10,5 @@ python smart_trader.py ^
     --timeframe 60 ^
     --account_risk %account_risk% ^
     --each_position_risk 0.25 ^
+    --tight_stop_factor 4 ^
     --target_ratio %target_ratio%
