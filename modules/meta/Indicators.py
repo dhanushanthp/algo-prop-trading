@@ -43,6 +43,31 @@ class Indicators:
             return off_hour_highs, off_hour_lows
 
         return None, None
+    
+    def get_three_candle_strike(self, symbol, timeframe=60) -> Directions:
+        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
+        # spread = self.wrapper.get_spread(symbol=symbol)
+        if len(previous_bars) >= 3:
+            last_3_bars = previous_bars.tail(3).copy()
+            last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
+            # last_3_bars["signal"] = abs(last_3_bars["body_size"]) > spread
+
+            is_higher_high = (last_3_bars["high"] > last_3_bars["high"].shift(1)).iloc[1:]
+            is_higher_low = (last_3_bars["low"] > last_3_bars["low"].shift(1)).iloc[1:]
+
+            is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
+            is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
+            
+            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
+            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
+
+            if is_bullish:
+                return Directions.LONG
+            
+            if is_bearish:
+                return Directions.SHORT
+        
+        return None
 
 
     def get_off_market_levels(self, symbol) -> Tuple[Signal, Signal]:
@@ -261,3 +286,4 @@ if __name__ == "__main__":
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
     print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, start_reference))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
+    print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))

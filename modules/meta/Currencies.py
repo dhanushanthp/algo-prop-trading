@@ -167,7 +167,7 @@ def get_ordered_symbols(without_index=False):
 
 def get_major_symbols(security="FOREX"):
     if security == "FOREX":
-        main_pairs = major_pairs
+        main_pairs = major_pairs.copy()
       
         if util.is_us_premarket_peroid():
             main_pairs.extend(us_indexes)
@@ -179,4 +179,5 @@ def get_major_symbols(security="FOREX"):
         raise Exception("Security is not defined!") 
 
 if __name__ == "__main__":
-    print(get_major_symbols())
+    for i in range(10):
+        print(get_major_symbols())
