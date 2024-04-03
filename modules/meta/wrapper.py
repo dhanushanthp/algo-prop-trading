@@ -183,7 +183,7 @@ class Wrapper:
         # Number of positions based on the trades, Not on the symbols
         num_entries = trades[trades["entry"]==0].shape[0]
 
-        if num_entries < 4:
+        if num_entries < 6:
             return True
         
         return False
