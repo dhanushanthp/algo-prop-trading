@@ -10,7 +10,7 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
-major_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF"]
+major_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF", "US500.cash", "XAUUSD"]
 us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
@@ -169,8 +169,8 @@ def get_major_symbols(security="FOREX"):
     if security == "FOREX":
         main_pairs = major_pairs.copy()
       
-        if util.is_us_premarket_peroid():
-            main_pairs.extend(us_indexes)
+        # if util.is_us_premarket_peroid():
+        #     main_pairs.extend(us_indexes)
         
         return main_pairs
     elif security == "STOCK":
