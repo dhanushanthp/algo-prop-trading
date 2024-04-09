@@ -10,7 +10,7 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
-major_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF", "US500.cash", "XAUUSD"]
+major_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF"]
 us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
@@ -168,7 +168,10 @@ def get_ordered_symbols(without_index=False):
 def get_major_symbols(security="FOREX"):
     if security == "FOREX":
         main_pairs = major_pairs.copy()
-      
+
+        _,hour,_ = util.get_current_day_hour_min()
+        if hour > 4:
+            main_pairs.extend(us_indexes)
         # if util.is_us_premarket_peroid():
         #     main_pairs.extend(us_indexes)
         
