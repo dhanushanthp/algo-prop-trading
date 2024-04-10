@@ -122,11 +122,15 @@ class RiskManager:
                     if result.comment != "No changes":
                         print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
     
-    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1) -> Shield:
+    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=2) -> Shield:
+        """
+        num_cdl_for_stop : number of previous candles considered from current candles for stop calculation e.g, 1 previous candle, 2 is second previous candle
+        however it includes current candle for calculation, in case if the current candle is longer than the previous candles
+        """
         selected_time = util.match_timeframe(timeframe)
         
         # Pick last 3 candles (Including current one) to find high and low
-        previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, 3)
+        previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, num_cdl_for_stop+1)
         
         current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
         current_candle_body = abs(current_candle["close"] - current_candle["open"])
