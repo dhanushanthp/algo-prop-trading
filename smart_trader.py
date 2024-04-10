@@ -112,6 +112,7 @@ class SmartTrader():
 
                     if self.system == "3CDL_STR":
                         candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
+                        
                         if candle_strike == Directions.LONG:
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
