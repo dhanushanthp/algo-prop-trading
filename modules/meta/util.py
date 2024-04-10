@@ -66,6 +66,10 @@ def get_traded_time(epoch)-> datetime:
     normal_time = datetime.fromtimestamp(epoch, pytz.timezone('Etc/GMT'))
     return normal_time
 
+def get_account_name():
+    info = mt5.account_info()
+    balance = round(info.balance/1000)
+    return f"{info.name} {balance}K "
 
 def get_us_time()-> datetime:
     current_time =  datetime.now(pytz.timezone("US/Eastern"))

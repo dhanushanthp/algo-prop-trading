@@ -1,7 +1,7 @@
 import psutil
-from objects.slack_msg import Slack
+from modules.common.slack_msg import Slack
 alert = Slack()
-import archived.indicators as ind
+from modules.meta import util
 
 def is_process_running(process_name):
     for process in psutil.process_iter(['pid', 'name', "cmdline"]):
@@ -11,12 +11,12 @@ def is_process_running(process_name):
     return False
 
 if __name__ == "__main__":
-    process_name = "trade_candles_r_s_combined.py"
+    process_name = "smart_trader.py"
 
     if is_process_running(process_name):
         # account_name = ind.get_account_name()
         # alert.send_msg(f"{account_name}: App is running fine!")
         pass
     else:
-        account_name = ind.get_account_name()
+        account_name = util.get_account_name()
         alert.send_msg(f"{account_name}: App is not running!")
