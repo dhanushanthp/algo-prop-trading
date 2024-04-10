@@ -41,6 +41,7 @@ class SmartTrader():
         self.indicators = Indicators()
         self.wrapper = Wrapper()
 
+        self.system:str = None
         self.strategy:str = None
         self.security:str = security
 
@@ -162,6 +163,7 @@ class SmartTrader():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Example script with named arguments.')
 
+    parser.add_argument('--system', type=str, help='Select System 3CDL or HOD, LOD Break')
     parser.add_argument('--strategy', type=str, help='Selected strategy')
     parser.add_argument('--security', type=str, help='Selected Type')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
@@ -178,6 +180,9 @@ if __name__ == "__main__":
     security = str(args.security)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
+    # On the system, Are we taking break or reverse
     win.strategy = args.strategy
+    # Systems should be 3 candle strike or Daily Levels
+    win.system = args.system if args.system in ["3CDL_STR", "DAILY_HL"] else None
 
     win.main()

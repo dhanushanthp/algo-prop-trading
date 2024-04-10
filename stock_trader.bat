@@ -3,9 +3,11 @@
 set account_risk=1
 set target_ratio=4.0
 set security=STOCK
+set system=3CDL_STR
 
 python smart_trader.py ^
     --strategy break ^
+    --system %system% ^
     --security %security% ^
     --timeframe 15 ^
     --account_risk %account_risk% ^
