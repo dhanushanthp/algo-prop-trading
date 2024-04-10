@@ -48,8 +48,7 @@ class Targets:
         # Generally 60min for forex and 5 min for stock
         dynamic_gap = 2
         
-        #  (candle_gap > dynamic_gap) or 
-        if (reference == "3CDL"):
+        if (candle_gap > dynamic_gap) or  (reference == "3CDL_STR"):
             # Check does this already has trades on same direction, Load Passed Data
             todays_trades = self.wrapper.get_todays_trades()
 
