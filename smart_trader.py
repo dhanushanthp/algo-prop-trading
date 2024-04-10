@@ -110,53 +110,69 @@ class SmartTrader():
                     if symbol in existing_positions:
                         continue
 
-                    previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
-                    
-                    """
-                    Levels such as High of the Day, Low of the day will be checked with previous bar close
-                    """
-                    king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
-                    candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
-                    # previous_breaks = self.targets.any_previous_breakouts(symbol=symbol, timeframe=self.trading_timeframe)[0]
-                    for resistance in king_of_levels["resistance"]:
-                        if (previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level) or candle_strike == Directions.LONG:
-                            
-                            if candle_strike:
-                                dynamic_reference = "3CDL"
-                            else:
-                                dynamic_reference = resistance.reference
-
+                    if self.system == "3CDL_STR":
+                        candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
+                        if candle_strike == Directions.LONG:
                             is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                             past_break_index=resistance.break_bar_index, 
-                                                                                             timeframe=self.trading_timeframe,
-                                                                                             shoot_direction=Directions.LONG, 
-                                                                                             break_level=resistance.level, 
-                                                                                             reference=dynamic_reference)
+                                                                                                past_break_index=resistance.break_bar_index, 
+                                                                                                timeframe=self.trading_timeframe,
+                                                                                                shoot_direction=Directions.LONG, 
+                                                                                                break_level=resistance.level, 
+                                                                                                reference=self.system)
 
                             # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
                             if is_valid_signal:
-                                self.trade(direction=Directions.LONG, symbol=symbol, reference=dynamic_reference, break_level=candle_gap)
+                                self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=candle_gap)
                             break # Break the resistance loop
-                    
-                    for support in king_of_levels["support"]:
-                        if (previous_candle["high"] > support.level and previous_candle["close"] < support.level)  or candle_strike == Directions.SHORT:
-                            
-                            if candle_strike:
-                                dynamic_reference = "3CDL"
-                            else:
-                                dynamic_reference = support.reference
-
+                        elif candle_strike == Directions.SHORT:
                             is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                             past_break_index=support.break_bar_index, 
-                                                                                             timeframe=self.trading_timeframe,
-                                                                                             shoot_direction=Directions.SHORT, 
-                                                                                             break_level=support.level, 
-                                                                                             reference=dynamic_reference)
+                                                                                                past_break_index=support.break_bar_index, 
+                                                                                                timeframe=self.trading_timeframe,
+                                                                                                shoot_direction=Directions.SHORT, 
+                                                                                                break_level=support.level, 
+                                                                                                reference=self.system)
 
                             # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
                             if is_valid_signal:
-                                self.trade(direction=Directions.SHORT, symbol=symbol, reference=dynamic_reference, break_level=candle_gap)
+                                self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=candle_gap)
                             break # Break the support loop
+                            
+                    elif self.system == "DAILY_HL":
+                        """
+                        Levels such as High of the Day, Low of the day will be checked with previous bar close
+                        """
+                        king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
+                        previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
+
+                        for resistance in king_of_levels["resistance"]:
+                            if (previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level):
+                                is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                                past_break_index=resistance.break_bar_index, 
+                                                                                                timeframe=self.trading_timeframe,
+                                                                                                shoot_direction=Directions.LONG, 
+                                                                                                break_level=resistance.level, 
+                                                                                                reference=resistance.reference)
+
+                                # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
+                                if is_valid_signal:
+                                    self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap)
+                                break # Break the resistance loop
+                    
+                        for support in king_of_levels["support"]:
+                            if (previous_candle["high"] > support.level and previous_candle["close"] < support.level):
+                                is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                                past_break_index=support.break_bar_index, 
+                                                                                                timeframe=self.trading_timeframe,
+                                                                                                shoot_direction=Directions.SHORT, 
+                                                                                                break_level=support.level, 
+                                                                                                reference=support.reference)
+
+                                # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
+                                if is_valid_signal:
+                                    self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap)
+                                break # Break the support loop
+                    else:
+                        raise Exception(f"The system: {self.system}  is not defined in the batch script")
 
             time.sleep(self.timer)
     
