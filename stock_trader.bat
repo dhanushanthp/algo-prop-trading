@@ -1,7 +1,7 @@
 @REM sniper_ranger.bat 1% timeframe break
 
 set account_risk=1
-set target_ratio=4.0
+set target_ratio=8.0
 set security=STOCK
 set system=3CDL_STR
 
