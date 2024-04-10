@@ -113,29 +113,30 @@ class SmartTrader():
                     if self.system == "3CDL_STR":
                         candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
                         if candle_strike == Directions.LONG:
-                            is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=resistance.break_bar_index, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                shoot_direction=Directions.LONG, 
-                                                                                                break_level=resistance.level, 
-                                                                                                reference=self.system)
+                            is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                    past_break_index=0, 
+                                                                                    timeframe=self.trading_timeframe,
+                                                                                    shoot_direction=Directions.LONG, 
+                                                                                    break_level=resistance.level, 
+                                                                                    reference=self.system)
 
                             # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
                             if is_valid_signal:
-                                self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=candle_gap)
-                            break # Break the resistance loop
+                                self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0)
+                                break # Break the symbol loop
+
                         elif candle_strike == Directions.SHORT:
-                            is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=support.break_bar_index, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                shoot_direction=Directions.SHORT, 
-                                                                                                break_level=support.level, 
-                                                                                                reference=self.system)
+                            is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                    past_break_index=0, 
+                                                                                    timeframe=self.trading_timeframe,
+                                                                                    shoot_direction=Directions.SHORT, 
+                                                                                    break_level=support.level, 
+                                                                                    reference=self.system)
 
                             # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
                             if is_valid_signal:
-                                self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=candle_gap)
-                            break # Break the support loop
+                                self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0)
+                                break # Break the symbol loop
                             
                     elif self.system == "DAILY_HL":
                         """
