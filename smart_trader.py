@@ -54,7 +54,7 @@ class SmartTrader():
         # Default
         self.trading_timeframe = trading_timeframe
 
-    def trade(self, direction:Directions, symbol:str, reference:str, break_level:float):
+    def trade(self, direction:Directions, symbol:str, reference:str, break_level:float) -> bool:
         """
         This will take the trade based on given strategy
         """
@@ -68,7 +68,8 @@ class SmartTrader():
         method = getattr(self.orders, method_name, None)
 
         if method:
-            method(symbol=symbol, reference=f"{self.strategy.upper()[0]}-{reference}", break_level=break_level, trading_timeframe=self.trading_timeframe)
+            status = method(symbol=symbol, reference=f"{self.strategy.upper()[0]}-{reference}", break_level=break_level, trading_timeframe=self.trading_timeframe)
+            return status
 
     
     def main(self):
@@ -123,8 +124,8 @@ class SmartTrader():
 
                             # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
                             if is_valid_signal:
-                                self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0)
-                                break # Break the symbol loop
+                                if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
+                                    break # Break the symbol loop
 
                         elif candle_strike == Directions.SHORT:
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
@@ -136,8 +137,8 @@ class SmartTrader():
 
                             # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
                             if is_valid_signal:
-                                self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0)
-                                break # Break the symbol loop
+                                if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
+                                    break # Break the symbol loop
                             
                     elif self.system == "DAILY_HL":
                         """
@@ -157,8 +158,8 @@ class SmartTrader():
 
                                 # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
                                 if is_valid_signal:
-                                    self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap)
-                                break # Break the resistance loop
+                                    if self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
+                                        break # Break the resistance loop
                     
                         for support in king_of_levels["support"]:
                             if (previous_candle["high"] > support.level and previous_candle["close"] < support.level):
@@ -171,8 +172,8 @@ class SmartTrader():
 
                                 # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
                                 if is_valid_signal:
-                                    self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap)
-                                break # Break the support loop
+                                    if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
+                                        break # Break the support loop
                     else:
                         raise Exception(f"The system: {self.system}  is not defined in the batch script")
 

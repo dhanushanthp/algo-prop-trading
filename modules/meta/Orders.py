@@ -56,7 +56,7 @@ class Orders:
                 print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
     
 
-    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int):
+    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
         entry_price = self.prices.get_entry_price(symbol=symbol)
 
         if entry_price:
@@ -83,14 +83,16 @@ class Orders:
                         }
                         
                         request_log = mt5.order_send(order_request)
-                        util.error_logging(request_log, order_request)
+                        return util.error_logging(request_log, order_request)
                     except Exception as e:
                         print(f"{symbol.ljust(12)}: {e}")
+                        return False
             else:
                 print(f"{symbol.ljust(12)}: Waiting for signal strength...")
+                return False
     
 
-    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int):
+    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
         entry_price = self.prices.get_entry_price(symbol)
         
         if entry_price:
@@ -117,28 +119,31 @@ class Orders:
                         }
                         
                         request_log = mt5.order_send(order_request)
-                        util.error_logging(request_log, order_request)
+                        return util.error_logging(request_log, order_request)
                     except Exception as e:
-                        print(f"{symbol.ljust(12)}: {e}")     
+                        print(f"{symbol.ljust(12)}: {e}")
+                        return False
             else:
-                print(f"{symbol.ljust(12)}: Waiting for signal strength...")      
+                print(f"{symbol.ljust(12)}: Waiting for signal strength...")
+                return False
 
 if __name__ == "__main__":
-    symbol = "AUDCHF"
+    import sys
+    symbol = sys.argv[1]
     risk_obj = RiskManager()
     prices_obj = Prices()
     order_obj = Orders(prices=prices_obj, risk_manager=risk_obj)
 
     # Test: Cancel all pending orders
-    order_obj.cancel_all_pending_orders()
+    # order_obj.cancel_all_pending_orders()
 
     # Test: Close all open positions
-    order_obj.close_all_positions()
+    # order_obj.close_all_positions()
     
     # Test: Enter Long Position
-    order_obj.long_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60)
+    order_obj.long_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
 
     # Test: Enter Short Position
-    order_obj.short_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60)
+    # order_obj.short_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60)
 
 

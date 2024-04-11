@@ -8,11 +8,16 @@ import modules.config as config
 from typing import Tuple
 
 
-def error_logging(result, request_str={}):
+def error_logging(result, request_str={}) -> bool:
     if result:
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             error_string = f"{result.comment}"
             print(error_string)
+
+            if result.comment in ["Invalid volume", "Invalid price"]:
+                return False
+            return True
+    return True
             # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
 def match_timeframe(timeframe):
