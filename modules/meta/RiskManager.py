@@ -183,6 +183,9 @@ class RiskManager:
         
         if symbol in ['NIKKEI_raw']:
             lots = lots/1000
+
+        if symbol in ["XAUUSD"]:
+            lots = lots*100
         
         lots = round(lots, 2)
 

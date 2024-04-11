@@ -61,7 +61,7 @@ class Prices:
             elif symbol == "AUS200.cash":
                 return self.get_exchange_price("AUDUSD")
             elif symbol == "XAUUSD":
-                return 2/self.get_exchange_price("XAUUSD")
+                return self.get_exchange_price("XAUUSD")
             elif symbol == "AUDUSD":
                 return 1.6 * self.get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
             elif symbol == "NZDUSD":
