@@ -118,7 +118,7 @@ class SmartTrader():
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
                                                                                     shoot_direction=Directions.LONG, 
-                                                                                    break_level=resistance.level, 
+                                                                                    break_level=0, 
                                                                                     reference=self.system)
 
                             # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
@@ -131,7 +131,7 @@ class SmartTrader():
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
                                                                                     shoot_direction=Directions.SHORT, 
-                                                                                    break_level=support.level, 
+                                                                                    break_level=0, 
                                                                                     reference=self.system)
 
                             # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
