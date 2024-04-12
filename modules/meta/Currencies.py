@@ -169,11 +169,8 @@ def get_major_symbols(security="FOREX"):
     if security == "FOREX":
         main_pairs = major_pairs.copy()
 
-        _,hour,_ = util.get_current_day_hour_min()
-        if hour > 4:
+        if util.is_us_premarket_peroid():
             main_pairs.extend(us_indexes)
-        # if util.is_us_premarket_peroid():
-        #     main_pairs.extend(us_indexes)
         
         return main_pairs
     elif security == "STOCK":

@@ -78,8 +78,8 @@ class SmartTrader():
             is_market_open, is_market_close = util.get_market_status()
 
             if self.security == "STOCK":
-                is_market_open = is_market_open and util.is_us_active_peroid()
-                is_market_close = not util.is_us_active_peroid()
+                is_market_open = is_market_open and util.is_us_activemarket_peroid()
+                is_market_close = not util.is_us_activemarket_peroid()
 
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account

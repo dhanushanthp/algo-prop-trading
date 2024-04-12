@@ -160,11 +160,11 @@ def is_us_premarket_peroid() -> bool:
     Check is this US premarket hour
     Exit any trade or no new trades between 8AM and 930AM US time to avoid the high volatile moves
     """
-    us_hour, us_min = get_us_hour_min()
+    us_hour, _ = get_us_hour_min()
     condition = (us_hour > 3) and (us_hour < 16)
     return condition
 
-def is_us_active_peroid() -> bool:
+def is_us_activemarket_peroid() -> bool:
     """
     Check is this US premarket hour
     Exit any trade or no new trades between 8AM and 930AM US time to avoid the high volatile moves
