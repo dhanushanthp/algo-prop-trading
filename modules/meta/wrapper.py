@@ -203,17 +203,19 @@ class Wrapper:
         DataFrame: DataFrame containing Heikin-Ashi OHLC values with columns renamed to lowercase.
         """
 
-        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, last_n_candle=10)
-        heikin_ashi_df = pd.DataFrame(index=df.index.values, columns=['open', 'high', 'low', 'close'])
+        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, last_n_candle=4)
+        print(df[["open", "close", "low", "high"]])
 
-        heikin_ashi_df['close'] = (df['open'] + df['high'] + df['low'] + df['close']) / 4
-
-        heikin_ashi_df['open'] = (heikin_ashi_df['close'].shift(1) + heikin_ashi_df['open'].shift(1)) / 2
-        heikin_ashi_df['open'].fillna(df['open'], inplace=True)
+        heikin_ashi_df = df[["open", "close", "low", "high"]].copy()
+        
+        heikin_ashi_df['close'] = (df['open'] + df['high'] + df['low'] + df['close']) / 4        
+        heikin_ashi_df['open'] = (df['close'].shift(1) + df['open'].shift(1)) / 2
 
         import numpy as np
-        heikin_ashi_df['high'] = np.maximum(df['high'], heikin_ashi_df[['open', 'close']].iloc[:-1].max(axis=1))
-        heikin_ashi_df['low'] = np.minimum(df['low'], heikin_ashi_df[['open', 'close']].iloc[:-1].min(axis=1))
+        heikin_ashi_df['high'] = np.maximum(df['high'], df[['open', 'close']].iloc[:-1].max(axis=1))
+        heikin_ashi_df['low'] = np.minimum(df['low'], df[['open', 'close']].iloc[:-1].min(axis=1))
+        # heikin_ashi_df['high'] = df["high"]
+        # heikin_ashi_df['low'] = df["low"]
 
         heikin_ashi_df["signal"] = heikin_ashi_df["close"] - heikin_ashi_df["open"]
         heikin_ashi_df["signal"] = heikin_ashi_df["signal"].apply(lambda x: "bullish" if x > 0 else "bearish")
@@ -224,8 +226,8 @@ if "__main__" == __name__:
     obj = Wrapper()
     import sys
     symbol = sys.argv[1]
-    timeframe = int(sys.argv[2])
-    start_hour = int(sys.argv[3])
+    # timeframe = int(sys.argv[2])
+    # start_hour = int(sys.argv[3])
     # end_hour = int(sys.argv[4])
     # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
@@ -235,6 +237,6 @@ if "__main__" == __name__:
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
-    print(obj.get_heikin_ashi(symbol=symbol, timeframe=timeframe))
+    print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
     # print(obj.get_traded_symbols())
 
