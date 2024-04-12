@@ -140,7 +140,7 @@ class SmartTrader():
                                 if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
                                     break # Break the symbol loop
                             
-                    elif self.system == "DAILY_HL":
+                    if self.system == "DAILY_HL":
                         """
                         Levels such as High of the Day, Low of the day will be checked with previous bar close
                         """
@@ -174,8 +174,6 @@ class SmartTrader():
                                 if is_valid_signal:
                                     if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
                                         break # Break the support loop
-                    else:
-                        raise Exception(f"The system: {self.system}  is not defined in the batch script")
 
             time.sleep(self.timer)
     
