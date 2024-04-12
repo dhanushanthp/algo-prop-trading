@@ -10,7 +10,7 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
-major_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF"]
+major_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF", "AUDJPY"]
 us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
