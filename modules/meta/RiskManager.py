@@ -84,6 +84,19 @@ class RiskManager:
             symbol = position.symbol
             stop_price = position.sl
             target_price = position.tp
+            points_in_stop = abs(stop_price-position.price_open)
+
+            # Move the stop to breakeven once the price moved to 2R
+            is_stop_updated=False
+            if points_in_stop > 0:
+                points_in_profit = abs(position.price_open-position.price_current)
+                
+                current_rr = points_in_profit/points_in_stop
+
+                if current_rr > 2 and (stop_price != position.price_open):
+                    # Update the stop price if more than 2R, It will take care during the target update
+                    stop_price = position.price_open
+                    is_stop_updated = True
             
             # Increase the range of the spread to eliminate the sudden stopouts
             stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
@@ -97,8 +110,9 @@ class RiskManager:
                 # Short Position
                 trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
                 trail_target = max(target_price, tgt_shield_obj.get_long_stop)
+            
             # (trail_stop != stop_price) or
-            if (target_price != trail_target):
+            if (target_price != trail_target) or is_stop_updated:
                 print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
 
                 modify_request = {
@@ -254,3 +268,5 @@ if __name__ == "__main__":
     print(check_time)
 
     print(obj.reduce_risk_exposure())
+
+    obj.adjust_positions_trailing_stops(target_multiplier=8, trading_timeframe=60)
