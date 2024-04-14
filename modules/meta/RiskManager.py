@@ -93,7 +93,7 @@ class RiskManager:
                 
                 current_rr = points_in_profit/points_in_stop
 
-                if current_rr > 2 and (stop_price != position.price_open):
+                if current_rr > 1.5 and (stop_price != position.price_open):
                     # Update the stop price if more than 2R, It will take care during the target update
                     stop_price = position.price_open
                     is_stop_updated = True
