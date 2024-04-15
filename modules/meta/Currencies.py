@@ -10,7 +10,7 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
-major_pairs = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF", "AUDUSD", "EURCHF", "AUDJPY"]
+major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", "EURCHF", "USDJPY", "AUDJPY", "GBPJPY"]
 us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
@@ -66,10 +66,6 @@ elif company == "GrowthNext - F.Z.C":
 
 else:
     raise Exception(f"The << {company} >> Trading platform not found")
-
-# + indexes + support_pairs+
-for pair in (currencies +  master_stocks):
-    mt.symbol_select(f"{pair}", True)
 
 
 def get_symbol_mapping(symbol):
@@ -164,6 +160,15 @@ def get_ordered_symbols(without_index=False):
     sorted_list = [item[0] for item in sorted_list_desc]
     
     return sorted_list
+
+def ticker_initiator(security="FOREX"):
+    # + indexes + support_pairs+
+    if security == "FOREX":
+        for pair in (currencies + us_indexes):
+            mt.symbol_select(f"{pair}", True)
+    elif security == "STOCK":
+        for pair in (master_stocks):
+            mt.symbol_select(f"{pair}", True)
 
 def get_major_symbols(security="FOREX"):
     if security == "FOREX":

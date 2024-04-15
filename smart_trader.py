@@ -54,6 +54,9 @@ class SmartTrader():
         # Default
         self.trading_timeframe = trading_timeframe
 
+        # Initiate the ticker
+        curr.ticker_initiator(security=security)
+
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float) -> bool:
         """
         This will take the trade based on given strategy
