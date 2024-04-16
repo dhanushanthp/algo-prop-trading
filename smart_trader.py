@@ -93,7 +93,12 @@ class SmartTrader():
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
 
             # Each position trail stop
-            self.risk_manager.adjust_positions_trailing_stops(target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe) 
+            self.risk_manager.adjust_positions_trailing_stops(stop_multiplier=2, target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe)
+
+            emerg_exist_symbols = self.risk_manager.emergency_exit(timeframe=self.trading_timeframe)
+            
+            for position_object in emerg_exist_symbols:
+                self.orders.close_single_position(obj=position_object)
                 
             if is_market_close:
                 print("Market Close!")

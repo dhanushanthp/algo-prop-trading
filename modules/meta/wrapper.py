@@ -51,8 +51,8 @@ class Wrapper:
 
         return df
     
-    def get_last_n_candles(self, symbol:str, timeframe:int, last_n_candle:int):
-        return pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 0, last_n_candle))
+    def get_last_n_candles(self, symbol:str, timeframe:int, start_candle:int=0, last_n_candle:int=1):
+        return pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), start_candle, last_n_candle))
 
     
     def get_candles_by_time(self, symbol:str, timeframe:int,candle_start_hour:int=0, candle_end_hour:int=9):
@@ -226,6 +226,7 @@ if "__main__" == __name__:
     obj = Wrapper()
     import sys
     symbol = sys.argv[1]
+    # timeframe = int(sys.argv[2])
     # timeframe = int(sys.argv[2])
     # start_hour = int(sys.argv[3])
     # end_hour = int(sys.argv[4])

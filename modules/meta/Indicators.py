@@ -32,7 +32,24 @@ class Indicators:
         atr = np.mean(true_range[-14:])
 
         return round(atr, 5)
+    
+    def simple_moving_average(self, symbol:str, timeframe:int, n_moving_average:int=0) -> float:
+        """
+        Find the simple moving average of last candle
+        """
+        last_n_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=0, last_n_candle=n_moving_average)
+        close_prices = last_n_candles["close"]
+        return close_prices.mean()
+    
+    def sma_cross_overs(self, symbol:str, timeframe:int, short_ma:int=10, long_ma:int=20) -> Directions:
+        # Find the SMA cross over based on the last candle
+        short_sma = self.simple_moving_average(symbol=symbol, timeframe=timeframe, n_moving_average=short_ma)
+        long_sma = self.simple_moving_average(symbol=symbol, timeframe=timeframe, n_moving_average=long_ma)
 
+        if short_sma > long_sma:
+            return Directions.LONG
+        else:
+            return Directions.SHORT
 
     def get_previous_day_levels(self, symbol, timeframe=60) -> Tuple[Signal, Signal]:
         previous_bars = pd.DataFrame(self.wrapper.get_previous_day_candles_by_time(symbol=symbol, 
@@ -48,6 +65,10 @@ class Indicators:
         previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
         # spread = self.wrapper.get_spread(symbol=symbol)
         if len(previous_bars) >= 3:
+            
+            # Identify Longer timeframe direction, 4 times higher than current timeframe
+            higher_timeframe_trend = self.sma_cross_overs(symbol=symbol, timeframe=timeframe*4)
+
             last_3_bars = previous_bars.tail(3).copy()
             last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
             # last_3_bars["signal"] = abs(last_3_bars["body_size"]) > spread
@@ -58,8 +79,9 @@ class Indicators:
             is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
             is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
             
-            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
-            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
+            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low) and (higher_timeframe_trend == Directions.LONG)
+            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low) and (higher_timeframe_trend == Directions.SHORT)
+            
 
             if is_bullish:
                 return Directions.LONG
@@ -69,6 +91,23 @@ class Indicators:
         
         return None
 
+    def get_three_candle_exit(self, symbol, ratio=2, timeframe=60) -> bool:
+        """
+        Exist the position if candle is randing for last 3 hours, which has longer wicks than the body
+        """
+        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
+
+        if len(previous_bars) >= 3:
+            last_3_bars = previous_bars.tail(3).copy()
+            last_3_bars["body_size"] = abs(last_3_bars["close"] - last_3_bars["open"])
+            last_3_bars["wick_size"] = abs(last_3_bars["high"] - last_3_bars["low"]) - last_3_bars["body_size"]
+            last_3_bars["ratio"] = last_3_bars["wick_size"]/last_3_bars["body_size"] # Calcullate the Ratio
+
+            is_ranging = all(last_3_bars["ratio"] > ratio)
+            
+            return is_ranging
+        
+        return False
 
     def get_off_market_levels(self, symbol) -> Tuple[Signal, Signal]:
         current_us_time = datetime.now(pytz.timezone('US/Eastern'))
@@ -276,7 +315,7 @@ if __name__ == "__main__":
     import sys
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])
-    start_reference = int(sys.argv[3])
+    # start_reference = int(sys.argv[3])
     # print("ATR", indi_obj.get_atr(symbol, timeframe, 2))
     # print("Body", indi_obj.wrapper.pre_candle_body(symbol, timeframe))
     # print("Ratio", indi_obj.candle_move_ratio(symbol, timeframe))
@@ -284,6 +323,8 @@ if __name__ == "__main__":
     # print(indi_obj.get_time_based_levels(symbol=symbol, timeframe=timeframe, candle_start_hour=0, candle_end_hour=9))
     # print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
-    print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, start_reference))
+    # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, start_reference))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
-    print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
+    # print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
+    print(indi_obj.get_three_candle_exit(symbol))
+    print(indi_obj.sma_cross_overs(symbol=symbol, timeframe=60*4))

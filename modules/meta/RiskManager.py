@@ -5,7 +5,7 @@ import pytz
 import modules.common.slack_msg as slack_msg
 import modules.meta.util as util
 from modules.meta.Prices import Prices
-from typing import Tuple
+from typing import Tuple, List
 import modules.meta.Currencies as curr
 from modules.common.Shield import Shield
 from modules.meta.Account import Account
@@ -77,29 +77,47 @@ class RiskManager:
         
         # Return False if daily maximum risk has not been reached
         return False
+    
+    def emergency_exit(self, timeframe:int) -> List:
+        """
+        Get list of symbol which are meant to exist based on ranging hourly candles
+        """
+        existing_positions = mt5.positions_get()
+        symbol_list = []
+        for position in existing_positions:
+            symbol = position.symbol
+            # Emergency Exist Plan
+            is_ranging = self.indicators.get_three_candle_exit(symbol=symbol, ratio=2, timeframe=timeframe)
+        
+            if is_ranging:
+                symbol_list.append(position)
+                self.alert.send_msg(f"Emergency Exist: {symbol}")
+        
+        return symbol_list
 
-    def adjust_positions_trailing_stops(self, target_multiplier:float, trading_timeframe:int):
+
+    def adjust_positions_trailing_stops(self, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
         existing_positions = mt5.positions_get()
         for position in existing_positions:
             symbol = position.symbol
             stop_price = position.sl
             target_price = position.tp
-            points_in_stop = abs(stop_price-position.price_open)
+            # points_in_stop = abs(stop_price-position.price_open)
 
             # Move the stop to breakeven once the price moved to 2R
-            is_stop_updated=False
-            if points_in_stop > 0:
-                points_in_profit = abs(position.price_open-position.price_current)
+            # is_stop_updated=False
+            # if points_in_stop > 0:
+            #     points_in_profit = abs(position.price_open-position.price_current)
                 
-                current_rr = points_in_profit/points_in_stop
+            #     current_rr = points_in_profit/points_in_stop
 
-                if current_rr > 1.5 and (stop_price != position.price_open):
-                    # Update the stop price if more than 2R, It will take care during the target update
-                    stop_price = position.price_open
-                    is_stop_updated = True
+            #     if current_rr > 1.5 and (stop_price != position.price_open):
+            #         # Update the stop price if more than 2R, It will take care during the target update
+            #         stop_price = position.price_open
+            #         is_stop_updated = True
             
             # Increase the range of the spread to eliminate the sudden stopouts
-            stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
+            stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier)
             tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
             
             if position.type == 0:
@@ -111,8 +129,8 @@ class RiskManager:
                 trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
                 trail_target = max(target_price, tgt_shield_obj.get_long_stop)
             
-            # (trail_stop != stop_price) or
-            if (target_price != trail_target) or is_stop_updated:
+            #  or is_stop_updated
+            if (trail_stop != stop_price) or (target_price != trail_target):
                 print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
 
                 modify_request = {
@@ -121,7 +139,7 @@ class RiskManager:
                     "volume": position.volume,
                     "type": position.type,
                     "position": position.ticket,
-                    "sl": stop_price,
+                    "sl": trail_stop,
                     "tp": trail_target,
                     "comment": position.comment,
                     "magic": position.magic,
