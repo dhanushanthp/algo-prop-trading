@@ -95,8 +95,8 @@ class SmartTrader():
             # Each position trail stop
             self.risk_manager.adjust_positions_trailing_stops(stop_multiplier=2, target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe)
 
+            # Exit from the position when 1 hour candle is ranging with long wicks
             emerg_exist_symbols = self.risk_manager.emergency_exit(timeframe=self.trading_timeframe)
-            
             for position_object in emerg_exist_symbols:
                 self.orders.close_single_position(obj=position_object)
                 
