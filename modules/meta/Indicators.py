@@ -41,7 +41,7 @@ class Indicators:
         close_prices = last_n_candles["close"]
         return close_prices.mean()
     
-    def sma_cross_overs(self, symbol:str, timeframe:int, short_ma:int=10, long_ma:int=20) -> Directions:
+    def sma_direction(self, symbol:str, timeframe:int, short_ma:int=10, long_ma:int=20) -> Directions:
         # Find the SMA cross over based on the last candle
         short_sma = self.simple_moving_average(symbol=symbol, timeframe=timeframe, n_moving_average=short_ma)
         long_sma = self.simple_moving_average(symbol=symbol, timeframe=timeframe, n_moving_average=long_ma)
@@ -61,13 +61,34 @@ class Indicators:
 
         return None, None
     
+    def get_candle_cross_sma(self, symbol:str, timeframe:int=240, sma_crossing:int=8) -> Tuple[Directions, int]:
+        sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe, short_ma=10, long_ma=20)
+        previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
+
+        sma_crossing = self.simple_moving_average(symbol=symbol, timeframe=timeframe, n_moving_average=sma_crossing)
+
+        _, hour, min = util.get_current_day_hour_min()
+        break_hour = hour - 1
+
+        bearish_cross = previous_candle["high"] > sma_crossing and previous_candle["low"] < sma_crossing and previous_candle["close"] < previous_candle["open"]
+        bullish_cross = previous_candle["low"] < sma_crossing and previous_candle["high"] > sma_crossing and previous_candle["close"] > previous_candle["open"]
+
+        if bearish_cross and sma_direction == Directions.SHORT:
+            return Directions.SHORT.name, break_hour
+        
+        if bullish_cross and sma_direction == Directions.LONG:
+            return Directions.LONG.name, break_hour
+        
+        return None
+
+    
     def get_three_candle_strike(self, symbol, timeframe=60) -> Directions:
         previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
         # spread = self.wrapper.get_spread(symbol=symbol)
         if len(previous_bars) >= 3:
             
             # Identify Longer timeframe direction, 4 times higher than current timeframe
-            higher_timeframe_trend = self.sma_cross_overs(symbol=symbol, timeframe=timeframe*4)
+            higher_timeframe_trend = self.sma_direction(symbol=symbol, timeframe=timeframe*4)
 
             last_3_bars = previous_bars.tail(3).copy()
             last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
@@ -323,5 +344,6 @@ if __name__ == "__main__":
     # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, start_reference))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
-    print(indi_obj.get_three_candle_exit(symbol))
-    print(indi_obj.sma_cross_overs(symbol=symbol, timeframe=60*4))
+    # print(indi_obj.get_three_candle_exit(symbol))
+    # print(indi_obj.sma_direction(symbol=symbol, timeframe=60*4))
+    print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))
