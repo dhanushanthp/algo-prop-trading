@@ -14,7 +14,7 @@ from modules.meta.Indicators import Indicators
 mt5.initialize()
 
 class RiskManager:
-    def __init__(self, stop_ratio=1, target_ratio=3, account_risk:float=1, position_risk:float=0.5) -> None:
+    def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1, position_risk:float=0.5) -> None:
         self.account = Account()
         ACCOUNT_SIZE = self.account.get_liquid_balance()
         self.account_size  = ACCOUNT_SIZE

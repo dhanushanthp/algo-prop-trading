@@ -130,6 +130,7 @@ class Orders:
 if __name__ == "__main__":
     import sys
     symbol = sys.argv[1]
+    direction = sys.argv[2]
     risk_obj = RiskManager()
     prices_obj = Prices()
     order_obj = Orders(prices=prices_obj, risk_manager=risk_obj)
@@ -141,9 +142,11 @@ if __name__ == "__main__":
     # order_obj.close_all_positions()
     
     # Test: Enter Long Position
-    order_obj.long_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
+    if direction == "long":
+        order_obj.long_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
 
     # Test: Enter Short Position
-    # order_obj.short_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60)
+    if direction == "short":
+        order_obj.short_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
 
 
