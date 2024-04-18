@@ -86,10 +86,12 @@ class RiskManager:
         symbol_list = []
         for position in existing_positions:
             symbol = position.symbol
+            pnl = position.profit
             # Emergency Exist Plan
             is_ranging = self.indicators.get_three_candle_exit(symbol=symbol, ratio=2, timeframe=timeframe)
-        
-            if is_ranging:
+            
+            # Also the profit is more than 1R
+            if is_ranging and (pnl > self.risk_of_a_position):
                 symbol_list.append(position)
                 self.alert.send_msg(f"Emergency Exist: {symbol}")
         
@@ -288,3 +290,5 @@ if __name__ == "__main__":
     print(obj.reduce_risk_exposure())
 
     obj.adjust_positions_trailing_stops(target_multiplier=8, trading_timeframe=60)
+    
+    print(obj.emergency_exit(timeframe=60))
