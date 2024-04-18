@@ -1,7 +1,7 @@
 @REM sniper_ranger.bat 1% timeframe break
 
 set account_risk=1
-set target_ratio=8.0
+set target_ratio=5.0
 set security=FOREX
 set system=DAILY_HL
 
@@ -11,5 +11,5 @@ python smart_trader.py ^
     --security %security% ^
     --timeframe 60 ^
     --account_risk %account_risk% ^
-    --each_position_risk 0.5 ^
+    --each_position_risk 0.25 ^
     --target_ratio %target_ratio%

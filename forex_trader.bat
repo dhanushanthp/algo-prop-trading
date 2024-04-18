@@ -11,5 +11,5 @@ python smart_trader.py ^
     --security %security% ^
     --timeframe 60 ^
     --account_risk %account_risk% ^
-    --each_position_risk 0.5 ^
+    --each_position_risk 0.25 ^
     --target_ratio %target_ratio%
