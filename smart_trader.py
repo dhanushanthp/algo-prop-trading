@@ -154,6 +154,7 @@ class SmartTrader():
                         """
                         king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
                         previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
+                        higher_tf_direction = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe*4)
 
                         for resistance in king_of_levels["resistance"]:
                             if (previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level):
@@ -166,7 +167,8 @@ class SmartTrader():
 
                                 # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
                                 if is_valid_signal:
-                                    if self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
+                                    # Directions.LONG
+                                    if self.trade(direction=higher_tf_direction, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
                                         break # Break the resistance loop
                     
                         for support in king_of_levels["support"]:
@@ -180,7 +182,8 @@ class SmartTrader():
 
                                 # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
                                 if is_valid_signal:
-                                    if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
+                                    # Directions.SHORT
+                                    if self.trade(direction=higher_tf_direction, symbol=symbol, reference=support.reference, break_level=candle_gap):
                                         break # Break the support loop
 
             time.sleep(self.timer)
