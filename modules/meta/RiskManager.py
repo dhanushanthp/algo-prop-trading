@@ -78,7 +78,29 @@ class RiskManager:
         # Return False if daily maximum risk has not been reached
         return False
     
-    def emergency_exit(self, timeframe:int) -> List:
+    def get_risk_positions(self) -> list:
+        """
+        Get list of positions that are not breakeven of in the profit
+        """
+        existing_positions = mt5.positions_get()
+        symbol_list = []
+        for position in existing_positions:
+            symbol = position.symbol
+            stop_price = position.sl
+            entry_price = position.price_open
+
+            if position.type == 0:
+                if stop_price <= entry_price:
+                    symbol_list.append(position)
+            
+            if position.type == 1:
+                if stop_price >= entry_price:
+                    symbol_list.append(position)
+        
+        return symbol_list
+
+    
+    def emergency_exit(self, timeframe:int) -> list:
         """
         Get list of symbol which are meant to exist based on ranging hourly candles
         """
@@ -289,6 +311,8 @@ if __name__ == "__main__":
 
     print(obj.reduce_risk_exposure())
 
-    obj.adjust_positions_trailing_stops(target_multiplier=8, trading_timeframe=60)
+    # obj.adjust_positions_trailing_stops(target_multiplier=8, trading_timeframe=60)
     
     print(obj.emergency_exit(timeframe=60))
+
+    print(obj.get_risk_positions())
