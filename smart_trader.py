@@ -103,9 +103,9 @@ class SmartTrader():
             if is_market_close:
                 print("Market Close!")
                 self.orders.cancel_all_pending_orders()
-                self.orders.close_all_positions()
-                # for risk_positions in self.risk_manager.get_risk_positions():
-                #     self.orders.close_single_position(obj=risk_positions)
+                # self.orders.close_all_positions()
+                for risk_positions in self.risk_manager.get_risk_positions():
+                    self.orders.close_single_position(obj=risk_positions)
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
