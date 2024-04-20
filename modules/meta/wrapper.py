@@ -135,10 +135,22 @@ class Wrapper:
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 0, 1)[-1]
     
 
-    def get_existing_symbols(self):
+    def get_existing_symbols(self, today=False):
         """
         List all the symbols which are in trade
         """
+        
+        live_symbols = []
+        if today:
+            today_date = util.get_current_time().strftime("%Y-%m-%d")
+            for i in mt5.positions_get():
+                symbol = i.symbol
+                traded_date = util.get_traded_time(i.time).strftime("%Y-%m-%d")
+                if today_date == traded_date:
+                    live_symbols.append(symbol)
+            
+            return live_symbols
+
         return list(set([i.symbol for i in mt5.positions_get()]))
     
 
@@ -232,12 +244,12 @@ if "__main__" == __name__:
     # end_hour = int(sys.argv[4])
     # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
-    # print(obj.get_existing_symbols())
+    print(obj.get_existing_symbols(today=True))
     # print(obj.get_todays_trades())
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
-    print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
+    # print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
     # print(obj.get_traded_symbols())
 

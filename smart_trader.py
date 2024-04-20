@@ -87,16 +87,15 @@ class SmartTrader():
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
             pnl = (equity - self.risk_manager.account_size)
-            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
+            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage*6}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
-            print(f"{'Risk:Reward'.ljust(20)}: {round(rr, 3)}")
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
 
             # Each position trail stop
-            self.risk_manager.adjust_positions_trailing_stops(stop_multiplier=2, target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe)
+            self.risk_manager.adjust_positions_trailing_stops(is_market_open=is_market_open, stop_multiplier=2, target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe)
 
             # Exit from the position when 1 hour candle is ranging with long wicks
-            emerg_exist_symbols = self.risk_manager.emergency_exit(timeframe=self.trading_timeframe)
+            emerg_exist_symbols = self.risk_manager.emergency_exit(is_market_open=is_market_open, timeframe=self.trading_timeframe)
             for position_object in emerg_exist_symbols:
                 self.orders.close_single_position(obj=position_object)
                 
@@ -114,7 +113,7 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
             
             if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols():
-                existing_positions = self.wrapper.get_existing_symbols()
+                existing_positions = self.wrapper.get_existing_symbols(today=True)
 
                 for symbol in curr.get_major_symbols(security=self.security):
                     # If the positions is already in trade, then don't check for signal
