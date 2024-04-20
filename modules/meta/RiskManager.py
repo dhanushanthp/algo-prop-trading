@@ -100,83 +100,86 @@ class RiskManager:
         return symbol_list
 
     
-    def emergency_exit(self, timeframe:int) -> list:
+    def emergency_exit(self, is_market_open:bool, timeframe:int) -> list:
         """
         Get list of symbol which are meant to exist based on ranging hourly candles
         """
-        existing_positions = mt5.positions_get()
         symbol_list = []
-        for position in existing_positions:
-            symbol = position.symbol
-            pnl = position.profit
-            # Emergency Exist Plan
-            is_ranging = self.indicators.get_three_candle_exit(symbol=symbol, ratio=2, timeframe=timeframe)
-            
-            # Also the profit is more than 1R
-            if is_ranging and (pnl > self.risk_of_a_position):
-                symbol_list.append(position)
-                self.alert.send_msg(f"Emergency Exist: {symbol}")
+        if is_market_open:
+            existing_positions = mt5.positions_get()
+            for position in existing_positions:
+                symbol = position.symbol
+                pnl = position.profit
+                # Emergency Exist Plan
+                is_ranging = self.indicators.get_three_candle_exit(symbol=symbol, ratio=2, timeframe=timeframe)
+                
+                # Also the profit is more than 1R
+                if is_ranging and (pnl > self.risk_of_a_position):
+                    symbol_list.append(position)
+                    self.alert.send_msg(f"Emergency Exist: {symbol}")
         
         return symbol_list
 
 
-    def adjust_positions_trailing_stops(self, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
-        existing_positions = mt5.positions_get()
-        for position in existing_positions:
-            symbol = position.symbol
-            stop_price = position.sl
-            target_price = position.tp
-            # points_in_stop = abs(stop_price-position.price_open)
+    def adjust_positions_trailing_stops(self, is_market_open:bool, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
+        # Only adjust while market is open
+        if is_market_open:
+            existing_positions = mt5.positions_get()
+            for position in existing_positions:
+                symbol = position.symbol
+                stop_price = position.sl
+                target_price = position.tp
+                # points_in_stop = abs(stop_price-position.price_open)
 
-            # Move the stop to breakeven once the price moved to 2R
-            # is_stop_updated=False
-            # if points_in_stop > 0:
-            #     points_in_profit = abs(position.price_open-position.price_current)
-                
-            #     current_rr = points_in_profit/points_in_stop
+                # Move the stop to breakeven once the price moved to 2R
+                # is_stop_updated=False
+                # if points_in_stop > 0:
+                #     points_in_profit = abs(position.price_open-position.price_current)
+                    
+                #     current_rr = points_in_profit/points_in_stop
 
-            #     if current_rr > 1.5 and (stop_price != position.price_open):
-            #         # Update the stop price if more than 2R, It will take care during the target update
-            #         stop_price = position.price_open
-            #         is_stop_updated = True
-            
-            # Increase the range of the spread to eliminate the sudden stopouts
-            stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier)
-            tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
-            
-            if position.type == 0:
-                # Long Position
-                trail_stop = max(stop_price, stp_shield_obj.get_long_stop)
-                trail_target = min(target_price, tgt_shield_obj.get_short_stop)
-            else:
-                # Short Position
-                trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
-                trail_target = max(target_price, tgt_shield_obj.get_long_stop)
-            
-            #  or is_stop_updated
-            if (trail_stop != stop_price) or (target_price != trail_target):
-                print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
+                #     if current_rr > 1.5 and (stop_price != position.price_open):
+                #         # Update the stop price if more than 2R, It will take care during the target update
+                #         stop_price = position.price_open
+                #         is_stop_updated = True
+                
+                # Increase the range of the spread to eliminate the sudden stopouts
+                stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier)
+                tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
+                
+                if position.type == 0:
+                    # Long Position
+                    trail_stop = max(stop_price, stp_shield_obj.get_long_stop)
+                    trail_target = min(target_price, tgt_shield_obj.get_short_stop)
+                else:
+                    # Short Position
+                    trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
+                    trail_target = max(target_price, tgt_shield_obj.get_long_stop)
+                
+                #  or is_stop_updated
+                if (trail_stop != stop_price) or (target_price != trail_target):
+                    print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
 
-                modify_request = {
-                    "action": mt5.TRADE_ACTION_SLTP,
-                    "symbol": position.symbol,
-                    "volume": position.volume,
-                    "type": position.type,
-                    "position": position.ticket,
-                    "sl": trail_stop,
-                    "tp": trail_target,
-                    "comment": position.comment,
-                    "magic": position.magic,
-                    "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": mt5.ORDER_FILLING_FOK,
-                    "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
-                }
-                
-                result = mt5.order_send(modify_request)
-                
-                if result.retcode != mt5.TRADE_RETCODE_DONE:
-                    if result.comment != "No changes":
-                        print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
+                    modify_request = {
+                        "action": mt5.TRADE_ACTION_SLTP,
+                        "symbol": position.symbol,
+                        "volume": position.volume,
+                        "type": position.type,
+                        "position": position.ticket,
+                        "sl": trail_stop,
+                        "tp": trail_target,
+                        "comment": position.comment,
+                        "magic": position.magic,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_FOK,
+                        "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+                    }
+                    
+                    result = mt5.order_send(modify_request)
+                    
+                    if result.retcode != mt5.TRADE_RETCODE_DONE:
+                        if result.comment != "No changes":
+                            print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
     
     def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=2) -> Shield:
         """
