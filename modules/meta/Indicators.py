@@ -19,7 +19,7 @@ class Indicators:
         self.prices = Prices()
     
     def get_atr(self, symbol:str, timeframe:int, start_candle:int=0) -> float:
-        rates = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_candle)
+        rates = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, last_n_candle=20)
         
         if rates.empty:
             return 0
