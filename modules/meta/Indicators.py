@@ -84,15 +84,10 @@ class Indicators:
     
     def get_three_candle_strike(self, symbol, timeframe=60) -> Directions:
         previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
-        # spread = self.wrapper.get_spread(symbol=symbol)
-        if len(previous_bars) >= 3:
-            
-            # Identify Longer timeframe direction, 4 times higher than current timeframe
-            higher_timeframe_trend = self.sma_direction(symbol=symbol, timeframe=timeframe*4)
 
+        if len(previous_bars) >= 3:
             last_3_bars = previous_bars.tail(3).copy()
             last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
-            # last_3_bars["signal"] = abs(last_3_bars["body_size"]) > spread
 
             is_higher_high = (last_3_bars["high"] > last_3_bars["high"].shift(1)).iloc[1:]
             is_higher_low = (last_3_bars["low"] > last_3_bars["low"].shift(1)).iloc[1:]
@@ -100,11 +95,8 @@ class Indicators:
             is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
             is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
             
-            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low) and (higher_timeframe_trend == Directions.LONG)
-            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low) and (higher_timeframe_trend == Directions.SHORT)
-            
-            # if is_bullish or is_bearish:
-            #     return higher_timeframe_trend
+            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
+            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
 
             if is_bullish:
                 return Directions.LONG

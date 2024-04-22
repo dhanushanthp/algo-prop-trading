@@ -103,6 +103,7 @@ class SmartTrader():
                 print("Market Close!")
                 self.orders.cancel_all_pending_orders()
                 # self.orders.close_all_positions()
+                # Close the positions which has risk of lossing less than 0
                 for risk_positions in self.risk_manager.get_risk_positions():
                     self.orders.close_single_position(obj=risk_positions)
                 
@@ -122,8 +123,10 @@ class SmartTrader():
 
                     if self.system == "3CDL_STR":
                         candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
+                        # Identify Longer timeframe direction, 4 times higher than current timeframe
+                        high_tf_trend = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe*4)
                         
-                        if candle_strike == Directions.LONG:
+                        if candle_strike == high_tf_trend == Directions.LONG:
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
@@ -136,7 +139,7 @@ class SmartTrader():
                                 if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
                                     break # Break the symbol loop
 
-                        elif candle_strike == Directions.SHORT:
+                        elif candle_strike == high_tf_trend == Directions.SHORT:
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
