@@ -90,6 +90,41 @@ class Orders:
             else:
                 print(f"{symbol.ljust(12)}: Waiting for signal strength...")
                 return False
+
+    def long_waited_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
+        entry_price = self.prices.get_entry_price(symbol=symbol)
+
+        if entry_price:
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, buffer_ratio=0)
+            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
+            if shield_object.get_signal_strength:
+                if entry_price > shield_object.get_long_stop:
+                    try:
+                        print(f"{symbol.ljust(12)}: {Directions.LONG}")        
+                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_long_stop)
+                        
+                        order_request = {
+                            "action": mt5.TRADE_ACTION_PENDING,
+                            "symbol": symbol,
+                            "volume": lots,
+                            "type": mt5.ORDER_TYPE_BUY_LIMIT,
+                            "price": shield_object.get_long_stop,
+                            "sl": self.prices.round(symbol, shield_object.get_long_stop - self.risk_manager.stop_ratio * points_in_stop),
+                            "tp": self.prices.round(symbol, shield_object.get_long_stop + self.risk_manager.target_ratio * points_in_stop),
+                            "comment": f"{reference}-{break_level}",
+                            "magic": trading_timeframe,
+                            "type_time": mt5.ORDER_TIME_GTC,
+                            "type_filling": mt5.ORDER_FILLING_RETURN,
+                        }
+                        
+                        request_log = mt5.order_send(order_request)
+                        return util.error_logging(request_log, order_request)
+                    except Exception as e:
+                        print(f"{symbol.ljust(12)}: {e}")
+                        return False
+            else:
+                print(f"{symbol.ljust(12)}: Waiting for signal strength...")
+                return False
     
 
     def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
@@ -127,6 +162,41 @@ class Orders:
                 print(f"{symbol.ljust(12)}: Waiting for signal strength...")
                 return False
 
+    def short_waited_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
+        entry_price = self.prices.get_entry_price(symbol)
+        
+        if entry_price:
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
+            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
+            if shield_object.get_signal_strength:
+                if entry_price < shield_object.get_short_stop:
+                    try:
+                        print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
+                        points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_short_stop)
+
+                        order_request = {
+                            "action": mt5.TRADE_ACTION_PENDING,
+                            "symbol": symbol,
+                            "volume": lots,
+                            "type": mt5.ORDER_TYPE_SELL_LIMIT,
+                            "price": shield_object.get_short_stop,
+                            "sl": self.prices.round(symbol, shield_object.get_short_stop + self.risk_manager.stop_ratio * points_in_stop),
+                            "tp": self.prices.round(symbol, shield_object.get_short_stop - self.risk_manager.target_ratio * points_in_stop),
+                            "comment": f"{reference}-{break_level}",
+                            "magic":trading_timeframe,
+                            "type_time": mt5.ORDER_TIME_GTC,
+                            "type_filling": mt5.ORDER_FILLING_RETURN,
+                        }
+                        
+                        request_log = mt5.order_send(order_request)
+                        return util.error_logging(request_log, order_request)
+                    except Exception as e:
+                        print(f"{symbol.ljust(12)}: {e}")
+                        return False
+            else:
+                print(f"{symbol.ljust(12)}: Waiting for signal strength...")
+                return False
+
 if __name__ == "__main__":
     import sys
     symbol = sys.argv[1]
@@ -145,8 +215,15 @@ if __name__ == "__main__":
     if direction == "long":
         order_obj.long_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
 
+    if direction == "long_waited":
+        order_obj.long_waited_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
+
     # Test: Enter Short Position
     if direction == "short":
         order_obj.short_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
+    
+    if direction == "short_waited":
+        order_obj.short_waited_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
+
 
 
