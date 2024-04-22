@@ -100,17 +100,17 @@ class Indicators:
             is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
             is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
             
-            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
-            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
+            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low) and (higher_timeframe_trend == Directions.LONG)
+            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low) and (higher_timeframe_trend == Directions.SHORT)
             
-            if is_bullish or is_bearish:
-                return higher_timeframe_trend
+            # if is_bullish or is_bearish:
+            #     return higher_timeframe_trend
 
-            # if is_bullish:
-            #     return Directions.LONG
+            if is_bullish:
+                return Directions.LONG
             
-            # if is_bearish:
-            #     return Directions.SHORT
+            if is_bearish:
+                return Directions.SHORT
         
         return None
 
