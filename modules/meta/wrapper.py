@@ -4,6 +4,7 @@ import pandas as pd
 import pytz
 from datetime import datetime, timedelta, time
 from modules import config
+from typing import Tuple
 mt5.initialize()
 
 class Wrapper:
@@ -154,6 +155,39 @@ class Wrapper:
         return list(set([i.symbol for i in mt5.positions_get()]))
     
 
+    def get_existing_pending_orders(self) -> Tuple[list, list]:
+        """
+        List all the symbols which are in trade
+        """
+        active_orders = mt5.orders_get()
+
+        canceling_orders = []
+        considered_active_orders = [] # So
+
+        # Cancell all pending orders regadless of trial or real
+        for active_order in active_orders:
+            entry_time = util.get_traded_time(active_order.time_setup)
+            current_time  = util.get_current_time()
+
+            entry_date = entry_time.strftime("%Y-%m-%d")
+            current_date = current_time.strftime("%Y-%m-%d")
+
+            entry_hour = entry_time.hour
+            current_hour = current_time.hour
+
+            # If waiting trade is not from same day then cancel
+            if entry_date != current_date:
+                canceling_orders.append(active_order)
+
+            # If Order waits more than 8 hours, then exist
+            # if current_hour - entry_hour > 3:
+            #     canceling_orders.append(active_order)
+
+            if current_hour - entry_hour < 1:
+                considered_active_orders.append(active_order.symbol)
+            
+        return canceling_orders, considered_active_orders    
+
     def get_todays_trades(self, us_market_seperator=False) -> pd.DataFrame:
         """
         This include entry and exit position of a trade
@@ -244,8 +278,9 @@ if "__main__" == __name__:
     # end_hour = int(sys.argv[4])
     # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
-    print(obj.get_existing_symbols(today=True))
-    print(obj.get_todays_trades())
+    # print(obj.get_existing_symbols(today=True))
+    print(obj.get_existing_pending_orders())
+    # print(obj.get_todays_trades())
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
