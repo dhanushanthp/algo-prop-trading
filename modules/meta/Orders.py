@@ -40,6 +40,19 @@ class Orders:
             self.close_single_position(obj=obj)
 
 
+    def cancel_single_pending_order(self, active_order):
+        
+        request = {
+                "action": mt5.TRADE_ACTION_REMOVE,
+                "order": active_order.ticket,
+            }
+
+        result = mt5.order_send(request)
+
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
+
+
     def cancel_all_pending_orders(self):
         active_orders = mt5.orders_get()
 
