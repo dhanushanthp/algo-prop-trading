@@ -88,7 +88,7 @@ class Indicators:
         if len(previous_bars) >= 3:
             
             # Identify Longer timeframe direction, 4 times higher than current timeframe
-            # higher_timeframe_trend = self.sma_direction(symbol=symbol, timeframe=timeframe*4)
+            higher_timeframe_trend = self.sma_direction(symbol=symbol, timeframe=timeframe*4)
 
             last_3_bars = previous_bars.tail(3).copy()
             last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
@@ -103,14 +103,14 @@ class Indicators:
             is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
             is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
             
-            # if is_bullish or is_bearish:
-            #     return higher_timeframe_trend
+            if is_bullish or is_bearish:
+                return higher_timeframe_trend
 
-            if is_bullish:
-                return Directions.LONG
+            # if is_bullish:
+            #     return Directions.LONG
             
-            if is_bearish:
-                return Directions.SHORT
+            # if is_bearish:
+            #     return Directions.SHORT
         
         return None
 
