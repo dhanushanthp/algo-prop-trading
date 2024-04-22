@@ -245,7 +245,7 @@ if "__main__" == __name__:
     # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
     print(obj.get_existing_symbols(today=True))
-    # print(obj.get_todays_trades())
+    print(obj.get_todays_trades())
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
