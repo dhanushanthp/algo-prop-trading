@@ -181,7 +181,7 @@ class Wrapper:
 
             if turtle:
                 # Cancel the order on next candle if it's not filled
-                if current_hour - entry_hour > 1:
+                if current_hour - entry_hour >= 1:
                     canceling_orders.append(active_order)    
 
             # If Order waits more than 8 hours, then exist

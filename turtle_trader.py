@@ -122,7 +122,7 @@ class TurtleTrader():
             if not self.wrapper.today_unique_traded_symbols():
                 self.orders.cancel_all_pending_orders
             
-            if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols(max_trades=10):
+            if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols(max_trades=20):
                 existing_positions = self.wrapper.get_existing_symbols(today=True)
 
                 for symbol in curr.get_major_symbols(security=self.security):
