@@ -155,7 +155,7 @@ class Wrapper:
         return list(set([i.symbol for i in mt5.positions_get()]))
     
 
-    def get_existing_pending_orders(self) -> Tuple[list, list]:
+    def get_existing_pending_orders(self, turtle=False) -> Tuple[list, list]:
         """
         List all the symbols which are in trade
         """
@@ -178,6 +178,11 @@ class Wrapper:
             # If waiting trade is not from same day then cancel
             if entry_date != current_date:
                 canceling_orders.append(active_order)
+
+            if turtle:
+                # Cancel the order on next candle if it's not filled
+                if current_hour - entry_hour > 1:
+                    canceling_orders.append(active_order)    
 
             # If Order waits more than 8 hours, then exist
             # if current_hour - entry_hour > 3:
@@ -224,7 +229,7 @@ class Wrapper:
         return entry_positions["code"].tolist()
 
 
-    def today_unique_traded_symbols(self):
+    def today_unique_traded_symbols(self, max_trades=6):
         trades = self.get_todays_trades()
         
         if trades.empty:
@@ -233,7 +238,7 @@ class Wrapper:
         # Number of positions based on the trades, Not on the symbols
         num_entries = trades[trades["entry"]==0].shape[0]
 
-        if num_entries < 6:
+        if num_entries < max_trades:
             return True
         
         return False

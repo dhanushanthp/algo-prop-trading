@@ -4,11 +4,13 @@ from modules.meta.RiskManager import RiskManager
 from modules.common.Directions import Directions
 import modules.meta.util as util
 from modules.meta.Prices import Prices
+from modules.meta.wrapper import Wrapper
 
 class Orders:
     def __init__(self, prices:Prices, risk_manager:RiskManager) -> None:
         self.prices = prices
         self.risk_manager=risk_manager
+        self.wrapper = Wrapper()
 
     def close_single_position(self, obj):        
         order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
@@ -133,6 +135,38 @@ class Orders:
                     return util.error_logging(request_log, order_request)
                 except Exception as e:
                     print(f"{symbol.ljust(12)}: {e}")
+
+
+    def long_waited_prev_candle_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
+        entry_price = self.prices.get_entry_price(symbol=symbol)
+        prev_candle_low = self.wrapper.get_previous_candle(symbol=symbol, timeframe=trading_timeframe)['low']
+
+        if entry_price:
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, buffer_ratio=0, num_cdl_for_stop=1)
+            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
+            if entry_price > shield_object.get_long_stop:
+                try:
+                    print(f"{symbol.ljust(12)}: {Directions.LONG}")        
+                    points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_long_stop)
+                    
+                    order_request = {
+                        "action": mt5.TRADE_ACTION_PENDING,
+                        "symbol": symbol,
+                        "volume": lots,
+                        "type": mt5.ORDER_TYPE_BUY_LIMIT,
+                        "price": prev_candle_low,
+                        "sl": self.prices.round(symbol, prev_candle_low - self.risk_manager.stop_ratio * points_in_stop),
+                        "tp": self.prices.round(symbol, prev_candle_low + self.risk_manager.target_ratio * points_in_stop),
+                        "comment": f"{reference}-{break_level}",
+                        "magic": trading_timeframe,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request_log = mt5.order_send(order_request)
+                    return util.error_logging(request_log, order_request)
+                except Exception as e:
+                    print(f"{symbol.ljust(12)}: {e}")
     
 
     def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
@@ -200,6 +234,38 @@ class Orders:
                 except Exception as e:
                     print(f"{symbol.ljust(12)}: {e}")
 
+
+    def short_waited_prev_candle_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
+        entry_price = self.prices.get_entry_price(symbol)
+        prev_candle_high = self.wrapper.get_previous_candle(symbol=symbol, timeframe=trading_timeframe)['high']
+        
+        if entry_price:
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=1)
+            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
+            if entry_price < shield_object.get_short_stop:
+                try:
+                    print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
+                    points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_short_stop)
+
+                    order_request = {
+                        "action": mt5.TRADE_ACTION_PENDING,
+                        "symbol": symbol,
+                        "volume": lots,
+                        "type": mt5.ORDER_TYPE_SELL_LIMIT,
+                        "price": prev_candle_high,
+                        "sl": self.prices.round(symbol, prev_candle_high + self.risk_manager.stop_ratio * points_in_stop),
+                        "tp": self.prices.round(symbol, prev_candle_high - self.risk_manager.target_ratio * points_in_stop),
+                        "comment": f"{reference}-{break_level}",
+                        "magic":trading_timeframe,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_RETURN,
+                    }
+                    
+                    request_log = mt5.order_send(order_request)
+                    return util.error_logging(request_log, order_request)
+                except Exception as e:
+                    print(f"{symbol.ljust(12)}: {e}")
+
 if __name__ == "__main__":
     import sys
     symbol = sys.argv[1]
@@ -221,12 +287,18 @@ if __name__ == "__main__":
     if direction == "long_waited":
         order_obj.long_waited_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
 
+    if direction == "long_prev":
+        order_obj.long_waited_prev_candle_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
+
     # Test: Enter Short Position
     if direction == "short":
         order_obj.short_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
     
     if direction == "short_waited":
         order_obj.short_waited_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
+    
+    if direction == "short_prev":
+        order_obj.short_waited_prev_candle_entry(symbol=symbol, break_level=0.87834, trading_timeframe=60, reference="test")
 
 
 

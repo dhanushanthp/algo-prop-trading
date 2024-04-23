@@ -105,6 +105,31 @@ class Indicators:
                 return Directions.SHORT
         
         return None
+    
+    def get_two_candle_strike(self, symbol, timeframe=60) -> Directions:
+        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
+
+        if len(previous_bars) >= 3:
+            last_2_bars = previous_bars.tail(2).copy()
+            last_2_bars["body_size"] = last_2_bars["close"] - last_2_bars["open"]
+
+            is_higher_high = (last_2_bars["high"] > last_2_bars["high"].shift(1)).iloc[1:]
+            is_higher_low = (last_2_bars["low"] > last_2_bars["low"].shift(1)).iloc[1:]
+
+            is_lower_high = (last_2_bars["high"] < last_2_bars["high"].shift(1)).iloc[1:]
+            is_lower_low = (last_2_bars["low"] < last_2_bars["low"].shift(1)).iloc[1:]
+            
+            is_bullish = all(last_2_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
+            is_bearish = all(last_2_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
+
+            if is_bullish:
+                return Directions.LONG
+            
+            if is_bearish:
+                return Directions.SHORT
+        
+        return None
+    
 
     def get_three_candle_exit(self, symbol, ratio=2, timeframe=60) -> bool:
         """
@@ -343,4 +368,5 @@ if __name__ == "__main__":
     # print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.get_three_candle_exit(symbol))
     # print(indi_obj.sma_direction(symbol=symbol, timeframe=60*4))
-    print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))
+    # print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))
+    print(indi_obj.get_two_candle_strike(symbol=symbol, timeframe=timeframe))
