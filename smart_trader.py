@@ -124,7 +124,7 @@ class SmartTrader():
 
                     if self.system == "3CDL_STR":
                         candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
-                        # Identify Longer timeframe direction, 4 times higher than current timeframe
+                        # Identify Longer timeframe direction
                         high_tf_trend = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe)
                         
                         if candle_strike == high_tf_trend == Directions.LONG:
