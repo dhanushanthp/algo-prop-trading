@@ -10,20 +10,19 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
-major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", "EURCHF", "USDJPY", "AUDJPY", "GBPJPY"]
+# major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", "EURCHF", "USDJPY", "AUDJPY", "GBPJPY"]
 us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
 
-# master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
-#                     'CHFJPY', "CADCHF", "CADJPY",
-#                     'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
-#                     'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
-#                     'NZDJPY', "NZDCAD", "NZDUSD",
-#                     'USDCAD', 'USDJPY', 'USDCHF',
-#                     'XAUUSD']
+master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
+                    'CHFJPY', "CADCHF", "CADJPY",
+                    'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
+                    'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
+                    'NZDJPY', "NZDCAD", "NZDUSD",
+                    'USDCAD', 'USDJPY', 'USDCHF']
 
-master_currencies = major_pairs
+# master_currencies = major_pairs
 
 # master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
 
@@ -172,7 +171,7 @@ def ticker_initiator(security="FOREX"):
 
 def get_major_symbols(security="FOREX"):
     if security == "FOREX":
-        main_pairs = major_pairs.copy()
+        main_pairs = master_currencies.copy()
 
         if util.is_us_premarket_peroid():
             main_pairs.extend(us_indexes)

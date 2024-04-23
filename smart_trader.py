@@ -24,7 +24,7 @@ Test: 172_16_27_128
 """
 
 class SmartTrader():
-    def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
+    def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0, trades_per_day:int=5):
         # Default values
         self.target_ratio = target_ratio  # Default 1:2.0 Ratio
         self.stop_ratio = 1.0
@@ -53,6 +53,7 @@ class SmartTrader():
 
         # Default
         self.trading_timeframe = trading_timeframe
+        self.trades_per_day = trades_per_day
 
         # Initiate the ticker
         curr.ticker_initiator(security=security)
@@ -113,7 +114,7 @@ class SmartTrader():
 
             self.orders.cancel_all_pending_orders()
             
-            if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols():
+            if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols(max_trades=self.trades_per_day):
                 existing_positions = self.wrapper.get_existing_symbols(today=True)
 
                 for symbol in curr.get_major_symbols(security=self.security):
@@ -199,6 +200,7 @@ if __name__ == "__main__":
     parser.add_argument('--strategy', type=str, help='Selected strategy')
     parser.add_argument('--security', type=str, help='Selected Type')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
+    parser.add_argument('--trades_per_day', type=int, help='Number of trades per day')
     parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')
     parser.add_argument('--target_ratio', type=float, help='Target ratio, assume stop is 1')
     parser.add_argument('--each_position_risk', type=float, help='Each Position risk percentage w.r.t account size') # Just Dummy
@@ -210,8 +212,9 @@ if __name__ == "__main__":
     each_position_risk = float(args.each_position_risk)
     target_ratio = float(args.target_ratio)
     security = str(args.security)
+    trades_per_day = int(args.trades_per_day)
 
-    win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
+    win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day)
     # On the system, Are we taking break or reverse
     win.strategy = args.strategy
     # Systems should be 3 candle strike or Daily Levels
