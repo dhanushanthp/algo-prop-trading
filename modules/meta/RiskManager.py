@@ -90,11 +90,11 @@ class RiskManager:
             entry_price = position.price_open
 
             if position.type == 0:
-                if stop_price <= entry_price:
+                if stop_price < entry_price:
                     symbol_list.append(position)
             
             if position.type == 1:
-                if stop_price >= entry_price:
+                if stop_price > entry_price:
                     symbol_list.append(position)
         
         return symbol_list
@@ -129,19 +129,20 @@ class RiskManager:
                 symbol = position.symbol
                 stop_price = position.sl
                 target_price = position.tp
-                # points_in_stop = abs(stop_price-position.price_open)
+                open_price = position.price_open
+                pnl = position.profit
 
-                # Move the stop to breakeven once the price moved to 2R
-                # is_stop_updated=False
-                # if points_in_stop > 0:
-                #     points_in_profit = abs(position.price_open-position.price_current)
-                    
-                #     current_rr = points_in_profit/points_in_stop
-
-                #     if current_rr > 1.5 and (stop_price != position.price_open):
-                #         # Update the stop price if more than 2R, It will take care during the target update
-                #         stop_price = position.price_open
-                #         is_stop_updated = True
+                # Move the stop to breakeven once the price moved to R
+                is_stop_updated=False
+                if pnl > self.risk_of_a_position:
+                    # Long Position
+                    if position.type == 0:
+                        if stop_price < open_price:
+                            is_stop_updated = True
+                    # Short Position
+                    else:
+                        if stop_price > open_price:
+                            is_stop_updated = True
                 
                 # Increase the range of the spread to eliminate the sudden stopouts
                 stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier)
@@ -156,8 +157,13 @@ class RiskManager:
                     trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
                     trail_target = max(target_price, tgt_shield_obj.get_long_stop)
                 
-                #  or is_stop_updated
-                if (trail_stop != stop_price) or (target_price != trail_target):
+                if (trail_stop != stop_price) or (target_price != trail_target) or is_stop_updated:
+                    
+                    # When the price move above 1R then move the stop to breakeven
+                    if is_stop_updated:
+                        trail_stop = open_price
+                        print(f"BREAKEVEN : {symbol} to {open_price}")
+
                     print(f"STP Updated: {position.symbol}, PRE STP: {round(stop_price, 5)}, CURR STP: {trail_stop}, PRE TGT: {target_price}, CURR TGT: {trail_target}")
 
                     modify_request = {
@@ -312,10 +318,10 @@ if __name__ == "__main__":
     check_time = obj.check_trade_wait_time(symbol=test_symbol)
     print(check_time)
 
-    print(obj.reduce_risk_exposure())
+    # print(obj.reduce_risk_exposure())
 
     # obj.adjust_positions_trailing_stops(target_multiplier=8, trading_timeframe=60)
     
-    print(obj.emergency_exit(timeframe=60))
+    # print(obj.emergency_exit(timeframe=60))
 
     print(obj.get_risk_positions())
