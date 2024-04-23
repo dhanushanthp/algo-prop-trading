@@ -23,7 +23,7 @@ Production: 172_16_27_130
 Test: 172_16_27_128
 """
 
-class SmartTrader():
+class TurtleTrader():
     def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0):
         # Default values
         self.target_ratio = target_ratio  # Default 1:2.0 Ratio
@@ -64,9 +64,9 @@ class SmartTrader():
         method_name = None
 
         if self.strategy == "break":
-            method_name = "long_waited_entry" if direction == Directions.LONG else "short_waited_entry"
+            method_name = "long_waited_prev_candle_entry" if direction == Directions.LONG else "short_waited_prev_candle_entry"
         elif self.strategy == "reverse":
-            method_name = "short_waited_entry" if direction == Directions.LONG else "long_waited_entry"
+            method_name = "short_waited_prev_candle_entry" if direction == Directions.LONG else "long_waited_prev_candle_entry"
         
         method = getattr(self.orders, method_name, None)
 
@@ -112,7 +112,7 @@ class SmartTrader():
                 self.fixed_initial_account_size = self.risk_manager.account_size
 
             # Active orders will have 1 hour of delay for next order with same symbol
-            possible_cancelling_orders, active_orders =  self.wrapper.get_existing_pending_orders()
+            possible_cancelling_orders, active_orders =  self.wrapper.get_existing_pending_orders(turtle=True)
 
             # cancel pending orders which are not traded on same day
             for cancel_orders in possible_cancelling_orders:
@@ -122,7 +122,7 @@ class SmartTrader():
             if not self.wrapper.today_unique_traded_symbols():
                 self.orders.cancel_all_pending_orders
             
-            if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols():
+            if is_market_open and (not is_market_close) and self.wrapper.today_unique_traded_symbols(max_trades=10):
                 existing_positions = self.wrapper.get_existing_symbols(today=True)
 
                 for symbol in curr.get_major_symbols(security=self.security):
@@ -131,9 +131,9 @@ class SmartTrader():
                         continue
 
                     if self.system == "3CDL_STR":
-                        candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
+                        candle_strike = self.indicators.get_two_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
                         # Identify Longer timeframe direction, 4 times higher than current timeframe
-                        high_tf_trend = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe*4)
+                        high_tf_trend = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe)
                         
                         if candle_strike == high_tf_trend == Directions.LONG:
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     target_ratio = float(args.target_ratio)
     security = str(args.security)
 
-    win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
+    win = TurtleTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, each_position_risk=each_position_risk, target_ratio=target_ratio)
     # On the system, Are we taking break or reverse
     win.strategy = args.strategy
     # Systems should be 3 candle strike or Daily Levels
