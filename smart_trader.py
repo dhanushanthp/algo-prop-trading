@@ -171,9 +171,8 @@ class SmartTrader():
                                                                                                 reference=resistance.reference)
 
                                 # Take this trade when we already have the failed breakout on opposite side, For resistance break, We already should have support break failer 
-                                if is_valid_signal:
-                                    # Directions.LONG
-                                    if self.trade(direction=higher_tf_direction, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
+                                if is_valid_signal and higher_tf_direction == Directions.LONG:
+                                    if self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
                                         break # Break the resistance loop
                     
                         for support in king_of_levels["support"]:
@@ -186,9 +185,8 @@ class SmartTrader():
                                                                                                 reference=support.reference)
 
                                 # Take this trade when we already have the failed breakout on opposite side, For support break, We already should have resistance break failer 
-                                if is_valid_signal:
-                                    # Directions.SHORT
-                                    if self.trade(direction=higher_tf_direction, symbol=symbol, reference=support.reference, break_level=candle_gap):
+                                if is_valid_signal and higher_tf_direction == Directions.SHORT:
+                                    if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
                                         break # Break the support loop
 
             time.sleep(self.timer)
