@@ -1,8 +1,6 @@
 import os
 from slack import WebClient
-import logging
 from slack.errors import SlackApiError
-log = logging.getLogger("SLACK")
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
