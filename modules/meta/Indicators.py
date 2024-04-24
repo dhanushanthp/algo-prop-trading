@@ -41,6 +41,28 @@ class Indicators:
         close_prices = last_n_candles["close"]
         return close_prices.mean()
     
+    def bollinger_bands(self, symbol:str, timeframe:int, window_size=20, num_std_dev=2) -> Tuple[float, float]:
+        """
+        Calculate Bollinger Bands (upper and lower) based on close prices.
+
+        Parameters:
+            window_size (int): The size of the moving average window.
+            num_std_dev (int): The number of standard deviations for the bands.
+
+        Returns:
+            upper_band (numpy.array): The upper Bollinger Band.
+            lower_band (numpy.array): The lower Bollinger Band.
+        """
+        last_n_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=0, last_n_candle=window_size)
+        close_prices = last_n_candles["close"]
+        close_prices = np.array(close_prices)
+        middle_band = np.convolve(close_prices, np.ones(window_size) / window_size, mode='valid')
+        std_dev = np.std(close_prices[:window_size])  # Standard deviation of the initial window
+        upper_band = middle_band + num_std_dev * std_dev
+        lower_band = middle_band - num_std_dev * std_dev
+        return upper_band[-1], lower_band[-1]
+
+
     def sma_direction(self, symbol:str, timeframe:int, short_ma:int=10, long_ma:int=20) -> Directions:
         # Find the SMA cross over based on the last candle
         short_sma = self.simple_moving_average(symbol=symbol, timeframe=timeframe, n_moving_average=short_ma)
@@ -369,4 +391,5 @@ if __name__ == "__main__":
     # print(indi_obj.get_three_candle_exit(symbol))
     # print(indi_obj.sma_direction(symbol=symbol, timeframe=60*4))
     # print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))
-    print(indi_obj.get_two_candle_strike(symbol=symbol, timeframe=timeframe))
+    # print(indi_obj.get_two_candle_strike(symbol=symbol, timeframe=timeframe))
+    print(indi_obj.bollinger_bands(symbol=symbol, timeframe=timeframe, window_size=20))
