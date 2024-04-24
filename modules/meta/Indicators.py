@@ -61,7 +61,7 @@ class Indicators:
 
         return None, None
     
-    def get_candle_cross_sma(self, symbol:str, timeframe:int=240, sma_crossing:int=8) -> Tuple[Directions, int]:
+    def get_candle_cross_sma(self, symbol:str, timeframe:int, sma_crossing:int) -> Tuple[Directions, int]:
         sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe, short_ma=10, long_ma=20)
         previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
 

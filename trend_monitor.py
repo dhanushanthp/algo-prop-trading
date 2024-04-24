@@ -14,7 +14,7 @@ tracker = dict()
 while True:
     signals = []
     for symbol in curr.get_major_symbols(security="FOREX"):
-        signal = indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=50)
+        signal = indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=50, timeframe=60)
         
         if signal:
             direction, hour = signal
