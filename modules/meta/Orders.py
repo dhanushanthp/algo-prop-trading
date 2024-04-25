@@ -76,7 +76,6 @@ class Orders:
 
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
-            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
             if shield_object.get_signal_strength:
                 if entry_price > shield_object.get_long_stop:
                     try:
@@ -111,7 +110,6 @@ class Orders:
 
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, buffer_ratio=0)
-            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
             if entry_price > shield_object.get_long_stop:
                 try:
                     print(f"{symbol.ljust(12)}: {Directions.LONG}")        
@@ -143,7 +141,6 @@ class Orders:
 
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, buffer_ratio=0, num_cdl_for_stop=1)
-            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
             if entry_price > shield_object.get_long_stop:
                 try:
                     print(f"{symbol.ljust(12)}: {Directions.LONG}")        
@@ -174,7 +171,6 @@ class Orders:
         
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
-            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
             if shield_object.get_signal_strength:
                 if entry_price < shield_object.get_short_stop:
                     try:
@@ -209,7 +205,6 @@ class Orders:
         
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe)
-            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
             if entry_price < shield_object.get_short_stop:
                 try:
                     print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
@@ -241,7 +236,6 @@ class Orders:
         
         if entry_price:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=1)
-            #  and self.risk_manager.check_trade_wait_time(symbol=symbol)
             if entry_price < shield_object.get_short_stop:
                 try:
                     print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
