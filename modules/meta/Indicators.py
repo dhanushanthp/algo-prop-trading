@@ -14,9 +14,9 @@ from modules.meta.Prices import Prices
 from modules.common.Directions import Directions
 
 class Indicators:
-    def __init__(self) -> None:
-        self.wrapper = Wrapper()
-        self.prices = Prices()
+    def __init__(self, wrapper: Wrapper, prices:Prices) -> None:
+        self.wrapper = wrapper
+        self.prices = prices
     
     def get_atr(self, symbol:str, timeframe:int, start_candle:int=0) -> float:
         rates = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, last_n_candle=20)
@@ -373,7 +373,7 @@ class Indicators:
         return {"resistance": highs, "support": lows}
 
 if __name__ == "__main__":
-    indi_obj = Indicators()
+    indi_obj = Indicators(wrapper=Wrapper(), prices=Prices())
     import sys
     symbol = sys.argv[1]
     timeframe = int(sys.argv[2])

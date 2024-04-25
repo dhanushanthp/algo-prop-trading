@@ -8,10 +8,6 @@ from typing import Tuple
 mt5.initialize()
 
 class Wrapper:
-    def __init__(self) -> None:
-        pass
-
-    
     def get_candles_by_index(self, symbol:str, timeframe:int, candle_look_back:int=0):
         """
         Retrieves historical candle data for a specific symbol within a given index range.

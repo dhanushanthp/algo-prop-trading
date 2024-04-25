@@ -3,10 +3,7 @@ import modules.meta.Currencies as curr
 from typing import Tuple
 mt5.initialize()
 
-class Prices:
-    def __init__(self):
-        pass
-    
+class Prices:    
     def get_exchange_price(self, symbol) -> float:
         ask_price = mt5.symbol_info_tick(symbol).ask
         bid_price = mt5.symbol_info_tick(symbol).bid

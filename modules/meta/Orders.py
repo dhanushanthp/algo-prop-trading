@@ -7,10 +7,10 @@ from modules.meta.Prices import Prices
 from modules.meta.wrapper import Wrapper
 
 class Orders:
-    def __init__(self, prices:Prices, risk_manager:RiskManager) -> None:
+    def __init__(self, prices:Prices, risk_manager:RiskManager, wrapper:Wrapper) -> None:
         self.prices = prices
         self.risk_manager=risk_manager
-        self.wrapper = Wrapper()
+        self.wrapper = wrapper
 
     def close_single_position(self, obj):        
         order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
@@ -272,7 +272,7 @@ if __name__ == "__main__":
     direction = sys.argv[2]
     risk_obj = RiskManager()
     prices_obj = Prices()
-    order_obj = Orders(prices=prices_obj, risk_manager=risk_obj)
+    order_obj = Orders(prices=prices_obj, risk_manager=risk_obj, wrapper=Wrapper())
 
     # Test: Cancel all pending orders
     # order_obj.cancel_all_pending_orders()
