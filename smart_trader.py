@@ -89,7 +89,10 @@ class SmartTrader():
         method = getattr(self.orders, method_name, None)
 
         if method:
-            status = method(symbol=symbol, reference=f"{self.strategy.upper()[0]}-{reference}", break_level=break_level, trading_timeframe=self.trading_timeframe)
+            status = method(symbol=symbol, 
+                            reference=f"{self.strategy.upper()[0]}-{reference}", 
+                            break_level=break_level, 
+                            trading_timeframe=self.trading_timeframe)
             return status
 
     
@@ -147,12 +150,20 @@ class SmartTrader():
                     if symbol in existing_positions:
                         continue
 
-                    current_candle = self.wrapper.get_current_candle(symbol=symbol, timeframe=self.trading_timeframe)
-                    upper_band, lower_band = self.indicators.bollinger_bands(symbol=symbol, timeframe=self.trading_timeframe, window_size=20, num_std_dev=2)
-                    market_trend = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe)
+                    current_candle = self.wrapper.get_current_candle(symbol=symbol, 
+                                                                     timeframe=self.trading_timeframe)
+                    
+                    upper_band, lower_band = self.indicators.bollinger_bands(symbol=symbol, 
+                                                                             timeframe=self.trading_timeframe, 
+                                                                             window_size=20, 
+                                                                             num_std_dev=2)
+                    
+                    market_trend = self.indicators.sma_direction(symbol=symbol, 
+                                                                 timeframe=self.trading_timeframe)
 
                     if self.system == "3CDL_STR":
-                        candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
+                        candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, 
+                                                                                timeframe=self.trading_timeframe)
                         
                         if (candle_strike == market_trend == Directions.LONG) and (current_candle["high"] < upper_band):
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
@@ -182,8 +193,11 @@ class SmartTrader():
                         """
                         Levels such as High of the Day, Low of the day will be checked with previous bar close
                         """
-                        king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
-                        previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
+                        king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, 
+                                                                            timeframe=self.trading_timeframe)
+                        
+                        previous_candle = self.wrapper.get_previous_candle(symbol=symbol, 
+                                                                           timeframe=self.trading_timeframe)
 
                         for resistance in king_of_levels["resistance"]:
                             if (previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level):
