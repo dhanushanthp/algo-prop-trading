@@ -17,7 +17,7 @@ class Targets:
         self.timeframe = timeframe
         self.prices = Prices()
         self.wrapper = Wrapper()
-        self.indicator = Indicators()
+        self.indicator = Indicators(wrapper=self.wrapper, prices=self.prices)
 
 
     def get_targets(self) -> Dict[str, Bullet]:

@@ -10,6 +10,7 @@ import modules.meta.Currencies as curr
 from modules.common.Shield import Shield
 from modules.meta.Account import Account
 from modules.meta.Indicators import Indicators
+from modules.meta.wrapper import Wrapper
 
 mt5.initialize()
 
@@ -28,7 +29,8 @@ class RiskManager:
         self.prices = Prices()
         self.stop_ratio = stop_ratio
         self.target_ratio = target_ratio
-        self.indicators = Indicators()
+        self.wrapper = Wrapper()
+        self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
@@ -45,7 +47,7 @@ class RiskManager:
         _, hour, min = util.get_current_day_hour_min()
         if hour >= 5 and min >= 45:
             # Check existing positions
-            todays_closed_trades = self.indicators.wrapper.get_todays_trades()
+            todays_closed_trades = self.wrapper.get_todays_trades()
             if todays_closed_trades.empty:
                 return True
 

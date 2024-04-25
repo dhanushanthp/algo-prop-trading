@@ -5,8 +5,10 @@ from modules.meta.Indicators import Indicators
 import modules.meta.Currencies as curr
 from modules.common.slack_msg import Slack
 import pandas as pd
+from modules.meta.wrapper import Wrapper
+from modules.meta.Prices import Prices
 
-indi_obj = Indicators()
+indi_obj = Indicators(wrapper=Wrapper(), prices=Prices())
 alert = Slack()
 
 tracker = dict()
