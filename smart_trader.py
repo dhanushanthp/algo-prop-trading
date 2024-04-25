@@ -24,27 +24,44 @@ Test: 172_16_27_128
 """
 
 class SmartTrader():
-    def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, each_position_risk:float=0.1, target_ratio:float=2.0, trades_per_day:int=5):
+    def __init__(self, security:str, 
+                 trading_timeframe:int, 
+                 account_risk:float=1, 
+                 each_position_risk:float=0.1, 
+                 target_ratio:float=2.0, 
+                 trades_per_day:int=5):
+        
         # Default values
         self.target_ratio = target_ratio  # Default 1:2.0 Ratio
         self.stop_ratio = 1.0
         self.timer = 30
         self.retries = 0
-
-        # External dependencies
-        self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
-        self.prices = Prices()
-        self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager)
-        self.targets = Targets(risk_manager=self.risk_manager, timeframe=trading_timeframe)
-        self.alert = Slack()
-        self.account = Account()
-        self.indicators = Indicators()
-        self.wrapper = Wrapper()
-
-        self.system:str = None
-        self.strategy:str = None
         self.security:str = security
 
+        # External dependencies
+        self.risk_manager = RiskManager(account_risk=account_risk, 
+                                        position_risk=each_position_risk, 
+                                        stop_ratio=self.stop_ratio, 
+                                        target_ratio=self.target_ratio)
+        self.prices = Prices()
+        self.wrapper = Wrapper()
+
+        self.indicators = Indicators(wrapper=self.wrapper, 
+                                     prices=self.prices)
+
+        self.orders = Orders(prices=self.prices, 
+                             risk_manager=self.risk_manager,
+                             wrapper = self.wrapper)
+        
+        self.targets = Targets(risk_manager=self.risk_manager, 
+                               timeframe=trading_timeframe)
+        
+        self.alert = Slack()
+        self.account = Account()
+        
+        self.system:str = None
+        self.strategy:str = None
+        
         # Account information
         self.account_name = self.account.get_account_name()
 
@@ -93,10 +110,14 @@ class SmartTrader():
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
 
             # Each position trail stop
-            self.risk_manager.adjust_positions_trailing_stops(is_market_open=is_market_open, stop_multiplier=2, target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe)
+            self.risk_manager.adjust_positions_trailing_stops(is_market_open=is_market_open, 
+                                                              stop_multiplier=2, 
+                                                              target_multiplier=self.target_ratio, 
+                                                              trading_timeframe=self.trading_timeframe)
 
             # Exit from the position when 1 hour candle is ranging with long wicks
-            emerg_exist_symbols = self.risk_manager.emergency_exit(is_market_open=is_market_open, timeframe=self.trading_timeframe)
+            emerg_exist_symbols = self.risk_manager.emergency_exit(is_market_open=is_market_open, 
+                                                                   timeframe=self.trading_timeframe)
             for position_object in emerg_exist_symbols:
                 self.orders.close_single_position(obj=position_object)
                 
@@ -109,7 +130,11 @@ class SmartTrader():
                     self.orders.close_single_position(obj=risk_positions)
                 
                 # Reset account size for next day
-                self.risk_manager = RiskManager(account_risk=account_risk, position_risk=each_position_risk, stop_ratio=self.stop_ratio, target_ratio=self.target_ratio)
+                self.risk_manager = RiskManager(account_risk=account_risk, 
+                                                position_risk=each_position_risk, 
+                                                stop_ratio=self.stop_ratio, 
+                                                target_ratio=self.target_ratio)
+                
                 self.fixed_initial_account_size = self.risk_manager.account_size
 
             self.orders.cancel_all_pending_orders()
