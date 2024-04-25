@@ -1,5 +1,5 @@
 set account_risk=1
-set target_ratio=10.0
+set target_ratio=5.0
 set security=FOREX
 set system=DAILY_HL
 
