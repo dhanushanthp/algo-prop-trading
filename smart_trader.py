@@ -110,7 +110,7 @@ class SmartTrader():
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
 
             # Each position trail stop
-            self.risk_manager.adjust_positions_trailing_stops(is_market_open=is_market_open, 
+            self.risk_manager.trailing_stop_and_target(is_market_open=is_market_open, 
                                                               stop_multiplier=2, 
                                                               target_multiplier=self.target_ratio, 
                                                               trading_timeframe=self.trading_timeframe)
@@ -126,7 +126,7 @@ class SmartTrader():
                 self.orders.cancel_all_pending_orders()
 
                 # Close the positions which has risk of lossing less than 0
-                for risk_positions in self.risk_manager.get_risk_positions():
+                for risk_positions in self.risk_manager.get_positions_at_risk():
                     self.orders.close_single_position(obj=risk_positions)
                 
                 # Reset account size for next day
@@ -139,8 +139,8 @@ class SmartTrader():
 
             self.orders.cancel_all_pending_orders()
             
-            if is_market_open and (not is_market_close) and self.wrapper.do_have_remaining_trades(max_trades=self.trades_per_day):
-                existing_positions = self.wrapper.get_existing_symbols(today=True)
+            if is_market_open and (not is_market_close) and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
+                existing_positions = self.wrapper.get_active_positions(today=True)
 
                 for symbol in curr.get_major_symbols(security=self.security):
                     # If the positions is already in trade, then don't check for signal
@@ -214,11 +214,11 @@ class SmartTrader():
             time.sleep(self.timer)
     
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Example script with named arguments.')
+    parser = argparse.ArgumentParser(description='Trader Configuration')
 
     parser.add_argument('--system', type=str, help='Select System 3CDL or HOD, LOD Break')
-    parser.add_argument('--strategy', type=str, help='Selected strategy')
-    parser.add_argument('--security', type=str, help='Selected Type')
+    parser.add_argument('--strategy', type=str, help='Selected Strategy')
+    parser.add_argument('--security', type=str, help='Selected Type - Forex or Stock')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
     parser.add_argument('--trades_per_day', type=int, help='Number of trades per day')
     parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')

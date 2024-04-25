@@ -132,7 +132,7 @@ class Wrapper:
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 0, 1)[-1]
     
 
-    def get_existing_symbols(self, today=False):
+    def get_active_positions(self, today=False):
         """
         List all the symbols which are in trade
         """
@@ -225,7 +225,7 @@ class Wrapper:
         return entry_positions["code"].tolist()
 
 
-    def do_have_remaining_trades(self, max_trades=6):
+    def any_remaining_trades(self, max_trades=6):
         trades = self.get_todays_trades()
         
         if trades.empty:
@@ -331,5 +331,5 @@ if "__main__" == __name__:
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
     # print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
     # print(obj.get_traded_symbols())
-    print(obj.do_have_remaining_trades(max_trades=10))
+    print(obj.any_remaining_trades(max_trades=10))
 

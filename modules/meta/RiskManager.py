@@ -78,7 +78,7 @@ class RiskManager:
         # Return False if daily maximum risk has not been reached
         return False
     
-    def get_risk_positions(self) -> list:
+    def get_positions_at_risk(self) -> list:
         """
         Get list of positions that are not breakeven of in the profit
         """
@@ -121,7 +121,7 @@ class RiskManager:
         return symbol_list
 
 
-    def adjust_positions_trailing_stops(self, is_market_open:bool, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
+    def trailing_stop_and_target(self, is_market_open:bool, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
         # Only adjust while market is open
         if is_market_open:
             existing_positions = mt5.positions_get()
@@ -324,4 +324,4 @@ if __name__ == "__main__":
     
     # print(obj.emergency_exit(timeframe=60))
 
-    print(obj.get_risk_positions())
+    print(obj.get_positions_at_risk())
