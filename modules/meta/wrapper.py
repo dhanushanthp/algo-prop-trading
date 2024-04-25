@@ -238,10 +238,53 @@ class Wrapper:
         # Number of positions based on the trades, Not on the symbols
         num_entries = trades[trades["entry"]==0].shape[0]
 
-        if num_entries < max_trades:
+        addtional_possible_entries = self.total_position_at_risk(parallel_positions=max_trades)
+        print(f"{'Remaining Trades'.ljust(20)}: {(addtional_possible_entries - num_entries)}/{addtional_possible_entries}")
+
+        if num_entries < addtional_possible_entries:
             return True
         
         return False
+    
+    def total_position_at_risk(self, parallel_positions = 10):
+        """
+        Dynamically change the max trades per day based on the risk free positions
+        The risk free positions considered once after the stop moved to breake even or already exit positions with positive profit
+        """
+        # Already traded positions
+        already_traded_today = 0
+        trades = self.get_todays_trades()
+        if not trades.empty:
+            # Number of positions based on the trades, Not on the symbols
+            already_traded_today = trades[trades["entry"]==0].shape[0]
+
+        # active positions
+        positions_with_risk = 0
+        existing_positions = mt5.positions_get()
+        for position in existing_positions:
+            symbol = position.symbol
+            stop_price = position.sl
+            entry_price = position.price_open
+
+            if position.type == 0:
+                if stop_price < entry_price:
+                    positions_with_risk += 1
+            
+            if position.type == 1:
+                if stop_price > entry_price:
+                    positions_with_risk += 1
+        
+        # Stopped Positions with negative
+        exit_positions = trades[trades["entry"]==1]
+        nagative_positions = exit_positions[exit_positions["profit"] < 0]
+        lost_positions = nagative_positions.shape[0]
+
+        total_positions_used = positions_with_risk + lost_positions
+
+        possible_addtional_entries = already_traded_today + parallel_positions - total_positions_used
+
+        return possible_addtional_entries
+        
 
     def get_heikin_ashi(self, symbol, timeframe):
         """
@@ -284,7 +327,7 @@ if "__main__" == __name__:
     # print(obj.get_current_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_previous_candle(symbol=symbol, timeframe=timeframe))
     # print(obj.get_existing_symbols(today=True))
-    print(obj.get_existing_pending_orders())
+    # print(obj.get_existing_pending_orders())
     # print(obj.get_todays_trades())
     # print(obj.pre_candle_body(symbol, timeframe))
     # print(obj.get_spread(symbol))
@@ -292,4 +335,5 @@ if "__main__" == __name__:
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
     # print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
     # print(obj.get_traded_symbols())
+    print(obj.today_unique_traded_symbols(max_trades=10))
 

@@ -122,12 +122,14 @@ class SmartTrader():
                     if symbol in existing_positions:
                         continue
 
+                    current_candle = self.wrapper.get_current_candle(symbol=symbol, timeframe=self.trading_timeframe)
+                    upper_band, lower_band = self.indicators.bollinger_bands(symbol=symbol, timeframe=self.trading_timeframe, window_size=20, num_std_dev=2)
+                    market_trend = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe)
+
                     if self.system == "3CDL_STR":
                         candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, timeframe=self.trading_timeframe)
-                        # Identify Longer timeframe direction
-                        high_tf_trend = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe)
                         
-                        if candle_strike == high_tf_trend == Directions.LONG:
+                        if (candle_strike == market_trend == Directions.LONG) and (current_candle["high"] < upper_band):
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
@@ -139,7 +141,7 @@ class SmartTrader():
                                 if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
                                     break # Break the symbol loop
 
-                        elif candle_strike == high_tf_trend == Directions.SHORT:
+                        elif (candle_strike == market_trend == Directions.SHORT) and (current_candle["low"] > lower_band):
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
@@ -157,7 +159,6 @@ class SmartTrader():
                         """
                         king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, timeframe=self.trading_timeframe)
                         previous_candle = self.wrapper.get_previous_candle(symbol=symbol, timeframe=self.trading_timeframe)
-                        higher_tf_direction = self.indicators.sma_direction(symbol=symbol, timeframe=self.trading_timeframe)
 
                         for resistance in king_of_levels["resistance"]:
                             if (previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level):
@@ -168,7 +169,7 @@ class SmartTrader():
                                                                                                 break_level=resistance.level, 
                                                                                                 reference=resistance.reference)
 
-                                if is_valid_signal and higher_tf_direction == Directions.LONG:
+                                if (is_valid_signal and market_trend == Directions.LONG) and (current_candle["high"] < upper_band):
                                     if self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
                                         break # Break the resistance loop
                     
@@ -181,7 +182,7 @@ class SmartTrader():
                                                                                                 break_level=support.level, 
                                                                                                 reference=support.reference)
 
-                                if is_valid_signal and higher_tf_direction == Directions.SHORT:
+                                if (is_valid_signal and market_trend == Directions.SHORT) and (current_candle["low"] > lower_band):
                                     if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
                                         break # Break the support loop
 
