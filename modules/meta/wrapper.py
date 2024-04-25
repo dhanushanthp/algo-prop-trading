@@ -229,7 +229,7 @@ class Wrapper:
         return entry_positions["code"].tolist()
 
 
-    def today_unique_traded_symbols(self, max_trades=6):
+    def do_have_remaining_trades(self, max_trades=6):
         trades = self.get_todays_trades()
         
         if trades.empty:
@@ -238,7 +238,7 @@ class Wrapper:
         # Number of positions based on the trades, Not on the symbols
         num_entries = trades[trades["entry"]==0].shape[0]
 
-        addtional_possible_entries = self.total_position_at_risk(parallel_positions=max_trades)
+        addtional_possible_entries = self.addtional_trade_buffer(parallel_positions=max_trades)
         print(f"{'Remaining Trades'.ljust(20)}: {(addtional_possible_entries - num_entries)}/{addtional_possible_entries}")
 
         if num_entries < addtional_possible_entries:
@@ -246,7 +246,7 @@ class Wrapper:
         
         return False
     
-    def total_position_at_risk(self, parallel_positions = 10):
+    def addtional_trade_buffer(self, parallel_positions = 10):
         """
         Dynamically change the max trades per day based on the risk free positions
         The risk free positions considered once after the stop moved to breake even or already exit positions with positive profit
@@ -335,5 +335,5 @@ if "__main__" == __name__:
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
     # print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
     # print(obj.get_traded_symbols())
-    print(obj.today_unique_traded_symbols(max_trades=10))
+    print(obj.do_have_remaining_trades(max_trades=10))
 
