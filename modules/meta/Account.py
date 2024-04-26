@@ -2,9 +2,6 @@ import MetaTrader5 as mt
 from typing import Tuple
 
 class Account:
-    def __init__(self) -> None:
-        pass
-
     def get_account_name(self):
         info = mt.account_info()
         balance = round(info.balance/1000)
