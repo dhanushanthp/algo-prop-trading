@@ -234,10 +234,10 @@ class Wrapper:
         # Number of positions based on the trades, Not on the symbols
         num_entries = trades[trades["entry"]==0].shape[0]
 
-        addtional_possible_entries = self.addtional_trade_buffer(parallel_positions=max_trades)
-        print(f"{'Remaining Trades'.ljust(20)}: {(addtional_possible_entries - num_entries)}/{addtional_possible_entries}")
+        # addtional_possible_entries = self.addtional_trade_buffer(parallel_positions=max_trades)
+        # print(f"{'Remaining Trades'.ljust(20)}: {(addtional_possible_entries - num_entries)}/{addtional_possible_entries}")
 
-        if num_entries < addtional_possible_entries:
+        if num_entries < max_trades:
             return True
         
         return False
