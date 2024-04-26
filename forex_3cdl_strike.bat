@@ -1,4 +1,4 @@
-set account_risk=1
+set account_risk=3
 set target_ratio=5.0
 set security=FOREX
 set system=3CDL_STR

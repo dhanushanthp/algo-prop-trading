@@ -71,6 +71,7 @@ class SmartTrader():
         # Default
         self.trading_timeframe = trading_timeframe
         self.trades_per_day = trades_per_day
+        self.pause_trading = False
 
         # Initiate the ticker
         curr.ticker_initiator(security=security)
@@ -111,6 +112,11 @@ class SmartTrader():
             print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage*self.trades_per_day}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
+            print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
+
+            if rr > 1:
+                self.orders.close_all_positions()
+                self.pause_trading=True
 
             # Each position trail stop
             self.risk_manager.trailing_stop_and_target(is_market_open=is_market_open, 
@@ -139,10 +145,11 @@ class SmartTrader():
                                                 target_ratio=self.target_ratio)
                 
                 self.fixed_initial_account_size = self.risk_manager.account_size
+                self.pause_trading = False
 
             self.orders.cancel_all_pending_orders()
             
-            if is_market_open and (not is_market_close) and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
+            if is_market_open and (not is_market_close) and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day) and (not self.pause_trading):
                 existing_positions = self.wrapper.get_active_positions(today=True)
 
                 for symbol in curr.get_major_symbols(security=self.security):
