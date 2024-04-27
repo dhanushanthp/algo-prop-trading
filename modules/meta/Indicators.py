@@ -155,6 +155,7 @@ class Indicators:
     def get_four_candle_reverse(self, symbol, timeframe=60) -> Directions:
         previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=2)
         previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
+        upper_band, lower_band = self.bollinger_bands(symbol=symbol, timeframe=timeframe)
 
         if len(previous_bars) >= 3:
             last_3_bars = previous_bars.tail(3).copy()
@@ -169,13 +170,13 @@ class Indicators:
             is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
             is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
 
-            pre_can_bullish = previous_bar["open"] < previous_bar["close"]
-            pre_can_bearish = previous_bar["open"] > previous_bar["close"]
+            prev_bullish = previous_bar["open"] < previous_bar["close"]
+            prev_bearish = previous_bar["open"] > previous_bar["close"]
 
-            if is_bullish and pre_can_bearish:
+            if is_bullish and prev_bearish and (previous_bar["high"] > upper_band):
                 return Directions.SHORT
             
-            if is_bearish and pre_can_bullish:
+            if is_bearish and prev_bullish and (previous_bar["low"] < lower_band):
                 return Directions.LONG
         
         return None
