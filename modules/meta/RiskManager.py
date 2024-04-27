@@ -195,6 +195,11 @@ class RiskManager:
         however it includes current candle for calculation, in case if the current candle is longer than the previous candles
         """
         selected_time = util.match_timeframe(timeframe)
+
+        # Override candle stop
+        if timeframe == 240:
+            # Means, curret and previous one
+            num_cdl_for_stop = 1
         
         # Pick last 3 candles (Including current one) to find high and low
         previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, num_cdl_for_stop+1)
