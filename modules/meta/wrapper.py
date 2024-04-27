@@ -232,6 +232,8 @@ class Wrapper:
         if trading_timeframe >= 240:
             num_active_positions = self.get_active_positions_with_risk()
 
+            # Trades which has exit with negative profit. Even it could be from previous days,
+            # Since our daily loss limit has to consider losses of today
             lost_positions = 0
             if not today_trades.empty:
                 exit_positions = today_trades[today_trades["entry"]==1]
