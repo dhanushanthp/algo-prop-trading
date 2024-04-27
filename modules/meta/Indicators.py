@@ -398,7 +398,6 @@ class Indicators:
                     print(f"PLL: {index_of_high}")
                     if index_of_high > 2:
                         print(f"Index: {index_of_high}, {high_of_candels}")
-                        print(selected_candles)
                         return Directions.LONG
             
             if sma_direction == Directions.SHORT:
@@ -408,7 +407,6 @@ class Indicators:
                     print(f"PLS: {index_of_low}")
                     if index_of_low > 2:
                         print(f"Index: {i}, {index_of_low}, {low_of_candels}")
-                        print(selected_candles)
                         return Directions.SHORT
                 
         return None        
