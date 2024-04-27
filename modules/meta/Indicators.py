@@ -395,7 +395,7 @@ class Indicators:
                 index_of_high = selected_candles['high'].idxmax()
                 high_of_candels = selected_candles["high"].max()
                 if signal_check_candle["close"] > high_of_candels:
-                    print(f"Long: {index_of_high}")
+                    print(f"PLL: {index_of_high}")
                     if index_of_high > 2:
                         print(f"Index: {index_of_high}, {high_of_candels}")
                         print(selected_candles)
@@ -405,7 +405,7 @@ class Indicators:
                 low_of_candels = selected_candles["low"].min()
                 index_of_low = selected_candles['high'].idxmax()
                 if signal_check_candle["close"] < low_of_candels:
-                    print(f"SH: {index_of_low}")
+                    print(f"PLS: {index_of_low}")
                     if index_of_low > 2:
                         print(f"Index: {i}, {index_of_low}, {low_of_candels}")
                         print(selected_candles)
