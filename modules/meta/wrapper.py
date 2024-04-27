@@ -225,22 +225,58 @@ class Wrapper:
         return entry_positions["code"].tolist()
 
 
-    def any_remaining_trades(self, max_trades=6):
-        trades = self.get_todays_trades()
+    def any_remaining_trades(self, max_trades=10, trading_timeframe:int=60):
         
-        if trades.empty:
-            return True
-        
-        # Number of positions based on the trades, Not on the symbols
-        num_entries = trades[trades["entry"]==0].shape[0]
+        today_trades = self.get_todays_trades()
 
-        # addtional_possible_entries = self.addtional_trade_buffer(parallel_positions=max_trades)
-        # print(f"{'Remaining Trades'.ljust(20)}: {(addtional_possible_entries - num_entries)}/{addtional_possible_entries}")
+        if trading_timeframe >= 240:
+            num_active_positions = self.get_active_positions_with_risk()
 
-        if num_entries < max_trades:
-            return True
+            lost_positions = 0
+            if not today_trades.empty:
+                exit_positions = today_trades[today_trades["entry"]==1]
+                if not exit_positions.empty:
+                    nagative_positions = exit_positions[exit_positions["profit"] < 0]
+                    lost_positions = nagative_positions.shape[0]
+
+            if (num_active_positions + lost_positions) < max_trades:
+                return True
+        else:            
+            if today_trades.empty:
+                return True
+            
+            # Number of positions based on the trades, Not on the symbols
+            num_entries = today_trades[today_trades["entry"]==0].shape[0]
+
+            # addtional_possible_entries = self.addtional_trade_buffer(parallel_positions=max_trades)
+            # print(f"{'Remaining Trades'.ljust(20)}: {(addtional_possible_entries - num_entries)}/{addtional_possible_entries}")
+
+            if num_entries < max_trades:
+                return True
         
         return False
+    
+    def get_active_positions_with_risk(self) -> int:
+        """
+        Get number of active positions with risk (Not covered by break even stops)
+        """
+        positions_with_risk = 0
+        existing_positions = mt5.positions_get()
+        for position in existing_positions:
+            # symbol = position.symbol
+            stop_price = position.sl
+            entry_price = position.price_open
+
+            if position.type == 0:
+                if stop_price < entry_price:
+                    positions_with_risk += 1
+            
+            if position.type == 1:
+                if stop_price > entry_price:
+                    positions_with_risk += 1
+        
+        return positions_with_risk
+    
     
     def addtional_trade_buffer(self, parallel_positions = 10):
         """
