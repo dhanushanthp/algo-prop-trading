@@ -167,8 +167,8 @@ class Indicators:
             is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
             is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
             
-            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
-            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
+            is_bullish = all(last_3_bars["body_size"] > 0) # and all(is_higher_high) and all(is_higher_low)
+            is_bearish = all(last_3_bars["body_size"] < 0) # and all(is_lower_high) and all(is_lower_low)
 
             prev_bullish = previous_bar["open"] < previous_bar["close"]
             prev_bearish = previous_bar["open"] > previous_bar["close"]
@@ -377,6 +377,42 @@ class Indicators:
         else:
             return lower_limit < number < upper_limit
 
+    def pullback_candle_breaks(self, symbol:str, timeframe:int=240, breakout_gap:int=3) -> Directions:
+        # Pick last 10 candles, Starting from previous candle
+        previous_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, last_n_candle=10)
+        previous_candles = previous_candles.iloc[::-1].reset_index(drop=True) # reverse the data
+        sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe) # Find direction
+
+        # Previous candles, which is already close
+        signal_check_candle = previous_candles.iloc[0]
+
+        for i in range(breakout_gap, len(previous_candles) + 1):
+            # Start checking the candles from previous to previous, it's 1, since our start candle is previous candle
+            selected_candles = previous_candles.iloc[1: i]
+
+            if sma_direction == Directions.LONG:
+                index_of_high = selected_candles['high'].idxmax()
+                high_of_candels = selected_candles["high"].max()
+                if signal_check_candle["close"] > high_of_candels:
+                    print(f"Long: {index_of_high}")
+                    if index_of_high > 2:
+                        print(f"Index: {index_of_high}, {high_of_candels}")
+                        print(selected_candles)
+                        return Directions.LONG
+            
+            if sma_direction == Directions.SHORT:
+                low_of_candels = selected_candles["low"].min()
+                index_of_low = selected_candles['high'].idxmax()
+                if signal_check_candle["close"] < low_of_candels:
+                    print(f"SH: {index_of_low}")
+                    if index_of_low > 2:
+                        print(f"Index: {i}, {index_of_low}, {low_of_candels}")
+                        print(selected_candles)
+                        return Directions.SHORT
+                
+        return None        
+
+
     def get_king_of_levels(self, symbol, timeframe, start_reference_bar=2) -> Dict[str, List[Signal]]:
         highs = []
         lows = []
@@ -421,4 +457,5 @@ if __name__ == "__main__":
     # print(indi_obj.sma_direction(symbol=symbol, timeframe=60*4))
     # print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))
     # print(indi_obj.get_two_candle_strike(symbol=symbol, timeframe=timeframe))
-    print(indi_obj.bollinger_bands(symbol=symbol, timeframe=timeframe, window_size=20))
+    # print(indi_obj.bollinger_bands(symbol=symbol, timeframe=timeframe, window_size=20))
+    print(indi_obj.pullback_candle_breaks(symbol=symbol, timeframe=timeframe))

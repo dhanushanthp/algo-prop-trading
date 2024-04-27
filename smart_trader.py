@@ -200,7 +200,7 @@ class SmartTrader():
                         candle_strike = self.indicators.get_four_candle_reverse(symbol=symbol, 
                                                                                 timeframe=self.trading_timeframe)
                         
-                        if (candle_strike == market_trend == Directions.LONG):
+                        if (candle_strike == Directions.LONG):
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
@@ -212,7 +212,7 @@ class SmartTrader():
                                 if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
                                     break # Break the symbol loop
 
-                        elif (candle_strike == market_trend == Directions.SHORT):
+                        elif (candle_strike == Directions.SHORT):
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
@@ -223,6 +223,18 @@ class SmartTrader():
                             if is_valid_signal:
                                 if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
                                     break # Break the symbol loop
+                    
+                    if self.system == "HIGHER_TF_BREAK":
+                        candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
+                                                                                timeframe=self.trading_timeframe)
+                        
+                        if (candle_strike == Directions.LONG):
+                            if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
+                                break # Break the symbol loop
+
+                        elif (candle_strike == Directions.SHORT):
+                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
+                                break # Break the symbol loop
                             
                     if self.system == "DAILY_HL":
                         """
