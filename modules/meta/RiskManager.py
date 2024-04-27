@@ -191,13 +191,15 @@ class RiskManager:
     
     def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=2) -> Shield:
         """
+        If the time frame is greater than 4 hours, then take the stop to high or low of previous and current bar based on the direction of the trade
+
         num_cdl_for_stop : number of previous candles considered from current candles for stop calculation e.g, 1 previous candle, 2 is second previous candle
         however it includes current candle for calculation, in case if the current candle is longer than the previous candles
         """
         selected_time = util.match_timeframe(timeframe)
 
         # Override candle stop
-        if timeframe == 240:
+        if timeframe >= 240:
             # Means, curret and previous one
             num_cdl_for_stop = 1
         
