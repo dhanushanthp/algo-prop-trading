@@ -113,18 +113,19 @@ class SmartTrader():
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
-
-            if rr > 1:
-                self.orders.close_all_positions()
-                self.pause_trading=True
+            
+            if self.trading_timeframe < 240:
+                if rr > 1:
+                    self.orders.close_all_positions()
+                    self.pause_trading=True
 
             # Each position trail stop
             self.risk_manager.trailing_stop_and_target(is_market_open=is_market_open, 
-                                                              stop_multiplier=2, 
-                                                              target_multiplier=self.target_ratio, 
-                                                              trading_timeframe=self.trading_timeframe)
+                                                       stop_multiplier=2, 
+                                                       target_multiplier=self.target_ratio, 
+                                                       trading_timeframe=self.trading_timeframe)
 
-            # Exit from the position when 1 hour candle is ranging with long wicks
+            # Exit from the position when candle is ranging with long wicks
             emerg_exist_symbols = self.risk_manager.emergency_exit(is_market_open=is_market_open, 
                                                                    timeframe=self.trading_timeframe)
             for position_object in emerg_exist_symbols:
@@ -132,8 +133,7 @@ class SmartTrader():
                 
             if is_market_close:
                 print("Market Close!")
-                self.orders.cancel_all_pending_orders()
-
+                
                 # Close the positions which has risk of lossing less than 0
                 for risk_positions in self.risk_manager.get_positions_at_risk():
                     self.orders.close_single_position(obj=risk_positions)
