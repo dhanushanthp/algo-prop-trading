@@ -231,14 +231,17 @@ class SmartTrader():
                                     break # Break the symbol loop
                     
                     if self.system == "PULL_BACK":
-                        candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
+                        breakout_candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
                                                                                 timeframe=self.trading_timeframe)
                         
-                        if (candle_strike == Directions.LONG):
+                        three_candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, 
+                                                                                timeframe=self.trading_timeframe)
+                        
+                        if (breakout_candle_strike == Directions.LONG) or (three_candle_strike == Directions.LONG):
                             if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
                                 break # Break the symbol loop
 
-                        elif (candle_strike == Directions.SHORT):
+                        elif (breakout_candle_strike == Directions.SHORT) or (three_candle_strike == Directions.SHORT):
                             if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
                                 break # Break the symbol loop
                             

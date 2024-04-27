@@ -48,8 +48,8 @@ class Wrapper:
 
         return df
     
-    def get_last_n_candles(self, symbol:str, timeframe:int, start_candle:int=0, last_n_candle:int=1):
-        return pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), start_candle, last_n_candle))
+    def get_last_n_candles(self, symbol:str, timeframe:int, start_candle:int=0, n_candles:int=1):
+        return pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), start_candle, n_candles))
 
     
     def get_candles_by_time(self, symbol:str, timeframe:int,candle_start_hour:int=0, candle_end_hour:int=9):
@@ -329,7 +329,7 @@ class Wrapper:
         DataFrame: DataFrame containing Heikin-Ashi OHLC values with columns renamed to lowercase.
         """
 
-        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, last_n_candle=4)
+        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, n_candles=4)
         print(df[["open", "close", "low", "high"]])
 
         heikin_ashi_df = df[["open", "close", "low", "high"]].copy()

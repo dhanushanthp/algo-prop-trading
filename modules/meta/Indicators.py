@@ -19,7 +19,7 @@ class Indicators:
         self.prices = prices
     
     def get_atr(self, symbol:str, timeframe:int, start_candle:int=0) -> float:
-        rates = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, last_n_candle=20)
+        rates = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, n_candles=20)
         
         if rates.empty:
             return 0
@@ -37,7 +37,7 @@ class Indicators:
         """
         Find the simple moving average of last candle
         """
-        last_n_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=0, last_n_candle=n_moving_average)
+        last_n_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=0, n_candles=n_moving_average)
         close_prices = last_n_candles["close"]
         return close_prices.mean()
     
@@ -53,7 +53,7 @@ class Indicators:
             upper_band (numpy.array): The upper Bollinger Band.
             lower_band (numpy.array): The lower Bollinger Band.
         """
-        last_n_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=0, last_n_candle=window_size)
+        last_n_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=0, n_candles=window_size)
         close_prices = last_n_candles["close"]
         close_prices = np.array(close_prices)
         middle_band = np.convolve(close_prices, np.ones(window_size) / window_size, mode='valid')
@@ -105,7 +105,8 @@ class Indicators:
 
     
     def get_three_candle_strike(self, symbol, timeframe=60) -> Directions:
-        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
+        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=4)
+        sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe) # Find direction
 
         if len(previous_bars) >= 3:
             last_3_bars = previous_bars.tail(3).copy()
@@ -120,16 +121,16 @@ class Indicators:
             is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
             is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
 
-            if is_bullish:
+            if is_bullish and (sma_direction == Directions.LONG):
                 return Directions.LONG
             
-            if is_bearish:
+            if is_bearish and (sma_direction == Directions.SHORT):
                 return Directions.SHORT
         
         return None
     
     def get_two_candle_strike(self, symbol, timeframe=60) -> Directions:
-        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
+        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=3)
 
         if len(previous_bars) >= 3:
             last_2_bars = previous_bars.tail(2).copy()
@@ -153,7 +154,7 @@ class Indicators:
         return None
 
     def get_four_candle_reverse(self, symbol, timeframe=60) -> Directions:
-        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=2)
+        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=5)
         previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
         upper_band, lower_band = self.bollinger_bands(symbol=symbol, timeframe=timeframe)
 
@@ -186,7 +187,7 @@ class Indicators:
         """
         Exist the position if candle is randing for last 3 hours, which has longer wicks than the body
         """
-        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=1)
+        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=4)
 
         if len(previous_bars) >= 3:
             last_3_bars = previous_bars.tail(3).copy()
@@ -379,7 +380,7 @@ class Indicators:
 
     def pullback_candle_breaks(self, symbol:str, timeframe:int=240, breakout_gap:int=3) -> Directions:
         # Pick last 10 candles, Starting from previous candle
-        previous_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, last_n_candle=10)
+        previous_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=10)
         previous_candles = previous_candles.iloc[::-1].reset_index(drop=True) # reverse the data
         sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe) # Find direction
 
