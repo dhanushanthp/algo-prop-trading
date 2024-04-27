@@ -178,7 +178,7 @@ class SmartTrader():
                         candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, 
                                                                                 timeframe=self.trading_timeframe)
                         
-                        if (candle_strike == market_trend == Directions.LONG) and (current_candle["high"] < upper_band):
+                        if (candle_strike == Directions.LONG) and (current_candle["high"] < upper_band):
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
@@ -190,7 +190,7 @@ class SmartTrader():
                                 if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
                                     break # Break the symbol loop
 
-                        elif (candle_strike == market_trend == Directions.SHORT) and (current_candle["low"] > lower_band):
+                        elif (candle_strike == Directions.SHORT) and (current_candle["low"] > lower_band):
                             is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
                                                                                     past_break_index=0, 
                                                                                     timeframe=self.trading_timeframe,
