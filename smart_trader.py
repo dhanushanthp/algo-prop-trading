@@ -224,7 +224,7 @@ class SmartTrader():
                                 if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
                                     break # Break the symbol loop
                     
-                    if self.system == "HIGHER_TF_BREAK":
+                    if self.system == "PULL_BACK":
                         candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
                                                                                 timeframe=self.trading_timeframe)
                         

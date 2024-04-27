@@ -1,7 +1,7 @@
 set account_risk=3
 set target_ratio=5.0
 set security=FOREX
-set system=HIGHER_TF_BREAK
+set system=PULL_BACK
 
 python smart_trader.py ^
     --strategy break ^
