@@ -121,6 +121,31 @@ class RiskManager:
                     self.alert.send_msg(f"Emergency Exist: {symbol}")
         
         return symbol_list
+    
+
+    def disable_stop(self):
+        existing_positions = mt5.positions_get()
+        for position in existing_positions:
+            target_price = position.tp
+            modify_request = {
+                        "action": mt5.TRADE_ACTION_SLTP,
+                        "symbol": position.symbol,
+                        "volume": position.volume,
+                        "type": position.type,
+                        "position": position.ticket,
+                        "tp": target_price,
+                        "comment": position.comment,
+                        "magic": position.magic,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_FOK,
+                        "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+                    }
+                    
+            result = mt5.order_send(modify_request)
+            
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                if result.comment != "No changes":
+                    print("Re-enabling STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 
     def trailing_stop_and_target(self, is_market_open:bool, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
@@ -156,13 +181,19 @@ class RiskManager:
                         # Long Position
                         trail_stop = max(stop_price, stp_shield_obj.get_long_stop)
                         trail_target = min(target_price, tgt_shield_obj.get_short_stop)
+                        emergency_stop = stp_shield_obj.get_long_stop
                     case 1:
                         # Short Position
                         trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
                         trail_target = max(target_price, tgt_shield_obj.get_long_stop)
+                        emergency_stop = stp_shield_obj.get_short_stop
                 
-                if (trail_stop != stop_price) or (target_price != trail_target) or is_stop_updated:
+                if (trail_stop != stop_price) or (target_price != trail_target) or is_stop_updated or (stop_price == 0):
                     
+                    # If the position don't have the stop, then it will be reactivated
+                    if stop_price == 0:
+                        trail_stop = emergency_stop
+
                     # When the price move above 1R then move the stop to breakeven
                     if is_stop_updated:
                         trail_stop = open_price
@@ -315,27 +346,37 @@ if __name__ == "__main__":
     obj = RiskManager(stop_ratio=1, target_ratio=3)
     import sys
     test_symbol = sys.argv[1]
+    decision = sys.argv[2]
 
-    # Test: Stop Ranges
-    stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
-    print(stp_range)
+    match decision:
+        case "stop_range":
+            # Test: Stop Ranges
+            stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
+            print(stp_range)
+        
+        case "target_range":
+            # Test: Target Ranges 
+            tgt_range = obj.get_stop_range(symbol=test_symbol, timeframe=60, multiplier=3)
+            print(tgt_range)
+        
+        case "lot_size":
+            # Test: Lot Size
+            entry_price = obj.prices.get_entry_price(symbol=test_symbol)
+            size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
+            print(size)
+        
+        case "wait_time":
+            check_time = obj.check_trade_wait_time(symbol=test_symbol)
+            print(check_time)
 
-    # Test: Target Ranges 
-    tgt_range = obj.get_stop_range(symbol=test_symbol, timeframe=60, multiplier=3)
-    print(tgt_range)
+        case "trail":
+            obj.trailing_stop_and_target(is_market_open=True,stop_multiplier=1, target_multiplier=3, trading_timeframe=60)
 
-    # Test: Lot Size
-    entry_price = obj.prices.get_entry_price(symbol=test_symbol)
-    size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
-    print(size)
+        case "disable_stop":
+            obj.disable_stop()
+        
+        case "emer_exit":
+            print(obj.emergency_exit(timeframe=60))
 
-    check_time = obj.check_trade_wait_time(symbol=test_symbol)
-    print(check_time)
-
-    # print(obj.reduce_risk_exposure())
-
-    # obj.adjust_positions_trailing_stops(target_multiplier=8, trading_timeframe=60)
-    
-    # print(obj.emergency_exit(timeframe=60))
-
-    print(obj.get_positions_at_risk())
+        case "pos_at_risk":
+            print(obj.get_positions_at_risk())
