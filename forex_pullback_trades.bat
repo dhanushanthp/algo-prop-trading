@@ -1,5 +1,5 @@
 set account_risk=3
-set target_ratio=5.0
+set target_ratio=3.0
 set security=FOREX
 set system=PULL_BACK
 
