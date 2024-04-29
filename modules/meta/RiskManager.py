@@ -202,7 +202,7 @@ class RiskManager:
 
         match timeframe:
             case 60:
-                num_cdl_for_stop = 3
+                num_cdl_for_stop = 2
             case 240:
                 num_cdl_for_stop = 2
             case _:

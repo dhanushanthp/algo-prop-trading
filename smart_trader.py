@@ -123,7 +123,7 @@ class SmartTrader():
 
             # Each position trail stop
             self.risk_manager.trailing_stop_and_target(is_market_open=is_market_open, 
-                                                       stop_multiplier=2, 
+                                                       stop_multiplier=self.stop_ratio, 
                                                        target_multiplier=self.target_ratio, 
                                                        trading_timeframe=self.trading_timeframe)
 
@@ -263,6 +263,30 @@ class SmartTrader():
                                         break # Break the symbol loop
                                 else:
                                     print(f"SH: {symbol} is below SMA: {round(sma, 5)} and STOP:{shield_object.get_short_stop}")
+
+                        case "PULL_BACK_ONLY":
+                            breakout_candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
+                                                                                    timeframe=self.trading_timeframe)
+                            reference = "HL-BRK" # High Low Break
+                            
+                            # We would like to have the stop above sma for short and below sma for long positions
+                            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+                            sma = self.indicators.simple_moving_average(symbol=symbol, timeframe=self.trading_timeframe, n_moving_average=10)
+
+                            match breakout_candle_strike:
+                                case Directions.LONG:
+                                    if (shield_object.get_long_stop < sma):
+                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference=reference, break_level=0):
+                                            break # Break the symbol loop
+                                    else:
+                                        print(f"LO: {symbol} is above SMA: {round(sma, 5)} and STOP:{shield_object.get_long_stop}")
+
+                                case Directions.SHORT:
+                                    if shield_object.get_short_stop > sma:
+                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference=reference, break_level=0):
+                                            break # Break the symbol loop
+                                    else:
+                                        print(f"SH: {symbol} is below SMA: {round(sma, 5)} and STOP:{shield_object.get_short_stop}")
                             
                         case "DAILY_HL":
                             """
