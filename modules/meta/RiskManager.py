@@ -362,6 +362,7 @@ if __name__ == "__main__":
         case "lot_size":
             # Test: Lot Size
             entry_price = obj.prices.get_entry_price(symbol=test_symbol)
+            stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
             size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
             print(size)
         
