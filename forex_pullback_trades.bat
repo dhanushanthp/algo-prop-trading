@@ -5,7 +5,7 @@ set system=PULL_BACK
 
 python smart_trader.py ^
     --strategy break ^
-    --trades_per_day 10 ^
+    --trades_per_day 15 ^
     --each_position_risk 0.3 ^
     --system %system% ^
     --security %security% ^
