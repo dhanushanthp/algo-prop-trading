@@ -180,8 +180,8 @@ def get_market_status(trading_timeframe:int=60) -> Tuple[bool, bool]:
     print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
 
     start_time = 4
-    if trading_timeframe >=240:
-        start_time = 1
+    # if trading_timeframe >=240:
+    #     start_time = 1
 
     if day not in ["Saturday","Sunday"]:
         # Once market open become disabled, No new trades

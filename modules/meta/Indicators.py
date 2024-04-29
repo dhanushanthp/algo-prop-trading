@@ -33,7 +33,7 @@ class Indicators:
 
         return round(atr, 5)
     
-    def simple_moving_average(self, symbol:str, timeframe:int, n_moving_average:int=0) -> float:
+    def simple_moving_average(self, symbol:str, timeframe:int, n_moving_average:int=10) -> float:
         """
         Find the simple moving average of last candle
         """
@@ -395,18 +395,14 @@ class Indicators:
                 index_of_high = selected_candles['high'].idxmax()
                 high_of_candels = selected_candles["high"].max()
                 if signal_check_candle["close"] > high_of_candels:
-                    print(f"PLL: {index_of_high}")
                     if index_of_high > 2:
-                        print(f"Index: {index_of_high}, {high_of_candels}")
                         return Directions.LONG
             
             if sma_direction == Directions.SHORT:
                 low_of_candels = selected_candles["low"].min()
                 index_of_low = selected_candles['high'].idxmax()
                 if signal_check_candle["close"] < low_of_candels:
-                    print(f"PLS: {index_of_low}")
                     if index_of_low > 2:
-                        print(f"Index: {i}, {index_of_low}, {low_of_candels}")
                         return Directions.SHORT
                 
         return None        
@@ -451,7 +447,7 @@ if __name__ == "__main__":
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
     # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, start_reference))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
-    # print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
+    print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.get_three_candle_exit(symbol))
     # print(indi_obj.sma_direction(symbol=symbol, timeframe=60*4))
     # print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))

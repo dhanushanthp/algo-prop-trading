@@ -80,18 +80,20 @@ class SmartTrader():
         """
         This will take the trade based on given strategy
         """
-        method_name = None
 
-        if self.strategy == "break":
-            method_name = "long_entry" if direction == Directions.LONG else "short_entry"
-        elif self.strategy == "reverse":
-            method_name = "short_entry" if direction == Directions.LONG else "long_entry"
+        match self.strategy:
+            case "break":
+                method_name = "long_entry" if direction == Directions.LONG else "short_entry"
+            case "reverse":
+                method_name = "short_entry" if direction == Directions.LONG else "long_entry"
+            case _:
+                raise Exception("Strategy is not added!")
         
         method = getattr(self.orders, method_name, None)
 
         if method:
             status = method(symbol=symbol, 
-                            reference=f"{self.strategy.upper()[0]}-{reference}", 
+                            reference=f"{reference}", 
                             break_level=break_level, 
                             trading_timeframe=self.trading_timeframe)
             return status
@@ -153,7 +155,7 @@ class SmartTrader():
             
             if is_market_open \
                   and (not is_market_close) \
-                    and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day, trading_timeframe=self.trades_per_day) \
+                    and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day) \
                         and (not self.pause_trading):
                 
                 existing_positions = self.wrapper.get_active_positions(today=True)
@@ -173,113 +175,130 @@ class SmartTrader():
                     
                     market_trend = self.indicators.sma_direction(symbol=symbol, 
                                                                  timeframe=self.trading_timeframe)
-
-                    if self.system == "3CDL_STR":
-                        candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, 
-                                                                                timeframe=self.trading_timeframe)
-                        
-                        if (candle_strike == Directions.LONG) and (current_candle["high"] < upper_band):
-                            is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                    past_break_index=0, 
-                                                                                    timeframe=self.trading_timeframe,
-                                                                                    shoot_direction=Directions.LONG, 
-                                                                                    break_level=0, 
-                                                                                    reference=self.system)
-
-                            if is_valid_signal:
-                                if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
-                                    break # Break the symbol loop
-
-                        elif (candle_strike == Directions.SHORT) and (current_candle["low"] > lower_band):
-                            is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                    past_break_index=0, 
-                                                                                    timeframe=self.trading_timeframe,
-                                                                                    shoot_direction=Directions.SHORT, 
-                                                                                    break_level=0, 
-                                                                                    reference=self.system)
-
-                            if is_valid_signal:
-                                if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
-                                    break # Break the symbol loop
                     
-                    if self.system == "4CDL_REVERSE":
-                        candle_strike = self.indicators.get_four_candle_reverse(symbol=symbol, 
+                    match self.system:
+                        case "3CDL_STR":
+                            candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, 
                                                                                 timeframe=self.trading_timeframe)
                         
-                        if (candle_strike == Directions.LONG):
-                            is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                    past_break_index=0, 
-                                                                                    timeframe=self.trading_timeframe,
-                                                                                    shoot_direction=Directions.LONG, 
-                                                                                    break_level=0, 
-                                                                                    reference=self.system)
+                            if (candle_strike == Directions.LONG) and (current_candle["high"] < upper_band):
+                                is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                        past_break_index=0, 
+                                                                                        timeframe=self.trading_timeframe,
+                                                                                        shoot_direction=Directions.LONG, 
+                                                                                        break_level=0, 
+                                                                                        reference=self.system)
 
-                            if is_valid_signal:
-                                if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
-                                    break # Break the symbol loop
+                                if is_valid_signal:
+                                    if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
+                                        break # Break the symbol loop
 
-                        elif (candle_strike == Directions.SHORT):
-                            is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                    past_break_index=0, 
-                                                                                    timeframe=self.trading_timeframe,
-                                                                                    shoot_direction=Directions.SHORT, 
-                                                                                    break_level=0, 
-                                                                                    reference=self.system)
+                            elif (candle_strike == Directions.SHORT) and (current_candle["low"] > lower_band):
+                                is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                        past_break_index=0, 
+                                                                                        timeframe=self.trading_timeframe,
+                                                                                        shoot_direction=Directions.SHORT, 
+                                                                                        break_level=0, 
+                                                                                        reference=self.system)
 
-                            if is_valid_signal:
-                                if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
-                                    break # Break the symbol loop
-                    
-                    if self.system == "PULL_BACK":
-                        breakout_candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
-                                                                                timeframe=self.trading_timeframe)
+                                if is_valid_signal:
+                                    if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
+                                        break # Break the symbol loop
                         
-                        three_candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, 
-                                                                                timeframe=self.trading_timeframe)
-                        
-                        if (breakout_candle_strike == Directions.LONG) or (three_candle_strike == Directions.LONG):
-                            if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
-                                break # Break the symbol loop
-
-                        elif (breakout_candle_strike == Directions.SHORT) or (three_candle_strike == Directions.SHORT):
-                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
-                                break # Break the symbol loop
+                        case "4CDL_REVERSE":
+                            candle_strike = self.indicators.get_four_candle_reverse(symbol=symbol, 
+                                                                                    timeframe=self.trading_timeframe)
                             
-                    if self.system == "DAILY_HL":
-                        """
-                        Levels such as High of the Day, Low of the day will be checked with previous bar close
-                        """
-                        king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, 
-                                                                            timeframe=self.trading_timeframe)
-                        
-                        previous_candle = self.wrapper.get_previous_candle(symbol=symbol, 
-                                                                           timeframe=self.trading_timeframe)
+                            if (candle_strike == Directions.LONG):
+                                is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                        past_break_index=0, 
+                                                                                        timeframe=self.trading_timeframe,
+                                                                                        shoot_direction=Directions.LONG, 
+                                                                                        break_level=0, 
+                                                                                        reference=self.system)
 
-                        for resistance in king_of_levels["resistance"]:
-                            if (previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level):
-                                is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=resistance.break_bar_index, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                shoot_direction=Directions.LONG, 
-                                                                                                break_level=resistance.level, 
-                                                                                                reference=resistance.reference)
+                                if is_valid_signal:
+                                    if self.trade(direction=Directions.LONG, symbol=symbol, reference=self.system, break_level=0):
+                                        break # Break the symbol loop
 
-                                if (is_valid_signal and market_trend == Directions.LONG) and (current_candle["high"] < upper_band):
-                                    if self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
-                                        break # Break the resistance loop
+                            elif (candle_strike == Directions.SHORT):
+                                is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                        past_break_index=0, 
+                                                                                        timeframe=self.trading_timeframe,
+                                                                                        shoot_direction=Directions.SHORT, 
+                                                                                        break_level=0, 
+                                                                                        reference=self.system)
+
+                                if is_valid_signal:
+                                    if self.trade(direction=Directions.SHORT, symbol=symbol, reference=self.system, break_level=0):
+                                        break # Break the symbol loop
                     
-                        for support in king_of_levels["support"]:
-                            if (previous_candle["high"] > support.level and previous_candle["close"] < support.level):
-                                is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=support.break_bar_index, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                shoot_direction=Directions.SHORT, 
-                                                                                                break_level=support.level, 
-                                                                                                reference=support.reference)
+                        case "PULL_BACK":
+                            breakout_candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
+                                                                                    timeframe=self.trading_timeframe)
+                            
+                            three_candle_strike = self.indicators.get_three_candle_strike(symbol=symbol, 
+                                                                                    timeframe=self.trading_timeframe)
+                            
+                            reference = ""
+                            if breakout_candle_strike:
+                                reference = "HL-BRK" # High Low Break
+                            elif three_candle_strike:
+                                reference = "3CDL-STR" # Three Candle Strike
+                            
+                            # We would like to have the stop above sma for short and below sma for long positions
+                            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
+                            sma = self.indicators.simple_moving_average(symbol=symbol, timeframe=self.trading_timeframe, n_moving_average=10)
 
-                                if (is_valid_signal and market_trend == Directions.SHORT) and (current_candle["low"] > lower_band):
-                                    if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
-                                        break # Break the support loop
+                            if (breakout_candle_strike == Directions.LONG) or (three_candle_strike == Directions.LONG):
+                                if (shield_object.get_long_stop < sma):
+                                    if self.trade(direction=Directions.LONG, symbol=symbol, reference=reference, break_level=0):
+                                        break # Break the symbol loop
+                                else:
+                                    print(f"LO: {symbol} is above SMA: {round(sma, 5)} and STOP:{shield_object.get_long_stop}")
+
+                            elif (breakout_candle_strike == Directions.SHORT) or (three_candle_strike == Directions.SHORT):
+                                if shield_object.get_short_stop > sma:
+                                    if self.trade(direction=Directions.SHORT, symbol=symbol, reference=reference, break_level=0):
+                                        break # Break the symbol loop
+                                else:
+                                    print(f"SH: {symbol} is below SMA: {round(sma, 5)} and STOP:{shield_object.get_short_stop}")
+                            
+                        case "DAILY_HL":
+                            """
+                            Levels such as High of the Day, Low of the day will be checked with previous bar close
+                            """
+                            king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, 
+                                                                                timeframe=self.trading_timeframe)
+                            
+                            previous_candle = self.wrapper.get_previous_candle(symbol=symbol, 
+                                                                            timeframe=self.trading_timeframe)
+
+                            for resistance in king_of_levels["resistance"]:
+                                if (previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level):
+                                    is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                                    past_break_index=resistance.break_bar_index, 
+                                                                                                    timeframe=self.trading_timeframe,
+                                                                                                    shoot_direction=Directions.LONG, 
+                                                                                                    break_level=resistance.level, 
+                                                                                                    reference=resistance.reference)
+
+                                    if (is_valid_signal and market_trend == Directions.LONG) and (current_candle["high"] < upper_band):
+                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
+                                            break # Break the resistance loop
+                        
+                            for support in king_of_levels["support"]:
+                                if (previous_candle["high"] > support.level and previous_candle["close"] < support.level):
+                                    is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
+                                                                                                    past_break_index=support.break_bar_index, 
+                                                                                                    timeframe=self.trading_timeframe,
+                                                                                                    shoot_direction=Directions.SHORT, 
+                                                                                                    break_level=support.level, 
+                                                                                                    reference=support.reference)
+
+                                    if (is_valid_signal and market_trend == Directions.SHORT) and (current_candle["low"] > lower_band):
+                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
+                                            break # Break the support loop
 
             time.sleep(self.timer)
     
@@ -308,6 +327,6 @@ if __name__ == "__main__":
     # On the system, Are we taking break or reverse
     win.strategy = args.strategy
     # Systems should be 3 candle strike or Daily Levels
-    win.system = args.system if args.system in ["3CDL_STR", "DAILY_HL"] else None
+    win.system = args.system
 
     win.main()

@@ -137,27 +137,29 @@ class RiskManager:
                 # Move the stop to breakeven once the price moved to R
                 is_stop_updated=False
                 if pnl > self.risk_of_a_position:
-                    # Long Position
-                    if position.type == 0:
-                        if stop_price < open_price:
-                            is_stop_updated = True
-                    # Short Position
-                    else:
-                        if stop_price > open_price:
-                            is_stop_updated = True
+                    match position.type:
+                        case 0:
+                            # Long Position
+                            if stop_price < open_price:
+                                is_stop_updated = True
+                        case 1:
+                            # Short Position
+                            if stop_price > open_price:
+                                is_stop_updated = True
                 
                 # Increase the range of the spread to eliminate the sudden stopouts
                 stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier)
                 tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
                 
-                if position.type == 0:
-                    # Long Position
-                    trail_stop = max(stop_price, stp_shield_obj.get_long_stop)
-                    trail_target = min(target_price, tgt_shield_obj.get_short_stop)
-                else:
-                    # Short Position
-                    trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
-                    trail_target = max(target_price, tgt_shield_obj.get_long_stop)
+                match position.type:
+                    case 0:
+                        # Long Position
+                        trail_stop = max(stop_price, stp_shield_obj.get_long_stop)
+                        trail_target = min(target_price, tgt_shield_obj.get_short_stop)
+                    case 1:
+                        # Short Position
+                        trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
+                        trail_target = max(target_price, tgt_shield_obj.get_long_stop)
                 
                 if (trail_stop != stop_price) or (target_price != trail_target) or is_stop_updated:
                     
@@ -198,10 +200,13 @@ class RiskManager:
         """
         selected_time = util.match_timeframe(timeframe)
 
-        # Override candle stop
-        if timeframe >= 240:
-            # Means, curret and previous one
-            num_cdl_for_stop = 1
+        match timeframe:
+            case 60:
+                num_cdl_for_stop = 3
+            case 240:
+                num_cdl_for_stop = 2
+            case _:
+                raise Exception("Timeframe is not defined in stop range!")
         
         # Pick last 3 candles (Including current one) to find high and low
         previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, num_cdl_for_stop+1)
