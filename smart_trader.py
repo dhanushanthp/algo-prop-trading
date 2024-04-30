@@ -286,6 +286,19 @@ class SmartTrader():
                                             break # Break the symbol loop
                                     else:
                                         print(f"SH: {symbol} is below SMA: {round(sma, 5)} and STOP:{shield_object.get_short_stop}")
+
+                        case "BOLLINGER":
+                            previous_candle = self.wrapper.get_previous_candle(symbol=symbol, 
+                                                                            timeframe=self.trading_timeframe)
+                            reference = "BOLLI"
+                            
+                            if previous_candle["high"] > upper_band and current_candle["close"] < upper_band:
+                                if self.trade(direction=Directions.SHORT, symbol=symbol, reference=reference, break_level=0):
+                                    break # Break the symbol loop
+                            
+                            if previous_candle["low"] < lower_band and current_candle["close"] > lower_band:
+                                if self.trade(direction=Directions.LONG, symbol=symbol, reference=reference, break_level=0):
+                                    break # Break the symbol loop
                             
                         case "DAILY_HL":
                             """
