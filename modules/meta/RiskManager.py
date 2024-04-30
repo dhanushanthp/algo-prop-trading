@@ -148,9 +148,13 @@ class RiskManager:
                     print("Re-enabling STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 
-    def trailing_stop_and_target(self, is_market_open:bool, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
-        # Only adjust while market is open
-        if is_market_open:
+    def trailing_stop_and_target(self, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
+        _, hour, _ = util.get_current_day_hour_min()
+        
+        if hour == 0:
+            # Disable the stop when the spread is huge.
+            self.disable_stop()
+        else:
             existing_positions = mt5.positions_get()
             for position in existing_positions:
                 symbol = position.symbol
@@ -371,7 +375,7 @@ if __name__ == "__main__":
             print(check_time)
 
         case "trail":
-            obj.trailing_stop_and_target(is_market_open=True,stop_multiplier=1, target_multiplier=3, trading_timeframe=60)
+            obj.trailing_stop_and_target(stop_multiplier=1, target_multiplier=3, trading_timeframe=60)
 
         case "disable_stop":
             obj.disable_stop()

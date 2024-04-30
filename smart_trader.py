@@ -122,8 +122,7 @@ class SmartTrader():
                     self.pause_trading=True
 
             # Each position trail stop
-            self.risk_manager.trailing_stop_and_target(is_market_open=is_market_open, 
-                                                       stop_multiplier=self.stop_ratio, 
+            self.risk_manager.trailing_stop_and_target(stop_multiplier=self.stop_ratio, 
                                                        target_multiplier=self.target_ratio, 
                                                        trading_timeframe=self.trading_timeframe)
 
