@@ -179,14 +179,10 @@ def get_market_status(trading_timeframe:int=60) -> Tuple[bool, bool]:
     day, hour, minute = get_current_day_hour_min()
     print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
 
-    start_time = 4
-    # if trading_timeframe >=240:
-    #     start_time = 1
-
     if day not in ["Saturday","Sunday"]:
         # Once market open become disabled, No new trades
         # We give first 1 hour and last 1 hour as non-trading time
-        if (hour >= start_time and hour < 22):
+        if (hour >= 1 and hour < 22):
             market_open = True
     
     # Close all the position 30 minute before the market close

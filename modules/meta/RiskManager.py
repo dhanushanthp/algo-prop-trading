@@ -100,6 +100,53 @@ class RiskManager:
                     symbol_list.append(position)
         
         return symbol_list
+    
+    @staticmethod
+    def generate_15min_band(selected_min):
+        traded_min_band = 0
+        if 0 <= selected_min < 15:
+            traded_min_band = 15
+        elif 15 <= selected_min < 30:
+            traded_min_band = 30
+        elif 30 <= selected_min < 45:
+            traded_min_band = 45
+        else:
+            traded_min_band = 60
+
+        return traded_min_band
+
+
+    def close_on_candle_close(self, timeframe) -> list:
+        list_of_positions = []
+        existing_positions = mt5.positions_get()
+        factor = 2
+        for position in existing_positions:
+            traded_time = util.get_traded_time(epoch=position.time)
+            curret_time = util.get_current_time()
+            
+            match timeframe:
+                case 1:
+                    if curret_time > traded_time + timedelta(minutes=1):
+                        list_of_positions.append(position)
+                case 5:
+                    if curret_time > traded_time + timedelta(minutes=5):
+                        list_of_positions.append(position)
+                case 15:
+                    traded_min_band = self.generate_15min_band(traded_time.minute)
+                    current_min_band = self.generate_15min_band(curret_time.minute)
+                    
+                    if current_min_band + curret_time.hour >= traded_min_band + traded_time.hour + (15 * factor):
+                        list_of_positions.append(position)
+                case 60:
+                    # If trade enter at 10, then it will exit at start of 12 or end of 11
+                    if curret_time.hour > traded_time.hour + 1:
+                        list_of_positions.append(position)
+                case 240:
+                    # If trade enter at 10, then it will exit as 
+                    # TODO This is tricky, Not strightfoward as 1 hour candle
+                    if curret_time.hour > traded_time.hour + 4:
+                        list_of_positions.append(position)
+        return list_of_positions
 
     
     def emergency_exit(self, is_market_open:bool, timeframe:int) -> list:
@@ -177,8 +224,8 @@ class RiskManager:
                                 is_stop_updated = True
                 
                 # Increase the range of the spread to eliminate the sudden stopouts
-                stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier)
-                tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier)
+                stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier, num_cdl_for_stop=2)
+                tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier, num_cdl_for_stop=2)
                 
                 match position.type:
                     case 0:
@@ -226,7 +273,7 @@ class RiskManager:
                         if result.comment != "No changes":
                             print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
     
-    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=2) -> Shield:
+    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=0) -> Shield:
         """
         If the time frame is greater than 4 hours, then take the stop to high or low of previous and current bar based on the direction of the trade
 
@@ -234,14 +281,6 @@ class RiskManager:
         however it includes current candle for calculation, in case if the current candle is longer than the previous candles
         """
         selected_time = util.match_timeframe(timeframe)
-
-        match timeframe:
-            case 60:
-                num_cdl_for_stop = 2
-            case 240:
-                num_cdl_for_stop = 2
-            case _:
-                raise Exception("Timeframe is not defined in stop range!")
         
         # Pick last 3 candles (Including current one) to find high and low
         previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, num_cdl_for_stop+1)
@@ -385,3 +424,6 @@ if __name__ == "__main__":
 
         case "pos_at_risk":
             print(obj.get_positions_at_risk())
+        
+        case "close_on":
+            print(obj.close_on_candle_close(timeframe=5))

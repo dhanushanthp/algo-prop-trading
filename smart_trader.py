@@ -73,6 +73,8 @@ class SmartTrader():
         self.trades_per_day = trades_per_day
         self.pause_trading = False
 
+        self.num_cdl_for_stop = 0
+
         # Initiate the ticker
         curr.ticker_initiator(security=security)
 
@@ -95,7 +97,8 @@ class SmartTrader():
             status = method(symbol=symbol, 
                             reference=f"{reference}", 
                             break_level=break_level, 
-                            trading_timeframe=self.trading_timeframe)
+                            trading_timeframe=self.trading_timeframe,
+                            num_cdl_for_stop=self.num_cdl_for_stop)
             return status
 
     
