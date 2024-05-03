@@ -19,7 +19,7 @@ class Indicators:
         self.prices = prices
     
     def get_atr(self, symbol:str, timeframe:int, start_candle:int=0) -> float:
-        rates = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, n_candles=20)
+        rates = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=20)
         
         if rates.empty:
             return 0
@@ -128,6 +128,32 @@ class Indicators:
                 return Directions.SHORT
         
         return None
+    
+    def hammer_candle(self, symbol, timeframe, index):
+        candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)
+        body = candle["close"] - candle["open"]
+        spread = self.wrapper.get_spread(symbol=symbol)
+        if abs(body) > spread:
+            if body > 0:
+                # bullish
+                lower_wick = candle["open"] - candle["low"]
+                upper_wick = candle["high"] - candle["close"]
+            elif body < 0:
+                # bearish
+                lower_wick = candle["close"] - candle["low"]
+                upper_wick = candle["high"] - candle["open"]
+            else:
+                lower_wick = upper_wick = None
+            
+
+            print(lower_wick, 2* upper_wick, upper_wick)
+
+            if lower_wick:
+                if (upper_wick > 2* lower_wick) and (upper_wick > 2 * abs(body)):
+                    return Directions.SHORT
+                elif (lower_wick > 2 * upper_wick) and (lower_wick > 2 * abs(body)):
+                    return Directions.LONG
+            
     
     def get_two_candle_strike(self, symbol, timeframe=60) -> Directions:
         previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=3)
@@ -377,12 +403,23 @@ class Indicators:
             return lower_limit > number > upper_limit
         else:
             return lower_limit < number < upper_limit
+        
+    
+    def candle_strength(self, symbol, timeframe, index, threshold=0.8):
+        candle_body = self.wrapper.candle_i_body(symbol=symbol, timeframe=timeframe, candle_index=index)
+        atr = self.get_atr(symbol=symbol, timeframe=timeframe, start_candle=index)
 
-    def pullback_candle_breaks(self, symbol:str, timeframe:int=240, breakout_gap:int=3) -> Directions:
+        if candle_body/atr > threshold:
+            var = index, candle_body, atr, candle_body>atr, round(candle_body/atr, 2)
+            print(var)
+            return True, var
+
+        return None, None
+
+    def pullback_candle_breaks(self, symbol:str, timeframe:int=60, breakout_gap:int=3, breakout_candle_index:int=0) -> Directions:
         # Pick last 10 candles, Starting from previous candle
-        previous_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=10)
+        previous_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=breakout_candle_index, n_candles=30)
         previous_candles = previous_candles.iloc[::-1].reset_index(drop=True) # reverse the data
-        sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe) # Find direction
 
         # Previous candles, which is already close
         signal_check_candle = previous_candles.iloc[0]
@@ -391,19 +428,17 @@ class Indicators:
             # Start checking the candles from previous to previous, it's 1, since our start candle is previous candle
             selected_candles = previous_candles.iloc[1: i]
 
-            if sma_direction == Directions.LONG:
-                index_of_high = selected_candles['high'].idxmax()
-                high_of_candels = selected_candles["high"].max()
-                if signal_check_candle["close"] > high_of_candels:
-                    if index_of_high > 2:
-                        return Directions.LONG
+            index_of_high = selected_candles['high'].idxmax()
+            high_of_candels = selected_candles["high"].max()
+            if signal_check_candle["close"] > high_of_candels:
+                if index_of_high > 2:
+                    return Directions.LONG
             
-            if sma_direction == Directions.SHORT:
-                low_of_candels = selected_candles["low"].min()
-                index_of_low = selected_candles['high'].idxmax()
-                if signal_check_candle["close"] < low_of_candels:
-                    if index_of_low > 2:
-                        return Directions.SHORT
+            low_of_candels = selected_candles["low"].min()
+            index_of_low = selected_candles['high'].idxmax()
+            if signal_check_candle["close"] < low_of_candels:
+                if index_of_low > 2:
+                    return Directions.SHORT
                 
         return None        
 
@@ -447,10 +482,11 @@ if __name__ == "__main__":
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
     # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, start_reference))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
-    print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
+    # print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.get_three_candle_exit(symbol))
     # print(indi_obj.sma_direction(symbol=symbol, timeframe=60*4))
     # print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))
     # print(indi_obj.get_two_candle_strike(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.bollinger_bands(symbol=symbol, timeframe=timeframe, window_size=20))
     print(indi_obj.pullback_candle_breaks(symbol=symbol, timeframe=timeframe))
+    # print(indi_obj.hammer_candle(symbol=symbol, timeframe=60, index=timeframe))

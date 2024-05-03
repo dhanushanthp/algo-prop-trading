@@ -155,16 +155,16 @@ class SmartTrader():
 
             self.orders.cancel_all_pending_orders()
             
+            # and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day) \
             if is_market_open \
-                  and (not is_market_close) \
-                    and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day) \
-                        and (not self.pause_trading):
+                  and (not is_market_close) and (not self.pause_trading):
                 
                 existing_positions = self.wrapper.get_active_positions(today=True)
+                restricted_positions = self.wrapper.limit_trades_by_same_timeframe(timeframe=self.trading_timeframe)
 
                 for symbol in curr.get_major_symbols(security=self.security):
                     # If the positions is already in trade, then don't check for signal
-                    if symbol in existing_positions:
+                    if symbol in restricted_positions:
                         continue
 
                     current_candle = self.wrapper.get_current_candle(symbol=symbol, 
@@ -268,27 +268,23 @@ class SmartTrader():
 
                         case "PULL_BACK_ONLY":
                             breakout_candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
-                                                                                    timeframe=self.trading_timeframe)
+                                                                                            timeframe=self.trading_timeframe,
+                                                                                            breakout_gap=3,
+                                                                                            breakout_candle_index=0)
                             reference = "HL-BRK" # High Low Break
                             
                             # We would like to have the stop above sma for short and below sma for long positions
                             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=self.trading_timeframe)
-                            sma = self.indicators.simple_moving_average(symbol=symbol, timeframe=self.trading_timeframe, n_moving_average=10)
+                            sma = self.indicators.simple_moving_average(symbol=symbol, timeframe=self.trading_timeframe, n_moving_average=30)
 
                             match breakout_candle_strike:
                                 case Directions.LONG:
-                                    if (shield_object.get_long_stop < sma):
-                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference=reference, break_level=0):
-                                            break # Break the symbol loop
-                                    else:
-                                        print(f"LO: {symbol} is above SMA: {round(sma, 5)} and STOP:{shield_object.get_long_stop}")
+                                    if self.trade(direction=Directions.LONG, symbol=symbol, reference=reference, break_level=0):
+                                        break # Break the symbol loop
 
                                 case Directions.SHORT:
-                                    if shield_object.get_short_stop > sma:
-                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference=reference, break_level=0):
-                                            break # Break the symbol loop
-                                    else:
-                                        print(f"SH: {symbol} is below SMA: {round(sma, 5)} and STOP:{shield_object.get_short_stop}")
+                                    if self.trade(direction=Directions.SHORT, symbol=symbol, reference=reference, break_level=0):
+                                        break # Break the symbol loop
 
                         case "BOLLINGER":
                             previous_candle = self.wrapper.get_previous_candle(symbol=symbol, 

@@ -10,7 +10,7 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
-# major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", "EURCHF", "USDJPY", "AUDJPY", "GBPJPY"]
+major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", "EURCHF", "USDJPY", "AUDJPY", "GBPJPY"]
 us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
@@ -22,7 +22,7 @@ master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
                     'NZDJPY', "NZDCAD", "NZDUSD",
                     'USDCAD', 'USDJPY', 'USDCHF']
 
-# master_currencies = major_pairs
+master_currencies = major_pairs
 
 # master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
 
@@ -182,6 +182,38 @@ def get_major_symbols(security="FOREX"):
     else:
         raise Exception("Security is not defined!") 
 
+
+def get_major_symbols_market_events(security="FOREX"):
+    """
+    This function handles the market events based symbol selection.
+    """
+    if security == "FOREX":
+        main_pairs = master_currencies.copy()
+
+        if util.is_us_premarket_peroid():
+            main_pairs.extend(us_indexes)
+
+        filtered_paris = main_pairs.copy()
+        _,hour,_ = util.get_current_day_hour_min()
+        market_mapping = util.get_maket_events()
+        if hour in market_mapping:
+            markets = market_mapping[hour]
+            for market in markets:
+                for pairs in main_pairs:
+                    
+                    # Special Case for USD
+                    if market == "USD":
+                        if "US500.cash" in pairs:
+                            filtered_paris.remove(pairs)
+
+                    if market in pairs:
+                        filtered_paris.remove(pairs)
+        
+        return filtered_paris
+    elif security == "STOCK":
+        return master_stocks
+    else:
+        raise Exception("Security is not defined!") 
+
 if __name__ == "__main__":
-    for i in range(10):
-        print(get_major_symbols())
+    print(get_major_symbols())

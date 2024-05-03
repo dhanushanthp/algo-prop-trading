@@ -71,11 +71,11 @@ class Orders:
                 print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
     
 
-    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2) -> bool:
+    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1) -> bool:
         entry_price = self.prices.get_entry_price(symbol=symbol)
 
         if entry_price:
-            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop)
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier)
             if shield_object.get_signal_strength:
                 if entry_price > shield_object.get_long_stop:
                     try:
@@ -166,11 +166,11 @@ class Orders:
                     print(f"{symbol.ljust(12)}: {e}")
     
 
-    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2) -> bool:
+    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1) -> bool:
         entry_price = self.prices.get_entry_price(symbol)
         
         if entry_price:
-            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop)
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier)
             if shield_object.get_signal_strength:
                 if entry_price < shield_object.get_short_stop:
                     try:

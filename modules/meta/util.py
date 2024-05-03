@@ -6,7 +6,7 @@ mt5.initialize()
 import modules.meta.Currencies as curr
 import modules.config as config
 from typing import Tuple
-
+import pandas as pd
 
 def error_logging(result, request_str={}) -> bool:
     if result:
@@ -182,7 +182,7 @@ def get_market_status(trading_timeframe:int=60) -> Tuple[bool, bool]:
     if day not in ["Saturday","Sunday"]:
         # Once market open become disabled, No new trades
         # We give first 1 hour and last 1 hour as non-trading time
-        if (hour >= 1 and hour < 22):
+        if (hour >= 4 and hour < 22):
             market_open = True
     
     # Close all the position 30 minute before the market close
@@ -198,6 +198,14 @@ def is_c_pair_active(currency_pair):
     if symbol_info:
         return symbol_info.session_open, symbol_info.session_close
 
+def get_maket_events() -> dict:
+    today = get_current_time().strftime("%Y/%m/%d")
+    data = pd.read_csv("market_data.csv")
+    today_events = data[data["date"] == today]
+    today_events = today_events.groupby(["hour"])["symbol"].agg(list).reset_index()
+    mapping = dict(zip(today_events["hour"], today_events["symbol"]))
+    return mapping
+
 if __name__ == "__main__":
     import sys
     # symbol = sys.argv[1]
@@ -210,3 +218,4 @@ if __name__ == "__main__":
     # print(get_current_time())
     # print(get_current_day_hour_min())
     print(is_us_premarket_peroid())
+    print(get_maket_events())

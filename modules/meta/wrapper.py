@@ -106,6 +106,13 @@ class Wrapper:
         body_size = abs(previous_candle["open"] - previous_candle["close"])
         return round(body_size, 5)
     
+
+    def candle_i_body(self, symbol:str, timeframe:int, candle_index:int):
+        previous_candle = self.get_candle_i(symbol=symbol, timeframe=timeframe, i=candle_index)
+        body_size = abs(previous_candle["open"] - previous_candle["close"])
+        return body_size
+    
+
     def get_previous_candle(self, symbol, timeframe):
         """
         Returns:
@@ -132,9 +139,30 @@ class Wrapper:
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 0, 1)[-1]
     
 
-    def get_all_active_positions(self):
+    def get_all_active_positions(self) -> pd.DataFrame:
         positions = mt5.positions_get()
-        return pd.DataFrame(list(positions),columns=positions[0]._asdict().keys())
+        if len(positions) > 0:
+            return pd.DataFrame(list(positions),columns=positions[0]._asdict().keys())
+
+        return pd.DataFrame()
+    
+    
+    def limit_trades_by_same_timeframe(self, timeframe:int) -> list:
+        today_trade = self.get_todays_trades()
+        _, hour, _ = util.get_current_day_hour_min()
+        
+        if not today_trade.empty:
+            only_entry_trades = today_trade[today_trade["entry"] == 0].copy()
+        
+            if not only_entry_trades.empty:
+                only_entry_trades["hour"] = only_entry_trades["time"].apply(lambda x: util.get_traded_time(epoch=x).hour)
+
+                # Only consider same hour trade as restricted trade
+                restricted_positions = only_entry_trades[only_entry_trades["hour"] == hour]
+
+                return restricted_positions["symbol"].unique()
+
+        return []
 
     
     def get_active_positions(self, today=False):
@@ -352,6 +380,7 @@ if "__main__" == __name__:
     obj = Wrapper()
     import sys
     symbol = sys.argv[1]
+    index = sys.argv[2]
     # timeframe = int(sys.argv[2])
     # timeframe = int(sys.argv[2])
     # start_hour = int(sys.argv[3])
@@ -367,6 +396,7 @@ if "__main__" == __name__:
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
     # print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
     # print(obj.get_traded_symbols())
-    print(obj.any_remaining_trades(max_trades=11))
-    print(obj.get_all_active_positions())
+    # print(obj.any_remaining_trades(max_trades=11))
+    # print(obj.get_all_active_positions())
+    print(obj.candle_i_body(symbol=symbol, timeframe=60, candle_index=int(index)))
 

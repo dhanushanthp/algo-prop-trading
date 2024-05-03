@@ -139,12 +139,17 @@ class RiskManager:
                         list_of_positions.append(position)
                 case 60:
                     # If trade enter at 10, then it will exit at start of 12 or end of 11
-                    if curret_time.hour > traded_time.hour + 1:
+                    traded_hour = traded_time.hour
+                    # If the trade took place last minute of the hour, then consider the exit for hour + 1
+                    # if traded_time.minute > 50:
+                    #     traded_hour += 1
+
+                    if curret_time.hour > traded_hour:
                         list_of_positions.append(position)
                 case 240:
                     # If trade enter at 10, then it will exit as 
                     # TODO This is tricky, Not strightfoward as 1 hour candle
-                    if curret_time.hour > traded_time.hour + 4:
+                    if curret_time.hour > traded_time.hour:
                         list_of_positions.append(position)
         return list_of_positions
 
