@@ -91,13 +91,14 @@ class RiskManager:
             stop_price = position.sl
             entry_price = position.price_open
 
-            if position.type == 0:
-                if stop_price < entry_price:
-                    symbol_list.append(position)
-            
-            if position.type == 1:
-                if stop_price > entry_price:
-                    symbol_list.append(position)
+            match position.type:
+                case 0:
+                    if stop_price < entry_price:
+                        symbol_list.append(position)
+
+                case 1:
+                    if stop_price > entry_price:
+                        symbol_list.append(position)
         
         return symbol_list
     
@@ -156,7 +157,15 @@ class RiskManager:
     
     def emergency_exit(self, is_market_open:bool, timeframe:int) -> list:
         """
-        Get list of symbol which are meant to exist based on ranging hourly candles
+        Retrieves a list of symbols eligible for emergency exit based on ranging hourly candles.
+
+        Args:
+            self: The instance of the class.
+            is_market_open (bool): Indicates whether the market is open.
+            timeframe (int): The timeframe for considering ranging candles.
+
+        Returns:
+            list: A list of symbols eligible for emergency exit.
         """
         symbol_list = []
         if is_market_open:
@@ -165,7 +174,7 @@ class RiskManager:
                 symbol = position.symbol
                 pnl = position.profit
                 # Emergency Exist Plan
-                is_ranging = self.indicators.get_three_candle_exit(symbol=symbol, ratio=2, timeframe=timeframe)
+                is_ranging = self.indicators.get_three_candle_exit(symbol=symbol, wick_body_ratio=2, timeframe=timeframe)
                 
                 # Also the profit is more than 1R
                 if is_ranging and (pnl > self.risk_of_a_position):
@@ -200,11 +209,29 @@ class RiskManager:
                     print("Re-enabling STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 
-    def trailing_stop_and_target(self, stop_multiplier:float, target_multiplier:float, trading_timeframe:int):
+    def trailing_stop_and_target(self, stop_multiplier:float, target_multiplier:float, trading_timeframe:int, num_cdl_for_stop:int):
+        """
+        Function to manage trailing stops and targets for existing positions based on specified multipliers and trading timeframe.
+
+        Args:
+            self: The object instance.
+            stop_multiplier (float): The multiplier used to calculate the trailing stop.
+            target_multiplier (float): The multiplier used to calculate the trailing target.
+            trading_timeframe (int): The timeframe for trading operations.
+
+        Notes:
+            This function adjusts the trailing stop and target prices for existing positions. 
+            It calculates the stop and target prices based on the specified multipliers and trading timeframe.
+            If the current hour is 0, it disables the stop to prevent unexpected actions during periods of high spread. 
+            It also adjusts the stop to breakeven when the position's profit exceeds the risk of the position. Additionally, 
+            it increases the spread range to prevent sudden stopouts and reactivates the stop if it was previously disabled.
+            Finally, it modifies the stop and target prices for the positions and prints relevant information or error messages as necessary.
+
+        """
         _, hour, _ = util.get_current_day_hour_min()
         
         if hour == 0:
-            # Disable the stop when the spread is huge.
+            # Disable the stop when the spread is huge, Specially when the position is not close from previous day
             self.disable_stop()
         else:
             existing_positions = mt5.positions_get()
@@ -229,26 +256,26 @@ class RiskManager:
                                 is_stop_updated = True
                 
                 # Increase the range of the spread to eliminate the sudden stopouts
-                stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier, num_cdl_for_stop=2)
-                tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier, num_cdl_for_stop=2)
+                stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier, num_cdl_for_stop=num_cdl_for_stop)
+                tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier, num_cdl_for_stop=num_cdl_for_stop)
                 
                 match position.type:
                     case 0:
                         # Long Position
                         trail_stop = max(stop_price, stp_shield_obj.get_long_stop)
                         trail_target = min(target_price, tgt_shield_obj.get_short_stop)
-                        emergency_stop = stp_shield_obj.get_long_stop
+                        stop_enabler = stp_shield_obj.get_long_stop
                     case 1:
                         # Short Position
                         trail_stop = min(stop_price, stp_shield_obj.get_short_stop)
                         trail_target = max(target_price, tgt_shield_obj.get_long_stop)
-                        emergency_stop = stp_shield_obj.get_short_stop
+                        stop_enabler = stp_shield_obj.get_short_stop
                 
                 if (trail_stop != stop_price) or (target_price != trail_target) or is_stop_updated or (stop_price == 0):
                     
                     # If the position don't have the stop, then it will be reactivated
                     if stop_price == 0:
-                        trail_stop = emergency_stop
+                        trail_stop = stop_enabler
 
                     # When the price move above 1R then move the stop to breakeven
                     if is_stop_updated:
@@ -277,13 +304,79 @@ class RiskManager:
                     if result.retcode != mt5.TRADE_RETCODE_DONE:
                         if result.comment != "No changes":
                             print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
+
+
+    def breakeven(self, profit_factor:int=2):        
+        existing_positions = mt5.positions_get()
+        for position in existing_positions:
+            symbol = position.symbol
+            stop_price = position.sl
+            target_price = position.tp
+            open_price = position.price_open
+            pnl = position.profit
+
+            # Move the stop to breakeven once the price moved to R
+            is_stop_updated=False
+            if pnl > (profit_factor * self.risk_of_a_position):
+                match position.type:
+                    case 0:
+                        # Long Position
+                        if stop_price < open_price:
+                            is_stop_updated = True
+                    case 1:
+                        # Short Position
+                        if stop_price > open_price:
+                            is_stop_updated = True
+            
+            if is_stop_updated:
+                # When the price move above 1R then move the stop to breakeven
+                if is_stop_updated:
+                    trail_stop = open_price
+                    trail_target = target_price
+                    print(f"BREAKEVEN : {symbol} to {open_price}")
+
+                    modify_request = {
+                        "action": mt5.TRADE_ACTION_SLTP,
+                        "symbol": position.symbol,
+                        "volume": position.volume,
+                        "type": position.type,
+                        "position": position.ticket,
+                        "sl": trail_stop,
+                        "tp": trail_target,
+                        "comment": position.comment,
+                        "magic": position.magic,
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_FOK,
+                        "ENUM_ORDER_STATE": mt5.ORDER_FILLING_RETURN,
+                    }
+                    
+                    result = mt5.order_send(modify_request)
+                    
+                    if result.retcode != mt5.TRADE_RETCODE_DONE:
+                        if result.comment != "No changes":
+                            print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
     
     def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=0) -> Shield:
         """
-        If the time frame is greater than 4 hours, then take the stop to high or low of previous and current bar based on the direction of the trade
+        Calculates the stop range based on given parameters.
 
-        num_cdl_for_stop : number of previous candles considered from current candles for stop calculation e.g, 1 previous candle, 2 is second previous candle
-        however it includes current candle for calculation, in case if the current candle is longer than the previous candles
+        If the time frame is greater than 4 hours, the stop is set to the high or low of the previous and current bar based on the trade direction.
+
+        Args:
+            self: The instance of the class.
+            symbol (str): The symbol for which the stop range is calculated.
+            timeframe: The timeframe for calculation.
+            buffer_ratio (float, optional): The buffer ratio for adjusting the stop range. Defaults to config.buffer_ratio.
+            multiplier (int, optional): Multiplier for the stop range calculation. Defaults to 1.
+            num_cdl_for_stop (int, optional): Number of previous candles considered for stop calculation. Defaults to 0.
+
+        Returns:
+            Shield: An object representing the stop range with attributes:
+                - symbol (str): The symbol.
+                - long_range (float): The lower stop range for a long trade.
+                - short_range (float): The upper stop range for a short trade.
+                - range_distance (float): The distance of the stop range from the mid price.
+                - is_strong_signal (bool): Indicates whether the current candle is considered strong.
         """
         selected_time = util.match_timeframe(timeframe)
         

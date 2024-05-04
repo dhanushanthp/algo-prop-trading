@@ -148,6 +148,16 @@ class Wrapper:
     
     
     def limit_trades_by_same_timeframe(self, timeframe:int) -> list:
+        """
+        Retrieves symbols for trades limited by the same hour timeframe.
+
+        Args:
+            self: The instance of the class.
+            timeframe (int): The timeframe for considering trades.
+
+        Returns:
+            list: A list of symbols restricted by the same hour timeframe.
+        """
         today_trade = self.get_todays_trades()
         _, hour, _ = util.get_current_day_hour_min()
         
@@ -291,17 +301,16 @@ class Wrapper:
         positions_with_risk = 0
         existing_positions = mt5.positions_get()
         for position in existing_positions:
-            # symbol = position.symbol
             stop_price = position.sl
             entry_price = position.price_open
 
-            if position.type == 0:
-                if stop_price < entry_price:
-                    positions_with_risk += 1
-            
-            if position.type == 1:
-                if stop_price > entry_price:
-                    positions_with_risk += 1
+            match position.type:
+                case 0:
+                    if stop_price < entry_price:
+                        positions_with_risk += 1
+                case 1:
+                    if stop_price > entry_price:
+                        positions_with_risk += 1
         
         return positions_with_risk
     

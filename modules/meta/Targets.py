@@ -41,35 +41,75 @@ class Targets:
                 target.set_price_moved_ratio(price_moved_ratio=moved_ratio)
 
     
-    def check_signal_validity(self, symbol:str, reference:str, break_level:float, shoot_direction:Directions, past_break_index:int, timeframe:int=60):
+    def check_signal_validity(self, symbol:str, reference:str, break_level:float, trade_direction:Directions, past_break_index:int, timeframe:int=60):
+        """
+        Checks the validity of a trading signal based on certain conditions.
+
+        Args:
+            self: The instance of the class.
+            symbol (str): The symbol for the trading signal.
+            reference (str): The reference identifier for the trading signal.
+            break_level (float): The break level for the trading signal.
+            shoot_direction (Directions): The direction of the trading signal.
+            past_break_index (int): The index of the previous break.
+            timeframe (int, optional): The timeframe for considering the trading signal. Defaults to 60.
+
+        Returns:
+            Tuple[bool, int]: A tuple containing a boolean indicating the validity of the signal and the candle gap.
+
+        Comments for Conditions:
+        - index_of_previous_bar: Get the index of the active bar in the given timeframe.
+        - candle_gap: Calculate the gap between the index of the previous bar and the past break index.
+
+        - dynamic_gap: Define a dynamic gap for considering the validity of the signal.
+
+        - if (candle_gap > dynamic_gap) or (reference == "3CDL_STR"): Check if the candle gap is greater than the dynamic gap or if the reference is "3CDL_STR".
+        
+        - todays_trades: Retrieve today's trades.
+
+        - if todays_trades.empty or (symbol not in list(todays_trades["symbol"])): Check if there are no trades for today or if the symbol is not already traded.
+
+        - active_bullet: Create a Bullet object with the current signal parameters and store it in the targets dictionary.
+
+        - traded_symbol: Filter trades based on symbol, type, and entry.
+
+        - if traded_symbol.empty: Check if there are no trades for the specified conditions.
+
+        - Return a boolean indicating the validity of the signal and the candle gap.
+        """
         index_of_previous_bar = util.index_of_active_bar(symbol=symbol, timeframe=timeframe) - 1
         candle_gap = index_of_previous_bar - past_break_index
         
         # Generally 60min for forex and 5 min for stock
         dynamic_gap = 2
         
-        if (candle_gap > dynamic_gap) or  (reference == "3CDL_STR"):
+        if (candle_gap > dynamic_gap) or  (break_level==-1):
             # Check does this already has trades on same direction, Load Passed Data
             todays_trades = self.wrapper.get_todays_trades()
 
             # If the symbol is not already traded, then take the trade
             if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
-                active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, shoot_direction, past_break_index)
+                active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, trade_direction, past_break_index)
                 self.targets[symbol] = active_bullet
                 return True, candle_gap
             else:
-                if shoot_direction == Directions.LONG:
-                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
-                    if traded_symbol.empty:
-                        active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, shoot_direction, past_break_index)
-                        self.targets[symbol] = active_bullet
-                        return True, candle_gap
-                elif shoot_direction == Directions.SHORT:
-                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
-                    if traded_symbol.empty:
-                        active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, shoot_direction, past_break_index)
-                        self.targets[symbol] = active_bullet
-                        return True, candle_gap
+                match trade_direction:
+                    
+                    case Directions.LONG:
+                        traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
+                        if traded_symbol.empty:
+                            # Shoud not have any previous trades on Long Direction
+                            active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, trade_direction, past_break_index)
+                            self.targets[symbol] = active_bullet
+                            return True, candle_gap
+                    
+                    case Directions.SHORT:
+                        traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
+                        if traded_symbol.empty:
+                            # Shoud not have any previous trades on Short Direction
+                            active_bullet = Bullet(symbol, reference, break_level, index_of_previous_bar, trade_direction, past_break_index)
+                            self.targets[symbol] = active_bullet
+                            return True, candle_gap
 
         return False, candle_gap
 

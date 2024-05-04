@@ -72,6 +72,21 @@ class Orders:
     
 
     def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1) -> bool:
+        """
+        Executes a long entry based on given parameters.
+
+        Args:
+            self: The instance of the class.
+            symbol (str): The symbol to execute the entry for.
+            reference (str): The reference identifier for the entry.
+            break_level (float): The break level for the entry.
+            trading_timeframe (int): The timeframe for trading.
+            num_cdl_for_stop (int, optional): Number of candles for determining stop. Defaults to 2.
+            multiplier (float, optional): Multiplier for stop range calculation. Defaults to 1.
+
+        Returns:
+            bool: True if the entry is successfully executed, False otherwise.
+        """
         entry_price = self.prices.get_entry_price(symbol=symbol)
 
         if entry_price:
@@ -81,6 +96,8 @@ class Orders:
                     try:
                         print(f"{symbol.ljust(12)}: {Directions.LONG}")        
                         points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_long_stop)
+
+                        comment = f"{reference}-{break_level}" if break_level != -1 else reference
                         
                         order_request = {
                             "action": mt5.TRADE_ACTION_PENDING,
@@ -90,7 +107,7 @@ class Orders:
                             "price": entry_price,
                             "sl": self.prices.round(symbol, entry_price - self.risk_manager.stop_ratio * points_in_stop),
                             "tp": self.prices.round(symbol, entry_price + self.risk_manager.target_ratio * points_in_stop),
-                            "comment": f"{reference}-{break_level}",
+                            "comment": comment,
                             "magic": trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_RETURN,
@@ -167,6 +184,21 @@ class Orders:
     
 
     def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1) -> bool:
+        """
+        Executes a short entry based on given parameters.
+
+        Args:
+            self: The instance of the class.
+            symbol (str): The symbol to execute the entry for.
+            reference (str): The reference identifier for the entry.
+            break_level (float): The break level for the entry.
+            trading_timeframe (int): The timeframe for trading.
+            num_cdl_for_stop (int, optional): Number of candles for determining stop. Defaults to 2.
+            multiplier (float, optional): Multiplier the for stop range calculation. Defaults to 1.
+
+        Returns:
+            bool: True if the entry is successfully executed, False otherwise.
+        """
         entry_price = self.prices.get_entry_price(symbol)
         
         if entry_price:
@@ -177,6 +209,8 @@ class Orders:
                         print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
                         points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_short_stop)
 
+                        comment = f"{reference}-{break_level}" if break_level != -1 else reference
+
                         order_request = {
                             "action": mt5.TRADE_ACTION_PENDING,
                             "symbol": symbol,
@@ -185,7 +219,7 @@ class Orders:
                             "price": entry_price,
                             "sl": self.prices.round(symbol, entry_price + self.risk_manager.stop_ratio * points_in_stop),
                             "tp": self.prices.round(symbol, entry_price - self.risk_manager.target_ratio * points_in_stop),
-                            "comment": f"{reference}-{break_level}",
+                            "comment": comment,
                             "magic":trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_RETURN,

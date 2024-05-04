@@ -105,6 +105,17 @@ class Indicators:
 
     
     def get_three_candle_strike(self, symbol, timeframe=60) -> Directions:
+        """
+        Determines the direction of a three-candle with given conditions
+
+        Args:
+            self: The instance of the class.
+            symbol: The symbol to analyze.
+            timeframe (int, optional): The timeframe for analyzing candles. Defaults to 60.
+
+        Returns:
+            Directions or None: The direction of the three-candle strike pattern (LONG or SHORT) if identified, otherwise None.
+        """
         previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=4)
         sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe) # Find direction
 
@@ -180,9 +191,8 @@ class Indicators:
         return None
 
     def get_four_candle_reverse(self, symbol, timeframe=60) -> Directions:
-        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=5)
+        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=2, n_candles=5)
         previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
-        upper_band, lower_band = self.bollinger_bands(symbol=symbol, timeframe=timeframe)
 
         if len(previous_bars) >= 3:
             last_3_bars = previous_bars.tail(3).copy()
@@ -194,24 +204,24 @@ class Indicators:
             is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
             is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
             
-            is_bullish = all(last_3_bars["body_size"] > 0) # and all(is_higher_high) and all(is_higher_low)
-            is_bearish = all(last_3_bars["body_size"] < 0) # and all(is_lower_high) and all(is_lower_low)
+            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
+            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
 
             prev_bullish = previous_bar["open"] < previous_bar["close"]
             prev_bearish = previous_bar["open"] > previous_bar["close"]
 
-            if is_bullish and prev_bearish and (previous_bar["high"] > upper_band):
+            if is_bullish and prev_bearish:
                 return Directions.SHORT
             
-            if is_bearish and prev_bullish and (previous_bar["low"] < lower_band):
+            if is_bearish and prev_bullish:
                 return Directions.LONG
         
         return None
     
 
-    def get_three_candle_exit(self, symbol, ratio=2, timeframe=60) -> bool:
+    def get_three_candle_exit(self, symbol, wick_body_ratio=2, timeframe=60) -> bool:
         """
-        Exist the position if candle is randing for last 3 hours, which has longer wicks than the body
+        Exist the position if candle is ranging for last 3 hours, which has longer wicks than the body
         """
         previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=4)
 
@@ -221,7 +231,7 @@ class Indicators:
             last_3_bars["wick_size"] = abs(last_3_bars["high"] - last_3_bars["low"]) - last_3_bars["body_size"]
             last_3_bars["ratio"] = last_3_bars["wick_size"]/last_3_bars["body_size"] # Calcullate the Ratio
 
-            is_ranging = all(last_3_bars["ratio"] > ratio)
+            is_ranging = all(last_3_bars["ratio"] > wick_body_ratio)
             
             return is_ranging
         
@@ -417,8 +427,17 @@ class Indicators:
         return None, None
 
     def pullback_candle_breaks(self, symbol:str, timeframe:int=60, breakout_gap:int=3, breakout_candle_index:int=0) -> Directions:
+        
+        match timeframe:
+            case 60:
+                # In last 24 hours
+                n_candles = 24
+            case 240:
+                # In last 3 days 3x6
+                n_candles = 18
+
         # Pick last 10 candles, Starting from previous candle
-        previous_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=breakout_candle_index, n_candles=30)
+        previous_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=breakout_candle_index, n_candles=n_candles)
         previous_candles = previous_candles.iloc[::-1].reset_index(drop=True) # reverse the data
 
         # Previous candles, which is already close
