@@ -426,7 +426,7 @@ class Indicators:
 
         return None, None
 
-    def pullback_candle_breaks(self, symbol:str, timeframe:int=60, breakout_gap:int=3, breakout_candle_index:int=0) -> Directions:
+    def pullback_candle_breaks(self, symbol:str, timeframe:int=60, breakout_gap:int=3, breakout_candle_index:int=1) -> Directions:
         
         match timeframe:
             case 60:

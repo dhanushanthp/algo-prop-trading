@@ -227,7 +227,9 @@ class SmartTrader():
                         
                             case "PULL_BACK_BRK":
                                 breakout_candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
-                                                                                        timeframe=self.trading_timeframe)
+                                                                                        timeframe=self.trading_timeframe,
+                                                                                        breakout_gap=3,
+                                                                                        breakout_candle_index=1)
                                 
                                 match breakout_candle_strike:
                                     case Directions.LONG:
