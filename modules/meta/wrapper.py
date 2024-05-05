@@ -115,17 +115,67 @@ class Wrapper:
 
     def get_previous_candle(self, symbol, timeframe):
         """
+        Retrieves the previous candlestick data for a given symbol and timeframe.
+
+        Args:
+        symbol (str): The symbol for which to retrieve candlestick data.
+        timeframe (str): The timeframe for the candlestick data, e.g., 'M1', 'H1', 'D1'.
+
         Returns:
-        Object which contains time, open, close, high, low
-        Can be accessed as dictioanry e.g obj["close"]
+        dict: A dictionary containing the candlestick data with keys:
+            - 'time': Timestamp of the candlestick.
+            - 'open': Opening price of the candlestick.
+            - 'close': Closing price of the candlestick.
+            - 'high': Highest price reached during the candlestick period.
+            - 'low': Lowest price reached during the candlestick period.
+
+        Note:
+        The returned object can be accessed as a dictionary, e.g., obj["close"].
+
+        Raises:
+        Exception: If unable to retrieve candlestick data.
+
+        Example:
+        >>> obj = YourClass()
+        >>> candle_data = obj.get_previous_candle('EURUSD', 'M5')
+        >>> print(candle_data['close'])
+        1.12345
         """
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 1, 1)[-1]
     
+
     def get_candle_i(self, symbol, timeframe, i=0):
         """
-        0: Current candle
-        1: Previous candle
-        2: 2 Bar behind from current candle (e.g. Day before yesterday)
+        Retrieves candlestick data for a specific candle relative to the current time.
+
+        Args:
+        symbol (str): The symbol for which to retrieve candlestick data.
+        timeframe (str): The timeframe for the candlestick data, e.g., 'M1', 'H1', 'D1'.
+        i (int, optional): The index of the candle relative to the current time.
+            - 0: Current candle.
+            - 1: Previous candle.
+            - 2: Two candles behind the current candle (e.g., two days ago).
+
+        Returns:
+        dict: A dictionary containing the candlestick data for the specified candle with keys:
+            - 'time': Timestamp of the candlestick.
+            - 'open': Opening price of the candlestick.
+            - 'close': Closing price of the candlestick.
+            - 'high': Highest price reached during the candlestick period.
+            - 'low': Lowest price reached during the candlestick period.
+
+        Note:
+        The returned object can be accessed as a dictionary, e.g., obj["close"].
+
+        Raises:
+        Exception: If unable to retrieve candlestick data.
+
+        Example:
+        >>> obj = YourClass()
+        >>> # Retrieve data for the previous candle
+        >>> candle_data = obj.get_candle_i('EURUSD', 'M5', 1)
+        >>> print(candle_data['close'])
+        1.12345
         """
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), i, 1)[-1]
     
@@ -232,6 +282,7 @@ class Wrapper:
             
         return canceling_orders, considered_active_orders    
 
+
     def get_todays_trades(self, us_market_seperator=False) -> pd.DataFrame:
         """
         This include entry and exit position of a trade
@@ -255,6 +306,7 @@ class Wrapper:
         # return empty dataframe
         return pd.DataFrame()
     
+
     def get_traded_symbols(self):
         trades = self.get_todays_trades()
         
@@ -293,6 +345,7 @@ class Wrapper:
             return True
         
         return False
+    
     
     def get_active_positions_with_risk(self) -> int:
         """
