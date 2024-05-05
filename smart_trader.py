@@ -226,7 +226,7 @@ class SmartTrader():
                                                 break # Break the symbol loop
                         
                             case "PULL_BACK_BRK":
-                                breakout_candle_strike = self.indicators.pullback_candle_breaks(symbol=symbol, 
+                                breakout_candle_strike, break_level = self.indicators.pullback_candle_breaks(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe,
                                                                                         breakout_gap=3,
                                                                                         breakout_candle_index=1)
@@ -237,11 +237,11 @@ class SmartTrader():
                                                                                                 past_break_index=0, 
                                                                                                 timeframe=self.trading_timeframe,
                                                                                                 trade_direction=Directions.LONG, 
-                                                                                                break_level=-1, 
+                                                                                                break_level=break_level, 
                                                                                                 reference=system)
 
                                         if is_valid_signal:
-                                            if self.trade(direction=Directions.LONG, symbol=symbol, reference=system, break_level=-1):
+                                            if self.trade(direction=Directions.LONG, symbol=symbol, reference=system, break_level=break_level):
                                                 break # Break the symbol loop
                                                 
                                     case Directions.SHORT:
@@ -249,11 +249,11 @@ class SmartTrader():
                                                                                                 past_break_index=0, 
                                                                                                 timeframe=self.trading_timeframe,
                                                                                                 trade_direction=Directions.SHORT, 
-                                                                                                break_level=-1, 
+                                                                                                break_level=break_level, 
                                                                                                 reference=system)
 
                                         if is_valid_signal:
-                                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference=system, break_level=-1):
+                                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference=system, break_level=break_level):
                                                 break # Break the symbol loop
                                 
                             case "DAILY_HL":

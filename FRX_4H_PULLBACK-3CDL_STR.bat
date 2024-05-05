@@ -6,7 +6,7 @@ set target_ratio=5.0
 set security=FOREX
 set systems=PULL_BACK_BRK,3CDL_STR
 set strategy=break
-set enable_trail_stop=no
+set enable_trail_stop=yes
 set enable_breakeven=yes
 
 python smart_trader.py ^

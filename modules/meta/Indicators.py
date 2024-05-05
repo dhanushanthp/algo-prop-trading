@@ -278,6 +278,23 @@ class Indicators:
         return None, None
     
     def get_current_day_levels(self, symbol, timeframe, start_reference_bar=2) -> Tuple[Signal, Signal]:
+        """
+        Retrieves the current day's high and low levels based on the provided symbol and timeframe.
+
+        Parameters:
+        - symbol (str): The symbol for which to retrieve levels.
+        - timeframe (int): The timeframe for the candlesticks in minutes.
+        - start_reference_bar (int): The index of the reference bar to start from (default is 2).
+
+        Returns:
+        - Tuple[Signal, Signal]: A tuple containing the signal for the day's high (HOD) and low (LOD),
+        or (None, None) if data is not available.
+
+        Example:
+        ```
+        hod_signal, lod_signal = get_current_day_levels("AAPL", 60, 2)
+        ```
+        """
         previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_reference_bar)
 
         if not previous_bars.empty:
@@ -426,7 +443,24 @@ class Indicators:
 
         return None, None
 
-    def pullback_candle_breaks(self, symbol:str, timeframe:int=60, breakout_gap:int=3, breakout_candle_index:int=1) -> Directions:
+    def pullback_candle_breaks(self, symbol:str, timeframe:int=60, breakout_gap:int=3, breakout_candle_index:int=1) -> Tuple[Directions, int]:
+        """
+        Pulls back candle breaks within a specified timeframe.
+
+        Parameters:
+        - symbol (str): The symbol for which to pull back candle breaks.
+        - timeframe (int): The timeframe for the candlesticks in minutes (default is 60).
+        - breakout_gap (int): The number of candlesticks to skip for breakout (default is 3).
+        - breakout_candle_index (int): The index of the breakout candle (default is 1).
+
+        Returns:
+        - Tuple[Directions, int]: A tuple containing the direction (LONG or SHORT) and the index of the break, or (None, None) if no break is found.
+
+        Example:
+        ```
+        direction, break_index = pullback_candle_breaks("AAPL", 60, 3, 1)
+        ```
+        """
         
         match timeframe:
             case 60:
@@ -451,18 +485,36 @@ class Indicators:
             high_of_candels = selected_candles["high"].max()
             if signal_check_candle["close"] > high_of_candels:
                 if index_of_high > 2:
-                    return Directions.LONG
+                    return Directions.LONG, index_of_high
             
             low_of_candels = selected_candles["low"].min()
             index_of_low = selected_candles['high'].idxmax()
             if signal_check_candle["close"] < low_of_candels:
                 if index_of_low > 2:
-                    return Directions.SHORT
+                    return Directions.SHORT, index_of_low
                 
-        return None        
+        return None, None
 
 
     def get_king_of_levels(self, symbol, timeframe, start_reference_bar=2) -> Dict[str, List[Signal]]:
+        """
+        Determines the strongest support and resistance levels for the given symbol and timeframe.
+
+        Parameters:
+        - symbol (str): The symbol for which to determine levels.
+        - timeframe (int): The timeframe for the candlesticks in minutes.
+        - start_reference_bar (int): The index of the reference bar to start from (default is 2).
+
+        Returns:
+        - Dict[str, List[Signal]]: A dictionary containing lists of signals categorized as resistance and support.
+
+        Example:
+        ```
+        levels = get_king_of_levels("AAPL", 60, 2)
+        ```
+
+        Note: Signals are categorized as resistance if they represent highs (HOD) and support if they represent lows (LOD).
+        """
         highs = []
         lows = []
         hod, lod = self.get_current_day_levels(symbol=symbol, timeframe=timeframe, start_reference_bar=start_reference_bar)
@@ -472,17 +524,6 @@ class Indicators:
         
         if lod:
             lows.append(lod)
-        
-        # if config.local_ip == "172_16_27_128":
-        #     pvh, pvl = self.get_pivot_levels(symbol=symbol, timeframe=timeframe)
-            
-        #     # Only add when pivot level is lower than the high of the day, If pivot is higher then it would be covered by HOD
-        #     if pvh and (pvh.level < hod.level):
-        #         highs.append(pvh)
-            
-        #     # Only add when pivot level is high than the low of the day, If pivot is lower then it would be covered by LOD
-        #     if pvl and (pvl.level > lod.level):
-        #         lows.append(pvl)
 
         return {"resistance": highs, "support": lows}
 
