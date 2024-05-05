@@ -16,7 +16,7 @@ python smart_trader.py ^
     --trades_per_day %trades_per_day% ^
     --num_prev_cdl_for_stop 2 ^
     --each_position_risk %each_position_risk% ^
-    --systems %system% ^
+    --systems %systems% ^
     --security %security% ^
     --timeframe %timeframe% ^
     --account_risk %account_risk% ^
