@@ -307,6 +307,42 @@ class Indicators:
 
         return None, None
     
+    def get_weekly_day_levels(self, symbol, timeframe, most_latest_candle=1) -> Tuple[Signal, Signal]:
+        """
+        Retrieves the weekly high and low levels for a given symbol and timeframe.
+
+        Args:
+            symbol (str): The symbol for which to retrieve the levels.
+            timeframe (str): The timeframe for which to retrieve the levels (e.g., '1h', '4h', '1d').
+            most_latest_candle (int, optional): The index of the most recent candle. Defaults to 1.
+
+        Returns:
+            Tuple[Signal, Signal]: A tuple containing two signals representing the weekly high and low levels.
+                The signals are instances of the Signal class and include information about the reference,
+                level, and break bar index.
+
+        Notes:
+            This function calculates the weekly high and low levels based on the candles available
+            since the last Sunday up to the most recent candle specified by `most_latest_candle`.
+            It utilizes utility functions from the `util` module, such as `get_current_time()`
+            and `get_last_sunday()`, and accesses candle data using the `get_last_n_candles` method
+            of the `wrapper` object.
+
+        """
+        current_time = util.get_current_time()
+        candle_look_back = (current_time.weekday() + 2) * 6
+        last_sunday = util.get_last_sunday()
+        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=most_latest_candle, n_candles=candle_look_back)
+        previous_bars["time"] = previous_bars["time"].apply(lambda x: util.get_traded_time(epoch=x))
+        previous_bars = previous_bars[previous_bars["time"] > last_sunday].copy().reset_index()
+
+        if not previous_bars.empty:
+            off_hour_highs = Signal(reference="HOW", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax())
+            off_hour_lows = Signal(reference="LOW", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin())
+            return off_hour_highs, off_hour_lows
+
+        return None, None
+    
     def get_time_based_levels(self, symbol, timeframe, candle_start_hour, candle_end_hour) -> Tuple[Signal, Signal]:
         previous_bars = self.wrapper.get_candles_by_time(symbol=symbol,
                                                          timeframe=timeframe,
@@ -520,7 +556,12 @@ class Indicators:
         """
         highs = []
         lows = []
-        hod, lod = self.get_current_day_levels(symbol=symbol, timeframe=timeframe, start_reference_bar=start_reference_bar)
+
+        match timeframe:
+            case 60:
+                hod, lod = self.get_current_day_levels(symbol=symbol, timeframe=timeframe, start_reference_bar=start_reference_bar)
+            case 240:
+                hod, lod = self.get_weekly_day_levels(symbol=symbol, timeframe=timeframe,most_latest_candle=start_reference_bar)
 
         if hod:                
             highs.append(hod)
@@ -543,7 +584,7 @@ if __name__ == "__main__":
     # print(indi_obj.get_time_based_levels(symbol=symbol, timeframe=timeframe, candle_start_hour=0, candle_end_hour=9))
     # print(indi_obj.solid_open_bar(symbol, timeframe))
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
-    # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, start_reference))
+    print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, 1))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.get_three_candle_exit(symbol))
@@ -551,5 +592,6 @@ if __name__ == "__main__":
     # print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))
     # print(indi_obj.get_two_candle_strike(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.bollinger_bands(symbol=symbol, timeframe=timeframe, window_size=20))
-    print(indi_obj.pullback_candle_breaks(symbol=symbol, timeframe=timeframe))
+    # print(indi_obj.pullback_candle_breaks(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.hammer_candle(symbol=symbol, timeframe=60, index=timeframe))
+    # print(indi_obj.get_weekly_day_levels(symbol=symbol, timeframe=240, most_latest_candle=1))

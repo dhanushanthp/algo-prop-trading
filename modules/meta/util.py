@@ -20,6 +20,14 @@ def error_logging(result, request_str={}) -> bool:
     return True
             # self.alert.send_msg(f"ERR: {self.account_name} <br> {error_string} <br> ```{request_str}```")
 
+def get_last_sunday():
+    today = get_current_time()
+    # Calculate the number of days to subtract to reach the last Sunday
+    days_to_subtract = today.weekday() + 1  # Adding 1 to include the current day
+    # Subtract days to get to the last Sunday
+    last_sunday_date = today - timedelta(days=days_to_subtract)
+    return last_sunday_date
+
 def match_timeframe(timeframe):
     if timeframe == 1:
         selected_time = mt5.TIMEFRAME_M1
@@ -217,5 +225,6 @@ if __name__ == "__main__":
     # print(index_of_active_bar(symbol, timeframe))
     # print(get_current_time())
     # print(get_current_day_hour_min())
-    print(is_us_premarket_peroid())
-    print(get_maket_events())
+    # print(is_us_premarket_peroid())
+    # print(get_maket_events())
+    print(get_last_sunday())
