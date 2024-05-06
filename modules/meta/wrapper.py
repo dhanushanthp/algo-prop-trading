@@ -112,6 +112,26 @@ class Wrapper:
         body_size = abs(previous_candle["open"] - previous_candle["close"])
         return body_size
     
+    def get_todays_candles(self, symbol:str, timeframe:int, start_candle:int):
+        """
+        Retrieve today's candles for a given symbol and timeframe, up to the most recent candle.
+
+        Args:
+            symbol (str): The symbol for which to retrieve candles.
+            timeframe (int): The timeframe (in minutes) of the candles.
+            start_candle (int): The index of the most recent candle.
+
+        Returns:
+            pd.DataFrame: DataFrame containing today's candles for the specified symbol and timeframe.
+        """
+        last_24_hour_candles = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=25)
+        last_24_hour_candles["time"] = last_24_hour_candles["time"].apply(lambda x: util.get_traded_time(epoch=x))
+        last_24_hour_candles["date"] = last_24_hour_candles["time"].apply(lambda x: x.date())
+        most_recent_date = last_24_hour_candles["time"].max().date()
+        todays_candles = last_24_hour_candles[last_24_hour_candles["date"] == most_recent_date].copy()
+        todays_candles = todays_candles.reset_index(drop=True).reset_index()
+        return todays_candles
+
 
     def get_weekly_candles(self, symbol:str, timeframe:int, most_latest_candle:int):
         """
@@ -472,7 +492,7 @@ if "__main__" == __name__:
     obj = Wrapper()
     import sys
     symbol = sys.argv[1]
-    index = sys.argv[2]
+    index = int(sys.argv[2])
     # timeframe = int(sys.argv[2])
     # timeframe = int(sys.argv[2])
     # start_hour = int(sys.argv[3])
@@ -491,5 +511,7 @@ if "__main__" == __name__:
     # print(obj.any_remaining_trades(max_trades=11))
     # print(obj.get_all_active_positions())
     # print(obj.candle_i_body(symbol=symbol, timeframe=60, candle_index=int(index)))
-    print(obj.get_weekly_candles(symbol=symbol, timeframe=240, most_latest_candle=0))
+    # print(obj.get_weekly_candles(symbol=symbol, timeframe=240, most_latest_candle=0))
+    print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
+    
 
