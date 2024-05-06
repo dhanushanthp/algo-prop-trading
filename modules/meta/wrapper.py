@@ -113,6 +113,36 @@ class Wrapper:
         return body_size
     
 
+    def get_weekly_candles(self, symbol:str, timeframe:int, most_latest_candle:int):
+        """
+        Retrieves weekly based candles for a given symbol and timeframe up to the specified most recent candle.
+
+        Args:
+            symbol (str): The symbol for which to retrieve the candles.
+            timeframe (str): The timeframe for which to retrieve the candles (e.g., '1h', '4h', '1d').
+            most_latest_candle (int): The index of the most recent candle.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the weekly candles up to the most recent candle.
+                The DataFrame includes columns such as 'time', 'open', 'high', 'low', 'close', 'volume',
+                and may also include additional columns depending on the source of the data.
+
+        Notes:
+            This function calculates the number of candles to retrieve based on the current time,
+            finds the date of the last Sunday using utility functions from the `util` module,
+            and fetches the relevant candles using the `get_last_n_candles` method of the `wrapper` object.
+            It then filters the candles to include only those after the last Sunday and returns the result.
+
+        """
+        current_time = util.get_current_time()
+        candle_look_back = (current_time.weekday() + 2) * 6
+        last_sunday = util.get_last_sunday()
+        previous_bars = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=most_latest_candle, n_candles=candle_look_back)
+        previous_bars["time"] = previous_bars["time"].apply(lambda x: util.get_traded_time(epoch=x))
+        previous_bars = previous_bars[previous_bars["time"] > last_sunday].copy().reset_index(drop=True).reset_index()
+        return previous_bars
+    
+
     def get_previous_candle(self, symbol, timeframe):
         """
         Retrieves the previous candlestick data for a given symbol and timeframe.
@@ -460,5 +490,6 @@ if "__main__" == __name__:
     # print(obj.get_traded_symbols())
     # print(obj.any_remaining_trades(max_trades=11))
     # print(obj.get_all_active_positions())
-    print(obj.candle_i_body(symbol=symbol, timeframe=60, candle_index=int(index)))
+    # print(obj.candle_i_body(symbol=symbol, timeframe=60, candle_index=int(index)))
+    print(obj.get_weekly_candles(symbol=symbol, timeframe=240, most_latest_candle=0))
 
