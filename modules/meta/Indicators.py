@@ -103,6 +103,10 @@ class Indicators:
         
         return None
 
+
+    def get_historic_three_candle_strike(self, symbol, timeframe=60):
+        return ""
+
     
     def get_three_candle_strike(self, symbol, timeframe=60) -> Directions:
         """
@@ -117,7 +121,6 @@ class Indicators:
             Directions or None: The direction of the three-candle strike pattern (LONG or SHORT) if identified, otherwise None.
         """
         previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=4)
-        sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe) # Find direction
 
         if len(previous_bars) >= 3:
             last_3_bars = previous_bars.tail(3).copy()
@@ -132,10 +135,10 @@ class Indicators:
             is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
             is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
 
-            if is_bullish and (sma_direction == Directions.LONG):
+            if is_bullish:
                 return Directions.LONG
             
-            if is_bearish and (sma_direction == Directions.SHORT):
+            if is_bearish:
                 return Directions.SHORT
         
         return None

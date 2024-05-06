@@ -225,7 +225,7 @@ class Wrapper:
         return []
 
     
-    def get_active_positions(self, today=False):
+    def get_active_positions(self, today=False) -> list:
         """
         List all the symbols which are in trade
         """
