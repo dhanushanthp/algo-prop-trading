@@ -286,22 +286,39 @@ class SmartTrader():
                                 """
                                 high_of_day, low_of_day = self.indicators.get_current_day_levels(symbol=symbol, 
                                                                                   timeframe=self.trading_timeframe, 
-                                                                                  start_reference_bar=2)
+                                                                                  start_reference_bar=3)
                                 
-                                previous_candle = self.wrapper.get_todays_candles(symbol=symbol,
+                                previous_candles = self.wrapper.get_todays_candles(symbol=symbol,
                                                                                   timeframe=self.trading_timeframe,
-                                                                                  start_candle=1).iloc[-1]
+                                                                                  start_candle=1)
+                                
+                                previous_candle = previous_candles.iloc[-1]
+                                prev_to_prev_candle = previous_candles.iloc[-2]
 
-                                if (previous_candle["low"] < high_of_day.level and previous_candle["close"] > high_of_day.level):
-                                    candle_gap = previous_candle["index"] - high_of_day.break_bar_index
+                                if previous_candle["low"] < high_of_day.level \
+                                      and prev_to_prev_candle["low"] < high_of_day.level \
+                                            and previous_candle["high"] > high_of_day.level \
+                                                  and prev_to_prev_candle["high"] > high_of_day.level \
+                                                    and previous_candle["close"] > previous_candle["open"] \
+                                                        and prev_to_prev_candle["close"] > prev_to_prev_candle["open"] :
+                                    
+                                    candle_gap = prev_to_prev_candle["index"] - high_of_day.break_bar_index
+                                    
                                     if  candle_gap > 2:
-                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference=high_of_day.reference, break_level=candle_gap):
+                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference="D" + high_of_day.reference, break_level=candle_gap):
                                             break # Break the resistance loop
                             
-                                if (previous_candle["high"] > low_of_day.level and previous_candle["close"] < low_of_day.level):   
-                                    candle_gap = previous_candle["index"] - low_of_day.break_bar_index
+                                if previous_candle["high"] > low_of_day.level \
+                                     and prev_to_prev_candle["high"] > low_of_day.level \
+                                            and previous_candle["low"] < low_of_day.level \
+                                                  and prev_to_prev_candle["low"] < low_of_day.level \
+                                                    and previous_candle["close"] < previous_candle["open"] \
+                                                        and prev_to_prev_candle["close"] < prev_to_prev_candle["open"] :
+                                    
+                                    candle_gap = prev_to_prev_candle["index"] - low_of_day.break_bar_index
+                                    
                                     if  candle_gap > 2:
-                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference=low_of_day.reference, break_level=candle_gap):
+                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference="D" + low_of_day.reference, break_level=candle_gap):
                                             break # Break the support loop
                             
                             case "WEEKLY_HL":
