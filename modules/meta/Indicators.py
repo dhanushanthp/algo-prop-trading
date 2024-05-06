@@ -298,11 +298,11 @@ class Indicators:
         hod_signal, lod_signal = get_current_day_levels("AAPL", 60, 2)
         ```
         """
-        previous_bars = self.wrapper.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_reference_bar)
+        previous_bars = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_reference_bar)
 
         if not previous_bars.empty:
-            off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax() + 1)
-            off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin() + 1)
+            off_hour_highs = Signal(reference="HOD", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax())
+            off_hour_lows = Signal(reference="LOD", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin())
             return off_hour_highs, off_hour_lows
 
         return None, None

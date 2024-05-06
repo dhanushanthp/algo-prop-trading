@@ -260,63 +260,45 @@ class SmartTrader():
                                 """
                                 Levels such as High of the Day, Low of the day will be checked with previous bar close
                                 """
-                                king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, 
-                                                                                    timeframe=self.trading_timeframe)
+                                high_of_day, low_of_day = self.indicators.get_current_day_levels(symbol=symbol, 
+                                                                                  timeframe=self.trading_timeframe, 
+                                                                                  start_reference_bar=2)
                                 
-                                previous_candle = self.wrapper.get_previous_candle(symbol=symbol, 
-                                                                                timeframe=self.trading_timeframe)
+                                previous_candle = self.wrapper.get_todays_candles(symbol=symbol,
+                                                                                  timeframe=self.trading_timeframe,
+                                                                                  start_candle=1).iloc[-1]
 
-                                for resistance in king_of_levels["resistance"]:
-                                    if (previous_candle["low"] < resistance.level and previous_candle["close"] > resistance.level):
-                                        is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                        past_break_index=resistance.break_bar_index, 
-                                                                                                        timeframe=self.trading_timeframe,
-                                                                                                        trade_direction=Directions.LONG, 
-                                                                                                        break_level=resistance.level, 
-                                                                                                        reference=resistance.reference)
-
-                                        if is_valid_signal:
-                                            if self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
-                                                break # Break the resistance loop
+                                if (previous_candle["low"] < high_of_day.level and previous_candle["close"] > high_of_day.level):
+                                    candle_gap = previous_candle["index"] - high_of_day.break_bar_index
+                                    if  candle_gap > 2:
+                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference=high_of_day.reference, break_level=candle_gap):
+                                            break # Break the resistance loop
                             
-                                for support in king_of_levels["support"]:
-                                    if (previous_candle["high"] > support.level and previous_candle["close"] < support.level):
-                                        is_valid_signal, candle_gap = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                        past_break_index=support.break_bar_index, 
-                                                                                                        timeframe=self.trading_timeframe,
-                                                                                                        trade_direction=Directions.SHORT, 
-                                                                                                        break_level=support.level, 
-                                                                                                        reference=support.reference)
-
-                                        if is_valid_signal:
-                                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
-                                                break # Break the support loop
+                                if (previous_candle["high"] > low_of_day.level and previous_candle["close"] < low_of_day.level):   
+                                    candle_gap = previous_candle["index"] - low_of_day.break_bar_index
+                                    if  candle_gap > 2:
+                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference=low_of_day.reference, break_level=candle_gap):
+                                            break # Break the support loop
                             
                             case "WEEKLY_HL":
                                 """
                                 Levels such as High of the Day, Low of the day will be checked with previous bar close
-                                """
-                                king_of_levels = self.indicators.get_king_of_levels(symbol=symbol, 
-                                                                                    timeframe=self.trading_timeframe,
-                                                                                    start_reference_bar=1)
-                                
-                                current_candle = self.wrapper.get_weekly_candles(symbol=symbol,
-                                                                                timeframe=self.trading_timeframe,
-                                                                                most_latest_candle=0).iloc[-1]
-
-                                for resistance in king_of_levels["resistance"]:
-                                    if (current_candle["low"] < resistance.level and current_candle["high"] > resistance.level):
-                                        candle_gap = current_candle["index"] - resistance.break_bar_index
-                                        if  candle_gap > 2:
-                                            if self.trade(direction=Directions.LONG, symbol=symbol, reference=resistance.reference, break_level=candle_gap):
-                                                break # Break the resistance loop
+                                """                                
+                                high_of_week, low_of_week = self.indicators.get_weekly_day_levels(symbol=symbol, timeframe=self.trading_timeframe, most_latest_candle=1)
+                                    
+                                current_candle = self.wrapper.get_weekly_candles(symbol=symbol, timeframe=self.trading_timeframe, most_latest_candle=0).iloc[-1]
                             
-                                for support in king_of_levels["support"]:
-                                    if (current_candle["high"] > support.level and current_candle["low"] < support.level):
-                                        candle_gap = current_candle["index"] - support.break_bar_index
-                                        if candle_gap > 2:
-                                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference=support.reference, break_level=candle_gap):
-                                                break # Break the support loop
+                                if (current_candle["low"] < high_of_week.level and current_candle["close"] > high_of_week.level):
+                                    candle_gap = current_candle["index"] - high_of_week.break_bar_index
+                                    if candle_gap > 2:
+                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference=high_of_week.reference, break_level=candle_gap):
+                                            break # Break the resistance loop
+                            
+                                if (current_candle["high"] > low_of_week.level and current_candle["close"] < low_of_week.level):
+                                    candle_gap = current_candle["index"] - low_of_week.break_bar_index
+                                    if candle_gap > 2:
+                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference=low_of_week.reference, break_level=candle_gap):
+                                            break # Break the support loop
 
             time.sleep(self.timer)
     
