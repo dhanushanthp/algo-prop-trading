@@ -11,6 +11,7 @@ from modules.common.Shield import Shield
 from modules.meta.Account import Account
 from modules.meta.Indicators import Indicators
 from modules.meta.wrapper import Wrapper
+from modules.common.Directions import Directions
 
 mt5.initialize()
 
@@ -53,6 +54,29 @@ class RiskManager:
 
             return False
         
+        return False
+    
+    def check_signal_validity(self, symbol:str, trade_direction:Directions):
+        
+        # Check does this already has trades on same direction, Load Passed Data
+        todays_trades = self.wrapper.get_todays_trades()
+
+        # If the symbol is not already traded, then take the trade
+        if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
+            return True
+        else:
+            match trade_direction:
+                case Directions.LONG:
+                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
+                    if traded_symbol.empty:
+                        # Shoud not have any previous trades on Long Direction
+                        return True
+                case Directions.SHORT:
+                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
+                    if traded_symbol.empty:
+                        # Shoud not have any previous trades on Short Direction
+                        return True
+
         return False
     
     def has_daily_maximum_risk_reached(self):
@@ -525,3 +549,6 @@ if __name__ == "__main__":
         
         case "close_on":
             print(obj.close_on_candle_close(timeframe=5))
+
+        case "validity":
+            print(obj.check_signal_validity(symbol=test_symbol, trade_direction=Directions.LONG))

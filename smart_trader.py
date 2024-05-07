@@ -7,15 +7,12 @@ import modules.meta.util as util
 import modules.meta.Currencies as curr
 from modules.meta.RiskManager import RiskManager
 from modules.common.slack_msg import Slack
-from modules.common import logme
-from modules.meta.Targets import Targets
 from modules.common.Directions import Directions
 from modules.meta.Prices import Prices
 from modules.meta.Orders import Orders
 from modules.meta.Account import Account
 from modules.meta.Indicators import Indicators
 from modules.meta.wrapper import Wrapper
-from modules import config
 
 class SmartTrader():
     def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, 
@@ -42,8 +39,6 @@ class SmartTrader():
 
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager,
                              wrapper = self.wrapper)
-        
-        self.targets = Targets(risk_manager=self.risk_manager, timeframe=trading_timeframe)
         
         self.alert = Slack()
         self.account = Account()
@@ -173,24 +168,16 @@ class SmartTrader():
                                 
                                 match candle_strike:
                                     case Directions.LONG:
-                                        is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=0, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                trade_direction=Directions.LONG, 
-                                                                                                break_level=-1, 
-                                                                                                reference=system)
+                                        is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                                  trade_direction=Directions.LONG)
 
                                         if is_valid_signal:
                                             if self.trade(direction=Directions.LONG, symbol=symbol, reference=system, break_level=-1):
                                                 break # Break the symbol loop
 
                                     case Directions.SHORT:
-                                        is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=0, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                trade_direction=Directions.SHORT, 
-                                                                                                break_level=-1, 
-                                                                                                reference=system)
+                                        is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                                  trade_direction=Directions.SHORT)
 
                                         if is_valid_signal:
                                             if self.trade(direction=Directions.SHORT, symbol=symbol, reference=system, break_level=-1):
@@ -202,24 +189,16 @@ class SmartTrader():
                                 
                                 match candle_reverse:
                                     case Directions.LONG:
-                                        is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=0, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                trade_direction=Directions.LONG, 
-                                                                                                break_level=-1, 
-                                                                                                reference=system)
+                                        is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                                  trade_direction=Directions.LONG)
 
                                         if is_valid_signal:
                                             if self.trade(direction=Directions.LONG, symbol=symbol, reference=system, break_level=-1):
                                                 break # Break the symbol loop
                                                 
                                     case Directions.SHORT:
-                                        is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=0, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                trade_direction=Directions.SHORT, 
-                                                                                                break_level=-1, 
-                                                                                                reference=system)
+                                        is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                                  trade_direction=Directions.SHORT)
 
                                         if is_valid_signal:
                                             if self.trade(direction=Directions.SHORT, symbol=symbol, reference=system, break_level=-1):
@@ -233,24 +212,16 @@ class SmartTrader():
                                 
                                 match breakout_candle_strike:
                                     case Directions.LONG:
-                                        is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=0, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                trade_direction=Directions.LONG, 
-                                                                                                break_level=break_level, 
-                                                                                                reference=system)
+                                        is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                                  trade_direction=Directions.LONG)
 
                                         if is_valid_signal:
                                             if self.trade(direction=Directions.LONG, symbol=symbol, reference=system, break_level=break_level):
                                                 break # Break the symbol loop
                                                 
                                     case Directions.SHORT:
-                                        is_valid_signal, _ = self.targets.check_signal_validity(symbol=symbol, 
-                                                                                                past_break_index=0, 
-                                                                                                timeframe=self.trading_timeframe,
-                                                                                                trade_direction=Directions.SHORT, 
-                                                                                                break_level=break_level, 
-                                                                                                reference=system)
+                                        is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                                  trade_direction=Directions.SHORT)
 
                                         if is_valid_signal:
                                             if self.trade(direction=Directions.SHORT, symbol=symbol, reference=system, break_level=break_level):
@@ -270,15 +241,17 @@ class SmartTrader():
 
                                 if (previous_candle["low"] < high_of_day.level and previous_candle["close"] > high_of_day.level):
                                     candle_gap = previous_candle["index"] - high_of_day.break_bar_index
-                                    if  candle_gap > 2:
-                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference=high_of_day.reference, break_level=candle_gap):
-                                            break # Break the resistance loop
+                                    if candle_gap > 2:
+                                        if self.risk_manager.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG):
+                                            if self.trade(direction=Directions.LONG, symbol=symbol, reference=high_of_day.reference, break_level=candle_gap):
+                                                break # Break the resistance loop
                             
                                 if (previous_candle["high"] > low_of_day.level and previous_candle["close"] < low_of_day.level):
                                     candle_gap = previous_candle["index"] - low_of_day.break_bar_index
-                                    if  candle_gap > 2:
-                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference=low_of_day.reference, break_level=candle_gap):
-                                            break # Break the support loop
+                                    if candle_gap > 2:
+                                        if self.risk_manager.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT):
+                                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference=low_of_day.reference, break_level=candle_gap):
+                                                break # Break the support loop
 
                             case "DAILY_HL_DOUBLE_HIT":
                                 """
@@ -305,8 +278,9 @@ class SmartTrader():
                                     candle_gap = prev_to_prev_candle["index"] - high_of_day.break_bar_index
                                     
                                     if  candle_gap > 2:
-                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference="D" + high_of_day.reference, break_level=candle_gap):
-                                            break # Break the resistance loop
+                                        if self.risk_manager.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG):
+                                            if self.trade(direction=Directions.LONG, symbol=symbol, reference="D" + high_of_day.reference, break_level=candle_gap):
+                                                break # Break the resistance loop
                             
                                 if previous_candle["high"] > low_of_day.level \
                                      and prev_to_prev_candle["high"] > low_of_day.level \
@@ -318,8 +292,9 @@ class SmartTrader():
                                     candle_gap = prev_to_prev_candle["index"] - low_of_day.break_bar_index
                                     
                                     if  candle_gap > 2:
-                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference="D" + low_of_day.reference, break_level=candle_gap):
-                                            break # Break the support loop
+                                        if self.risk_manager.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT):
+                                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference="D" + low_of_day.reference, break_level=candle_gap):
+                                                break # Break the support loop
                             
                             case "WEEKLY_HL":
                                 """
@@ -332,14 +307,16 @@ class SmartTrader():
                                 if (current_candle["low"] < high_of_week.level and current_candle["close"] > high_of_week.level):
                                     candle_gap = current_candle["index"] - high_of_week.break_bar_index
                                     if candle_gap > 2:
-                                        if self.trade(direction=Directions.LONG, symbol=symbol, reference=high_of_week.reference, break_level=candle_gap):
-                                            break # Break the resistance loop
+                                        if self.risk_manager.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG):
+                                            if self.trade(direction=Directions.LONG, symbol=symbol, reference=high_of_week.reference, break_level=candle_gap):
+                                                break # Break the resistance loop
                             
                                 if (current_candle["high"] > low_of_week.level and current_candle["close"] < low_of_week.level):
                                     candle_gap = current_candle["index"] - low_of_week.break_bar_index
                                     if candle_gap > 2:
-                                        if self.trade(direction=Directions.SHORT, symbol=symbol, reference=low_of_week.reference, break_level=candle_gap):
-                                            break # Break the support loop
+                                        if self.risk_manager.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT):
+                                            if self.trade(direction=Directions.SHORT, symbol=symbol, reference=low_of_week.reference, break_level=candle_gap):
+                                                break # Break the support loop
 
             time.sleep(self.timer)
     
