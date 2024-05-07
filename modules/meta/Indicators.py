@@ -590,4 +590,17 @@ if __name__ == "__main__":
     # print(indi_obj.bollinger_bands(symbol=symbol, timeframe=timeframe, window_size=20))
     # print(indi_obj.pullback_candle_breaks(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.hammer_candle(symbol=symbol, timeframe=60, index=timeframe))
-    print(indi_obj.get_weekly_day_levels(symbol=symbol, timeframe=240, most_latest_candle=0))
+    # print(indi_obj.get_weekly_day_levels(symbol=symbol, timeframe=240, most_latest_candle=0))
+
+    """
+    Test High and Low Of the Day
+    """
+    previous_candle = indi_obj.wrapper.get_todays_candles(symbol=symbol,timeframe=60, start_candle=1).iloc[-1]
+    hod, lod = indi_obj.get_current_day_levels(symbol=symbol, timeframe=60, start_reference_bar=2)
+    print("HOD")
+    print(previous_candle["low"] < hod.level and previous_candle["close"] > hod.level)
+    print(previous_candle["index"] - hod.break_bar_index)
+    
+    print("LOW")
+    print(previous_candle["high"] > lod.level and previous_candle["close"] < lod.level)
+    print(previous_candle["index"] - lod.break_bar_index)

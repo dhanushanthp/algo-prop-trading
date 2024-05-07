@@ -274,7 +274,7 @@ class SmartTrader():
                                         if self.trade(direction=Directions.LONG, symbol=symbol, reference=high_of_day.reference, break_level=candle_gap):
                                             break # Break the resistance loop
                             
-                                if (previous_candle["high"] > low_of_day.level and previous_candle["close"] < low_of_day.level):   
+                                if (previous_candle["high"] > low_of_day.level and previous_candle["close"] < low_of_day.level):
                                     candle_gap = previous_candle["index"] - low_of_day.break_bar_index
                                     if  candle_gap > 2:
                                         if self.trade(direction=Directions.SHORT, symbol=symbol, reference=low_of_day.reference, break_level=candle_gap):
