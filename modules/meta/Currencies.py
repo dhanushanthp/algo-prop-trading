@@ -10,23 +10,32 @@ indexes = None
 jpy_currencies = None
 support_pairs = None
 
-major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", "EURCHF", "USDJPY", "AUDJPY", "GBPJPY"]
+"""
+Most of the JPY Follow Currency Move to gether
+"""
+# major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", 
+#                "EURCHF", "AUDCHF", "USDCHF",
+#                "USDJPY", "AUDJPY", "GBPJPY",
+#                "AUDNZD",
+#                "EURAUD"]
+
 us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
 
 master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
-                    'CHFJPY', "CADCHF", "CADJPY",
+                    'CHFJPY', "CADCHF", 
+                    "CADJPY",
                     'EURJPY', 'EURNZD', 'EURUSD', 'EURCAD', "EURAUD", "EURCHF",
                     'GBPUSD', 'GBPJPY', "GBPAUD", "GBPCHF",
                     'NZDJPY', "NZDCAD", "NZDUSD",
                     'USDCAD', 'USDJPY', 'USDCHF']
 
-master_currencies = major_pairs
+# master_currencies = major_pairs
 
-# master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
+master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
 
-master_jpy_pairs = ["USDJPY"]
+# master_jpy_pairs = ["USDJPY"]
 
 # Funded Engineer
 if company == "AXSE Brokerage Ltd.":
