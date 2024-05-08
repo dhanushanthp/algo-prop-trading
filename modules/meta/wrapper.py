@@ -112,6 +112,23 @@ class Wrapper:
         body_size = abs(previous_candle["open"] - previous_candle["close"])
         return body_size
     
+    def most_recent_date(self, symbol, timeframe):
+        """
+        Finds the most recent date for a given symbol and timeframe.
+
+        Parameters:
+        - symbol (str): The symbol for which to find the most recent date.
+        - timeframe (str): The timeframe to consider for the search.
+
+        Returns:
+        - most_recent_date (datetime.date): The most recent date in the specified timeframe for the given symbol.
+        """
+        find_most_recent_candle = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=0, n_candles=2)
+        find_most_recent_candle["time"] = find_most_recent_candle["time"].apply(lambda x: util.get_traded_time(epoch=x))
+        most_recent_date = find_most_recent_candle["time"].max().date()
+        return most_recent_date
+    
+    
     def get_todays_candles(self, symbol:str, timeframe:int, start_candle:int):
         """
         Retrieve today's candles for a given symbol and timeframe, up to the most recent candle.
@@ -127,12 +144,14 @@ class Wrapper:
         last_24_hour_candles = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=25)
         last_24_hour_candles["time"] = last_24_hour_candles["time"].apply(lambda x: util.get_traded_time(epoch=x))
         last_24_hour_candles["date"] = last_24_hour_candles["time"].apply(lambda x: x.date())
-        most_recent_date = last_24_hour_candles["time"].max().date()
+
+        most_recent_date = self.most_recent_date(symbol, timeframe)
+
         todays_candles = last_24_hour_candles[last_24_hour_candles["date"] == most_recent_date].copy()
         todays_candles = todays_candles.reset_index(drop=True).reset_index()
         return todays_candles
 
-
+    
     def get_weekly_candles(self, symbol:str, timeframe:int, most_latest_candle:int):
         """
         Retrieves weekly based candles for a given symbol and timeframe up to the specified most recent candle.

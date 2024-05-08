@@ -597,10 +597,14 @@ if __name__ == "__main__":
     """
     previous_candle = indi_obj.wrapper.get_todays_candles(symbol=symbol,timeframe=60, start_candle=1).iloc[-1]
     hod, lod = indi_obj.get_current_day_levels(symbol=symbol, timeframe=60, start_reference_bar=2)
+    print("PREV Candle", previous_candle)
+    
     print("HOD")
+    print(hod)
     print(previous_candle["low"] < hod.level and previous_candle["close"] > hod.level)
     print(previous_candle["index"] - hod.break_bar_index)
     
-    print("LOW")
+    print("LOD")
+    print(lod)
     print(previous_candle["high"] > lod.level and previous_candle["close"] < lod.level)
     print(previous_candle["index"] - lod.break_bar_index)
