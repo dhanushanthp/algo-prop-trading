@@ -404,7 +404,7 @@ class RiskManager:
         """
         selected_time = util.match_timeframe(timeframe)
         
-        # Pick last 3 candles (Including current one) to find high and low
+        # Pick last (num_cdl_for_stop + 1) candles (Including current one) to find high and low
         previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, num_cdl_for_stop+1)
         
         current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
