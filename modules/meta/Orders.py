@@ -119,7 +119,7 @@ class Orders:
                         print(f"{symbol.ljust(12)}: {e}")
                         return False
             else:
-                print(f"{symbol.ljust(12)}: Waiting for signal strength...")
+                print(f"{symbol.ljust(12)}: {Directions.LONG} -  Waiting for signal strength...")
                 return False
 
     def long_waited_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
@@ -231,7 +231,7 @@ class Orders:
                         print(f"{symbol.ljust(12)}: {e}")
                         return False
             else:
-                print(f"{symbol.ljust(12)}: Waiting for signal strength...")
+                print(f"{symbol.ljust(12)}: {Directions.SHORT} - Waiting for signal strength...")
                 return False
 
     def short_waited_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
