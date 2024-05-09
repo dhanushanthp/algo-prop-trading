@@ -129,7 +129,7 @@ class Wrapper:
         return most_recent_date
     
     
-    def get_todays_candles(self, symbol:str, timeframe:int, start_candle:int):
+    def get_todays_candles(self, symbol:str, timeframe:int, start_candle:int) -> pd.DataFrame:
         """
         Retrieve today's candles for a given symbol and timeframe, up to the most recent candle.
 
@@ -149,6 +149,7 @@ class Wrapper:
 
         todays_candles = last_24_hour_candles[last_24_hour_candles["date"] == most_recent_date].copy()
         todays_candles = todays_candles.reset_index(drop=True).reset_index()
+
         return todays_candles
 
     
