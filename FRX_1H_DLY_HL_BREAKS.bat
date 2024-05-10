@@ -20,4 +20,5 @@ python smart_trader.py ^
     --security %security% ^
     --timeframe %timeframe% ^
     --account_risk %account_risk% ^
+    --start_hour 10 ^
     --target_ratio %target_ratio%

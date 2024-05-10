@@ -18,7 +18,7 @@ class SmartTrader():
     def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, 
                  each_position_risk:float=0.1, target_ratio:float=2.0, 
                  trades_per_day:int=5, num_prev_cdl_for_stop:int=2,
-                 enable_trail_stop:bool=False, enable_breakeven:bool=False):
+                 enable_trail_stop:bool=False, enable_breakeven:bool=False, start_hour:int=10):
         
         # Default values
         self.target_ratio = target_ratio  # Default 1:2.0 Ratio
@@ -61,6 +61,7 @@ class SmartTrader():
 
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
         self.num_prev_cdl_for_stop = num_prev_cdl_for_stop
+        self.start_hour = start_hour
 
         # Initiate the ticker
         curr.ticker_initiator(security=security)
@@ -93,7 +94,7 @@ class SmartTrader():
     def main(self):
         while True:
             print(f"\n------- {self.security} {self.trading_timeframe} TF {self.strategy.upper()}-----------")
-            is_market_open, is_market_close = util.get_market_status(trading_timeframe=self.trading_timeframe)
+            is_market_open, is_market_close = util.get_market_status(start_hour=self.start_hour)
 
             if self.security == "STOCK":
                 is_market_open = is_market_open and util.is_us_activemarket_peroid()
@@ -338,6 +339,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_prev_cdl_for_stop', type=int, help='Number of previous candle for stops')
     parser.add_argument('--enable_trail_stop', type=str, help='Enable Trail stop')
     parser.add_argument('--enable_breakeven', type=str, help='Enable breakeven')
+    parser.add_argument('--start_hour', type=int, help='Start Hour Of Trading')
     
     args = parser.parse_args()
     
@@ -350,12 +352,13 @@ if __name__ == "__main__":
     num_prev_cdl_for_stop = int(args.num_prev_cdl_for_stop)
     enable_trail_stop = util.boolean(args.enable_trail_stop)
     enable_breakeven = util.boolean(args.enable_breakeven)
+    start_hour = int(args.start_hour)
 
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
-                      enable_breakeven=enable_breakeven)
+                      enable_breakeven=enable_breakeven, start_hour=start_hour)
     
     # On the system, Are we taking break or reverse
     win.strategy = args.strategy
