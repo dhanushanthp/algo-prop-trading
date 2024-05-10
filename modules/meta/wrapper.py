@@ -147,11 +147,15 @@ class Wrapper:
 
         most_recent_date = self.most_recent_date(symbol, timeframe)
 
-        todays_candles = last_24_hour_candles[last_24_hour_candles["date"] == most_recent_date].copy()
+        todays_candles:pd.DataFrame = last_24_hour_candles[last_24_hour_candles["date"] == most_recent_date].copy()
         todays_candles = todays_candles.reset_index(drop=True).reset_index()
 
         return todays_candles
-
+    
+    def get_latest_bar_hour(self, symbol:str, timeframe:int):
+        todays_bars = self.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=0)
+        latest_bar:datetime = todays_bars.iloc[-1]["time"]
+        return latest_bar.hour
     
     def get_weekly_candles(self, symbol:str, timeframe:int, most_latest_candle:int):
         """
@@ -532,6 +536,7 @@ if "__main__" == __name__:
     # print(obj.get_all_active_positions())
     # print(obj.candle_i_body(symbol=symbol, timeframe=60, candle_index=int(index)))
     # print(obj.get_weekly_candles(symbol=symbol, timeframe=240, most_latest_candle=0))
-    print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
+    # print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
+    print(obj.get_latest_bar_hour(symbol=symbol, timeframe=index))
     
 

@@ -570,8 +570,9 @@ class Indicators:
 if __name__ == "__main__":
     indi_obj = Indicators(wrapper=Wrapper(), prices=Prices())
     import sys
-    symbol = sys.argv[1]
-    timeframe = int(sys.argv[2])
+    indicator = sys.argv[1]
+    symbol = sys.argv[2]
+    timeframe = int(sys.argv[3])
     # start_reference = int(sys.argv[3])
     # print("ATR", indi_obj.get_atr(symbol, timeframe, 2))
     # print("Body", indi_obj.wrapper.pre_candle_body(symbol, timeframe))
@@ -582,7 +583,6 @@ if __name__ == "__main__":
     # print("OFF MARKET LEVELS", indi_obj.get_off_market_levels(symbol))
     # print("KING LEVELS", indi_obj.get_king_of_levels(symbol, timeframe, 1))
     # print("PIVOT", indi_obj.get_pivot_levels(symbol=symbol, timeframe=timeframe))
-    # print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
     # print(indi_obj.get_three_candle_exit(symbol))
     # print(indi_obj.sma_direction(symbol=symbol, timeframe=60*4))
     # print(indi_obj.get_candle_cross_sma(symbol=symbol, sma_crossing=timeframe))
@@ -592,19 +592,23 @@ if __name__ == "__main__":
     # print(indi_obj.hammer_candle(symbol=symbol, timeframe=60, index=timeframe))
     # print(indi_obj.get_weekly_day_levels(symbol=symbol, timeframe=240, most_latest_candle=0))
 
-    """
-    Test High and Low Of the Day
-    """
-    previous_candle = indi_obj.wrapper.get_todays_candles(symbol=symbol,timeframe=60, start_candle=1).iloc[-1]
-    hod, lod = indi_obj.get_current_day_levels(symbol=symbol, timeframe=60, start_reference_bar=2)
-    print("PREV Candle", previous_candle)
-    
-    print("HOD")
-    print(hod)
-    print(previous_candle["low"] < hod.level and previous_candle["close"] > hod.level)
-    print(previous_candle["index"] - hod.break_bar_index)
-    
-    print("LOD")
-    print(lod)
-    print(previous_candle["high"] > lod.level and previous_candle["close"] < lod.level)
-    print(previous_candle["index"] - lod.break_bar_index)
+    match indicator:
+        case "3cdl_strike":
+            print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
+        case "daily_levels":
+            """
+            Test High and Low Of the Day
+            """
+            previous_candle = indi_obj.wrapper.get_todays_candles(symbol=symbol,timeframe=60, start_candle=1).iloc[-1]
+            hod, lod = indi_obj.get_current_day_levels(symbol=symbol, timeframe=60, start_reference_bar=2)
+            print("PREV Candle", previous_candle)
+            
+            print("HOD")
+            print(hod)
+            print(previous_candle["low"] < hod.level and previous_candle["close"] > hod.level)
+            print(previous_candle["index"] - hod.break_bar_index)
+            
+            print("LOD")
+            print(lod)
+            print(previous_candle["high"] > lod.level and previous_candle["close"] < lod.level)
+            print(previous_candle["index"] - lod.break_bar_index)

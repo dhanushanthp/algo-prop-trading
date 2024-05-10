@@ -5,6 +5,7 @@ from modules.common.Directions import Directions
 import modules.meta.util as util
 from modules.meta.Prices import Prices
 from modules.meta.wrapper import Wrapper
+from modules.common.logme import logger
 
 class Orders:
     def __init__(self, prices:Prices, risk_manager:RiskManager, wrapper:Wrapper) -> None:
@@ -89,7 +90,14 @@ class Orders:
         """
         entry_price = self.prices.get_entry_price(symbol=symbol)
 
-        if entry_price:
+        # If the latest base is not loaded, then it trades based on wrong signal
+        _,hour,_ = util.get_current_day_hour_min()
+        latest_hour = self.wrapper.get_latest_bar_hour(symbol=symbol, timeframe=trading_timeframe)
+
+        if hour != latest_hour:
+            logger.info(f"{symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
+        
+        if entry_price and (hour == latest_hour):
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier)
             if shield_object.get_signal_strength:
                 if entry_price > shield_object.get_long_stop:
@@ -200,8 +208,15 @@ class Orders:
             bool: True if the entry is successfully executed, False otherwise.
         """
         entry_price = self.prices.get_entry_price(symbol)
+
+        # If the latest base is not loaded, then it trades based on wrong signal
+        _,hour,_ = util.get_current_day_hour_min()
+        latest_hour = self.wrapper.get_latest_bar_hour(symbol=symbol, timeframe=trading_timeframe)
+
+        if hour != latest_hour:
+            logger.info(f"{symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
         
-        if entry_price:
+        if entry_price and (hour == latest_hour):
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier)
             if shield_object.get_signal_strength:
                 if entry_price < shield_object.get_short_stop:
