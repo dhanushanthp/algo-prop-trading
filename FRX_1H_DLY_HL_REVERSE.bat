@@ -8,7 +8,7 @@ set systems=DAILY_HL,DAILY_HL_DOUBLE_HIT
 set strategy=reverse
 set enable_trail_stop=no
 set enable_breakeven=yes
-set start_hour=4
+set start_hour=10
 
 python smart_trader.py ^
     --strategy %strategy% ^
