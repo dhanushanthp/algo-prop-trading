@@ -169,6 +169,10 @@ class SmartTrader():
                             case "3CDL_STR":
                                 trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
                                                                                           timeframe=self.trading_timeframe)
+                            
+                            case "4CDL_REV":
+                                trade_direction = self.strategies.get_four_candle_reverse(symbol=symbol, 
+                                                                                          timeframe=self.trading_timeframe)
                                 
                             case "DAILY_HL":
                                 trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
