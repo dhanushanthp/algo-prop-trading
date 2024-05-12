@@ -106,42 +106,7 @@ class Indicators:
 
     def get_historic_three_candle_strike(self, symbol, timeframe=60):
         return ""
-
     
-    def get_three_candle_strike(self, symbol, timeframe=60) -> Directions:
-        """
-        Determines the direction of a three-candle with given conditions
-
-        Args:
-            self: The instance of the class.
-            symbol: The symbol to analyze.
-            timeframe (int, optional): The timeframe for analyzing candles. Defaults to 60.
-
-        Returns:
-            Directions or None: The direction of the three-candle strike pattern (LONG or SHORT) if identified, otherwise None.
-        """
-        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=4)
-
-        if len(previous_bars) >= 3:
-            last_3_bars = previous_bars.tail(3).copy()
-            last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
-
-            is_higher_high = (last_3_bars["high"] > last_3_bars["high"].shift(1)).iloc[1:]
-            is_higher_low = (last_3_bars["low"] > last_3_bars["low"].shift(1)).iloc[1:]
-
-            is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
-            is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
-            
-            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
-            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
-
-            if is_bullish:
-                return Directions.LONG
-            
-            if is_bearish:
-                return Directions.SHORT
-        
-        return None
     
     def hammer_candle(self, symbol, timeframe, index):
         candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)
@@ -167,59 +132,6 @@ class Indicators:
                     return Directions.SHORT
                 elif (lower_wick > 2 * upper_wick) and (lower_wick > 2 * abs(body)):
                     return Directions.LONG
-            
-    
-    def get_two_candle_strike(self, symbol, timeframe=60) -> Directions:
-        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=3)
-
-        if len(previous_bars) >= 3:
-            last_2_bars = previous_bars.tail(2).copy()
-            last_2_bars["body_size"] = last_2_bars["close"] - last_2_bars["open"]
-
-            is_higher_high = (last_2_bars["high"] > last_2_bars["high"].shift(1)).iloc[1:]
-            is_higher_low = (last_2_bars["low"] > last_2_bars["low"].shift(1)).iloc[1:]
-
-            is_lower_high = (last_2_bars["high"] < last_2_bars["high"].shift(1)).iloc[1:]
-            is_lower_low = (last_2_bars["low"] < last_2_bars["low"].shift(1)).iloc[1:]
-            
-            is_bullish = all(last_2_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
-            is_bearish = all(last_2_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
-
-            if is_bullish:
-                return Directions.LONG
-            
-            if is_bearish:
-                return Directions.SHORT
-        
-        return None
-
-    def get_four_candle_reverse(self, symbol, timeframe=60) -> Directions:
-        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=2, n_candles=5)
-        previous_bar = self.wrapper.get_previous_candle(symbol=symbol, timeframe=timeframe)
-
-        if len(previous_bars) >= 3:
-            last_3_bars = previous_bars.tail(3).copy()
-            last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
-
-            is_higher_high = (last_3_bars["high"] > last_3_bars["high"].shift(1)).iloc[1:]
-            is_higher_low = (last_3_bars["low"] > last_3_bars["low"].shift(1)).iloc[1:]
-
-            is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
-            is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
-            
-            is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
-            is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
-
-            prev_bullish = previous_bar["open"] < previous_bar["close"]
-            prev_bearish = previous_bar["open"] > previous_bar["close"]
-
-            if is_bullish and prev_bearish:
-                return Directions.SHORT
-            
-            if is_bearish and prev_bullish:
-                return Directions.LONG
-        
-        return None
     
 
     def get_three_candle_exit(self, symbol, wick_body_ratio=2, timeframe=60) -> bool:
@@ -530,42 +442,6 @@ class Indicators:
                 
         return None, None
 
-
-    def get_king_of_levels(self, symbol, timeframe, start_reference_bar=2) -> Dict[str, List[Signal]]:
-        """
-        Determines the strongest support and resistance levels for the given symbol and timeframe.
-
-        Parameters:
-        - symbol (str): The symbol for which to determine levels.
-        - timeframe (int): The timeframe for the candlesticks in minutes.
-        - start_reference_bar (int): The index of the reference bar to start from (default is 2).
-
-        Returns:
-        - Dict[str, List[Signal]]: A dictionary containing lists of signals categorized as resistance and support.
-
-        Example:
-        ```
-        levels = get_king_of_levels("AAPL", 60, 2)
-        ```
-
-        Note: Signals are categorized as resistance if they represent highs (HOD) and support if they represent lows (LOD).
-        """
-        highs = []
-        lows = []
-
-        match timeframe:
-            case 60:
-                hod, lod = self.get_current_day_levels(symbol=symbol, timeframe=timeframe, start_reference_bar=start_reference_bar)
-            case 240:
-                hod, lod = self.get_weekly_day_levels(symbol=symbol, timeframe=timeframe,most_latest_candle=start_reference_bar)
-
-        if hod:                
-            highs.append(hod)
-        
-        if lod:
-            lows.append(lod)
-
-        return {"resistance": highs, "support": lows}
 
 if __name__ == "__main__":
     indi_obj = Indicators(wrapper=Wrapper(), prices=Prices())
