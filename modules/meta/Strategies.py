@@ -59,22 +59,24 @@ class Strategies:
         The function returns the predicted direction based on the analysis, or None if no significant pattern is found.
 
         """
-        three_candle_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=2)
+        three_cdl_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=2)
         
         prev_to_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=2)
         prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+        prev_candle_direction = Directions.LONG if prev_candle["close"] > prev_candle["open"] else Directions.SHORT
 
         # sma_direction = self.indicators.sma_direction(symbol=symbol, timeframe=timeframe, reverse=True)
         
         if self.indicators.is_solid_candle(symbol=symbol, timeframe=timeframe, index=1, ratio=0.6):
-            match three_candle_strike:
-                case Directions.LONG:
-                    if ((prev_candle["close"] < prev_to_prev_candle["low"]) and not extrame) or ((prev_candle["low"] < prev_to_prev_candle["low"]) and extrame):
-                        return Directions.SHORT
+            if (three_cdl_strike == Directions.LONG) and (prev_candle_direction == Directions.SHORT):
+                if ((prev_candle["close"] < prev_to_prev_candle["low"]) and not extrame) or \
+                    ((prev_candle["low"] < prev_to_prev_candle["low"]) and extrame):
+                    return Directions.SHORT
 
-                case Directions.SHORT:
-                    if ((prev_candle["close"] > prev_to_prev_candle["high"]) and not extrame) or ((prev_candle["high"] > prev_to_prev_candle["high"]) and extrame):
-                        return Directions.LONG
+            if (three_cdl_strike == Directions.SHORT) and (prev_candle_direction == Directions.LONG):
+                if ((prev_candle["close"] > prev_to_prev_candle["high"]) and not extrame) or \
+                    ((prev_candle["high"] > prev_to_prev_candle["high"]) and extrame):
+                    return Directions.LONG
         
         return None
 
