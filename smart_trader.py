@@ -96,7 +96,7 @@ class SmartTrader():
     
     def main(self):
         while True:
-            print(f"\n------- {self.security} {self.trading_timeframe} TF {self.strategy.upper()}-----------")
+            print(f"\n------- {self.security} {self.trading_timeframe} TF {self.strategy.upper()} {self.systems}-----------")
             is_market_open, is_market_close = util.get_market_status(start_hour=self.start_hour)
 
             if self.security == "STOCK":
