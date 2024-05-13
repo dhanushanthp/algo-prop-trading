@@ -217,25 +217,66 @@ class Strategies:
 if __name__ == "__main__":
     wrapper = Wrapper()
     from modules.meta.Prices import Prices
+    import modules.meta.Currencies as curr
     indicators = Indicators(wrapper=wrapper, prices=Prices())
     strat_obj = Strategies(wrapper=wrapper, indicators=indicators)
     import sys
     strategy = sys.argv[1]
-    symbol = sys.argv[2]
-    timeframe = int(sys.argv[3])
+    batch = sys.argv[2]
+    timeframe = int(sys.argv[3])  
 
     match strategy:
         case "3CDL_STK":
-            print(strat_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
+            # python modules\meta\Strategies.py 3CDL_STK y 60
+            if batch == "y":
+                for symbol in curr.master_currencies:
+                    direction = strat_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe)
+                    if direction:
+                        print(symbol, ": ", direction)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
 
         case "4CDL_REV":
-            print(strat_obj.get_four_candle_reverse(symbol=symbol, timeframe=timeframe))
+            # python modules\meta\Strategies.py 4CDL_REV y 60
+            if batch == "y":
+                for symbol in curr.master_currencies:
+                    direction = strat_obj.get_four_candle_reverse(symbol=symbol, timeframe=timeframe)
+                    if direction:
+                        print(symbol, ": ", direction)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.get_four_candle_reverse(symbol=symbol, timeframe=timeframe))
         
         case "DLY_BRK":
-            print(strat_obj.daily_high_low_breakouts(symbol=symbol, timeframe=timeframe))
+            # python modules\meta\Strategies.py DLY_BRK y 60
+            if batch == "y":
+                for symbol in curr.master_currencies:
+                    direction = strat_obj.daily_high_low_breakouts(symbol=symbol, timeframe=timeframe)
+                    if direction:
+                        print(symbol, ": ", direction)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.daily_high_low_breakouts(symbol=symbol, timeframe=timeframe))
         
         case "DLY_BRK_DOH":
-            print(strat_obj.daily_high_low_breakout_double_high_hit(symbol=symbol, timeframe=timeframe))
+            # python modules\meta\Strategies.py DLY_BRK_DOH y 60
+            if batch == "y":
+                for symbol in curr.master_currencies:
+                    direction = strat_obj.daily_high_low_breakout_double_high_hit(symbol=symbol, timeframe=timeframe)
+                    if direction:
+                        print(symbol, ": ", direction)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.daily_high_low_breakout_double_high_hit(symbol=symbol, timeframe=timeframe))
         
         case "WEEKLY_BRK":
-            print(strat_obj.weekly_high_low_breakouts(symbol=symbol, timeframe=timeframe))
+            # python modules\meta\Strategies.py WEEKLY_BRK y 60
+            if batch == "y":
+                for symbol in curr.master_currencies:
+                    direction = strat_obj.weekly_high_low_breakouts(symbol=symbol, timeframe=timeframe)
+                    if direction:
+                        print(symbol, ": ", direction)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.weekly_high_low_breakouts(symbol=symbol, timeframe=timeframe))
