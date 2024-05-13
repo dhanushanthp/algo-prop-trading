@@ -59,29 +59,18 @@ class Strategies:
         The function returns the predicted direction based on the analysis, or None if no significant pattern is found.
 
         """
-        three_candle_strike_immidiate = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=2)
-        three_candle_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=3)
+        three_candle_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=2)
         
-        prev_to_2prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=3)
         prev_to_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=2)
         prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
         
-        match three_candle_strike_immidiate:
+        match three_candle_strike:
             case Directions.LONG:
                 if prev_candle["close"] < prev_to_prev_candle["low"]:
                     return Directions.SHORT
 
             case Directions.SHORT:
                 if prev_candle["close"] > prev_to_prev_candle["high"]:
-                    return Directions.LONG
-        
-        match three_candle_strike:
-            case Directions.LONG:
-                if prev_candle["close"] < prev_to_2prev_candle["low"]:
-                    return Directions.SHORT
-
-            case Directions.SHORT:
-                if prev_candle["close"] > prev_to_2prev_candle["high"]:
                     return Directions.LONG
         
         return None
