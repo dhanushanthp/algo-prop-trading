@@ -8,7 +8,7 @@ set systems=4CDL_REV
 set strategy=break
 set enable_trail_stop=no
 set enable_breakeven=yes
-set start_hour=10
+set start_hour=4
 
 python smart_trader.py ^
     --strategy %strategy% ^
