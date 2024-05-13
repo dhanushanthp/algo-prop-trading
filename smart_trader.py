@@ -74,24 +74,26 @@ class SmartTrader():
         """
         This will take the trade based on given strategy
         """
+        if direction:
+            match self.strategy:
+                case "break":
+                    method_name = "long_entry" if direction == Directions.LONG else "short_entry"
+                case "reverse":
+                    method_name = "short_entry" if direction == Directions.LONG else "long_entry"
+                case _:
+                    raise Exception("Strategy is not added!")
+            
+            method = getattr(self.orders, method_name, None)
 
-        match self.strategy:
-            case "break":
-                method_name = "long_entry" if direction == Directions.LONG else "short_entry"
-            case "reverse":
-                method_name = "short_entry" if direction == Directions.LONG else "long_entry"
-            case _:
-                raise Exception("Strategy is not added!")
-        
-        method = getattr(self.orders, method_name, None)
-
-        if method:
-            status = method(symbol=symbol, 
-                            reference=f"{reference}", 
-                            break_level=break_level, 
-                            trading_timeframe=self.trading_timeframe,
-                            num_cdl_for_stop=self.num_prev_cdl_for_stop)
-            return status
+            if method:
+                status = method(symbol=symbol, 
+                                reference=f"{reference}", 
+                                break_level=break_level, 
+                                trading_timeframe=self.trading_timeframe,
+                                num_cdl_for_stop=self.num_prev_cdl_for_stop)
+                return status
+        else:
+            raise Exception("Direction for Order is not defined!")
 
     
     def main(self):
