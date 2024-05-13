@@ -1,7 +1,9 @@
 python modules\meta\Strategies.py 3CDL_STK y 60
 python modules\meta\Strategies.py 4CDL_REV y 60
+python modules\meta\Strategies.py 4CDL_REV_EXT y 60
 python modules\meta\Strategies.py DLY_BRK y 60
 python modules\meta\Strategies.py DLY_BRK_DOH y 60
 python modules\meta\Strategies.py WEEKLY_BRK y 240
 python modules\meta\Strategies.py 3CDL_STK y 240
 python modules\meta\Strategies.py 4CDL_REV y 240
+python modules\meta\Strategies.py 4CDL_REV_EXT y 240

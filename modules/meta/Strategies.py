@@ -41,7 +41,7 @@ class Strategies:
             if is_bearish:
                 return Directions.SHORT
     
-    def get_four_candle_reverse(self, symbol, timeframe=60) -> Directions:
+    def get_four_candle_reverse(self, symbol, timeframe=60, extrame=False) -> Directions:
         """
         Determines the directional change based on four-candle pattern analysis.
 
@@ -66,11 +66,11 @@ class Strategies:
         
         match three_candle_strike:
             case Directions.LONG:
-                if prev_candle["close"] < prev_to_prev_candle["low"]:
+                if ((prev_candle["close"] < prev_to_prev_candle["low"]) and not extrame) or ((prev_candle["low"] < prev_to_prev_candle["low"]) and extrame):
                     return Directions.SHORT
 
             case Directions.SHORT:
-                if prev_candle["close"] > prev_to_prev_candle["high"]:
+                if ((prev_candle["close"] > prev_to_prev_candle["high"]) and not extrame) or ((prev_candle["high"] > prev_to_prev_candle["high"]) and extrame):
                     return Directions.LONG
         
         return None
@@ -231,6 +231,17 @@ if __name__ == "__main__":
             if batch == "y":
                 for symbol in curr.master_currencies:
                     direction = strat_obj.get_four_candle_reverse(symbol=symbol, timeframe=timeframe)
+                    if direction:
+                        print(symbol, ": ", direction)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.get_four_candle_reverse(symbol=symbol, timeframe=timeframe))
+
+        case "4CDL_REV_EXT":
+            # python modules\meta\Strategies.py 4CDL_REV_EXT y 60
+            if batch == "y":
+                for symbol in curr.master_currencies:
+                    direction = strat_obj.get_four_candle_reverse(symbol=symbol, timeframe=timeframe, extrame=True)
                     if direction:
                         print(symbol, ": ", direction)
             else:
