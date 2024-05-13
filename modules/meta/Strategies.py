@@ -73,7 +73,7 @@ class Strategies:
 
             case Directions.SHORT:
                 if prev_candle["close"] > prev_to_prev_candle["high"]:
-                    return Directions.SHORT
+                    return Directions.LONG
         
         match three_candle_strike:
             case Directions.LONG:
@@ -82,7 +82,7 @@ class Strategies:
 
             case Directions.SHORT:
                 if prev_candle["close"] > prev_to_2prev_candle["high"]:
-                    return Directions.SHORT
+                    return Directions.LONG
         
         return None
 
