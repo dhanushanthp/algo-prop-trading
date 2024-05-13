@@ -165,6 +165,9 @@ class SmartTrader():
                         continue
                     
                     for system in self.systems:
+                        # Reset trade direction for each system
+                        trade_direction = None
+
                         match system:
                             case "3CDL_STR":
                                 trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
@@ -188,13 +191,13 @@ class SmartTrader():
                                 trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
                                                                                            timeframe=self.trading_timeframe,
                                                                                            min_gap=2)
-                        
-                        is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
-                                                                                  trade_direction=trade_direction)
+                        if trade_direction:
+                            is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                    trade_direction=trade_direction)
 
-                        if is_valid_signal:
-                            if self.trade(direction=trade_direction, symbol=symbol, reference=system, break_level=-1):
-                                break # Break the symbol loop
+                            if is_valid_signal:
+                                if self.trade(direction=trade_direction, symbol=symbol, reference=system, break_level=-1):
+                                    break # Break the symbol loop
 
             time.sleep(self.timer)
     
