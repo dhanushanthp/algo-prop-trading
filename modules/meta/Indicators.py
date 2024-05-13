@@ -186,7 +186,7 @@ class Indicators:
                 off_hour_lows = Signal(reference="OML", level=min(previous_bars["low"])) 
                 return off_hour_highs, off_hour_lows
             else:
-                logme.logger.debug(f"OffMar, {symbol}, {start_time}, {end_time}")
+                logme.log_it("INDICATOR").debug(f"OffMar, {symbol}, {start_time}, {end_time}")
 
             return None, None
         

@@ -3,11 +3,9 @@ import logging
 # Configure logging
 logging.basicConfig(filename='logs.log', level=logging.DEBUG)
 
-# Create a logger object
-logger = logging.getLogger('snipper_reloaded')
+def log_it(system:str) -> logging.Logger:
+    return logging.getLogger(system)
 
 
 if __name__ == "__main__":
-    logger.info("testing")
-    logger.debug("testing")
-    logger.error("testing")
+    log_it("MAIN").debug("testing")

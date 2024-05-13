@@ -5,7 +5,7 @@ from modules.common.Directions import Directions
 import modules.meta.util as util
 from modules.meta.Prices import Prices
 from modules.meta.wrapper import Wrapper
-from modules.common.logme import logger
+from modules.common.logme import log_it
 
 class Orders:
     def __init__(self, prices:Prices, risk_manager:RiskManager, wrapper:Wrapper) -> None:
@@ -95,7 +95,7 @@ class Orders:
         latest_hour = self.wrapper.get_latest_bar_hour(symbol=symbol, timeframe=trading_timeframe)
 
         if hour != latest_hour:
-            logger.info(f"{reference}: {symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
+            log_it(reference).info(f"{symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
         
         if entry_price and (hour == latest_hour):
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier)
@@ -214,7 +214,7 @@ class Orders:
         latest_hour = self.wrapper.get_latest_bar_hour(symbol=symbol, timeframe=trading_timeframe)
 
         if hour != latest_hour:
-            logger.info(f"{reference}: {symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
+            log_it(reference).info(f"{symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
         
         if entry_price and (hour == latest_hour):
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier)
