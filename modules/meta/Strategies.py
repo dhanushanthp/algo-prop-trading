@@ -64,14 +64,15 @@ class Strategies:
         prev_to_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=2)
         prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
         
-        match three_candle_strike:
-            case Directions.LONG:
-                if ((prev_candle["close"] < prev_to_prev_candle["low"]) and not extrame) or ((prev_candle["low"] < prev_to_prev_candle["low"]) and extrame):
-                    return Directions.SHORT
+        if self.indicators.is_solid_candle(symbol=symbol, timeframe=timeframe, index=1, ratio=0.6):
+            match three_candle_strike:
+                case Directions.LONG:
+                    if ((prev_candle["close"] < prev_to_prev_candle["low"]) and not extrame) or ((prev_candle["low"] < prev_to_prev_candle["low"]) and extrame):
+                        return Directions.SHORT
 
-            case Directions.SHORT:
-                if ((prev_candle["close"] > prev_to_prev_candle["high"]) and not extrame) or ((prev_candle["high"] > prev_to_prev_candle["high"]) and extrame):
-                    return Directions.LONG
+                case Directions.SHORT:
+                    if ((prev_candle["close"] > prev_to_prev_candle["high"]) and not extrame) or ((prev_candle["high"] > prev_to_prev_candle["high"]) and extrame):
+                        return Directions.LONG
         
         return None
 

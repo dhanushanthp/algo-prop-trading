@@ -107,6 +107,30 @@ class Indicators:
     def get_historic_three_candle_strike(self, symbol, timeframe=60):
         return ""
     
+
+    def is_solid_candle(self, symbol:str, timeframe:60, index:int, ratio:float=0.6):
+        """
+        Determines if a candle in a given symbol and timeframe is solid based on a specified ratio of body length to total length.
+
+        Args:
+            symbol (str): The symbol of the asset.
+            timeframe (int): The timeframe of the candlestick data in minutes. Default is 60.
+            index (int): The index of the candle in the historical data.
+            ratio (float): The ratio threshold defining a solid candle. Default is 0.6.
+
+        Returns:
+            bool: True if the candle is solid, False otherwise.
+
+        Example:
+            is_solid = is_solid_candle("BTCUSD", timeframe=30, index=5, ratio=0.7)
+        """
+        candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)
+        body = abs(candle["close"] - candle["open"])
+        total_length = candle["high"] - candle["low"]
+        lenth_body_ratio = round(body/total_length, 1)
+        if lenth_body_ratio >= ratio:
+            return True
+    
     
     def hammer_candle(self, symbol, timeframe, index):
         candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)
@@ -449,6 +473,7 @@ if __name__ == "__main__":
     indicator = sys.argv[1]
     symbol = sys.argv[2]
     timeframe = int(sys.argv[3])
+    index = int(sys.argv[4])
     # start_reference = int(sys.argv[3])
     # print("ATR", indi_obj.get_atr(symbol, timeframe, 2))
     # print("Body", indi_obj.wrapper.pre_candle_body(symbol, timeframe))
@@ -469,8 +494,8 @@ if __name__ == "__main__":
     # print(indi_obj.get_weekly_day_levels(symbol=symbol, timeframe=240, most_latest_candle=0))
 
     match indicator:
-        case "3cdl_strike":
-            print(indi_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
+        case "body_ratio":
+            print(indi_obj.is_solid_candle(symbol=symbol, timeframe=timeframe, index=index))
         case "daily_levels":
             """
             Test High and Low Of the Day
