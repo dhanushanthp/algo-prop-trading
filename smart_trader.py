@@ -162,9 +162,10 @@ class SmartTrader():
                 existing_positions = self.wrapper.get_active_positions(today=True)
 
                 for symbol in curr.get_major_symbols(security=self.security):
-                    # If the positions is already in trade, then don't check for signal
-                    if symbol in existing_positions:
-                        continue
+                    # If the positions is already in trade, then don't check for signal,
+                    # Disableing to take the opposite side of the trade
+                    # if symbol in existing_positions:
+                    #     continue
                     
                     for system in self.systems:
                         # Reset trade direction for each system
