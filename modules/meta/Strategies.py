@@ -63,6 +63,8 @@ class Strategies:
         
         prev_to_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=2)
         prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+
+        # sma_direction = self.indicators.sma_direction(symbol=symbol, timeframe=timeframe, reverse=True)
         
         if self.indicators.is_solid_candle(symbol=symbol, timeframe=timeframe, index=1, ratio=0.6):
             match three_candle_strike:

@@ -63,15 +63,27 @@ class Indicators:
         return upper_band[-1], lower_band[-1]
 
 
-    def sma_direction(self, symbol:str, timeframe:int, short_ma:int=10, long_ma:int=20) -> Directions:
-        # Find the SMA cross over based on the last candle
+    def sma_direction(self, symbol:str, timeframe:int, short_ma:int=10, long_ma:int=20, reverse=False) -> Directions:
+        """
+        Determines the direction based on the Simple Moving Average (SMA) crossover strategy.
+
+        Args:
+            symbol (str): The trading symbol.
+            timeframe (int): The time frame for the data.
+            short_ma (int): The period for the short moving average. Defaults to 10.
+            long_ma (int): The period for the long moving average. Defaults to 20.
+            reverse (bool): If True, reverse the direction interpretation.
+
+        Returns:
+            Directions: The direction based on SMA crossover strategy.
+        """
         short_sma = self.simple_moving_average(symbol=symbol, timeframe=timeframe, n_moving_average=short_ma)
         long_sma = self.simple_moving_average(symbol=symbol, timeframe=timeframe, n_moving_average=long_ma)
 
         if short_sma > long_sma:
-            return Directions.LONG
+            return Directions.LONG if not reverse else Directions.SHORT
         else:
-            return Directions.SHORT
+            return Directions.SHORT if not reverse else Directions.LONG
 
     def get_previous_day_levels(self, symbol, timeframe=60) -> Tuple[Signal, Signal]:
         previous_bars = pd.DataFrame(self.wrapper.get_previous_day_candles_by_time(symbol=symbol, 
@@ -496,6 +508,8 @@ if __name__ == "__main__":
     match indicator:
         case "body_ratio":
             print(indi_obj.is_solid_candle(symbol=symbol, timeframe=timeframe, index=index))
+        case "sma_direction":
+            print(indi_obj.sma_direction(symbol=symbol, timeframe=timeframe, reverse=True))
         case "daily_levels":
             """
             Test High and Low Of the Day
