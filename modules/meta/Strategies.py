@@ -71,12 +71,12 @@ class Strategies:
             if (three_cdl_strike == Directions.LONG) and (prev_candle_direction == Directions.SHORT):
                 if ((prev_candle["close"] < prev_to_prev_candle["low"]) and not extrame) or \
                     ((prev_candle["low"] < prev_to_prev_candle["low"]) and extrame):
-                    return Directions.SHORT
+                    return Directions.LONG
 
             if (three_cdl_strike == Directions.SHORT) and (prev_candle_direction == Directions.LONG):
                 if ((prev_candle["close"] > prev_to_prev_candle["high"]) and not extrame) or \
                     ((prev_candle["high"] > prev_to_prev_candle["high"]) and extrame):
-                    return Directions.LONG
+                    return Directions.SHORT
         
         return None
 

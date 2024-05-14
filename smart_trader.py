@@ -201,7 +201,8 @@ class SmartTrader():
                                                                                            min_gap=2)
                         if trade_direction:
                             is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
-                                                                                    trade_direction=trade_direction)
+                                                                                      trade_direction=trade_direction,
+                                                                                      strategy=self.strategy)
 
                             if is_valid_signal:
                                 if self.trade(direction=trade_direction, symbol=symbol, reference=system, break_level=-1):

@@ -56,7 +56,10 @@ class RiskManager:
         
         return False
     
-    def check_signal_validity(self, symbol:str, trade_direction:Directions):
+    def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str):
+
+        if strategy=="reverse":
+            trade_direction = Directions.LONG if trade_direction == Directions.SHORT else Directions.LONG
         
         # Check does this already has trades on same direction, Load Passed Data
         todays_trades = self.wrapper.get_todays_trades()
