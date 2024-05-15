@@ -140,8 +140,9 @@ class SmartTrader():
                 # Don't close the trades if it's more than 4 hour time frame
                 if self.trading_timeframe < 240:
                     # Close the positions which has risk of lossing less than 0
-                    for risk_positions in self.risk_manager.get_positions_at_risk():
-                        self.orders.close_single_position(obj=risk_positions)
+                    # for risk_positions in self.risk_manager.get_positions_at_risk():
+                    #     self.orders.close_single_position(obj=risk_positions)
+                    self.orders.close_all_positions()
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=account_risk, 
