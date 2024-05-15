@@ -154,7 +154,12 @@ class Wrapper:
     
     def get_latest_bar_hour(self, symbol:str, timeframe:int):
         todays_bars = self.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=0)
-        latest_bar:datetime = todays_bars.iloc[-1]["time"]
+        try:
+            # Some cases the br is not getting loaded
+            latest_bar:datetime = todays_bars.iloc[-1]["time"]
+        except IndexError:
+            return -1
+
         return latest_bar.hour
     
     def get_weekly_candles(self, symbol:str, timeframe:int, most_latest_candle:int):
