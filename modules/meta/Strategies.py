@@ -102,7 +102,8 @@ class Strategies:
         previous_candles = self.wrapper.get_todays_candles(symbol=symbol, 
                                                            timeframe=timeframe,
                                                            start_candle=1)
-        if not previous_candles.empty:
+        
+        if not previous_candles.empty and high_of_day and low_of_day:
             previous_candle = previous_candles.iloc[-1]
         
             if (previous_candle["low"] < high_of_day.level and previous_candle["close"] > high_of_day.level):
@@ -142,7 +143,7 @@ class Strategies:
                                                            timeframe=timeframe,
                                                            start_candle=1)
 
-        if not previous_candles.empty and len(previous_candles) > 2:
+        if not previous_candles.empty and len(previous_candles) > 2 and high_of_day and low_of_day:
             last_2_candles = previous_candles.tail(2).copy()
 
             last_2_candles["lower_than_hod"] = last_2_candles["low"] < high_of_day.level
