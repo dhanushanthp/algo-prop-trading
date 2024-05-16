@@ -116,12 +116,12 @@ class SmartTrader():
             # Each position trail stop
             if self.trail_stop:
                 self.risk_manager.trailing_stop_and_target(stop_multiplier=self.stop_ratio, 
-                                                       target_multiplier=self.target_ratio, 
-                                                       trading_timeframe=self.trading_timeframe,
-                                                       num_cdl_for_stop=self.num_prev_cdl_for_stop)
+                                                           target_multiplier=self.target_ratio, 
+                                                           trading_timeframe=self.trading_timeframe,
+                                                           num_cdl_for_stop=self.num_prev_cdl_for_stop)
             
             if self.enable_breakeven:
-                self.risk_manager.breakeven(profit_factor=2)
+                self.risk_manager.breakeven(profit_factor=1)
 
             if is_market_close:
                 print("Market Close!")
