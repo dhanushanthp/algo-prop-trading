@@ -46,7 +46,7 @@ class SmartTrader():
         self.alert = Slack()
         self.account = Account()
         
-        self.systems:str = None
+        self.systems:list = None
         self.strategy:str = None
         
         # Account information
@@ -58,9 +58,9 @@ class SmartTrader():
         # Default
         self.trading_timeframe = trading_timeframe
         self.trades_per_day = trades_per_day
-        self.pause_trading = False
         self.trail_stop = enable_trail_stop
         self.enable_breakeven = enable_breakeven
+        self.sent_result:bool = True
 
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
         self.num_prev_cdl_for_stop = num_prev_cdl_for_stop
@@ -112,11 +112,6 @@ class SmartTrader():
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
-            
-            # if self.trading_timeframe < 240:
-            #     if rr > 1:
-            #         self.orders.close_all_positions()
-            #         self.pause_trading=True
 
             # Each position trail stop
             if self.trail_stop:
@@ -124,12 +119,6 @@ class SmartTrader():
                                                        target_multiplier=self.target_ratio, 
                                                        trading_timeframe=self.trading_timeframe,
                                                        num_cdl_for_stop=self.num_prev_cdl_for_stop)
-
-            # Exit from the position when candle is ranging with long wicks
-            # emerg_exist_symbols = self.risk_manager.emergency_exit(is_market_open=is_market_open, 
-            #                                                     timeframe=self.trading_timeframe)
-            # for position_object in emerg_exist_symbols:
-            #     self.orders.close_single_position(obj=position_object)
             
             if self.enable_breakeven:
                 self.risk_manager.breakeven(profit_factor=2)
@@ -139,10 +128,11 @@ class SmartTrader():
                 
                 # Don't close the trades if it's more than 4 hour time frame
                 if self.trading_timeframe < 240:
-                    # Close the positions which has risk of lossing less than 0
-                    # for risk_positions in self.risk_manager.get_positions_at_risk():
-                    #     self.orders.close_single_position(obj=risk_positions)
                     self.orders.close_all_positions()
+                
+                # Update the result in Slack
+                if self.sent_result:
+                    self.risk_manager.alert.send_msg(f"{self.strategy}-{'|'.join(self.systems)}: ({pnl})  {rr}")
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=account_risk, 
@@ -151,23 +141,19 @@ class SmartTrader():
                                                 target_ratio=self.target_ratio)
                 
                 self.fixed_initial_account_size = self.risk_manager.account_size
-                self.pause_trading = False
+                self.sent_result = False # Once sent, Disable
+
 
             self.orders.cancel_all_pending_orders()
             
             if is_market_open \
                   and (not is_market_close) \
-                      and (not self.pause_trading) \
-                        and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
+                    and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
                 
-                existing_positions = self.wrapper.get_active_positions(today=True)
+                # Enable again once market active
+                self.sent_result = True
 
-                for symbol in curr.get_major_symbols(security=self.security):
-                    # If the positions is already in trade, then don't check for signal,
-                    # Disableing to take the opposite side of the trade
-                    # if symbol in existing_positions:
-                    #     continue
-                    
+                for symbol in curr.get_major_symbols(security=self.security):                    
                     for system in self.systems:
                         # Reset trade direction for each system
                         trade_direction = None
