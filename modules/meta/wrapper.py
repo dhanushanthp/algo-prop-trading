@@ -142,15 +142,19 @@ class Wrapper:
             pd.DataFrame: DataFrame containing today's candles for the specified symbol and timeframe.
         """
         last_24_hour_candles = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=25)
-        last_24_hour_candles["time"] = last_24_hour_candles["time"].apply(lambda x: util.get_traded_time(epoch=x))
-        last_24_hour_candles["date"] = last_24_hour_candles["time"].apply(lambda x: x.date())
 
-        most_recent_date = self.most_recent_date(symbol, timeframe)
+        if not last_24_hour_candles.empty:
+            last_24_hour_candles["time"] = last_24_hour_candles["time"].apply(lambda x: util.get_traded_time(epoch=x))
+            last_24_hour_candles["date"] = last_24_hour_candles["time"].apply(lambda x: x.date())
 
-        todays_candles:pd.DataFrame = last_24_hour_candles[last_24_hour_candles["date"] == most_recent_date].copy()
-        todays_candles = todays_candles.reset_index(drop=True).reset_index()
+            most_recent_date = self.most_recent_date(symbol, timeframe)
 
-        return todays_candles
+            todays_candles:pd.DataFrame = last_24_hour_candles[last_24_hour_candles["date"] == most_recent_date].copy()
+            todays_candles = todays_candles.reset_index(drop=True).reset_index()
+
+            return todays_candles
+
+        return pd.DataFrame()
     
     def get_latest_bar_hour(self, symbol:str, timeframe:int):
         todays_bars = self.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=0)
