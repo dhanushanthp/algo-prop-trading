@@ -115,6 +115,8 @@ class SmartTrader():
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
 
+            self.orders.cancel_all_pending_orders()
+            
             # Each position trail stop
             if self.trail_stop:
                 self.risk_manager.trailing_stop_and_target(stop_multiplier=self.stop_ratio, 
@@ -150,9 +152,6 @@ class SmartTrader():
                 
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.sent_result = False # Once sent, Disable
-
-
-            self.orders.cancel_all_pending_orders()
             
             if is_market_open \
                   and (not is_market_close) \
