@@ -41,6 +41,42 @@ class Strategies:
             if is_bearish:
                 return Directions.SHORT
     
+    def get_dtop_dbottom(self, symbol:str, timeframe:int=60) -> Directions:
+        """
+        Double Top and Double Bottom
+        """
+        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=1, n_candles=6)
+        first_3_bars = previous_bars.head(3)
+        last_3_bar = previous_bars.tail(3)
+
+        def is_higher_pivot(data):
+            first_bar = data.iloc[0]["high"]
+            second_bar = data.iloc[1]["high"]
+            third_bar = data.iloc[2]["high"]
+
+            if first_bar < second_bar and second_bar > third_bar:
+                return True
+            
+        def is_lower_pivot(data):
+            first_bar = data.iloc[0]["low"]
+            second_bar = data.iloc[1]["low"]
+            third_bar = data.iloc[2]["low"]
+
+            if first_bar > second_bar and second_bar < third_bar:
+                return True
+        
+        double_top = is_higher_pivot(first_3_bars) and is_higher_pivot(last_3_bar)
+        double_bottom = is_lower_pivot(first_3_bars) and is_lower_pivot(last_3_bar)
+
+        if double_top:
+            return Directions.SHORT
+
+        if double_bottom:
+            return Directions.LONG
+        
+        return None
+
+
     def get_four_candle_reverse(self, symbol, timeframe=60, extrame=False) -> Directions:
         """
         Determines the directional change based on four-candle pattern analysis.
@@ -286,3 +322,14 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.weekly_high_low_breakouts(symbol=symbol, timeframe=timeframe))
+        
+        case "D_TOP_BOTTOM":
+            # python modules\meta\Strategies.py WEEKLY_BRK y 60
+            if batch == "y":
+                for symbol in curr.master_currencies:
+                    direction = strat_obj.get_dtop_dbottom(symbol=symbol, timeframe=timeframe)
+                    if direction:
+                        print(symbol, ": ", direction)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.get_dtop_dbottom(symbol=symbol, timeframe=timeframe))

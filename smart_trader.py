@@ -194,6 +194,10 @@ class SmartTrader():
                                 trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
                                                                                            timeframe=self.trading_timeframe,
                                                                                            min_gap=2)
+                            case "D_TOP_BOTTOM":
+                                trade_direction = self.strategies.get_dtop_dbottom(symbol=symbol, 
+                                                                                   timeframe=self.trading_timeframe)
+                                
                         if trade_direction:
                             is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
                                                                                       trade_direction=trade_direction,
