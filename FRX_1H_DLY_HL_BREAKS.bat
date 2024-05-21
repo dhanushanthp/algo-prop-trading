@@ -8,12 +8,14 @@ set systems=DAILY_HL,DAILY_HL_DOUBLE_HIT
 set strategy=break
 set enable_trail_stop=no
 set enable_breakeven=yes
+set enable_neutralizer=yes
 set start_hour=10
 
 python smart_trader.py ^
     --strategy %strategy% ^
     --enable_trail_stop %enable_trail_stop% ^
     --enable_breakeven %enable_breakeven% ^
+    --enable_neutralizer %enable_neutralizer% ^
     --trades_per_day %trades_per_day% ^
     --num_prev_cdl_for_stop 2 ^
     --each_position_risk %each_position_risk% ^
