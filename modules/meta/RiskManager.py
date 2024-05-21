@@ -475,7 +475,29 @@ class RiskManager:
         """
         If the risk moves more than 50% then take the opposite position
         """
-        pass
+        neutral_positions = []
+        existing_positions = mt5.positions_get()
+        for position in existing_positions:
+            symbol = position.symbol
+            stop_price = position.sl
+            open_price = position.price_open
+            current_price = self.prices.get_entry_price(symbol=symbol)
+
+            match position.type:
+                case 0:
+                    # Long Position
+                    middle_price = open_price - ((open_price - stop_price)/2)
+                    if current_price < middle_price:
+                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT, strategy="NEUTRAL"):
+                            neutral_positions.append((symbol, Directions.SHORT))
+                case 1:
+                    # Short Position
+                    middle_price = open_price + ((stop_price - open_price)/2)
+                    if current_price > middle_price:
+                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG, strategy="NEUTRAL"):
+                            neutral_positions.append((symbol, Directions.LONG))
+
+        return neutral_positions
 
     def check_trade_wait_time(self, symbol):
         """
@@ -562,3 +584,6 @@ if __name__ == "__main__":
 
         case "validity":
             print(obj.check_signal_validity(symbol=test_symbol, trade_direction=Directions.LONG))
+
+        case "neutral":
+            print(obj.neutralizer())
