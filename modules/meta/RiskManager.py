@@ -469,6 +469,13 @@ class RiskManager:
         lots = round(lots, 2)
 
         return points_in_stop, lots
+    
+
+    def neutralizer(self):
+        """
+        If the risk moves more than 50% then take the opposite position
+        """
+        pass
 
     def check_trade_wait_time(self, symbol):
         """
