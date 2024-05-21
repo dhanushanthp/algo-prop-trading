@@ -95,7 +95,7 @@ class Wrapper:
         return pd.DataFrame(candles)
 
 
-    def get_spread(self, symbol) -> float:
+    def get_spread(self, symbol:str) -> float:
         ask_price = mt5.symbol_info_tick(symbol).ask
         bid_price = mt5.symbol_info_tick(symbol).bid
         spread = ask_price - bid_price

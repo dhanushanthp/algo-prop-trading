@@ -49,12 +49,14 @@ class Strategies:
         first_3_bars = previous_bars.head(3)
         last_3_bar = previous_bars.tail(3)
 
+        spread = 2*self.wrapper.get_spread(symbol=symbol)
+
         def is_higher_pivot(data):
             first_bar = data.iloc[0]["high"]
             second_bar = data.iloc[1]["high"]
             third_bar = data.iloc[2]["high"]
 
-            if first_bar < second_bar and second_bar > third_bar:
+            if first_bar < second_bar and second_bar > third_bar and abs(first_bar-second_bar) > spread and abs(second_bar-third_bar) > spread:
                 return True
             
         def is_lower_pivot(data):
@@ -62,7 +64,7 @@ class Strategies:
             second_bar = data.iloc[1]["low"]
             third_bar = data.iloc[2]["low"]
 
-            if first_bar > second_bar and second_bar < third_bar:
+            if first_bar > second_bar and second_bar < third_bar and abs(first_bar-second_bar) > spread and abs(second_bar-third_bar) > spread:
                 return True
         
         double_top = is_higher_pivot(first_3_bars) and is_higher_pivot(last_3_bar)
