@@ -125,7 +125,7 @@ class SmartTrader():
                                                            num_cdl_for_stop=self.num_prev_cdl_for_stop)
                 
             if self.enable_neutralizer:
-                list_of_positions = self.risk_manager.neutralizer()
+                list_of_positions = self.risk_manager.neutralizer(strategy=self.strategy)
                 for symbol, direction in list_of_positions:
                     if self.trade(direction=direction, symbol=symbol, reference="NEUTRAL", break_level=-1):
                         break

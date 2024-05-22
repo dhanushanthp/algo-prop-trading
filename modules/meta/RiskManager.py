@@ -471,7 +471,7 @@ class RiskManager:
         return points_in_stop, lots
     
 
-    def neutralizer(self):
+    def neutralizer(self, strategy:str):
         """
         If the risk moves more than 50% then take the opposite position
         """
@@ -488,13 +488,13 @@ class RiskManager:
                     # Long Position
                     middle_price = open_price - ((open_price - stop_price)/2)
                     if current_price < middle_price:
-                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT, strategy="NEUTRAL"):
+                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT, strategy=strategy):
                             neutral_positions.append((symbol, Directions.SHORT))
                 case 1:
                     # Short Position
                     middle_price = open_price + ((stop_price - open_price)/2)
                     if current_price > middle_price:
-                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG, strategy="NEUTRAL"):
+                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG, strategy=strategy):
                             neutral_positions.append((symbol, Directions.LONG))
 
         return neutral_positions
