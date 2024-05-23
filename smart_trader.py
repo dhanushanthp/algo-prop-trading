@@ -78,9 +78,9 @@ class SmartTrader():
         """
         if direction:
             match self.strategy:
-                case "break":
+                case Directions.BREAK.name:
                     method_name = "long_entry" if direction == Directions.LONG else "short_entry"
-                case "reverse":
+                case Directions.REVERSE.name:
                     method_name = "short_entry" if direction == Directions.LONG else "long_entry"
                 case _:
                     raise Exception("Strategy is not added!")
@@ -123,10 +123,15 @@ class SmartTrader():
                                                            target_multiplier=self.target_ratio, 
                                                            trading_timeframe=self.trading_timeframe,
                                                            num_cdl_for_stop=self.num_prev_cdl_for_stop)
-                
+            
             if self.enable_neutralizer:
-                list_of_positions = self.risk_manager.neutralizer(strategy=self.strategy)
+                list_of_positions = self.risk_manager.neutralizer()
                 for symbol, direction in list_of_positions:
+
+                    # This helps to neutralize the reverse option while trading, It's like we take squared for us to to the squreroot
+                    if self.strategy==Directions.REVERSE.name:
+                        direction = Directions.LONG if direction == Directions.SHORT else Directions.SHORT
+
                     if self.trade(direction=direction, symbol=symbol, reference="NEUTRAL", break_level=-1):
                         break
             

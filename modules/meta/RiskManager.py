@@ -58,7 +58,7 @@ class RiskManager:
     
     def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str):
 
-        if strategy=="reverse":
+        if strategy==Directions.REVERSE.name:
             trade_direction = Directions.LONG if trade_direction == Directions.SHORT else Directions.SHORT
         
         # Check does this already has trades on same direction, Load Passed Data
@@ -471,7 +471,7 @@ class RiskManager:
         return points_in_stop, lots
     
 
-    def neutralizer(self, strategy:str):
+    def neutralizer(self):
         """
         If the risk moves more than 50% then take the opposite position
         """
@@ -488,13 +488,13 @@ class RiskManager:
                     # Long Position
                     middle_price = open_price - ((open_price - stop_price)/2)
                     if current_price < middle_price:
-                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT, strategy=strategy):
+                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT, strategy=None):
                             neutral_positions.append((symbol, Directions.SHORT))
                 case 1:
                     # Short Position
                     middle_price = open_price + ((stop_price - open_price)/2)
                     if current_price > middle_price:
-                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG, strategy=strategy):
+                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG, strategy=None):
                             neutral_positions.append((symbol, Directions.LONG))
 
         return neutral_positions
