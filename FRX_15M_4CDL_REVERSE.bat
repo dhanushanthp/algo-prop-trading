@@ -2,12 +2,12 @@ set timeframe=15
 set account_risk=1.0
 set each_position_risk=0.1
 set trades_per_day=15
-set target_ratio=10.0
+set target_ratio=4.0
 set security=FOREX
 set systems=4CDL_REV_EXT
 set strategy=REVERSE
 set enable_trail_stop=no
-set enable_breakeven=yes
+set enable_breakeven=no
 set enable_neutralizer=yes
 set start_hour=4
 
