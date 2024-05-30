@@ -49,6 +49,7 @@ class SmartTrader():
         
         self.systems:list = None
         self.strategy:str = None
+        self.immidiate_exit = False
         
         # Account information
         self.account_name = self.account.get_account_name()
@@ -117,6 +118,21 @@ class SmartTrader():
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
 
             self.orders.cancel_all_pending_orders()
+
+            # Early Exit
+            if rr > 1 and not self.immidiate_exit:
+                self.immidiate_exit = True
+                self.orders.close_all_positions()
+                self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ({round(pnl, 2)})  {round(rr, 2)}")
+
+                # Reset account size for next day
+                self.risk_manager = RiskManager(account_risk=account_risk, 
+                                                position_risk=each_position_risk, 
+                                                stop_ratio=self.stop_ratio, 
+                                                target_ratio=self.target_ratio)
+                
+                self.fixed_initial_account_size = self.risk_manager.account_size
+                self.sent_result = False # Once sent, Disable
             
             # Each position trail stop
             if self.trail_stop:
@@ -158,8 +174,9 @@ class SmartTrader():
                 
                 self.fixed_initial_account_size = self.risk_manager.account_size
                 self.sent_result = False # Once sent, Disable
+                self.immidiate_exit = False # Reset the Immidiate exit
             
-            if is_market_open \
+            if is_market_open and (not self.immidiate_exit) \
                   and (not is_market_close) \
                     and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
                 
