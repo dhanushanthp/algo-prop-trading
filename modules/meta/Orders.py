@@ -84,6 +84,7 @@ class Orders:
             trading_timeframe (int): The timeframe for trading.
             num_cdl_for_stop (int, optional): Number of candles for determining stop. Defaults to 2.
             multiplier (float, optional): Multiplier for stop range calculation. Defaults to 1.
+            market_entry (bo0=ol, optional): Entry the trade with market price. Defaults to False.
 
         Returns:
             bool: True if the entry is successfully executed, False otherwise.
@@ -207,6 +208,7 @@ class Orders:
             trading_timeframe (int): The timeframe for trading.
             num_cdl_for_stop (int, optional): Number of candles for determining stop. Defaults to 2.
             multiplier (float, optional): Multiplier the for stop range calculation. Defaults to 1.
+            market_entry (bo0=ol, optional): Entry the trade with market price. Defaults to False
 
         Returns:
             bool: True if the entry is successfully executed, False otherwise.
