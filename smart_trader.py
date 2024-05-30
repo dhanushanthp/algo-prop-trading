@@ -19,8 +19,8 @@ class SmartTrader():
     def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, 
                  each_position_risk:float=0.1, target_ratio:float=2.0, 
                  trades_per_day:int=5, num_prev_cdl_for_stop:int=2,
-                 enable_trail_stop:bool=False, enable_breakeven:bool=False, enable_neutralizer:bool=False,
-                 start_hour:int=10):
+                 enable_trail_stop:bool=False, enable_breakeven:bool=False, enable_neutralizer:bool=False, 
+                 limit_profit_loss:bool=False, start_hour:int=10):
         
         # Default values
         self.target_ratio = target_ratio  # Default 1:2.0 Ratio
@@ -63,6 +63,7 @@ class SmartTrader():
         self.trail_stop = enable_trail_stop
         self.enable_breakeven = enable_breakeven
         self.enable_neutralizer = enable_neutralizer
+        self.limit_profit_loss = limit_profit_loss
         self.sent_result:bool = True
 
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
@@ -120,7 +121,7 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if rr > 1 and not self.immidiate_exit:
+            if self.limit_profit_loss and (rr > 1 or rr <= -1) and not self.immidiate_exit:
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
                 self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ({round(pnl, 2)})  {round(rr, 2)}")
@@ -246,7 +247,9 @@ if __name__ == "__main__":
     parser.add_argument('--enable_trail_stop', type=str, help='Enable Trail stop')
     parser.add_argument('--enable_breakeven', type=str, help='Enable breakeven')
     parser.add_argument('--enable_neutralizer', type=str, help='Enable neutralizer')
+    parser.add_argument('--limit_profit_loss', type=str, help='Enable Early Profit')
     parser.add_argument('--start_hour', type=int, help='Start Hour Of Trading')
+    
     
     args = parser.parse_args()
     
@@ -261,12 +264,14 @@ if __name__ == "__main__":
     enable_breakeven = util.boolean(args.enable_breakeven)
     enable_neutralizer = util.boolean(args.enable_neutralizer)
     start_hour = int(args.start_hour)
+    limit_profit_loss = util.boolean(args.limit_profit_loss)
 
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
-                      enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, start_hour=start_hour)
+                      enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer,limit_profit_loss=limit_profit_loss,
+                      start_hour=start_hour)
     
     # On the system, Are we taking break or reverse
     win.strategy = args.strategy

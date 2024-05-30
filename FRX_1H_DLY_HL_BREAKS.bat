@@ -9,6 +9,7 @@ set strategy=BREAK
 set enable_trail_stop=no
 set enable_breakeven=yes
 set enable_neutralizer=yes
+set limit_profit_loss=yes
 set start_hour=4
 
 python smart_trader.py ^
@@ -16,6 +17,7 @@ python smart_trader.py ^
     --enable_trail_stop %enable_trail_stop% ^
     --enable_breakeven %enable_breakeven% ^
     --enable_neutralizer %enable_neutralizer% ^
+    --limit_profit_loss %limit_profit_loss% ^
     --trades_per_day %trades_per_day% ^
     --num_prev_cdl_for_stop 2 ^
     --each_position_risk %each_position_risk% ^
