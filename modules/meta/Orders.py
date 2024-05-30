@@ -72,7 +72,7 @@ class Orders:
                 print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
     
 
-    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1) -> bool:
+    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False) -> bool:
         """
         Executes a long entry based on given parameters.
 
@@ -88,7 +88,11 @@ class Orders:
         Returns:
             bool: True if the entry is successfully executed, False otherwise.
         """
-        entry_price = self.prices.get_entry_price(symbol=symbol)
+        if market_entry:
+            # Immidiate entry on ASK price
+            _, entry_price = self.prices.get_bid_ask(symbol=symbol)
+        else:
+            entry_price = self.prices.get_entry_price(symbol=symbol)
 
         # If the latest base is not loaded, then it trades based on wrong signal
         _,hour,_ = util.get_current_day_hour_min()
@@ -191,7 +195,7 @@ class Orders:
                     print(f"{symbol.ljust(12)}: {e}")
     
 
-    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1) -> bool:
+    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False) -> bool:
         """
         Executes a short entry based on given parameters.
 
@@ -207,7 +211,11 @@ class Orders:
         Returns:
             bool: True if the entry is successfully executed, False otherwise.
         """
-        entry_price = self.prices.get_entry_price(symbol)
+        if market_entry:
+            # Immidiate entry on BID price
+            entry_price, _ = self.prices.get_bid_ask(symbol=symbol)
+        else:
+            entry_price = self.prices.get_entry_price(symbol=symbol)
 
         # If the latest base is not loaded, then it trades based on wrong signal
         _,hour,_ = util.get_current_day_hour_min()

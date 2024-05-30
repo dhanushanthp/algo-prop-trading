@@ -11,6 +11,27 @@ class Prices:
         return exchange_rate
 
     def get_bid_ask(self, symbol) -> Tuple[float, float]:
+        """
+        Retrieve the current bid and ask prices for a given financial instrument symbol.
+
+        This function uses the MetaTrader 5 API to fetch the latest tick information for the specified symbol,
+        extracting the bid and ask prices.
+
+        Parameters:
+        symbol (str): The financial instrument symbol for which to retrieve the bid and ask prices.
+
+        Returns:
+        tuple: A tuple containing two floats:
+            - bid_price (float): The current bid price of the symbol.
+            - ask_price (float): The current ask price of the symbol.
+
+        Example:
+        >>> bid_price, ask_price = get_bid_ask_price('EURUSD')
+        >>> print(f"Bid Price: {bid_price}, Ask Price: {ask_price}")
+
+        Raises:
+        ValueError: If the symbol information could not be retrieved.
+        """
         ask_price = mt5.symbol_info_tick(symbol).ask
         bid_price = mt5.symbol_info_tick(symbol).bid
         return bid_price, ask_price
