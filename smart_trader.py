@@ -72,7 +72,7 @@ class SmartTrader():
         curr.ticker_initiator(security=security)
 
 
-    def trade(self, direction:Directions, symbol:str, reference:str, break_level:float) -> bool:
+    def trade(self, direction:Directions, symbol:str, reference:str, break_level:float, market_entry:bool=False) -> bool:
         """
         This will take the trade based on given strategy
         """
@@ -92,7 +92,8 @@ class SmartTrader():
                                 reference=f"{reference}", 
                                 break_level=break_level, 
                                 trading_timeframe=self.trading_timeframe,
-                                num_cdl_for_stop=self.num_prev_cdl_for_stop)
+                                num_cdl_for_stop=self.num_prev_cdl_for_stop,
+                                market_entry=market_entry)
                 return status
         else:
             raise Exception("Direction for Order is not defined!")
@@ -132,7 +133,7 @@ class SmartTrader():
                     if self.strategy==Directions.REVERSE.name:
                         direction = Directions.LONG if direction == Directions.SHORT else Directions.SHORT
 
-                    if self.trade(direction=direction, symbol=symbol, reference="NEUTRAL", break_level=-1):
+                    if self.trade(direction=direction, symbol=symbol, reference="NEUTRAL", break_level=-1, market_entry=True):
                         break
             
             if self.enable_breakeven:
