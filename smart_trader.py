@@ -26,19 +26,19 @@ class SmartTrader():
         self.sent_result:bool = True
             
         # Default values
-        self.target_ratio = float(kwargs["target_ratio"])  # Default 1:2.0 Ratio
-        self.security:str = str(kwargs["security"])
-        self.account_risk = float(kwargs["account_risk"])
-        self.each_position_risk = float(kwargs["each_position_risk"])
-        self.trading_timeframe = int(kwargs["trading_timeframe"])
-        self.trades_per_day = int(kwargs["trades_per_day"])
-        self.enable_trail_stop = bool(kwargs["enable_trail_stop"])
-        self.enable_breakeven = bool(kwargs["enable_breakeven"])
-        self.enable_neutralizer = bool(kwargs["enable_neutralizer"])
-        self.limit_profit_loss = bool(kwargs["limit_profit_loss"])
+        self.target_ratio = kwargs["target_ratio"]  # Default 1:2.0 Ratio
+        self.security = kwargs["security"]
+        self.account_risk = kwargs["account_risk"]
+        self.each_position_risk = kwargs["each_position_risk"]
+        self.trading_timeframe = kwargs["trading_timeframe"]
+        self.trades_per_day = kwargs["trades_per_day"]
+        self.enable_trail_stop = kwargs["enable_trail_stop"]
+        self.enable_breakeven = kwargs["enable_breakeven"]
+        self.enable_neutralizer = kwargs["enable_neutralizer"]
+        self.limit_profit_loss = kwargs["limit_profit_loss"]
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
-        self.num_prev_cdl_for_stop = int(kwargs["num_prev_cdl_for_stop"]) 
-        self.start_hour = int(kwargs["start_hour"])
+        self.num_prev_cdl_for_stop = kwargs["num_prev_cdl_for_stop"]
+        self.start_hour = kwargs["start_hour"]
 
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -113,7 +113,7 @@ class SmartTrader():
             if self.limit_profit_loss and (rr <= -1 or rr > 1) and (not self.immidiate_exit):
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
-                self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ({round(pnl, 2)})  {round(rr, 2)}")
+                self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(pnl, 2)})  {round(rr, 2)}")
 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=account_risk, 
@@ -154,7 +154,7 @@ class SmartTrader():
                 
                 # Update the result in Slack
                 if self.sent_result:
-                    self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ({round(pnl, 2)})  {round(rr, 2)}")
+                    self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(pnl, 2)})  {round(rr, 2)}")
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=account_risk, 
