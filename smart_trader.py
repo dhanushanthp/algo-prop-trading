@@ -16,40 +16,42 @@ from modules.meta.wrapper import Wrapper
 from modules.meta.Strategies import Strategies
 
 class SmartTrader():
-    def __init__(self, security:str, trading_timeframe:int, account_risk:float=1, 
-                 each_position_risk:float=0.1, target_ratio:float=2.0, 
-                 trades_per_day:int=5, num_prev_cdl_for_stop:int=2,
-                 enable_trail_stop:bool=False, enable_breakeven:bool=False, enable_neutralizer:bool=False, 
-                 limit_profit_loss:bool=False, start_hour:int=10):
-        
-        # Default values
-        self.target_ratio = target_ratio  # Default 1:2.0 Ratio
-        self.stop_ratio = 1.0
+    def __init__(self, **kwargs):
         self.timer = 30
         self.retries = 0
-        self.security:str = security
-
-        # External dependencies
-        self.risk_manager = RiskManager(account_risk=account_risk, 
-                                        position_risk=each_position_risk, 
-                                        stop_ratio=self.stop_ratio, 
-                                        target_ratio=self.target_ratio)
-        self.prices = Prices()
-        self.wrapper = Wrapper()
-
-        self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
-
-        self.strategies = Strategies(wrapper=self.wrapper, indicators=self.indicators)
-
-        self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager,
-                             wrapper = self.wrapper)
-        
-        self.alert = Slack()
-        self.account = Account()
-        
+        self.stop_ratio = 1.0
         self.systems:list = None
         self.strategy:str = None
         self.immidiate_exit = False
+        self.sent_result:bool = True
+            
+        # Default values
+        self.target_ratio = float(kwargs["target_ratio"])  # Default 1:2.0 Ratio
+        self.security:str = str(kwargs["security"])
+        self.account_risk = float(kwargs["account_risk"])
+        self.each_position_risk = float(kwargs["each_position_risk"])
+        self.trading_timeframe = int(kwargs["trading_timeframe"])
+        self.trades_per_day = int(kwargs["trades_per_day"])
+        self.enable_trail_stop = bool(kwargs["enable_trail_stop"])
+        self.enable_breakeven = bool(kwargs["enable_breakeven"])
+        self.enable_neutralizer = bool(kwargs["enable_neutralizer"])
+        self.limit_profit_loss = bool(kwargs["limit_profit_loss"])
+        # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
+        self.num_prev_cdl_for_stop = int(kwargs["num_prev_cdl_for_stop"]) 
+        self.start_hour = int(kwargs["start_hour"])
+
+        # External dependencies
+        self.risk_manager = RiskManager(account_risk=self.account_risk, 
+                                        position_risk=self.each_position_risk, 
+                                        stop_ratio=self.stop_ratio, 
+                                        target_ratio=self.target_ratio)
+        self.alert = Slack()
+        self.prices = Prices()
+        self.wrapper = Wrapper()
+        self.account = Account()
+        self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
+        self.strategies = Strategies(wrapper=self.wrapper, indicators=self.indicators)
+        self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager, wrapper = self.wrapper)
         
         # Account information
         self.account_name = self.account.get_account_name()
@@ -57,21 +59,8 @@ class SmartTrader():
         # Expected reward for the day
         self.fixed_initial_account_size = self.risk_manager.account_size
 
-        # Default
-        self.trading_timeframe = trading_timeframe
-        self.trades_per_day = trades_per_day
-        self.trail_stop = enable_trail_stop
-        self.enable_breakeven = enable_breakeven
-        self.enable_neutralizer = enable_neutralizer
-        self.limit_profit_loss = limit_profit_loss
-        self.sent_result:bool = True
-
-        # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
-        self.num_prev_cdl_for_stop = num_prev_cdl_for_stop
-        self.start_hour = start_hour
-
         # Initiate the ticker
-        curr.ticker_initiator(security=security)
+        curr.ticker_initiator(security=self.security)
 
 
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float, market_entry:bool=False) -> bool:
@@ -136,7 +125,7 @@ class SmartTrader():
                 self.sent_result = False # Once sent, Disable
             
             # Each position trail stop
-            if self.trail_stop:
+            if self.enable_trail_stop:
                 self.risk_manager.trailing_stop_and_target(stop_multiplier=self.stop_ratio, 
                                                            target_multiplier=self.target_ratio, 
                                                            trading_timeframe=self.trading_timeframe,
