@@ -121,7 +121,7 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if self.limit_profit_loss and (rr > 1 or rr <= -1) and not self.immidiate_exit:
+            if self.limit_profit_loss and (rr <= -1) and (not self.immidiate_exit):
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
                 self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ({round(pnl, 2)})  {round(rr, 2)}")
