@@ -183,11 +183,11 @@ class SmartTrader():
                                 trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
                                                                                           timeframe=self.trading_timeframe)
                             
-                            case "4CDL_REV":
+                            case "4CDL_PULLBACK":
                                 trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
                                                                                           timeframe=self.trading_timeframe)
                             
-                            case "4CDL_REV_EXT":
+                            case "4CDL_PULLBACK_EXT":
                                 trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
                                                                                           timeframe=self.trading_timeframe,
                                                                                           extrame=True)
