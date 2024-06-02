@@ -87,6 +87,7 @@ class Strategies:
             self: Instance of the class.
             symbol (str): Symbol for which the analysis is conducted.
             timeframe (int, optional): Timeframe for candlestick data. Defaults to 60.
+            extrame (bool, optional): Flag to determine the type of extreme check to perform on the pattern. Defaults to False.
 
         Returns:
             Directions or None: The predicted direction (Directions.LONG or Directions.SHORT) based on the candlestick pattern analysis,
@@ -96,6 +97,26 @@ class Strategies:
         It retrieves two consecutive three-candle patterns and compares them to determine the directional change.
         The function returns the predicted direction based on the analysis, or None if no significant pattern is found.
 
+        The analysis involves:
+        - Retrieving the three-candle strike pattern using `get_three_candle_strike`.
+        - Comparing the previous two candles to determine if a significant pattern exists.
+        - Checking if the most recent candle is solid using `is_solid_candle`.
+        - Evaluating the direction of the previous candle to decide the direction based on conditions:
+            - If `three_cdl_strike` is LONG and the previous candle direction is SHORT, and either:
+                - The close of the previous candle is below the low of the candle before it (if `extrame` is False), or
+                - The low of the previous candle is below the low of the candle before it (if `extrame` is True).
+            - If `three_cdl_strike` is SHORT and the previous candle direction is LONG, and either:
+                - The close of the previous candle is above the high of the candle before it (if `extrame` is False), or
+                - The high of the previous candle is above the high of the candle before it (if `extrame` is True).
+
+        Example:
+            direction = self.get_four_candle_pullback(symbol="AAPL", timeframe=60, extrame=True)
+            if direction == Directions.LONG:
+                print("Predicted direction: LONG")
+            elif direction == Directions.SHORT:
+                print("Predicted direction: SHORT")
+            else:
+                print("No significant pattern detected.")
         """
         three_cdl_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=2)
         
