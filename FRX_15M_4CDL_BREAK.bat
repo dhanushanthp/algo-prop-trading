@@ -1,7 +1,7 @@
 set timeframe=15
 set account_risk=1.0
 set each_position_risk=0.1
-set trades_per_day=15
+set trades_per_day=100
 set target_ratio=10.0
 set security=FOREX
 set systems=4CDL_PULLBACK_EXT
