@@ -25,12 +25,14 @@ class SmartTrader():
         self.strategy:str = None
         self.immidiate_exit = False
         self.sent_result:bool = True
+
+        # Key Arguments
+        self.account_risk = kwargs["account_risk"]
+        self.each_position_risk = kwargs["each_position_risk"]
             
         # Default values
         self.target_ratio = kwargs["target_ratio"]  # Default 1:2.0 Ratio
         self.security = kwargs["security"]
-        self.account_risk = kwargs["account_risk"]
-        self.each_position_risk = kwargs["each_position_risk"]
         self.trading_timeframe = kwargs["trading_timeframe"]
         self.trades_per_day = kwargs["trades_per_day"]
         self.enable_trail_stop = kwargs["enable_trail_stop"]
