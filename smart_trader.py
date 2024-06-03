@@ -102,7 +102,7 @@ class SmartTrader():
             equity = self.account.get_equity()
             rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
             pnl = (equity - self.risk_manager.account_size)
-            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage*self.trades_per_day}%")
+            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
