@@ -8,6 +8,7 @@ import modules.meta.Currencies as curr
 from modules.meta.RiskManager import RiskManager
 from modules.common.slack_msg import Slack
 from modules.common.Directions import Directions
+from modules.common import files_util
 from modules.meta.Prices import Prices
 from modules.meta.Orders import Orders
 from modules.meta.Account import Account
@@ -115,9 +116,12 @@ class SmartTrader():
                 self.orders.close_all_positions()
                 self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(pnl, 2)})  {round(rr, 2)}")
 
+                # Write the pnl to a file
+                files_util.update_pnl(pnl=pnl, rr=rr, each_pos_percentage=self.each_position_risk)
+                
                 # Reset account size for next day
-                self.risk_manager = RiskManager(account_risk=account_risk, 
-                                                position_risk=each_position_risk, 
+                self.risk_manager = RiskManager(account_risk=self.account_risk, 
+                                                position_risk=self.each_position_risk, 
                                                 stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio)
                 
