@@ -27,5 +27,22 @@ def update_pnl(pnl:float, rr:float, each_pos_percentage:float):
 
 # update_pnl(100, 1.2, 0.1)
 
+def get_most_risk_percentage():
+    df = pd.read_csv("trade_tracker.csv")
+    df = df.tail(2).copy()
+    
+    # If the last trade is loss then reduce the risk by 0.05%
+    if df["rr"].iloc[-1] < 0:
+        return round(max(float(df["risk_percentage"].iloc[-1]) - 0.05, 0.1), 2)
 
+    # If we have 2 continues wins then increase the risk by 0.05
+    if len(df) >= 2:
+        same_risk = df["risk_percentage"].nunique() == 1
+        if same_risk:
+            if all(df["rr"] > 1):
+                return round(min(float(df["risk_percentage"].unique()[-1]) + 0.05, 0.35), 2)
+    
+    return df["risk_percentage"].iloc[-1]
+        
 
+# print(get_most_risk_percentage())
