@@ -61,7 +61,6 @@ class SmartTrader():
 
         # Expected reward for the day
         self.closed_pnl = self.wrapper.get_closed_pnl() # Only when starting the process first time
-        self.fixed_initial_account_size = self.risk_manager.account_size - self.closed_pnl
 
         # Initiate the ticker
         curr.ticker_initiator(security=self.security)
@@ -104,7 +103,8 @@ class SmartTrader():
                 is_market_close = not util.is_us_activemarket_peroid()
 
             equity = self.account.get_equity()
-            PnL = (equity - self.fixed_initial_account_size)
+            # Incorparate the closes positions PnLs
+            PnL = (equity - self.risk_manager.account_size + self.closed_pnl)
             rr = PnL/self.risk_manager.risk_of_an_account
 
             print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
@@ -129,8 +129,6 @@ class SmartTrader():
                                                 stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio)
                 
-                self.fixed_initial_account_size = self.risk_manager.account_size
-                self.closed_pnl = 0
                 self.sent_result = False # Once sent, Disable
             
             # Each position trail stop
@@ -170,9 +168,7 @@ class SmartTrader():
                                                 position_risk=each_position_risk, 
                                                 stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio)
-                
-                self.fixed_initial_account_size = self.risk_manager.account_size
-                self.closed_pnl = 0
+
                 self.sent_result = False # Once sent, Disable
                 self.immidiate_exit = False # Reset the Immidiate exit
             
