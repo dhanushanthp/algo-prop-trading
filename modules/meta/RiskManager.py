@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, time
 import modules.config as config
 import MetaTrader5 as mt5
 import pytz
-import modules.common.slack_msg as slack_msg
+from modules.common.slack_msg import Slack
 import modules.meta.util as util
 from modules.meta.Prices import Prices
 from typing import Tuple, List
@@ -18,23 +18,23 @@ mt5.initialize()
 class RiskManager:
     def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1, position_risk:float=0.5) -> None:
         self.account = Account()
-        ACCOUNT_SIZE = self.account.get_liquid_balance()
-        self.account_size  = ACCOUNT_SIZE
+        self.wrapper = Wrapper()
+        self.prices = Prices()
+        self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
+        self.alert = Slack()
+        self.account_size = self.account.get_liquid_balance() - self.wrapper.get_closed_pnl()
         self.account_risk_percentage = account_risk
         self.position_risk_percentage = position_risk
-        self.risk_of_an_account = round(ACCOUNT_SIZE/100*self.account_risk_percentage)
-        self.risk_of_a_position = round(ACCOUNT_SIZE/100*self.position_risk_percentage)
-        self.alert = slack_msg.Slack()
-        self.max_account_risk = round(ACCOUNT_SIZE/100)
-        self.partial_profit = round(ACCOUNT_SIZE/1000)
-        self.prices = Prices()
+        self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
+        self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)
+        self.max_account_risk = round(self.account_size/100)
+        self.partial_profit = round(self.account_size/1000)
         self.stop_ratio = stop_ratio
         self.target_ratio = target_ratio
-        self.wrapper = Wrapper()
-        self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
+        
 
         # Initial Trail loss w.r.t to account size
-        self.account_trail_loss = ACCOUNT_SIZE - self.risk_of_an_account
+        self.account_trail_loss = self.account_size - self.risk_of_an_account
         self.account_name = self.account.get_account_name()      
     
     def get_max_loss(self):

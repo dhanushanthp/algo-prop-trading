@@ -103,8 +103,8 @@ class SmartTrader():
                 is_market_close = not util.is_us_activemarket_peroid()
 
             equity = self.account.get_equity()
-            # Incorparate the closes positions PnLs
-            PnL = (equity - self.risk_manager.account_size + self.closed_pnl)
+
+            PnL = (equity - self.risk_manager.account_size)
             rr = PnL/self.risk_manager.risk_of_an_account
 
             print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
