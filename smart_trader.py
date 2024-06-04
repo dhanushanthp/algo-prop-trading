@@ -141,7 +141,7 @@ class SmartTrader():
                                                            num_cdl_for_stop=self.num_prev_cdl_for_stop)
             
             if self.enable_neutralizer:
-                list_of_positions = self.risk_manager.neutralizer(enable_ratio=0.7)
+                list_of_positions = self.risk_manager.neutralizer(enable_ratio=0.6)
                 for symbol, direction in list_of_positions:
 
                     # This helps to neutralize the reverse option while trading, It's like we take squared for us to to the squreroot
