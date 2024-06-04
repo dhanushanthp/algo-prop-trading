@@ -25,7 +25,7 @@ def update_pnl(file_name:str, pnl:float, rr:float, each_pos_percentage:float):
     appends a new row with the current date, pnl, rr, and each_pos_percentage values, 
     and writes the updated data back to 'trade_tracker.csv'.
     """
-    file_name = f"trade_tracker_{file_name}.csv"
+    file_name = f"data/trade_tracker_{file_name}.csv"
     
     current_date_str = datetime.now().strftime("%Y-%m-%d")
     
@@ -63,7 +63,7 @@ def get_most_risk_percentage(file_name:str):
     Returns:
         float: The adjusted risk percentage rounded to two decimal places.
     """
-    file_name = f"trade_tracker_{file_name}.csv"
+    file_name = f"data/trade_tracker_{file_name}.csv"
     
     if check_file_exists(file_path=file_name):
         df = pd.read_csv(file_name)

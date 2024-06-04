@@ -211,7 +211,7 @@ def is_c_pair_active(currency_pair):
 
 def get_maket_events() -> dict:
     today = get_current_time().strftime("%Y/%m/%d")
-    data = pd.read_csv("market_data.csv")
+    data = pd.read_csv("data/market_data.csv")
     today_events = data[data["date"] == today]
     today_events = today_events.groupby(["hour"])["symbol"].agg(list).reset_index()
     mapping = dict(zip(today_events["hour"], today_events["symbol"]))
