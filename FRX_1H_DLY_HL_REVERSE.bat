@@ -1,16 +1,17 @@
 set timeframe=60
 set account_risk=1.0
 set each_position_risk=0.1
-set trades_per_day=15
+set trades_per_day=100
 set target_ratio=10.0
 set security=FOREX
 set systems=DAILY_HL,DAILY_HL_DOUBLE_HIT
 set strategy=REVERSE
 set enable_trail_stop=no
-set enable_breakeven=yes
+set enable_breakeven=no
 set enable_neutralizer=yes
 set limit_profit_loss=yes
 set start_hour=4
+set enable_dynamic_position_risk=yes
 
 python smart_trader.py ^
     --strategy %strategy% ^
@@ -26,4 +27,5 @@ python smart_trader.py ^
     --timeframe %timeframe% ^
     --account_risk %account_risk% ^
     --start_hour %start_hour% ^
+    --enable_dynamic_position_risk %enable_dynamic_position_risk% ^
     --target_ratio %target_ratio%
