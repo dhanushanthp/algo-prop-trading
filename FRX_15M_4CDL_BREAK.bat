@@ -1,7 +1,6 @@
 set timeframe=15
-REM account_risk is not active
 set account_risk=1.0
-set each_position_risk=0.2
+set each_position_risk=0.1
 set trades_per_day=100
 set target_ratio=10.0
 set security=FOREX

@@ -12,19 +12,20 @@ from modules.meta.Account import Account
 from modules.meta.Indicators import Indicators
 from modules.meta.wrapper import Wrapper
 from modules.common.Directions import Directions
+from modules.common import files_util
 
 mt5.initialize()
 
 class RiskManager:
-    def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1, position_risk:float=0.5) -> None:
+    def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1, position_risk:float=0.5, dynamic:bool=False) -> None:
         self.account = Account()
         self.wrapper = Wrapper()
         self.prices = Prices()
         self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
         self.alert = Slack()
         self.account_size = self.account.get_liquid_balance() - self.wrapper.get_closed_pnl()
-        self.account_risk_percentage = account_risk
-        self.position_risk_percentage = position_risk
+        self.position_risk_percentage = files_util.get_most_risk_percentage() if dynamic else position_risk
+        self.account_risk_percentage = self.position_risk_percentage * 10 if dynamic else account_risk
         self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
         self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)
         self.max_account_risk = round(self.account_size/100)
