@@ -104,12 +104,12 @@ class SmartTrader():
                 is_market_close = not util.is_us_activemarket_peroid()
 
             equity = self.account.get_equity()
+            PnL = (equity - self.fixed_initial_account_size)
+            rr = PnL/self.risk_manager.risk_of_an_account
 
-            rr = (equity - self.fixed_initial_account_size)/self.risk_manager.risk_of_an_account
-            pnl = (equity - self.risk_manager.account_size + self.closed_pnl)
             print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
-            print(f"{'PnL'.ljust(20)}: ${round(pnl, 2)}")
+            print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
 
             self.orders.cancel_all_pending_orders()
@@ -118,10 +118,10 @@ class SmartTrader():
             if self.limit_profit_loss and (rr <= -1 or rr > 1) and (not self.immidiate_exit):
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
-                self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(pnl, 2)})  {round(rr, 2)}")
+                self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
 
                 # Write the pnl to a file
-                files_util.update_pnl(pnl=pnl, rr=rr, each_pos_percentage=self.each_position_risk)
+                files_util.update_pnl(pnl=PnL, rr=rr, each_pos_percentage=self.each_position_risk)
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -163,7 +163,7 @@ class SmartTrader():
                 
                 # Update the result in Slack
                 if self.sent_result:
-                    self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(pnl, 2)})  {round(rr, 2)}")
+                    self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=account_risk, 
