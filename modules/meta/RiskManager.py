@@ -24,7 +24,7 @@ class RiskManager:
         self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
         self.alert = Slack()
         self.account_size = self.account.get_liquid_balance() - self.wrapper.get_closed_pnl()
-        self.position_risk_percentage = files_util.get_most_risk_percentage() if dynamic else position_risk
+        self.position_risk_percentage = files_util.get_most_risk_percentage(file_name=util.get_server_ip()) if dynamic else position_risk
         self.account_risk_percentage = self.position_risk_percentage * 10 if dynamic else account_risk
         self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
         self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)

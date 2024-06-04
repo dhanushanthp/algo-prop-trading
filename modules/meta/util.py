@@ -84,6 +84,9 @@ def get_account_name():
     balance = round(info.balance/1000)
     return f"{info.name} {balance}K "
 
+def get_server_ip():
+    return config.local_ip
+
 def get_us_time()-> datetime:
     current_time =  datetime.now(pytz.timezone("US/Eastern"))
     return current_time
