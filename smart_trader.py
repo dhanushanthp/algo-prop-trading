@@ -165,6 +165,9 @@ class SmartTrader():
                 # Update the result in Slack
                 if self.sent_result:
                     self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
+                    
+                    # Write the pnl to a file
+                    files_util.update_pnl(file_name=util.get_server_ip() ,pnl=PnL, rr=rr, each_pos_percentage=self.each_position_risk)
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=account_risk, 
