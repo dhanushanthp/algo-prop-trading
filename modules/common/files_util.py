@@ -20,7 +20,7 @@ def update_pnl(pnl:float, rr:float, each_pos_percentage:float):
 
     current_date_str = datetime.now().strftime("%Y-%m-%d")
     df = pd.read_csv("trade_tracker.csv")
-    data = {"date":current_date_str, "pnl": pnl, "rr":rr, "risk_percentage":each_pos_percentage}
+    data = {"date":current_date_str, "pnl": round(pnl, 2), "rr":round(rr, 2), "risk_percentage":each_pos_percentage}
     new_df = pd.DataFrame([data], columns=df.columns)
     df = pd.concat([df, new_df], ignore_index=True)
     df.to_csv("trade_tracker.csv", index=False)
