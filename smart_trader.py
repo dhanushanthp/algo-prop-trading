@@ -18,7 +18,7 @@ from modules.meta.Strategies import Strategies
 
 class SmartTrader():
     def __init__(self, **kwargs):
-        self.timer = 30
+        self.timer = 15 # In Seconds
         self.retries = 0
         self.stop_ratio = 1.0
         self.systems:list = None
