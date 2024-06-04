@@ -489,6 +489,27 @@ class Wrapper:
         possible_addtional_entries = already_traded_today + parallel_positions - total_positions_used
 
         return possible_addtional_entries
+    
+    def get_closed_pnl(self) -> float:
+        """
+        Calculate the closed profit and loss (PnL) for the current day.
+
+        This function retrieves today's trades and calculates the total 
+        profit and loss including commissions. If there are no trades 
+        for today, it returns 0.0.
+
+        Returns:
+            float: The total closed PnL for today. This is the sum of all 
+                profits and losses from today's trades plus the sum of 
+                all commissions. If there are no trades today, returns 0.0.
+        """
+        today_trades = self.get_todays_trades()
+        if not today_trades.empty:
+            total_pnl = sum(today_trades["profit"])
+            commision = sum(today_trades["commission"])
+            return total_pnl + commision
+
+        return 0.0
         
 
     def get_heikin_ashi(self, symbol, timeframe):
@@ -546,6 +567,7 @@ if "__main__" == __name__:
     # print(obj.candle_i_body(symbol=symbol, timeframe=60, candle_index=int(index)))
     # print(obj.get_weekly_candles(symbol=symbol, timeframe=240, most_latest_candle=0))
     # print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
-    print(obj.get_latest_bar_hour(symbol=symbol, timeframe=index))
+    # print(obj.get_latest_bar_hour(symbol=symbol, timeframe=index))
+    print(obj.get_closed_pnl())
     
 
