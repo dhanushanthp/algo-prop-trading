@@ -473,7 +473,33 @@ class RiskManager:
 
     def neutralizer(self, enable_ratio:float=0.5):
         """
-        If the risk moves more than 50% then take the opposite position
+        Evaluates existing trading positions and identifies positions to neutralize based on the given risk threshold.
+
+        This function checks the current price of each open position against a dynamically calculated middle price.
+        If the current price moves beyond the threshold determined by `enable_ratio`, it suggests taking the opposite
+        position to neutralize the risk.
+
+        Parameters:
+        - enable_ratio (float): The ratio used to determine the threshold for neutralizing positions. Defaults to 0.5.
+
+        Returns:
+        - neutral_positions (list): A list of tuples containing symbols and directions for positions to be neutralized.
+
+        The function performs the following steps:
+        1. Retrieves existing positions using `mt5.positions_get()`.
+        2. Iterates over each position to determine its symbol, stop loss price, open price, and current price.
+        3. For long positions:
+            - Calculates the middle price where risk is assessed.
+            - Checks if the current price is below the middle price.
+            - If valid, suggests a short position to neutralize risk.
+        4. For short positions:
+            - Calculates the middle price where risk is assessed.
+            - Checks if the current price is above the middle price.
+            - If valid, suggests a long position to neutralize risk.
+        5. Returns a list of suggested neutral positions based on the evaluations.
+
+        Example:
+            neutral_positions = self.neutralizer(enable_ratio=0.6)
         """
         neutral_positions = []
         existing_positions = mt5.positions_get()
