@@ -1,17 +1,26 @@
+REM Time and Trading
+set start_hour=4
 set timeframe=15
+set trades_per_day=100
+
+REM Risk Management
 set account_risk=1.0
 set each_position_risk=0.1
-set trades_per_day=100
 set target_ratio=10.0
-set security=FOREX
-set systems=4CDL_PULLBACK_EXT
+set enable_dynamic_position_risk=yes
+set limit_profit_loss=yes
+
+REM Strategy and System
 set strategy=BREAK
+set systems=4CDL_PULLBACK_EXT
+
+REM Security
+set security=FOREX
+
+REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=no
 set enable_neutralizer=yes
-set limit_profit_loss=yes
-set start_hour=4
-set enable_dynamic_position_risk=yes
 
 python smart_trader.py ^
     --strategy %strategy% ^

@@ -11,7 +11,7 @@ set enable_dynamic_position_risk=yes
 set limit_profit_loss=yes
 
 REM Strategy and System
-set strategy=BREAK
+set strategy=REVERSE
 set systems=4CDL_PULLBACK_EXT
 
 REM Security
