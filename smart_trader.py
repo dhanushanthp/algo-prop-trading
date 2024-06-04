@@ -42,12 +42,14 @@ class SmartTrader():
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
         self.num_prev_cdl_for_stop = kwargs["num_prev_cdl_for_stop"]
         self.start_hour = kwargs["start_hour"]
+        self.enable_dynamic_position_risk = kwargs["enable_dynamic_position_risk"]
 
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
                                         position_risk=self.each_position_risk, 
                                         stop_ratio=self.stop_ratio, 
-                                        target_ratio=self.target_ratio)
+                                        target_ratio=self.target_ratio,
+                                        dynamic=self.enable_dynamic_position_risk)
         self.alert = Slack()
         self.prices = Prices()
         self.wrapper = Wrapper()
@@ -127,7 +129,8 @@ class SmartTrader():
                 self.risk_manager = RiskManager(account_risk=self.account_risk, 
                                                 position_risk=self.each_position_risk, 
                                                 stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio)
+                                                target_ratio=self.target_ratio,
+                                                dynamic=self.enable_dynamic_position_risk)
                 
                 self.sent_result = False # Once sent, Disable
             
@@ -167,7 +170,8 @@ class SmartTrader():
                 self.risk_manager = RiskManager(account_risk=account_risk, 
                                                 position_risk=each_position_risk, 
                                                 stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio)
+                                                target_ratio=self.target_ratio,
+                                                dynamic=self.enable_dynamic_position_risk)
 
                 self.sent_result = False # Once sent, Disable
                 self.immidiate_exit = False # Reset the Immidiate exit
@@ -243,6 +247,7 @@ if __name__ == "__main__":
     parser.add_argument('--enable_breakeven', type=str, help='Enable breakeven')
     parser.add_argument('--enable_neutralizer', type=str, help='Enable neutralizer')
     parser.add_argument('--limit_profit_loss', type=str, help='Enable Early Profit')
+    parser.add_argument('--enable_dynamic_position_risk', type=str, help='Enable dynamic risk based on past history')
     parser.add_argument('--start_hour', type=int, help='Start Hour Of Trading')
     
     
@@ -258,6 +263,7 @@ if __name__ == "__main__":
     enable_trail_stop = util.boolean(args.enable_trail_stop)
     enable_breakeven = util.boolean(args.enable_breakeven)
     enable_neutralizer = util.boolean(args.enable_neutralizer)
+    enable_dynamic_position_risk = util.boolean(args.enable_dynamic_position_risk)
     start_hour = int(args.start_hour)
     limit_profit_loss = util.boolean(args.limit_profit_loss)
 
@@ -266,7 +272,7 @@ if __name__ == "__main__":
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer,limit_profit_loss=limit_profit_loss,
-                      start_hour=start_hour)
+                      start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk)
     
     # On the system, Are we taking break or reverse
     win.strategy = args.strategy

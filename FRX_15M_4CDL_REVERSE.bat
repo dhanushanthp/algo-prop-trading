@@ -11,6 +11,7 @@ set enable_breakeven=no
 set enable_neutralizer=yes
 set limit_profit_loss=yes
 set start_hour=4
+set enable_dynamic_position_risk=yes
 
 python smart_trader.py ^
     --strategy %strategy% ^
@@ -26,4 +27,5 @@ python smart_trader.py ^
     --timeframe %timeframe% ^
     --account_risk %account_risk% ^
     --start_hour %start_hour% ^
+    --enable_dynamic_position_risk %enable_dynamic_position_risk% ^
     --target_ratio %target_ratio%
