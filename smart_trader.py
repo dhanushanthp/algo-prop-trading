@@ -26,9 +26,10 @@ class SmartTrader():
         self.immidiate_exit = False
         self.sent_result:bool = True
 
-        # Key Arguments
+        # Key Arguments, Below values will be override when the risk is dynamic
         self.account_risk = kwargs["account_risk"]
         self.each_position_risk = kwargs["each_position_risk"]
+        self.enable_dynamic_position_risk = kwargs["enable_dynamic_position_risk"]
             
         # Default values
         self.target_ratio = kwargs["target_ratio"]  # Default 1:2.0 Ratio
@@ -42,7 +43,7 @@ class SmartTrader():
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
         self.num_prev_cdl_for_stop = kwargs["num_prev_cdl_for_stop"]
         self.start_hour = kwargs["start_hour"]
-        self.enable_dynamic_position_risk = kwargs["enable_dynamic_position_risk"]
+        
 
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -117,7 +118,7 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if self.limit_profit_loss and (rr <= -1 or rr > 1) and (not self.immidiate_exit):
+            if self.limit_profit_loss and (rr <= -1 or rr > 1) and (not self.immidiate_exit) and self.sent_result:
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
                 self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
@@ -170,8 +171,8 @@ class SmartTrader():
                     files_util.update_pnl(file_name=util.get_server_ip() ,pnl=PnL, rr=rr, each_pos_percentage=self.each_position_risk)
                 
                 # Reset account size for next day
-                self.risk_manager = RiskManager(account_risk=account_risk, 
-                                                position_risk=each_position_risk, 
+                self.risk_manager = RiskManager(account_risk=self.account_risk, 
+                                                position_risk=self.each_position_risk, 
                                                 stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio,
                                                 dynamic_postional_risk=self.enable_dynamic_position_risk)

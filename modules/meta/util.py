@@ -197,7 +197,11 @@ def get_market_status(start_hour:int=10) -> Tuple[bool, bool]:
             market_open = True
     
     # Close all the position 30 minute before the market close
-    if (day in ["Saturday","Sunday"]) or (hour >= 23 and minute >= 15):
+    # Closed on weekends
+    # Or Just 45 minutes before the market close
+    # Or just 1 hour before the market open -> this will help usto reset the today's closed positions PnL
+    # Also it's best to avoid first 1 hour, since the spread is very high
+    if (day in ["Saturday","Sunday"]) or (hour >= 23 and minute >= 15) or (hour < 1):
         market_about_to_close = True
 
     return market_open, market_about_to_close

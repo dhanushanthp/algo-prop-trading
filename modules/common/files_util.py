@@ -27,6 +27,7 @@ def update_pnl(file_name:str, pnl:float, rr:float, each_pos_percentage:float):
     """
     file_name = f"data/trade_tracker_{file_name}.csv"
     
+    # TODO Change the date to server Date rather local date
     current_date_str = datetime.now().strftime("%Y-%m-%d")
     
     if check_file_exists(file_path=file_name):
