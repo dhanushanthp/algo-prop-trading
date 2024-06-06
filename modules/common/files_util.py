@@ -40,8 +40,6 @@ def update_pnl(file_name:str, pnl:float, rr:float, each_pos_percentage:float):
     df = pd.concat([df, new_df], ignore_index=True)
     df.to_csv(file_name, index=False)
 
-# update_pnl("testing", 100, 1.2, 0.1)
-
 
 def get_most_risk_percentage(file_name:str):
     """
@@ -84,6 +82,7 @@ def get_most_risk_percentage(file_name:str):
         return df["risk_percentage"].iloc[-1]
 
     return 0.1
-        
 
-print(get_most_risk_percentage("testing"))
+if __name__ == "__main__":
+    # update_pnl("testing", 100, 1.2, 0.1)
+    print(get_most_risk_percentage("testing"))
