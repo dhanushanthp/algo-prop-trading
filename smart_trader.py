@@ -25,6 +25,7 @@ class SmartTrader():
         self.strategy:str = None
         self.immidiate_exit = False
         self.sent_result:bool = True
+        self.is_initial_run:bool= True # This helps to avoid message and pnl write while market is closed.
 
         # Key Arguments, Below values will be override when the risk is dynamic
         self.account_risk = kwargs["account_risk"]
@@ -164,7 +165,7 @@ class SmartTrader():
                     self.orders.close_all_positions()
                 
                 # Update the result in Slack
-                if self.sent_result:
+                if self.sent_result and not self.is_initial_run:
                     self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
                     
                     # Write the pnl to a file
@@ -186,6 +187,9 @@ class SmartTrader():
                 
                 # Enable again once market active
                 self.sent_result = True
+                
+                # Once it's active in market then the initial run become deactive
+                self.is_initial_run = False 
 
                 for symbol in curr.get_major_symbols(security=self.security):                    
                     for system in self.systems:
