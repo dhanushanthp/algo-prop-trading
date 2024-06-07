@@ -13,3 +13,10 @@ If you still think trading is a business despite these many unknown variables, t
 And don't trade single positions at a time. Develop a strategy that allows you to enter multiple positions simultaneously. This way, some positions will move in your favor.
 
 # Mindset of trading
+
+
+# Selected Strategies
+## [15 minutes 4 Candle Break](FRX_15M_4CDL_BREAK.bat)
+
+
+## [15 minutes 4 Candle Reverse](FRX_15M_4CDL_REVERSE.bat)
