@@ -58,7 +58,32 @@ class RiskManager:
         return False
     
     def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str):
+        """
+        Determines if a trading signal is valid based on the current day's trades and the specified strategy.
 
+        Args:
+            symbol (str): The trading symbol for which the signal is generated.
+            trade_direction (Directions): The direction of the trade (LONG or SHORT).
+            strategy (str): The trading strategy being employed. If the strategy is 'REVERSE', the trade direction is reversed.
+
+        Returns:
+            bool: True if the trading signal is valid, False otherwise.
+
+        Logic:
+            - If the strategy is 'REVERSE', the trade direction is reversed (LONG becomes SHORT and vice versa).
+            - Retrieves the current day's trades using the `get_todays_trades` method.
+            - If there are no trades for the current day or the symbol has not been traded yet, the signal is valid.
+            - For a LONG trade direction:
+                - Checks if there are no previous trades for the symbol with a LONG direction and entry status of 0.
+                - If no such trades exist, the signal is valid.
+            - For a SHORT trade direction:
+                - Checks if there are no previous trades for the symbol with a SHORT direction and entry status of 0.
+                - If no such trades exist, the signal is valid.
+
+        Note:
+            - The `todays_trades` DataFrame should have columns: "symbol", "type" (0 for LONG, 1 for SHORT), and "entry".
+            - The `Directions` enum should have values `LONG` and `SHORT`.
+        """
         if strategy==Directions.REVERSE.name:
             trade_direction = Directions.LONG if trade_direction == Directions.SHORT else Directions.SHORT
         
