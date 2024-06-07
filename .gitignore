@@ -10,3 +10,4 @@ equity.csv
 *.csv
 *.ipynb
 archive
+*.log
