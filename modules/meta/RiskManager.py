@@ -57,54 +57,76 @@ class RiskManager:
         
         return False
     
-    def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str):
+    def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str, by_active_positions:bool=True):
         """
-        Determines if a trading signal is valid based on the current day's trades and the specified strategy.
+        Checks the validity of a trade signal based on the given strategy and active positions or today's trades.
 
         Args:
-            symbol (str): The trading symbol for which the signal is generated.
+            symbol (str): The trading symbol to check.
             trade_direction (Directions): The direction of the trade (LONG or SHORT).
-            strategy (str): The trading strategy being employed. If the strategy is 'REVERSE', the trade direction is reversed.
+            strategy (str): The trading strategy being used.
+            by_active_positions (bool, optional): If True, check validity based on active positions; 
+                                                if False, check based on today's trades. Defaults to True.
 
         Returns:
-            bool: True if the trading signal is valid, False otherwise.
+            bool: True if the trade signal is valid, False otherwise.
 
-        Logic:
-            - If the strategy is 'REVERSE', the trade direction is reversed (LONG becomes SHORT and vice versa).
-            - Retrieves the current day's trades using the `get_todays_trades` method.
-            - If there are no trades for the current day or the symbol has not been traded yet, the signal is valid.
-            - For a LONG trade direction:
-                - Checks if there are no previous trades for the symbol with a LONG direction and entry status of 0.
-                - If no such trades exist, the signal is valid.
-            - For a SHORT trade direction:
-                - Checks if there are no previous trades for the symbol with a SHORT direction and entry status of 0.
-                - If no such trades exist, the signal is valid.
+        The function operates as follows:
+        
+        - If the strategy is REVERSE, the trade direction is flipped (LONG to SHORT or SHORT to LONG).
+        - If `by_active_positions` is True, it checks active positions:
+            - If there are no active positions for the given symbol, the trade is valid.
+            - If there are active positions, it ensures no active positions exist in the same direction.
+        - If `by_active_positions` is False, it checks today's trades:
+            - If there are no trades for the given symbol today, the trade is valid.
+            - If there are trades, it ensures no trades exist in the same direction.
 
         Note:
-            - The `todays_trades` DataFrame should have columns: "symbol", "type" (0 for LONG, 1 for SHORT), and "entry".
-            - The `Directions` enum should have values `LONG` and `SHORT`.
+            - In the context of active positions, LONG trades must not coincide with any active LONG positions, 
+            and SHORT trades must not coincide with any active SHORT positions.
+            - In the context of today's trades, a LONG trade must not coincide with any previous LONG trades, 
+            and a SHORT trade must not coincide with any previous SHORT trades.
         """
         if strategy==Directions.REVERSE.name:
             trade_direction = Directions.LONG if trade_direction == Directions.SHORT else Directions.SHORT
         
-        # Check does this already has trades on same direction, Load Passed Data
-        todays_trades = self.wrapper.get_todays_trades()
+        if by_active_positions:
+            # Check the entry validity based on active positions. Same directional trades won't took place at same time.
+            active_positions = self.wrapper.get_all_active_positions()
+            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
+                return True
+            else:
+                match trade_direction:
+                    case Directions.LONG:
+                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 0)]
+                        if active_symbol.empty:
+                            # Shoud not have any active Long Positions
+                            return True
 
-        # If the symbol is not already traded, then take the trade
-        if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
-            return True
+                    case Directions.SHORT:
+                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 1)]
+                        if active_symbol.empty:
+                            # Shoud not have any active Short Positions
+                            return True
         else:
-            match trade_direction:
-                case Directions.LONG:
-                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
-                    if traded_symbol.empty:
-                        # Shoud not have any previous trades on Long Direction
-                        return True
-                case Directions.SHORT:
-                    traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
-                    if traded_symbol.empty:
-                        # Shoud not have any previous trades on Short Direction
-                        return True
+            # Check 
+            todays_trades = self.wrapper.get_todays_trades()
+
+            # If the symbol is not already traded, then take the trade. And it's alloowd only one side per trade for a specific symbol
+            if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
+                return True
+            else:
+                match trade_direction:
+                    case Directions.LONG:
+                        traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
+                        if traded_symbol.empty:
+                            # Shoud not have any previous trades on Long Direction
+                            return True
+                    case Directions.SHORT:
+                        traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
+                        if traded_symbol.empty:
+                            # Shoud not have any previous trades on Short Direction
+                            return True
 
         return False
     
