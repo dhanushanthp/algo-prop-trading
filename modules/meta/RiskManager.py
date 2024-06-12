@@ -18,6 +18,16 @@ mt5.initialize()
 
 class RiskManager:
     def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1.0, position_risk:float=0.1, dynamic_postional_risk:bool=False) -> None:
+        """
+        The RiskManager class handles risk management for trading accounts by integrating with MetaTrader 5 (MT5) and leveraging various financial utilities and configurations. 
+
+        Key functionalities include:
+
+        1. **Initialization**:
+        - Initializes various components such as account details, price data, indicators, and alert mechanisms.
+        - Configures risk parameters including stop and target ratios, account and position risk percentages, and dynamic risk adjustments.
+
+        """
         self.account = Account()
         self.wrapper = Wrapper()
         self.prices = Prices()
