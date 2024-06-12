@@ -1,3 +1,8 @@
+REM Set the path to project
+set TRADEAU_PATH=C:\Users\%USERNAME%\OneDrive\Financial Freedom\Phoenix
+set PYTHONPATH=%PYTHONPATH%;%TRADEAU_PATH%
+cd /d %TRADEAU_PATH%
+
 REM Time and Trading
 set start_hour=4
 set timeframe=15
