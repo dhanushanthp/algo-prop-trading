@@ -2,8 +2,7 @@ import psutil
 from modules.common.slack_msg import Slack
 alert = Slack()
 from modules.meta import util
-import subprocess
-import os
+import subprocess, os, sys
 
 def is_process_running(process_name):
     for process in psutil.process_iter(['pid', 'name', "cmdline"]):
@@ -14,6 +13,7 @@ def is_process_running(process_name):
 
 if __name__ == "__main__":
     process_name = "smart_trader.py"
+    system = sys.argv[1]
 
     if is_process_running(process_name):
         # account_name = ind.get_account_name()
@@ -23,5 +23,5 @@ if __name__ == "__main__":
         account_name = util.get_account_name()
         alert.send_msg(f"{account_name}: App is not running!")
         username = os.getenv('USERNAME')
-        batch_file_path = f"C:\\Users\\{username}\\OneDrive\\Financial Freedom\\Phoenix\\FRX_15M_4CDL_REVERSE.bat"
+        batch_file_path = f"C:\\Users\\{username}\\OneDrive\\Financial Freedom\\Phoenix\\{system}.bat"
         subprocess.run(['start', 'cmd', '/k', batch_file_path], shell=True)
