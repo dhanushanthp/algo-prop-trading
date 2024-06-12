@@ -67,16 +67,17 @@ class RiskManager:
         
         return False
     
-    def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str, by_active_positions:bool=True):
+    def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str, by_active_positions:bool=False):
         """
         Checks the validity of a trade signal based on the given strategy and active positions or today's trades.
+        by disabling `by_active_positions` we only give one chance in each direction for any specific symbol
 
         Args:
             symbol (str): The trading symbol to check.
             trade_direction (Directions): The direction of the trade (LONG or SHORT).
             strategy (str): The trading strategy being used.
             by_active_positions (bool, optional): If True, check validity based on active positions; 
-                                                if False, check based on today's trades. Defaults to True.
+                                                if False, check based on today's trades, which is limited to 2. Defaults to True.
 
         Returns:
             bool: True if the trade signal is valid, False otherwise.
