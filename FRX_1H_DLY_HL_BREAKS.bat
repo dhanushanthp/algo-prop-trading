@@ -1,17 +1,31 @@
+REM Set the path to project
+set TRADEAU_PATH=C:\Users\%USERNAME%\OneDrive\Financial Freedom\Phoenix
+set PYTHONPATH=%PYTHONPATH%;%TRADEAU_PATH%
+cd /d %TRADEAU_PATH%
+
+REM Time and Trading
+set start_hour=4
 set timeframe=60
+set trades_per_day=100
+
+REM Risk Management
 set account_risk=1.0
 set each_position_risk=0.1
-set trades_per_day=100
 set target_ratio=10.0
-set security=FOREX
-set systems=DAILY_HL,DAILY_HL_DOUBLE_HIT
+set enable_dynamic_position_risk=yes
+set limit_profit_loss=yes
+
+REM Strategy and System
 set strategy=BREAK
+set systems=DAILY_HL,DAILY_HL_DOUBLE_HIT
+
+REM Security
+set security=FOREX
+
+REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=no
 set enable_neutralizer=yes
-set limit_profit_loss=yes
-set start_hour=4
-set enable_dynamic_position_risk=yes
 
 python smart_trader.py ^
     --strategy %strategy% ^
