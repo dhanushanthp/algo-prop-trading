@@ -87,7 +87,7 @@ class SmartTrader():
 
             if method:
                 status = method(symbol=symbol, 
-                                reference=f"{reference}", 
+                                reference=f"{reference}_{self.strategy}", 
                                 break_level=break_level, 
                                 trading_timeframe=self.trading_timeframe,
                                 num_cdl_for_stop=self.num_prev_cdl_for_stop,
@@ -151,7 +151,7 @@ class SmartTrader():
                     if self.strategy==Directions.REVERSE.name:
                         direction = Directions.LONG if direction == Directions.SHORT else Directions.SHORT
 
-                    if self.trade(direction=direction, symbol=symbol, reference="NEUTRAL", break_level=-1, market_entry=True):
+                    if self.trade(direction=direction, symbol=symbol, reference=f"NEUTRAL_{self.strategy}", break_level=-1, market_entry=True):
                         break
             
             if self.enable_breakeven:
