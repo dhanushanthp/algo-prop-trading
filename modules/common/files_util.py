@@ -8,7 +8,7 @@ def check_file_exists(file_path):
     else:
         return False
     
-def update_pnl(file_name:str, pnl:float, rr:float, each_pos_percentage:float):
+def update_pnl(file_name:str, system:str, strategy:str, pnl:float, rr:float, each_pos_percentage:float):
     """
     Updates the profit and loss (PnL) tracker with the provided data.
 
@@ -33,9 +33,15 @@ def update_pnl(file_name:str, pnl:float, rr:float, each_pos_percentage:float):
     if check_file_exists(file_path=file_name):
         df = pd.read_csv(file_name)
     else:
-        df = pd.DataFrame(columns=["date", "pnl", "rr", "risk_percentage"])
+        df = pd.DataFrame(columns=["date", "system", "strategy", "pnl", "rr", "risk_percentage"])
 
-    data = {"date":current_date_str, "pnl": round(pnl, 2), "rr":round(rr, 2), "risk_percentage":each_pos_percentage}
+    data = {"date":current_date_str, 
+            "system":system, 
+            "strategy":strategy, 
+            "pnl": round(pnl, 2), 
+            "rr":round(rr, 2), 
+            "risk_percentage":each_pos_percentage}
+    
     new_df = pd.DataFrame([data], columns=df.columns)
     df = pd.concat([df, new_df], ignore_index=True)
     df.to_csv(file_name, index=False)
@@ -84,5 +90,5 @@ def get_most_risk_percentage(file_name:str):
     return 0.1
 
 if __name__ == "__main__":
-    # update_pnl("testing", 100, 1.2, 0.1)
+    # update_pnl("testing", "4_CDL", "BREAK" , 100, -1.2, 0.15)
     print(get_most_risk_percentage("testing"))
