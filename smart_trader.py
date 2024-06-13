@@ -73,7 +73,25 @@ class SmartTrader():
 
     def trade(self, direction:Directions, symbol:str, reference:str, break_level:float, market_entry:bool=False) -> bool:
         """
-        This will take the trade based on given strategy
+        Executes a trade based on the given strategy and direction.
+
+        Parameters:
+        - direction (Directions): The trade direction, either LONG or SHORT.
+        - symbol (str): The trading symbol for the asset.
+        - reference (str): A reference string to annotate the trade.
+        - break_level (float): The price level at which the trade should be executed.
+        - market_entry (bool, optional): Flag indicating whether to enter the market immediately or use another entry method. Default is False.
+
+        Returns:
+        - bool: True if the trade was successfully executed, False otherwise.
+
+        Raises:
+        - Exception: If the strategy is not defined in the system.
+        - Exception: If the direction is not specified.
+
+        This method decides the appropriate trading method (`long_entry` or `short_entry`) based on the strategy 
+        (either BREAK or REVERSE) and the direction (LONG or SHORT). It then attempts to execute the trade using 
+        the corresponding method from the `orders` object. If the method is not found, the trade is not executed.
         """
         if direction:
             match self.strategy:
@@ -153,7 +171,7 @@ class SmartTrader():
                     if self.strategy==Directions.REVERSE.name:
                         direction = Directions.LONG if direction == Directions.SHORT else Directions.SHORT
 
-                    if self.trade(direction=direction, symbol=symbol, reference=f"NEUTRAL_{self.strategy}", break_level=-1, market_entry=True):
+                    if self.trade(direction=direction, symbol=symbol, reference=f"NEUTRAL", break_level=-1, market_entry=True):
                         break
             
             if self.enable_breakeven:
