@@ -74,21 +74,37 @@ def get_most_risk_percentage(file_name:str):
         df = pd.read_csv(file_name)
         df = df.tail(2).copy()
         
+        """
+        Strategy Selection
+        """
+        # If the last 2 trades are loss then change the strategy        
+        previous_strategy = "BREAK"
+        if len(df) > 0:
+            previous_strategy = df.iloc[-1]["strategy"]
+            if len(df) >= 2:
+                last_2_trades = df.tail(2)
+                if all(last_2_trades["rr"] < 0):
+                    previous_strategy = "BREAK" if previous_strategy == "REVERSE" else "REVERSE"
+
+        """
+        Risk management
+        """
         # If the last trade is loss then reduce the risk by 0.05%
         if df["rr"].iloc[-1] < 0:
-            return round(max(float(df["risk_percentage"].iloc[-1]) - 0.05, 0.1), 2)
+            return round(max(float(df["risk_percentage"].iloc[-1]) - 0.05, 0.1), 2), previous_strategy
 
         # If we have 2 continues wins then increase the risk by 0.05
         if len(df) >= 2:
             same_risk = df["risk_percentage"].nunique() == 1
             if same_risk:
                 if all(df["rr"] > 1):
-                    return round(min(float(df["risk_percentage"].unique()[-1]) + 0.05, 0.35), 2)
-        
-        return df["risk_percentage"].iloc[-1]
+                    return round(min(float(df["risk_percentage"].unique()[-1]) + 0.05, 0.35), 2), previous_strategy
 
-    return 0.1
+        
+        return df["risk_percentage"].iloc[-1], previous_strategy
+
+    return 0.1, "REVERSE"
 
 if __name__ == "__main__":
-    # update_pnl("testing", "4_CDL", "BREAK" , 100, -1.2, 0.15)
+    # update_pnl("testing", "4_CDL", "REVERSE" , 100, -1.2, 0.15)
     print(get_most_risk_percentage("testing"))
