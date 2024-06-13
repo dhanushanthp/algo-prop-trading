@@ -79,12 +79,12 @@ def get_most_risk_percentage(file_name:str, **kwargs):
         Strategy Selection
         """
         # If the last 2 trades are loss then change the strategy
-        if len(df) > 0:
-            previous_strategy = df.iloc[-1]["strategy"]
-            if len(df) >= 2:
-                last_2_trades = df.tail(2)
-                if all(last_2_trades["rr"] < 0):
-                    previous_strategy = "BREAK" if previous_strategy == "REVERSE" else "REVERSE"
+        # if len(df) > 0:
+        #     previous_strategy = df.iloc[-1]["strategy"]
+        #     if len(df) >= 2:
+        #         last_2_trades = df.tail(2)
+        #         if all(last_2_trades["rr"] < 0):
+        #             previous_strategy = "BREAK" if previous_strategy == "REVERSE" else "REVERSE"
 
         """
         Risk management
