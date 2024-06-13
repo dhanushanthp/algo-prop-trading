@@ -47,7 +47,7 @@ def update_pnl(file_name:str, system:str, strategy:str, pnl:float, rr:float, eac
     df.to_csv(file_name, index=False)
 
 
-def get_most_risk_percentage(file_name:str):
+def get_most_risk_percentage(file_name:str, **kwargs):
     """
     Calculate the adjusted risk percentage based on the most recent trades from a CSV file.
 
@@ -69,6 +69,7 @@ def get_most_risk_percentage(file_name:str):
         float: The adjusted risk percentage rounded to two decimal places.
     """
     file_name = f"data/trade_tracker_{file_name}.csv"
+    previous_strategy = kwargs["strategy"]
     
     if check_file_exists(file_path=file_name):
         df = pd.read_csv(file_name)
@@ -77,8 +78,7 @@ def get_most_risk_percentage(file_name:str):
         """
         Strategy Selection
         """
-        # If the last 2 trades are loss then change the strategy        
-        previous_strategy = "BREAK"
+        # If the last 2 trades are loss then change the strategy
         if len(df) > 0:
             previous_strategy = df.iloc[-1]["strategy"]
             if len(df) >= 2:
@@ -103,8 +103,8 @@ def get_most_risk_percentage(file_name:str):
         
         return df["risk_percentage"].iloc[-1], previous_strategy
 
-    return 0.1, "REVERSE"
+    return 0.1, previous_strategy
 
 if __name__ == "__main__":
     # update_pnl("testing", "4_CDL", "REVERSE" , 100, -1.2, 0.15)
-    print(get_most_risk_percentage("testing"))
+    print(get_most_risk_percentage("testing", strategy="TESTING"))

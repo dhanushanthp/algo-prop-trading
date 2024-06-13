@@ -51,7 +51,8 @@ class SmartTrader():
                                         position_risk=self.each_position_risk, 
                                         stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio,
-                                        dynamic_postional_risk=self.enable_dynamic_position_risk)
+                                        dynamic_postional_risk=self.enable_dynamic_position_risk,
+                                        strategy=self.strategy)
         self.alert = Slack()
         self.prices = Prices()
         self.wrapper = Wrapper()
@@ -132,7 +133,8 @@ class SmartTrader():
                                                 position_risk=self.each_position_risk, 
                                                 stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio,
-                                                dynamic_postional_risk=self.enable_dynamic_position_risk)
+                                                dynamic_postional_risk=self.enable_dynamic_position_risk,
+                                                strategy=self.strategy)
                 
                 self.sent_result = False # Once sent, Disable
             
@@ -176,7 +178,8 @@ class SmartTrader():
                                                 position_risk=self.each_position_risk, 
                                                 stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio,
-                                                dynamic_postional_risk=self.enable_dynamic_position_risk)
+                                                dynamic_postional_risk=self.enable_dynamic_position_risk,
+                                                strategy=self.strategy)
 
                 self.sent_result = False # Once sent, Disable
                 self.immidiate_exit = False # Reset the Immidiate exit
