@@ -214,7 +214,7 @@ def is_c_pair_active(currency_pair):
         return symbol_info.session_open, symbol_info.session_close
 
 def get_maket_events() -> dict:
-    today = get_current_time().strftime("%Y/%m/%d")
+    today = get_current_time().strftime("%Y-%m-%d")
     data = pd.read_csv("data/market_data.csv")
     today_events = data[data["date"] == today]
     today_events = today_events.groupby(["hour"])["symbol"].agg(list).reset_index()
@@ -233,5 +233,5 @@ if __name__ == "__main__":
     # print(get_current_time())
     # print(get_current_day_hour_min())
     # print(is_us_premarket_peroid())
-    # print(get_maket_events())
-    print(get_last_sunday())
+    print(get_maket_events())
+    # print(get_last_sunday())

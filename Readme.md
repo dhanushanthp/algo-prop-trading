@@ -1,16 +1,18 @@
 # Automated Trading
-Always treat the forex or stock market as gambling. Each time you enter a position, you can never be sure which direction it will move.
+I recommend automating trading instead of doing it manually. While it's possible for individuals to trade manually, emotions can negatively impact their decisions. For instance, a trader might gain confidence from a series of winning trades, not realizing that the market was simply favorable at that time. This confidence can lead to increased risk due to greed. If the market then reverses, the trader may not adapt, resulting in significant losses. Over time, this cycle can erode their confidence.
 
-The most critical parts of trading are knowing:
 
-what to trade,
-when to trade,
-when to enter and exit based on your chosen strategy.
-Additionally, the price may move in your favor only after it hits the stop.
+Emotions like greed and fear greatly influence this process. The best way to eliminate these emotions is by using a trading bot that makes decisions based on set rules, such as:
 
-If you still think trading is a business despite these many unknown variables, then trading may not be for you. The only way to trade effectively is to remove emotion from the equation and trade like a robot. Stick to your target profit or loss, then call it a day. Don't let trades run indefinitely, as everyone advises.
+1. When to make a trade
+2. Which symbol to trade
+3. The risk level for each trade
+4. Entry and exit plans
 
-And don't trade single positions at a time. Develop a strategy that allows you to enter multiple positions simultaneously. This way, some positions will move in your favor.
+
+In trading, there's no single right or wrong approach. If a method works for you and brings in profit, that's what matters.
+
+From my experience, I've learned that the market doesn't always move in one direction. Some trading experts suggest holding your position until the market closes if you're day trading. However, I believe it's better to develop a strategy that allows taking multiple positions simultaneously.
 
 # Mindset of trading
 
