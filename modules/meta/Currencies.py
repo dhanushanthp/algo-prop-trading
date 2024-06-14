@@ -1,6 +1,7 @@
 import MetaTrader5 as mt
 mt.initialize()
 from modules.meta import util
+import numpy as np
 
 account_info_dict = mt.account_info()._asdict()
 company = account_info_dict["company"]
@@ -202,27 +203,27 @@ def get_major_symbols_market_events(security="FOREX"):
         if util.is_us_premarket_peroid():
             main_pairs.extend(us_indexes)
 
-        filtered_paris = main_pairs.copy()
-        _,hour,_ = util.get_current_day_hour_min()
+        _,current_hour,_ = util.get_current_day_hour_min()
         market_mapping = util.get_maket_events()
-        if hour in market_mapping:
-            markets = market_mapping[hour]
-            for market in markets:
-                for pairs in main_pairs:
-                    
-                    # Special Case for USD
-                    if market == "USD":
-                        if "US500.cash" in pairs:
-                            filtered_paris.remove(pairs)
 
-                    if market in pairs:
-                        filtered_paris.remove(pairs)
-        
-        return filtered_paris
+        event_based_removed_symbols = []
+        for event_hour in market_mapping.keys():
+            event_symbols:list = market_mapping[event_hour]
+            for event_symbol in event_symbols:
+                if current_hour <= event_hour:
+                    for existing_symbol in main_pairs:
+                        if event_symbol in existing_symbol:
+                            if event_symbol == "USD":
+                                event_based_removed_symbols.append("US500.cash")
+                            event_based_removed_symbols.append(existing_symbol)
+
+        event_based_removed_symbols = list(set(event_based_removed_symbols))
+        valid_symbol = np.setdiff1d(main_pairs, event_based_removed_symbols).tolist()
+        return valid_symbol
     elif security == "STOCK":
         return master_stocks
     else:
         raise Exception("Security is not defined!") 
 
 if __name__ == "__main__":
-    print(get_major_symbols())
+    print(get_major_symbols_market_events())
