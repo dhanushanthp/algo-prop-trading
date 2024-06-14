@@ -212,7 +212,7 @@ class SmartTrader():
                 # Once it's active in market then the initial run become deactive
                 self.is_initial_run = False 
 
-                for symbol in curr.get_major_symbols_market_events(security=self.security):                    
+                for symbol in curr.get_major_symbols(security=self.security):                    
                     for system in self.systems:
                         # Reset trade direction for each system
                         trade_direction = None
