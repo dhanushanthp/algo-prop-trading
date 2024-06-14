@@ -71,8 +71,9 @@ def get_most_risk_percentage(file_name:str, **kwargs):
     file_name = f"data/trade_tracker_{file_name}.csv"
     selected_strategy = kwargs["strategy"]
     
-    MINIMUM_RISK=0.05
+    MINIMUM_RISK=0.10
     MAXIMUM_RISK=0.35
+    CHANGE_RATE=0.05
     
     if check_file_exists(file_path=file_name):
         df = pd.read_csv(file_name)
@@ -94,14 +95,14 @@ def get_most_risk_percentage(file_name:str, **kwargs):
         """
         # If the last trade is loss then reduce the risk by 0.05%
         if df["rr"].iloc[-1] < 0:
-            return round(max(float(df["risk_percentage"].iloc[-1]) - MINIMUM_RISK, MINIMUM_RISK), 2), selected_strategy
+            return round(max(float(df["risk_percentage"].iloc[-1]) - CHANGE_RATE, MINIMUM_RISK), 2), selected_strategy
 
         # If we have 2 continues wins then increase the risk by 0.05
         if len(df) >= 2:
             same_risk = df["risk_percentage"].nunique() == 1
             if same_risk:
                 if all(df["rr"] > 1):
-                    return round(min(float(df["risk_percentage"].unique()[-1]) + MINIMUM_RISK, MAXIMUM_RISK), 2), selected_strategy
+                    return round(min(float(df["risk_percentage"].unique()[-1]) + CHANGE_RATE, MAXIMUM_RISK), 2), selected_strategy
 
         
         return df["risk_percentage"].iloc[-1], selected_strategy
