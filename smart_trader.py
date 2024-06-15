@@ -305,7 +305,7 @@ if __name__ == "__main__":
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer,limit_profit_loss=limit_profit_loss,
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
-                      systems = systems)
+                      systems=systems)
 
     win.main()
 
