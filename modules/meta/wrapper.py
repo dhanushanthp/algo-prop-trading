@@ -50,6 +50,36 @@ class Wrapper:
         return df
     
     def get_last_n_candles(self, symbol:str, timeframe:int, start_candle:int=0, n_candles:int=1):
+        """
+        Retrieve the last `n_candles` candlestick data for a given symbol and timeframe.
+
+        Parameters:
+        ----------
+        symbol : str
+            The symbol (ticker) for which the candlestick data is to be retrieved.
+        timeframe : int
+            The timeframe for the candlesticks, typically represented as an integer
+            (e.g., 1 for 1 minute, 5 for 5 minutes, etc.).
+        start_candle : int, optional
+            The starting position (offset) of the candle data to retrieve, with the default being 0,
+            which means the most recent candle.
+        n_candles : int, optional
+            The number of candlesticks to retrieve, with the default being 1.
+
+        Returns:
+        -------
+        pd.DataFrame
+            A DataFrame containing the candlestick data, with each row representing a candle
+            and columns typically including time, open, high, low, close, tick_volume, spread, and real_volume.
+
+        Example:
+        -------
+        >>> get_last_n_candles("EURUSD", 1, 0, 10)
+            time       open       high        low      close  tick_volume  spread  real_volume
+        0  1618317120  1.17687  1.17698  1.17679  1.17683         143       0          0
+        1  1618317180  1.17683  1.17690  1.17674  1.17676         168       0          0
+        ...
+        """
         return pd.DataFrame(mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), start_candle, n_candles))
 
     
@@ -513,7 +543,7 @@ class Wrapper:
         return 0.0
         
 
-    def get_heikin_ashi(self, symbol:int, timeframe:int, n_candles:int):
+    def get_heikin_ashi(self, symbol:int, timeframe:int, start_candle:int=0, n_candles:int=10):
         """
         Calculate the Heikin-Ashi candlesticks for a given symbol and timeframe.
 
@@ -549,7 +579,7 @@ class Wrapper:
             - HA high = max(High, HA open, HA close)
             - HA low = min(Low, HA open, HA close)
         """
-        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, n_candles=n_candles)
+        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=n_candles)
 
         heikin_ashi_df = pd.DataFrame(index=df.index, columns=["time", "open", "high", "low", "close"])
 
