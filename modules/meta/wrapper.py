@@ -579,7 +579,8 @@ class Wrapper:
             - HA high = max(High, HA open, HA close)
             - HA low = min(Low, HA open, HA close)
         """
-        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=n_candles)
+        # df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=n_candles)
+        df = self.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
 
         heikin_ashi_df = pd.DataFrame(index=df.index, columns=["time", "open", "high", "low", "close"])
 

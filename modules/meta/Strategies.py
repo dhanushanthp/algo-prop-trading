@@ -78,6 +78,42 @@ class Strategies:
         
         return None
 
+    def get_heikin_ashi_reversal(self, symbol:str, timeframe:int) -> Directions:
+        heikin_ashi_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=timeframe, n_candles=10, start_candle=3)
+
+        offset = 2
+        max_previous_pair_check = 10
+        
+        most_recent_candle_pairs = heikin_ashi_candles.iloc[-(1+offset):-1].copy()
+        most_recent_candle_pairs["bullish"] = most_recent_candle_pairs["open"] == most_recent_candle_pairs["low"]
+        most_recent_candle_pairs["bearish"] = most_recent_candle_pairs["open"] == most_recent_candle_pairs["high"]
+        index_of_most_recent = most_recent_candle_pairs.index[0]
+        # print(most_recent_candle_pairs)
+
+        # Short Trae Positioning
+        if all(most_recent_candle_pairs["bearish"]):
+            for i in range(3, max_previous_pair_check):
+                pair_search = heikin_ashi_candles.iloc[-(i + 2): -i].copy()
+                pair_search["bullish"] = pair_search["open"] == pair_search["low"]
+                if all(pair_search["bullish"]):
+                    index = pair_search.index[-1]
+                    if index_of_most_recent - index > 3:
+                        # print(pair_search)
+                        return Directions.SHORT
+                    
+        # Long Trade Positioning
+        if all(most_recent_candle_pairs["bullish"]):
+            for i in range(3, max_previous_pair_check):
+                pair_search = heikin_ashi_candles.iloc[-(i + 2): -i].copy()
+                pair_search["bearish"] = pair_search["open"] == pair_search["high"]
+                if all(pair_search["bearish"]):
+                    index = pair_search.index[-1]
+                    if index_of_most_recent - index > 3:
+                        # print(pair_search)
+                        return Directions.LONG
+        
+        return None
+
 
     def get_four_candle_pullback(self, symbol, timeframe=60, extrame=False) -> Directions:
         """
@@ -356,3 +392,10 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.get_dtop_dbottom(symbol=symbol, timeframe=timeframe))
+        
+        case "HEIKIN_ASHI":
+            if batch == "y":
+                pass
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.get_heikin_ashi_reversal(symbol=symbol, timeframe=timeframe))

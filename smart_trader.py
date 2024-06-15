@@ -250,6 +250,10 @@ class SmartTrader():
                             case "D_TOP_BOTTOM":
                                 trade_direction = self.strategies.get_dtop_dbottom(symbol=symbol, 
                                                                                    timeframe=self.trading_timeframe)
+                            
+                            case "HEIKIN_ASHI":
+                                trade_direction = self.strategies.get_heikin_ashi_reversal(symbol=symbol, 
+                                                                                           timeframe=self.trading_timeframe)
                                 
                         if trade_direction:
                             is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
