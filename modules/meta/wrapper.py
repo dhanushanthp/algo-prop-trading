@@ -5,6 +5,7 @@ import pytz
 from datetime import datetime, timedelta, time
 from modules import config
 from typing import Tuple
+import numpy as np
 mt5.initialize()
 
 class Wrapper:
@@ -512,35 +513,66 @@ class Wrapper:
         return 0.0
         
 
-    def get_heikin_ashi(self, symbol, timeframe):
+    def get_heikin_ashi(self, symbol:int, timeframe:int, n_candles:int):
         """
-        Calculate Heikin-Ashi OHLC (Open-High-Low-Close) values from an OHLC DataFrame.
+        Calculate the Heikin-Ashi candlesticks for a given symbol and timeframe.
+
+        This function retrieves the last `n_candles` for the specified `symbol` and `timeframe`, and computes
+        the Heikin-Ashi values for each candlestick. Heikin-Ashi candlesticks are a variation of traditional
+        candlesticks that aim to filter out market noise and provide a clearer picture of the market trend.
 
         Parameters:
-        df (DataFrame): OHLC DataFrame with columns 'Open', 'High', 'Low', 'Close'.
+        - symbol (int): The identifier for the financial instrument.
+        - timeframe (int): The timeframe for the candlesticks (e.g., 1 for 1-minute candles, 5 for 5-minute candles).
+        - n_candles (int): The number of candles to retrieve and process.
 
         Returns:
-        DataFrame: DataFrame containing Heikin-Ashi OHLC values with columns renamed to lowercase.
+        - pd.DataFrame: A DataFrame containing the Heikin-Ashi candlestick data with columns ["time", "open", "high", "low", "close"].
+
+        The DataFrame will have the same index as the original data retrieved from `get_last_n_candles` and include:
+        - 'time': The time of the original candlestick.
+        - 'open': The Heikin-Ashi open price.
+        - 'high': The Heikin-Ashi high price.
+        - 'low': The Heikin-Ashi low price.
+        - 'close': The Heikin-Ashi close price.
+
+        Example usage:
+        ```python
+        ha_df = trading_system.get_heikin_ashi(symbol=1, timeframe=5, n_candles=100)
+        ```
+
+        Note:
+        - The first Heikin-Ashi open price is set to the first open price of the original data.
+        - Heikin-Ashi calculations are as follows:
+            - HA close = (Open + High + Low + Close) / 4
+            - HA open = (Previous HA open + Previous HA close) / 2
+            - HA high = max(High, HA open, HA close)
+            - HA low = min(Low, HA open, HA close)
         """
+        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, n_candles=n_candles)
 
-        df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, n_candles=4)
-        print(df[["open", "close", "low", "high"]])
+        heikin_ashi_df = pd.DataFrame(index=df.index, columns=["time", "open", "high", "low", "close"])
 
-        heikin_ashi_df = df[["open", "close", "low", "high"]].copy()
-        
-        heikin_ashi_df['close'] = (df['open'] + df['high'] + df['low'] + df['close']) / 4        
-        heikin_ashi_df['open'] = (df['close'].shift(1) + df['open'].shift(1)) / 2
+        # Copy the time column
+        heikin_ashi_df['time'] = df['time']
 
-        import numpy as np
-        heikin_ashi_df['high'] = np.maximum(df['high'], df[['open', 'close']].iloc[:-1].max(axis=1))
-        heikin_ashi_df['low'] = np.minimum(df['low'], df[['open', 'close']].iloc[:-1].min(axis=1))
-        # heikin_ashi_df['high'] = df["high"]
-        # heikin_ashi_df['low'] = df["low"]
+        # Calculate Heikin-Ashi values
+        heikin_ashi_df['close'] = round((df['open'] + df['high'] + df['low'] + df['close']) / 4, 5)
+        heikin_ashi_df['open'] = np.nan
+        heikin_ashi_df['high'] = np.nan
+        heikin_ashi_df['low'] = np.nan
 
-        heikin_ashi_df["signal"] = heikin_ashi_df["close"] - heikin_ashi_df["open"]
-        heikin_ashi_df["signal"] = heikin_ashi_df["signal"].apply(lambda x: "bullish" if x > 0 else "bearish")
+        for i in range(len(df)):
+            if i == 0:
+                heikin_ashi_df.at[i, 'open'] = round(df.at[i, 'open'], 5)
+            else:
+                heikin_ashi_df.at[i, 'open'] = round((heikin_ashi_df.at[i-1, 'open'] + heikin_ashi_df.at[i-1, 'close']) / 2, 5)
+            heikin_ashi_df.at[i, 'high'] = round(max(df.at[i, 'high'], heikin_ashi_df.at[i, 'open'], heikin_ashi_df.at[i, 'close']), 5)
+            heikin_ashi_df.at[i, 'low'] = round(min(df.at[i, 'low'], heikin_ashi_df.at[i, 'open'], heikin_ashi_df.at[i, 'close']), 5)
 
         return heikin_ashi_df
+
+
 
 if "__main__" == __name__:
     obj = Wrapper()
@@ -560,7 +592,7 @@ if "__main__" == __name__:
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
-    # print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
+    print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
     # print(obj.get_traded_symbols())
     # print(obj.any_remaining_trades(max_trades=11))
     # print(obj.get_all_active_positions())
@@ -568,6 +600,6 @@ if "__main__" == __name__:
     # print(obj.get_weekly_candles(symbol=symbol, timeframe=240, most_latest_candle=0))
     # print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
     # print(obj.get_latest_bar_hour(symbol=symbol, timeframe=index))
-    print(obj.get_closed_pnl())
+    # print(obj.get_closed_pnl())
     
 
