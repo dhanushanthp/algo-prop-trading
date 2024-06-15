@@ -71,7 +71,7 @@ def get_most_risk_percentage(file_name:str, **kwargs):
     file_name = f"data/trade_tracker_{file_name}.csv"
     selected_strategy = kwargs["strategy"]
     
-    MINIMUM_RISK=0.10
+    MINIMUM_RISK=0.05
     MAXIMUM_RISK=0.35
     CHANGE_RATE=0.05
     
