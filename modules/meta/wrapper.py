@@ -172,7 +172,16 @@ class Wrapper:
         Returns:
             pd.DataFrame: DataFrame containing today's candles for the specified symbol and timeframe.
         """
-        last_24_hour_candles = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=25)
+        if timeframe == 15:
+            n_candles = 4*24
+        elif timeframe == 60:
+            n_candles = 24
+        elif timeframe == 30:
+            n_candles = 2*24
+        else:
+            raise Exception("Timeframe based candles are not defined!")
+        
+        last_24_hour_candles = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=n_candles)
 
         if not last_24_hour_candles.empty:
             last_24_hour_candles["time"] = last_24_hour_candles["time"].apply(lambda x: util.get_traded_time(epoch=x))
