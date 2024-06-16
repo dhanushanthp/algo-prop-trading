@@ -76,6 +76,30 @@ def get_local_time(city) -> Tuple[int, int, int]:
     return day_of_week, hour, minute
 
 def get_traded_time(epoch)-> datetime:
+    """
+    Converts an epoch timestamp to a timezone-aware datetime object in the 'Etc/GMT' timezone.
+
+    Args:
+        epoch (int): The epoch timestamp to be converted.
+
+    Returns:
+        datetime: The corresponding timezone-aware datetime object in the 'Etc/GMT' timezone.
+
+    Example:
+        >>> epoch = 1655560800
+        >>> get_traded_time(epoch)
+        datetime.datetime(2022, 6, 18, 0, 0, tzinfo=<StaticTzInfo 'Etc/GMT'>)
+
+    Notes:
+        - This function uses the 'Etc/GMT' timezone for conversion, which is equivalent to UTC with no offset.
+        - The function requires the `pytz` library for timezone handling.
+        - Ensure that the input `epoch` is a valid integer representing the number of seconds since the Unix epoch (00:00:00 UTC on 1 January 1970).
+
+    Raises:
+        TypeError: If the input `epoch` is not an integer.
+        ValueError: If the input `epoch` is not a valid epoch timestamp.
+
+    """
     normal_time = datetime.fromtimestamp(epoch, pytz.timezone('Etc/GMT'))
     return normal_time
 
