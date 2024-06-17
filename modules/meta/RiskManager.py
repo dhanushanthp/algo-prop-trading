@@ -67,7 +67,7 @@ class RiskManager:
         
         return False
     
-    def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades"):
+    def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades"):
         """
         Checks the validity of a trade signal based on the given strategy and active positions or today's trades.
         by disabling `by_active_positions` we only give one chance in each direction for any specific symbol
@@ -140,7 +140,24 @@ class RiskManager:
                             # Shoud not have any previous trades on Short Direction
                             return True
         elif multiple_positions == "by_open":
-            return True
+            todays_trades = self.wrapper.get_todays_trades()
+            if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
+                return True
+            else:
+                last_traded_time = util.get_traded_time(epoch=max(todays_trades[todays_trades["symbol"] == symbol]["time"]))
+                current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+                time_gap = (current_time-last_traded_time).total_seconds()/60
+                
+                # If more than 30 minutes
+                if timeframe == 15:
+                    time_multiplier=4
+                elif timeframe == 30:
+                    time_multiplier=2
+                else:
+                    time_multiplier=1
+
+                if time_gap > timeframe * time_multiplier:
+                    return True
 
         return False
     
@@ -533,7 +550,7 @@ class RiskManager:
         return points_in_stop, lots
     
 
-    def neutralizer(self, enable_ratio:float=0.5):
+    def neutralizer(self, timeframe:int, enable_ratio:float=0.5):
         """
         Evaluates existing trading positions and identifies positions to neutralize based on the given risk threshold.
 
@@ -576,13 +593,13 @@ class RiskManager:
                     # Long Position
                     middle_price = open_price - ((open_price - stop_price) * enable_ratio)
                     if current_price < middle_price:
-                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.SHORT, strategy=None):
+                        if self.check_signal_validity(symbol=symbol, timeframe=timeframe, trade_direction=Directions.SHORT, strategy=None):
                             neutral_positions.append((symbol, Directions.SHORT))
                 case 1:
                     # Short Position
                     middle_price = open_price + ((stop_price - open_price) * enable_ratio)
                     if current_price > middle_price:
-                        if self.check_signal_validity(symbol=symbol, trade_direction=Directions.LONG, strategy=None):
+                        if self.check_signal_validity(symbol=symbol, timeframe=timeframe, trade_direction=Directions.LONG, strategy=None):
                             neutral_positions.append((symbol, Directions.LONG))
 
         return neutral_positions

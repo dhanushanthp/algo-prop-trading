@@ -155,8 +155,9 @@ class Strategies:
                 if all(pair_search["bullish"]):
                     index = pair_search.index[-1]
                     if index_of_most_recent - index <= max_gap:
-                        if tracker(symbol=symbol, index=index):
-                            print(pair_search.iloc[-1]["time"], "-" , most_recent_candle_pairs.iloc[0]["time"], ">", index_of_most_recent - index)
+                        # if tracker(symbol=symbol, index=index): TODO
+                        if True:
+                            # print(pair_search.iloc[-1]["time"], "-" , most_recent_candle_pairs.iloc[0]["time"], ">", index_of_most_recent - index)
                             return Directions.SHORT
                     
         # Long Trade Positioning
@@ -167,8 +168,9 @@ class Strategies:
                 if all(pair_search["bearish"]):
                     index = pair_search.index[-1]
                     if index_of_most_recent - index <= max_gap:
-                        if tracker(symbol=symbol, index=index):
-                            print(pair_search.iloc[-1]["time"], "-" ,most_recent_candle_pairs.iloc[0]["time"], ">", index_of_most_recent - index)
+                        # if tracker(symbol=symbol, index=index): TODO
+                        if True:
+                            # print(pair_search.iloc[-1]["time"], "-" ,most_recent_candle_pairs.iloc[0]["time"], ">", index_of_most_recent - index)
                             return Directions.LONG
         
         return None
