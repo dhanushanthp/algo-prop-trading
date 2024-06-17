@@ -67,7 +67,7 @@ class RiskManager:
         
         return False
     
-    def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str, by_active_positions:bool=False):
+    def check_signal_validity(self, symbol:str, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades"):
         """
         Checks the validity of a trade signal based on the given strategy and active positions or today's trades.
         by disabling `by_active_positions` we only give one chance in each direction for any specific symbol
@@ -101,7 +101,8 @@ class RiskManager:
         if strategy==Directions.REVERSE.name:
             trade_direction = Directions.LONG if trade_direction == Directions.SHORT else Directions.SHORT
         
-        if by_active_positions:
+
+        if multiple_positions == "by_active":
             # Check the entry validity based on active positions. Same directional trades won't took place at same time.
             active_positions = self.wrapper.get_all_active_positions()
             if active_positions.empty or (symbol not in list(active_positions["symbol"])):
@@ -119,7 +120,7 @@ class RiskManager:
                         if active_symbol.empty:
                             # Shoud not have any active Short Positions
                             return True
-        else:
+        elif multiple_positions == "by_trades":
             # Check 
             todays_trades = self.wrapper.get_todays_trades()
 
@@ -138,6 +139,8 @@ class RiskManager:
                         if traded_symbol.empty:
                             # Shoud not have any previous trades on Short Direction
                             return True
+        elif multiple_positions == "by_open":
+            return True
 
         return False
     

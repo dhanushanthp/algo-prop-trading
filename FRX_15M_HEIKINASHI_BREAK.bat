@@ -26,6 +26,7 @@ REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=no
 set enable_neutralizer=no
+set multiple_positions=by_open
 
 python smart_trader.py ^
     --strategy %strategy% ^
@@ -42,4 +43,5 @@ python smart_trader.py ^
     --account_risk %account_risk% ^
     --start_hour %start_hour% ^
     --enable_dynamic_position_risk %enable_dynamic_position_risk% ^
+    --multiple_positions %multiple_positions% ^
     --target_ratio %target_ratio%

@@ -1,12 +1,14 @@
 from modules.common.Directions import Directions
 from modules.meta.wrapper import Wrapper
 from modules.meta.Indicators import Indicators
+from typing import Dict
 
 
 class Strategies:
     def __init__(self, wrapper:Wrapper, indicators:Indicators):
         self.wrapper:Wrapper = wrapper
         self.indicators:Indicators = indicators
+        self.heikin_ashi_tracker:Dict[str, list] = dict()
 
     def get_three_candle_strike(self, symbol, timeframe=60, start_candle=1) -> Directions:
         """
@@ -78,28 +80,84 @@ class Strategies:
         
         return None
 
-    def get_heikin_ashi_reversal(self, symbol:str, timeframe:int) -> Directions:
-        heikin_ashi_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=timeframe, n_candles=10, start_candle=3)
+    def get_heikin_ashi_reversal(self, symbol:str, timeframe:int, start:int=0) -> Directions:
+        """
+        Determine the Heikin-Ashi reversal direction for a given symbol and timeframe.
+
+        This method analyzes the Heikin-Ashi candlestick patterns to identify potential
+        bullish or bearish reversals. It checks recent candlestick pairs to detect
+        patterns that signify a reversal, taking into account a specified maximum gap
+        and previous candlestick checks.
+
+        Parameters:
+        - symbol (str): The trading symbol for which the Heikin-Ashi reversal is to be determined.
+        - timeframe (int): The timeframe for the Heikin-Ashi candles.
+        - start (int, optional): The starting candle position for analysis. Defaults to 0.
+
+        Returns:
+        - Directions: The direction of the identified reversal, either LONG or SHORT.
+        Returns None if no reversal is detected.
+
+        Internal Helper Function:
+        - tracker(symbol: str, index: int) -> bool:
+            Keeps track of identified reversal indices to avoid duplicate signals
+            and ensures the indices are not adjacent to each other.
+
+        Reversal Logic:
+        - Short Trade Positioning: 
+            Checks if the most recent candles are bearish and if a previous bullish 
+            pattern exists within the allowed gap.
+        - Long Trade Positioning: 
+            Checks if the most recent candles are bullish and if a previous bearish 
+            pattern exists within the allowed gap.
+
+        Example:
+        >>> reversal_direction = get_heikin_ashi_reversal("AAPL", 5)
+        >>> if reversal_direction == Directions.LONG:
+        >>>     print("Bullish reversal detected.")
+        >>> elif reversal_direction == Directions.SHORT:
+        >>>     print("Bearish reversal detected.")
+        >>> else:
+        >>>     print("No reversal detected.")
+        """
+        heikin_ashi_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=timeframe, n_candles=10, start_candle=start)
 
         offset = 2
+        max_gap = 4
         max_previous_pair_check = 10
         
         most_recent_candle_pairs = heikin_ashi_candles.iloc[-(1+offset):-1].copy()
         most_recent_candle_pairs["bullish"] = most_recent_candle_pairs["open"] == most_recent_candle_pairs["low"]
         most_recent_candle_pairs["bearish"] = most_recent_candle_pairs["open"] == most_recent_candle_pairs["high"]
-        index_of_most_recent = most_recent_candle_pairs.index[0]
-        # print(most_recent_candle_pairs)
+        index_of_most_recent = most_recent_candle_pairs.index[0] - 1
 
-        # Short Trae Positioning
+        def tracker(symbol, index):
+            if symbol not in self.heikin_ashi_tracker:
+                self.heikin_ashi_tracker[symbol] = [index]
+                return True
+            else:
+                if index in self.heikin_ashi_tracker[symbol]:
+                    return False
+                else:
+                    # Check for adjucent index to avoid 
+                    for exist_index in self.heikin_ashi_tracker[symbol]:
+                        if abs(exist_index-index) <= 2:
+                            return False
+                        
+                    self.heikin_ashi_tracker[symbol].append(index)
+                    return True
+
+        # Short Trade Positioning
         if all(most_recent_candle_pairs["bearish"]):
             for i in range(3, max_previous_pair_check):
                 pair_search = heikin_ashi_candles.iloc[-(i + 2): -i].copy()
                 pair_search["bullish"] = pair_search["open"] == pair_search["low"]
                 if all(pair_search["bullish"]):
                     index = pair_search.index[-1]
-                    if index_of_most_recent - index > 3:
-                        # print(pair_search)
-                        return Directions.SHORT
+                    if index_of_most_recent - index <= max_gap:
+                        if tracker(symbol=symbol, index=index):
+                            print(pair_search.iloc[-1]["time"], "-" , most_recent_candle_pairs.iloc[0]["time"], ">", index_of_most_recent - index)
+                            return Directions.SHORT
                     
         # Long Trade Positioning
         if all(most_recent_candle_pairs["bullish"]):
@@ -108,9 +166,10 @@ class Strategies:
                 pair_search["bearish"] = pair_search["open"] == pair_search["high"]
                 if all(pair_search["bearish"]):
                     index = pair_search.index[-1]
-                    if index_of_most_recent - index > 3:
-                        # print(pair_search)
-                        return Directions.LONG
+                    if index_of_most_recent - index <= max_gap:
+                        if tracker(symbol=symbol, index=index):
+                            print(pair_search.iloc[-1]["time"], "-" ,most_recent_candle_pairs.iloc[0]["time"], ">", index_of_most_recent - index)
+                            return Directions.LONG
         
         return None
 
@@ -395,7 +454,15 @@ if __name__ == "__main__":
         
         case "HEIKIN_ASHI":
             if batch == "y":
-                pass
+                for symbol in curr.master_currencies:
+                    df = strat_obj.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=0)
+                    output = strat_obj.get_heikin_ashi_reversal(symbol=symbol, timeframe=timeframe, start=0)
+                    if output:
+                        print(symbol, output)
             else:
                 symbol = sys.argv[4]
-                print(strat_obj.get_heikin_ashi_reversal(symbol=symbol, timeframe=timeframe))
+                df = strat_obj.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=0)
+                for i in reversed(range(len(df) - 10)):
+                    output = strat_obj.get_heikin_ashi_reversal(symbol=symbol, timeframe=timeframe, start=i)
+                    if output:
+                        print(i, output)

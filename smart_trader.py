@@ -31,6 +31,7 @@ class SmartTrader():
         self.account_risk = kwargs["account_risk"]
         self.each_position_risk = kwargs["each_position_risk"]
         self.enable_dynamic_position_risk = kwargs["enable_dynamic_position_risk"]
+        self.multiple_positions = kwargs["multiple_positions"]
             
         # Default values
         self.target_ratio = kwargs["target_ratio"]  # Default 1:2.0 Ratio
@@ -284,6 +285,7 @@ if __name__ == "__main__":
     parser.add_argument('--limit_profit_loss', type=str, help='Enable Early Profit')
     parser.add_argument('--enable_dynamic_position_risk', type=str, help='Enable dynamic risk based on past history')
     parser.add_argument('--start_hour', type=int, help='Start Hour Of Trading')
+    parser.add_argument('--multiple_positions', type=str, help='How to handle multiple trades at a time: [by_trades, by_active, by_open]')
     
     
     args = parser.parse_args()
@@ -303,13 +305,14 @@ if __name__ == "__main__":
     limit_profit_loss = util.boolean(args.limit_profit_loss)
     strategy = args.strategy
     systems = args.systems.split(",")
+    multiple_positions = args.multiple_positions
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer,limit_profit_loss=limit_profit_loss,
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
-                      systems=systems)
+                      systems=systems, multiple_positions=multiple_positions)
 
     win.main()
 
