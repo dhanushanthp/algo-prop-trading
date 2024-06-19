@@ -294,7 +294,7 @@ if __name__ == "__main__":
     
     trading_timeframe = int(args.timeframe)
     each_position_risk = float(args.each_position_risk)
-    account_risk =  float(args.account_risk) #each_position_risk * 10
+    account_risk = each_position_risk * 10  # float(args.account_risk)
     target_ratio = float(args.target_ratio)
     security = str(args.security)
     trades_per_day = int(args.trades_per_day)
