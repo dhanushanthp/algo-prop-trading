@@ -7,6 +7,9 @@ import modules.meta.Currencies as curr
 import modules.config as config
 from typing import Tuple
 import pandas as pd
+from termcolor import colored
+from colorama import init
+init()
 
 def error_logging(result, request_str={}) -> bool:
     if result:
@@ -230,6 +233,11 @@ def get_market_status(start_hour:int=10) -> Tuple[bool, bool]:
 
     return market_open, market_about_to_close
 
+def cl(status):
+    if status:
+        return colored(status, 'green')
+    else:
+        return colored(status, 'red')
 
 def is_c_pair_active(currency_pair):
     symbol_info=mt5.symbol_info(currency_pair)

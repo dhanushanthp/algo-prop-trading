@@ -136,8 +136,8 @@ class SmartTrader():
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
-            print(f"{'Risk Config'.ljust(20)}: BE: {self.enable_breakeven} | Trail: {self.enable_trail_stop} | DynRisk: {self.enable_dynamic_position_risk}")
-            print(f"{'Early Exit'.ljust(20)}: Loss Exit{self.max_loss_exit} | Target Exit: {self.max_target_exit}")
+            print(f"{'Risk Config'.ljust(20)}: [BE: {util.cl(self.enable_breakeven)}] [Trail: {util.cl(self.enable_trail_stop)}] [DynRisk: {util.cl(self.enable_dynamic_position_risk)}]")
+            print(f"{'Early Exit'.ljust(20)}: [Loss Exit: {util.cl(self.max_loss_exit)}] [Target Exit: {util.cl(self.max_target_exit)}]")
 
             self.orders.cancel_all_pending_orders()
 

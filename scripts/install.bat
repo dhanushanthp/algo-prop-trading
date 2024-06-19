@@ -8,3 +8,5 @@ pip install Flask
 pip install requests
 pip install ib-insync
 pip install TA-Lib
+pip install termcolor
+pip install colorama
