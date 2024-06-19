@@ -412,7 +412,7 @@ class RiskManager:
                             print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 
-    def breakeven(self, profit_factor:int=2):        
+    def breakeven(self, profit_factor:int):        
         existing_positions = mt5.positions_get()
         for position in existing_positions:
             symbol = position.symbol
