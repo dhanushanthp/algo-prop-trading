@@ -41,7 +41,8 @@ class SmartTrader():
         self.enable_trail_stop = kwargs["enable_trail_stop"]
         self.enable_breakeven = kwargs["enable_breakeven"]
         self.enable_neutralizer = kwargs["enable_neutralizer"]
-        self.limit_profit_loss = kwargs["limit_profit_loss"]
+        self.max_loss_exit = kwargs["max_loss_exit"]
+        self.max_target_exit = kwargs["max_target_exit"]
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
         self.num_prev_cdl_for_stop = kwargs["num_prev_cdl_for_stop"]
         self.start_hour = kwargs["start_hour"]
@@ -119,7 +120,7 @@ class SmartTrader():
     
     def main(self):
         while True:
-            print(f"\n------- {self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} {self.systems}-----------")
+            print(f"\n---{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} {self.systems}---")
             is_market_open, is_market_close = util.get_market_status(start_hour=self.start_hour)
 
             if self.security == "STOCK":
@@ -135,11 +136,13 @@ class SmartTrader():
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
+            print(f"{'Risk Config'.ljust(20)}: BE: {self.enable_breakeven} | Trail: {self.enable_trail_stop} | DynRisk: {self.enable_dynamic_position_risk}")
+            print(f"{'Early Exit'.ljust(20)}: Loss Exit{self.max_loss_exit} | Target Exit: {self.max_target_exit}")
 
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if self.limit_profit_loss and (rr <= -1 or rr > 1.1) and (not self.immidiate_exit) and self.sent_result:
+            if  (rr <= -1 and self.max_loss_exit) or (rr > 1.1 and self.max_target_exit) and (not self.immidiate_exit) and self.sent_result:
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
                 self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
@@ -284,7 +287,8 @@ if __name__ == "__main__":
     parser.add_argument('--enable_trail_stop', type=str, help='Enable Trail stop')
     parser.add_argument('--enable_breakeven', type=str, help='Enable breakeven')
     parser.add_argument('--enable_neutralizer', type=str, help='Enable neutralizer')
-    parser.add_argument('--limit_profit_loss', type=str, help='Enable Early Profit')
+    parser.add_argument('--max_loss_exit', type=str, help='Enable Account Protect')
+    parser.add_argument('--max_target_exit', type=str, help='Enable Early Profit')
     parser.add_argument('--enable_dynamic_position_risk', type=str, help='Enable dynamic risk based on past history')
     parser.add_argument('--start_hour', type=int, help='Start Hour Of Trading')
     parser.add_argument('--multiple_positions', type=str, help='How to handle multiple trades at a time: [by_trades, by_active, by_open]')
@@ -304,7 +308,8 @@ if __name__ == "__main__":
     enable_neutralizer = util.boolean(args.enable_neutralizer)
     enable_dynamic_position_risk = util.boolean(args.enable_dynamic_position_risk)
     start_hour = int(args.start_hour)
-    limit_profit_loss = util.boolean(args.limit_profit_loss)
+    max_loss_exit = util.boolean(args.max_loss_exit)
+    max_target_exit = util.boolean(args.max_target_exit)
     strategy = args.strategy
     systems = args.systems.split(",")
     multiple_positions = args.multiple_positions
@@ -312,9 +317,9 @@ if __name__ == "__main__":
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
-                      enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer,limit_profit_loss=limit_profit_loss,
+                      enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
-                      systems=systems, multiple_positions=multiple_positions)
+                      systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit)
 
     win.main()
 

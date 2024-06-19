@@ -13,7 +13,8 @@ set account_risk=1.0
 set each_position_risk=0.1
 set target_ratio=10.0
 set enable_dynamic_position_risk=yes
-set limit_profit_loss=yes
+set max_loss_exit=yes
+set max_target_exit=yes
 
 REM Strategy and System
 set strategy=REVERSE
@@ -33,7 +34,8 @@ python smart_trader.py ^
     --enable_trail_stop %enable_trail_stop% ^
     --enable_breakeven %enable_breakeven% ^
     --enable_neutralizer %enable_neutralizer% ^
-    --limit_profit_loss %limit_profit_loss% ^
+    --max_loss_exit %max_loss_exit% ^
+    --max_target_exit %max_target_exit% ^
     --trades_per_day %trades_per_day% ^
     --num_prev_cdl_for_stop 2 ^
     --each_position_risk %each_position_risk% ^

@@ -12,8 +12,9 @@ REM Risk Management
 set account_risk=1.0
 set each_position_risk=0.05
 set target_ratio=10.0
-set enable_dynamic_position_risk=yes
-set limit_profit_loss=yes
+set enable_dynamic_position_risk=no
+set max_loss_exit=no
+set max_target_exit=no
 
 REM Strategy and System
 set strategy=BREAK
@@ -24,7 +25,7 @@ set security=FOREX
 
 REM Trade Controls
 set enable_trail_stop=no
-set enable_breakeven=no
+set enable_breakeven=yes
 set enable_neutralizer=no
 set multiple_positions=by_open
 
@@ -33,7 +34,8 @@ python smart_trader.py ^
     --enable_trail_stop %enable_trail_stop% ^
     --enable_breakeven %enable_breakeven% ^
     --enable_neutralizer %enable_neutralizer% ^
-    --limit_profit_loss %limit_profit_loss% ^
+    --max_loss_exit %max_loss_exit% ^
+    --max_target_exit %max_target_exit% ^
     --trades_per_day %trades_per_day% ^
     --num_prev_cdl_for_stop 2 ^
     --each_position_risk %each_position_risk% ^
