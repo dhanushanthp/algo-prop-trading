@@ -216,7 +216,11 @@ class SmartTrader():
                 # Once it's active in market then the initial run become deactive
                 self.is_initial_run = False 
 
-                for symbol in curr.get_major_symbols(security=self.security):                    
+                for symbol in curr.get_major_symbols(security=self.security):
+                    # Check is the market has resonable spread
+                    if not self.wrapper.is_reasonable_spread(symbol=symbol, pips_threshold=15):
+                        continue
+
                     for system in self.systems:
                         # Reset trade direction for each system
                         trade_direction = None

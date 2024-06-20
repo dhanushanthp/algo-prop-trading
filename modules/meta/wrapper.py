@@ -6,9 +6,69 @@ from datetime import datetime, timedelta, time
 from modules import config
 from typing import Tuple
 import numpy as np
+from collections import deque
+from typing import Dict
 mt5.initialize()
+import modules.meta.Currencies as curr
 
 class Wrapper:
+    def __init__(self):
+        self.average_spreads:Dict[str, list] = dict()
+
+    def _avg_spread(self, symbol:str, spread:float):
+        """
+        Updates the average spread for a given financial symbol.
+
+        This function maintains a rolling average of the spread values for a specified symbol.
+        If the symbol does not already exist in the `average_spreads` dictionary, it initializes
+        a deque with a maximum length of 20 to store the spread values. The spread value is then
+        appended to the deque for the given symbol.
+
+        Args:
+            symbol (str): The financial symbol (e.g., currency pair) for which the spread is being updated.
+            spread (float): The spread value to be added to the rolling average.
+
+        """
+        if symbol not in self.average_spreads:
+           self.average_spreads[symbol] = deque(maxlen=20)
+        self.average_spreads[symbol].append(spread)
+
+    def is_reasonable_spread(self, symbol:str, pips_threshold:int=15):
+        """
+        Determines if the current spread for a given financial symbol is reasonable.
+
+        This function calculates the current spread for a specified symbol and updates the
+        rolling average spread. It then checks if the spread is within a reasonable range
+        based on predefined thresholds for different types of currency pairs. The function
+        considers JPY pairs and other currencies separately, applying specific rounding and
+        threshold rules.
+
+        Args:
+            symbol (str): The financial symbol (e.g., currency pair) to check the spread for.
+
+        Returns:
+            bool: True if the spread is reasonable, False otherwise.
+
+        """
+        spread = float(self.get_spread(symbol=symbol))
+        self._avg_spread(symbol=symbol, spread=spread)
+        if symbol in curr.master_jpy_pairs:
+            spread = round(np.mean(self.average_spreads[symbol]), 3)
+            pips = int(str(f"{spread:.3f}").split(".")[-1])
+            if pips <= pips_threshold:
+                return True
+            else:
+                print(symbol, pips)
+        elif symbol in curr.master_currencies:
+            spread = round(np.mean(self.average_spreads[symbol]), 5)
+            pips = int(str(f"{spread:.5f}").split(".")[-1])
+            if pips <= pips_threshold:
+                return True
+            else:
+                print(symbol, pips)
+        else:
+            return True
+
     def get_candles_by_index(self, symbol:str, timeframe:int, candle_look_back:int=0):
         """
         Retrieves historical candle data for a specific symbol within a given index range.
@@ -617,8 +677,8 @@ class Wrapper:
 if "__main__" == __name__:
     obj = Wrapper()
     import sys
-    symbol = sys.argv[1]
-    index = int(sys.argv[2])
+    # symbol = sys.argv[1]
+    # index = int(sys.argv[2])
     # timeframe = int(sys.argv[2])
     # timeframe = int(sys.argv[2])
     # start_hour = int(sys.argv[3])
@@ -632,7 +692,7 @@ if "__main__" == __name__:
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
-    print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
+    # print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
     # print(obj.get_traded_symbols())
     # print(obj.any_remaining_trades(max_trades=11))
     # print(obj.get_all_active_positions())
@@ -641,5 +701,13 @@ if "__main__" == __name__:
     # print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
     # print(obj.get_latest_bar_hour(symbol=symbol, timeframe=index))
     # print(obj.get_closed_pnl())
+
+    from modules.meta import Currencies
+    for _ in range(100):
+        for symbol in Currencies.get_major_symbols():
+            print(symbol, obj.is_reasonable_spread(symbol=symbol))
+        print("\n\n\n")
+        import time
+        time.sleep(10)
     
 
