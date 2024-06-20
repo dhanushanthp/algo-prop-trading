@@ -143,6 +143,15 @@ class Indicators:
         if lenth_body_ratio >= ratio:
             return True
     
+
+    def is_wick_candle(self, candle, ratio:float=0.4):
+        body = abs(candle["close"] - candle["open"])
+        total_length = candle["high"] - candle["low"]
+        lenth_body_ratio = round(body/total_length, 1)
+        print(round(lenth_body_ratio, 3))
+        if lenth_body_ratio <= ratio:
+            return True
+    
     
     def hammer_candle(self, symbol, timeframe, index):
         candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)

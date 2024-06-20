@@ -175,6 +175,30 @@ class Strategies:
         
         return None
 
+    def get_heikin_ashi_pre_entry(self, symbol:str, timeframe:int, start:int=0) -> Directions:
+        heikin_ashi_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=timeframe, n_candles=10, start_candle=start)
+
+        offset = 2
+        
+        most_recent_candle_pairs = heikin_ashi_candles.iloc[-(2+offset):-2].copy()
+        most_recent_candle_pairs["bullish"] = most_recent_candle_pairs["open"] == most_recent_candle_pairs["low"]
+        most_recent_candle_pairs["bearish"] = most_recent_candle_pairs["open"] == most_recent_candle_pairs["high"]
+        index_of_most_recent = most_recent_candle_pairs.index[0] - 1
+
+        previous_candle = heikin_ashi_candles.iloc[-1]
+
+        # Short Trade Positioning
+        if all(most_recent_candle_pairs["bearish"]):
+            if self.indicators.is_wick_candle(candle=previous_candle, ratio=0.1):
+                return Directions.LONG
+                    
+        # Long Trade Positioning
+        if all(most_recent_candle_pairs["bullish"]):
+            if self.indicators.is_wick_candle(candle=previous_candle, ratio=0.1):
+                return Directions.SHORT
+        
+        return None
+
 
     def get_four_candle_pullback(self, symbol, timeframe=60, extrame=False) -> Directions:
         """

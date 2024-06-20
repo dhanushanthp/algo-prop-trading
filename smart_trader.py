@@ -137,7 +137,7 @@ class SmartTrader():
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
             print(f"{'Risk Config'.ljust(20)}: [BE: {util.cl(self.enable_breakeven)}] [Trail: {util.cl(self.enable_trail_stop)}] [DynRisk: {util.cl(self.enable_dynamic_position_risk)}]")
-            print(f"{'Early Exit'.ljust(20)}: [Loss Exit: {util.cl(self.max_loss_exit)}] [Target Exit: {util.cl(self.max_target_exit)}]")
+            print(f"{'Early Exit'.ljust(20)}: [Loss Exit: {util.cl(self.max_loss_exit)}] [Target Exit: {util.cl(self.max_target_exit)}] [Neutraliser: {util.cl(self.enable_neutralizer)}]")
 
             self.orders.cancel_all_pending_orders()
 
@@ -257,6 +257,9 @@ class SmartTrader():
                             
                             case "HEIKIN_ASHI":
                                 trade_direction = self.strategies.get_heikin_ashi_reversal(symbol=symbol, 
+                                                                                           timeframe=self.trading_timeframe)
+                            case "HEIKIN_ASHI_PRE":
+                                trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
                                                                                            timeframe=self.trading_timeframe)
                                 
                         if trade_direction:
