@@ -703,11 +703,11 @@ if "__main__" == __name__:
     # print(obj.get_closed_pnl())
 
     from modules.meta import Currencies
-    for _ in range(100):
+    while True:
         for symbol in Currencies.get_major_symbols():
             print(symbol, obj.is_reasonable_spread(symbol=symbol))
         print("\n\n\n")
         import time
-        time.sleep(10)
+        time.sleep(15)
     
 
