@@ -25,7 +25,7 @@ set security=FOREX
 
 REM Trade Controls
 set enable_trail_stop=no
-set enable_breakeven=no
+set enable_breakeven=yes
 set enable_neutralizer=yes
 set multiple_positions=by_trades
 
