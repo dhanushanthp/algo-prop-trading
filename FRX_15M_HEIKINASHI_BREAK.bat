@@ -12,9 +12,9 @@ REM Risk Management
 set account_risk=1.0
 set each_position_risk=0.05
 set target_ratio=10.0
-set enable_dynamic_position_risk=no
-set max_loss_exit=no
-set max_target_exit=no
+set enable_dynamic_position_risk=yes
+set max_loss_exit=yes
+set max_target_exit=yes
 
 REM Strategy and System
 set strategy=BREAK
@@ -27,7 +27,7 @@ REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=yes
 set enable_neutralizer=no
-set multiple_positions=by_open
+set multiple_positions=by_trades
 
 python smart_trader.py ^
     --strategy %strategy% ^
