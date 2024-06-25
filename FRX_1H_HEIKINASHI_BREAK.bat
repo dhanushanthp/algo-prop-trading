@@ -10,15 +10,15 @@ set trades_per_day=100
 
 REM Risk Management
 set account_risk=1.0
-set each_position_risk=0.1
+set each_position_risk=0.05
 set target_ratio=10.0
 set enable_dynamic_position_risk=no
 set max_loss_exit=yes
 set max_target_exit=yes
 
 REM Strategy and System
-set strategy=REVERSE
-set systems=4CDL_PULLBACK_EXT
+set strategy=BREAK
+set systems=HEIKIN_ASHI
 
 REM Security
 set security=FOREX
@@ -26,7 +26,7 @@ set security=FOREX
 REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=yes
-set enable_neutralizer=yes
+set enable_neutralizer=no
 set multiple_positions=by_trades
 
 python smart_trader.py ^
