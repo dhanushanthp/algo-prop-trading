@@ -255,9 +255,10 @@ class SmartTrader():
                                 min_gap = 2 if self.trading_timeframe==60 else 4
                                 trade_direction = self.strategies.daily_high_low_breakout_double_high_hit(symbol=symbol, 
                                                                                                          timeframe=self.trading_timeframe,
-                                                                                                         min_gap=4)
+                                                                                                         min_gap=min_gap)
                         
                             case "WEEKLY_HL":
+                                min_gap = 2
                                 trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
                                                                                            timeframe=self.trading_timeframe,
                                                                                            min_gap=2)
