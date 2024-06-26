@@ -29,6 +29,8 @@ set enable_breakeven=yes
 set enable_neutralizer=no
 set multiple_positions=by_trades
 
+set record_pnl=yes
+
 python smart_trader.py ^
     --strategy %strategy% ^
     --enable_trail_stop %enable_trail_stop% ^
@@ -46,4 +48,5 @@ python smart_trader.py ^
     --start_hour %start_hour% ^
     --enable_dynamic_position_risk %enable_dynamic_position_risk% ^
     --multiple_positions %multiple_positions% ^
+    --record_pnl %record_pnl% ^
     --target_ratio %target_ratio%
