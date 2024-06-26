@@ -161,8 +161,10 @@ class SmartTrader():
                 
                 self.sent_result = False # Once sent, Disable
             
-            if self.record_pnl:
-                files_util.record_pnl(pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage)
+            if self.record_pnl and not self.immidiate_exit:
+                # Only record when we have actual trades
+                if not self.wrapper.get_todays_trades().empty:
+                    files_util.record_pnl(pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
 
             # Each position trail stop
             if self.enable_trail_stop:
