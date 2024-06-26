@@ -1,12 +1,17 @@
 import pandas as pd
 from datetime import datetime
 import os
+from modules.meta import util
 
 def check_file_exists(file_path):
     if os.path.isfile(file_path):
         return True
     else:
         return False
+
+def create_directory_if_not_exists(directory_path):
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
     
 def update_pnl(file_name:str, system:str, strategy:str, pnl:float, rr:float, each_pos_percentage:float):
     """
@@ -26,9 +31,7 @@ def update_pnl(file_name:str, system:str, strategy:str, pnl:float, rr:float, eac
     and writes the updated data back to 'trade_tracker.csv'.
     """
     file_name = f"data/trade_tracker_{file_name}.csv"
-    
-    # TODO Change the date to server Date rather local date
-    current_date_str = datetime.now().strftime("%Y-%m-%d")
+    current_date_str = util.get_current_time().strftime('%Y-%m-%d')
     
     if check_file_exists(file_path=file_name):
         df = pd.read_csv(file_name)
@@ -108,6 +111,36 @@ def get_most_risk_percentage(file_name:str, **kwargs):
         return df["risk_percentage"].iloc[-1], selected_strategy
 
     return MINIMUM_RISK, selected_strategy
+
+
+def record_pnl(pnl, rr, risk_per):
+    """
+    Records profit and loss (PnL) data along with risk and reward ratios to a CSV file.
+    
+    This function saves the provided PnL, risk-reward ratio, and risk percentage data to a CSV file named
+    with the current date in the format 'YYYY-MM-DD.csv'. The file is stored in a directory specific to the
+    server's IP address, under 'data/pnl/'.
+
+    Args:
+        pnl (float): The profit or loss value to be recorded.
+        rr (float): The risk-reward ratio to be recorded.
+        risk_per (float): The risk percentage to be recorded.
+    
+    Side Effects:
+        Creates a directory for storing PnL files if it does not already exist.
+        Appends a line to a CSV file with the current timestamp, pnl, rr, and risk_per values.
+
+    Utilizes:
+        util.get_server_ip(): Retrieves the IP address of the server.
+        util.get_current_time(): Retrieves the current time.
+        create_directory_if_not_exists(directory_path): Ensures the target directory exists.
+    """
+    dir_path = f"data/pnl/{util.get_server_ip()}"
+    create_directory_if_not_exists(directory_path=dir_path)
+    current_date = util.get_current_time().strftime('%Y-%m-%d')
+    file_path = f"{dir_path}/{current_date}.csv"
+    with open(file_path, mode="a") as file:
+        file.write(f"{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{round(pnl, 2)},{round(rr, 2)},{risk_per}\n")
 
 if __name__ == "__main__":
     # update_pnl("testing", "4_CDL", "REVERSE" , 100, -1.2, 0.15)

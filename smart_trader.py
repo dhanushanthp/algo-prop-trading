@@ -162,7 +162,7 @@ class SmartTrader():
                 self.sent_result = False # Once sent, Disable
             
             if self.record_pnl:
-                pass
+                files_util.record_pnl(pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage)
 
             # Each position trail stop
             if self.enable_trail_stop:
@@ -303,6 +303,7 @@ if __name__ == "__main__":
     parser.add_argument('--enable_dynamic_position_risk', type=str, help='Enable dynamic risk based on past history')
     parser.add_argument('--start_hour', type=int, help='Start Hour Of Trading')
     parser.add_argument('--multiple_positions', type=str, help='How to handle multiple trades at a time: [by_trades, by_active, by_open]')
+    parser.add_argument('--record_pnl', type=str, help='Enable to track the PnL')
     
     
     args = parser.parse_args()
