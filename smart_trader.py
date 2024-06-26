@@ -46,6 +46,7 @@ class SmartTrader():
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
         self.num_prev_cdl_for_stop = kwargs["num_prev_cdl_for_stop"]
         self.start_hour = kwargs["start_hour"]
+        self.record_pnl = kwargs["record_pnl"]
         
 
         # External dependencies
@@ -160,6 +161,9 @@ class SmartTrader():
                 
                 self.sent_result = False # Once sent, Disable
             
+            if self.record_pnl:
+                pass
+
             # Each position trail stop
             if self.enable_trail_stop:
                 self.risk_manager.trailing_stop_and_target(stop_multiplier=self.stop_ratio, 
@@ -320,13 +324,14 @@ if __name__ == "__main__":
     strategy = args.strategy
     systems = args.systems.split(",")
     multiple_positions = args.multiple_positions
+    record_pnl = util.boolean(args.record_pnl)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
-                      systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit)
+                      systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl)
 
     win.main()
 

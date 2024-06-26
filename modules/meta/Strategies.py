@@ -125,6 +125,7 @@ class Strategies:
         offset = 2
         max_gap = 4
         max_previous_pair_check = 10
+        max_previous_pair_check = min(max_previous_pair_check, len(heikin_ashi_candles) - 2)
         
         most_recent_candle_pairs = heikin_ashi_candles.iloc[-(1+offset):-1].copy()
         most_recent_candle_pairs["bullish"] = most_recent_candle_pairs["open"] == most_recent_candle_pairs["low"]
