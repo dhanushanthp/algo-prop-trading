@@ -74,7 +74,7 @@ class SmartTrader():
         curr.ticker_initiator(security=self.security)
 
 
-    def trade(self, direction:Directions, symbol:str, reference:str, break_level:float, market_entry:bool=False) -> bool:
+    def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False) -> bool:
         """
         Executes a trade based on the given strategy and direction.
 
@@ -109,7 +109,7 @@ class SmartTrader():
 
             if method:
                 status = method(symbol=symbol, 
-                                reference=f"{reference}_{self.risk_manager.strategy}", 
+                                reference=f"{comment}", 
                                 break_level=break_level, 
                                 trading_timeframe=self.trading_timeframe,
                                 num_cdl_for_stop=self.num_prev_cdl_for_stop,
@@ -181,7 +181,7 @@ class SmartTrader():
                     if self.risk_manager.strategy==Directions.REVERSE.name:
                         direction = Directions.LONG if direction == Directions.SHORT else Directions.SHORT
 
-                    if self.trade(direction=direction, symbol=symbol, reference=f"NEUTRAL", break_level=-1, market_entry=True):
+                    if self.trade(direction=direction, symbol=symbol, comment=f"NEUTRAL", break_level=-1, market_entry=True):
                         break
             
             if self.enable_breakeven:
@@ -230,6 +230,7 @@ class SmartTrader():
                     for system in self.systems:
                         # Reset trade direction for each system
                         trade_direction = None
+                        comment = system
 
                         match system:
                             case "3CDL_STR":
@@ -274,7 +275,8 @@ class SmartTrader():
                                                                                            timeframe=self.trading_timeframe)
                             
                             case "U_REVERSAL":
-                                trade_direction = self.strategies.get_u_reversal(symbol=symbol, 
+                                # TODO Introduce namedtuple for this tuple
+                                trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
                                                                                  timeframe=self.trading_timeframe)
                                 
                         if trade_direction:
@@ -285,7 +287,7 @@ class SmartTrader():
                                                                                       multiple_positions=self.multiple_positions)
                             
                             if is_valid_signal:
-                                if self.trade(direction=trade_direction, symbol=symbol, reference=system, break_level=-1):
+                                if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1):
                                     break # Break the symbol loop
 
             time.sleep(self.timer)

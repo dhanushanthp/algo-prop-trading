@@ -2,7 +2,7 @@ from modules.common.Directions import Directions
 from modules.meta.wrapper import Wrapper
 from modules.meta import util
 from modules.meta.Indicators import Indicators
-from typing import Dict
+from typing import Dict, Tuple
 
 
 class Strategies:
@@ -263,7 +263,7 @@ class Strategies:
         return None
 
 
-    def get_u_reversal(self, symbol:str, timeframe:int, verbose=False) -> Directions:
+    def get_u_reversal(self, symbol:str, timeframe:int, verbose=False) -> Tuple[Directions, str]:
         """
         Detects U-shaped reversals in the price action of a given symbol using a specified timeframe.
         
@@ -307,10 +307,11 @@ class Strategies:
                 prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
 
                 if prev_candle["low"] < break_point and prev_candle["high"] > break_point and (prev_candle["open"] > prev_candle["close"]):
+                    comment = util.get_traded_time(epoch=start_candle['time']).strftime("%H:%M:%S")
                     if verbose:
                         print(f"3CDL Start: {util.get_traded_time(epoch=start_candle['time'])}")
                     
-                    return Directions.SHORT
+                    return Directions.SHORT, comment
 
             if three_cdl_strike == Directions.SHORT:
                 start_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=i+2)
@@ -318,11 +319,13 @@ class Strategies:
                 prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
 
                 if prev_candle["high"] > break_point and prev_candle["low"] < break_point and (prev_candle["open"] < prev_candle["close"]):
+                    comment = util.get_traded_time(epoch=start_candle['time']).strftime("%H:%M:%S")
                     if verbose:
                         print(f"3CDL Start: {util.get_traded_time(epoch=start_candle['time'])}")
                     
-                    return Directions.LONG
-        return None
+                    return Directions.LONG, comment
+        
+        return None, None
 
     
     def daily_high_low_breakouts(self, symbol:str, timeframe:int, min_gap:int=2) -> Directions:
