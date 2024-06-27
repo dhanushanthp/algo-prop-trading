@@ -1,5 +1,6 @@
 from modules.common.Directions import Directions
 from modules.meta.wrapper import Wrapper
+from modules.meta import util
 from modules.meta.Indicators import Indicators
 from typing import Dict
 
@@ -10,7 +11,7 @@ class Strategies:
         self.indicators:Indicators = indicators
         self.heikin_ashi_tracker:Dict[str, list] = dict()
 
-    def get_three_candle_strike(self, symbol, timeframe=60, start_candle=1) -> Directions:
+    def get_three_candle_strike(self, symbol:str, timeframe:int, start_candle=1) -> Directions:
         """
         Determines the direction of a three-candle with given conditions
 
@@ -201,7 +202,7 @@ class Strategies:
         return None
 
 
-    def get_four_candle_pullback(self, symbol, timeframe=60, extrame=False) -> Directions:
+    def get_four_candle_pullback(self, symbol:str, timeframe:int, extrame=False) -> Directions:
         """
         Determines the directional change based on four-candle pattern analysis.
 
@@ -259,6 +260,68 @@ class Strategies:
                     ((prev_candle["high"] > prev_to_prev_candle["high"]) and extrame):
                     return Directions.SHORT
         
+        return None
+
+
+    def get_u_reversal(self, symbol:str, timeframe:int, verbose=False) -> Directions:
+        """
+        Detects U-shaped reversals in the price action of a given symbol using a specified timeframe.
+        
+        This method scans through the historical candle data of a symbol to identify a specific 
+        candlestick pattern known as the "three candle strike" which can indicate a reversal point 
+        in the market. If a valid reversal is detected, it returns the direction of the reversal 
+        (LONG or SHORT). If no reversal is detected, it returns None.
+
+        This also function as 4CDL reversal extrame case when the previous candle breaks the first 
+        candle of 3 candle strike
+
+        Args:
+            symbol (str): The trading symbol to analyze.
+            timeframe (int, optional): The timeframe of the candles to analyze, in minutes. Defaults to 60.
+            verbose (bool, optional): If True, prints the time of the detected reversal for debugging 
+                                    purposes. Defaults to False.
+
+        Returns:
+            Directions: An enum indicating the direction of the reversal (LONG or SHORT). Returns None 
+                        if no reversal pattern is detected.
+
+        Raises:
+            ValueError: If the symbol data cannot be retrieved or processed correctly.
+
+        Example:
+            direction = get_u_reversal('AAPL', timeframe=60, verbose=True)
+            if direction == Directions.LONG:
+                print("U-shaped reversal detected: LONG")
+            elif direction == Directions.SHORT:
+                print("U-shaped reversal detected: SHORT")
+            else:
+                print("No U-shaped reversal detected.")
+        """
+        number_of_aval_candles = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=0).shape[0]
+
+        for i in range(2, number_of_aval_candles):
+            three_cdl_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=i)
+            if three_cdl_strike == Directions.LONG:
+                start_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=i+2)
+                break_point = start_candle["low"]
+                prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+
+                if prev_candle["low"] < break_point and prev_candle["high"] > break_point:
+                    if verbose:
+                        print(f"3CDL Start: {util.get_traded_time(epoch=start_candle['time'])}")
+                    
+                    return Directions.SHORT
+
+            if three_cdl_strike == Directions.SHORT:
+                start_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=i+2)
+                break_point = start_candle["high"]
+                prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+
+                if prev_candle["high"] > break_point and prev_candle["low"] < break_point:
+                    if verbose:
+                        print(f"3CDL Start: {util.get_traded_time(epoch=start_candle['time'])}")
+                    
+                    return Directions.LONG
         return None
 
     
@@ -493,3 +556,13 @@ if __name__ == "__main__":
                     output = strat_obj.get_heikin_ashi_reversal(symbol=symbol, timeframe=timeframe, start=i)
                     if output:
                         print(i, output)
+        
+        case "U_REVERSAL":
+            if batch=="y":
+                for symbol in curr.master_currencies:
+                    output = strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe, verbose=True)
+                    if output:
+                        print(symbol, output)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe, verbose=True))

@@ -272,6 +272,10 @@ class SmartTrader():
                             case "HEIKIN_ASHI_PRE":
                                 trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
                                                                                            timeframe=self.trading_timeframe)
+                            
+                            case "U_REVERSAL":
+                                trade_direction = self.strategies.get_u_reversal(symbol=symbol, 
+                                                                                 timeframe=self.trading_timeframe)
                                 
                         if trade_direction:
                             is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,

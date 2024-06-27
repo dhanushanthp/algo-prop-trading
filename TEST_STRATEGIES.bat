@@ -10,3 +10,4 @@ python modules\meta\Strategies.py 4CDL_REV y 240
 python modules\meta\Strategies.py 4CDL_REV_EXT y 240
 python modules\meta\Strategies.py D_TOP_BOTTOM y 240
 python modules\meta\Strategies.py HEIKIN_ASHI y 15
+python modules\meta\Strategies.py U_REVERSAL y 15
