@@ -306,7 +306,7 @@ class Strategies:
                 break_point = start_candle["low"]
                 prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
 
-                if prev_candle["low"] < break_point and prev_candle["high"] > break_point:
+                if prev_candle["low"] < break_point and prev_candle["high"] > break_point and (prev_candle["open"] > prev_candle["close"]):
                     if verbose:
                         print(f"3CDL Start: {util.get_traded_time(epoch=start_candle['time'])}")
                     
@@ -317,7 +317,7 @@ class Strategies:
                 break_point = start_candle["high"]
                 prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
 
-                if prev_candle["high"] > break_point and prev_candle["low"] < break_point:
+                if prev_candle["high"] > break_point and prev_candle["low"] < break_point and (prev_candle["open"] < prev_candle["close"]):
                     if verbose:
                         print(f"3CDL Start: {util.get_traded_time(epoch=start_candle['time'])}")
                     
