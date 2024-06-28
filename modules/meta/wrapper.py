@@ -372,12 +372,17 @@ class Wrapper:
         return mt5.copy_rates_from_pos(symbol, util.match_timeframe(timeframe), 0, 1)[-1]
     
 
-    def get_all_active_positions(self) -> pd.DataFrame:
+    def get_all_active_positions(self, raw:bool=False):
         positions = mt5.positions_get()
-        if len(positions) > 0:
-            return pd.DataFrame(list(positions),columns=positions[0]._asdict().keys())
+        if raw:
+            return list(positions)
+        else:
+            if len(positions) > 0:
+                return pd.DataFrame(list(positions),columns=positions[0]._asdict().keys())
 
-        return pd.DataFrame()
+            return pd.DataFrame()
+    
+    
     
     
     def limit_trades_by_same_timeframe(self, timeframe:int) -> list:

@@ -67,6 +67,36 @@ class RiskManager:
         
         return False
     
+    
+    def close_positions_by_time(self, timeframe:int, wait_factor:int):
+        """
+        Identify and list active trading positions that have exceeded their allowable time limit.
+        
+        This function retrieves all active trading positions and determines which ones should be closed 
+        based on the specified timeframe and wait factor. Positions that have been active for longer than 
+        the calculated maximum allowable time will be included in the returned list.
+
+        Args:
+            timeframe (int): The base timeframe in minutes for which a position is expected to be held.
+            wait_factor (int): A multiplier applied to the base timeframe to determine the maximum allowable time.
+
+        Returns:
+            list: A list of positions that should be closed based on the time criteria.
+        """
+        
+        active_positions = self.wrapper.get_all_active_positions(raw=True)
+        current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+        list_to_close = []
+        
+        for obj in active_positions:
+            trade_time =  util.get_traded_time(epoch=obj.time)
+            max_limit_time = trade_time + timedelta(minutes=timeframe*wait_factor)
+            if current_time > max_limit_time:
+                list_to_close.append(obj)
+        
+        return list_to_close
+
+    
     def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades"):
         """
         Check the validity of a trading signal based on various criteria.
@@ -638,7 +668,7 @@ class RiskManager:
         return True
 
 if __name__ == "__main__":
-    obj = RiskManager(stop_ratio=1, target_ratio=3)
+    obj = RiskManager(stop_ratio=1, target_ratio=3, strategy="dynamic")
     import sys
     test_symbol = sys.argv[1]
     decision = sys.argv[2]
@@ -685,3 +715,7 @@ if __name__ == "__main__":
 
         case "neutral":
             print(obj.neutralizer())
+
+        case "close_by_time":
+            for i in obj.close_positions_by_time(15, 3):
+                print(i.symbol)
