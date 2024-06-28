@@ -717,5 +717,5 @@ if __name__ == "__main__":
             print(obj.neutralizer())
 
         case "close_by_time":
-            for i in obj.close_positions_by_time(15, 3):
+            for i in obj.close_positions_by_time(60, 3):
                 print(i.symbol)

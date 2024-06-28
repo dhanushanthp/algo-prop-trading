@@ -47,8 +47,8 @@ class SmartTrader():
         self.num_prev_cdl_for_stop = kwargs["num_prev_cdl_for_stop"]
         self.start_hour = kwargs["start_hour"]
         self.record_pnl = kwargs["record_pnl"]
+        self.close_by_time = kwargs["close_by_time"]
         
-
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
                                         position_risk=self.each_position_risk, 
@@ -143,7 +143,7 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if  ((rr <= -1 and self.max_loss_exit) or (rr > 1.1 and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
+            if ((rr <= -1 and self.max_loss_exit) or (rr > 1.1 and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
                 self.immidiate_exit = True
                 self.orders.close_all_positions()
                 self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
@@ -161,6 +161,12 @@ class SmartTrader():
                 
                 self.sent_result = False # Once sent, Disable
             
+            
+            if self.close_by_time:
+                positions = self.risk_manager.close_positions_by_time(timeframe=self.trading_timeframe, wait_factor=3)
+                for obj in positions:
+                    self.orders.close_single_position(obj=obj)
+
             if self.record_pnl and not self.immidiate_exit:
                 # Only record when we have actual trades
                 if not self.wrapper.get_todays_trades().empty:
@@ -313,6 +319,7 @@ if __name__ == "__main__":
     parser.add_argument('--start_hour', type=int, help='Start Hour Of Trading')
     parser.add_argument('--multiple_positions', type=str, help='How to handle multiple trades at a time: [by_trades, by_active, by_open]')
     parser.add_argument('--record_pnl', type=str, help='Enable to track the PnL')
+    parser.add_argument('--close_by_time', type=str, help='Close positions after x min')
     
     
     args = parser.parse_args()
@@ -335,13 +342,15 @@ if __name__ == "__main__":
     systems = args.systems.split(",")
     multiple_positions = args.multiple_positions
     record_pnl = util.boolean(args.record_pnl)
+    close_by_time = util.boolean(args.close_by_time)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
-                      systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl)
+                      systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
+                      close_by_time=close_by_time)
 
     win.main()
 
