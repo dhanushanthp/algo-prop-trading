@@ -326,7 +326,7 @@ class Strategies:
         number_of_aval_candles = today_candles.shape[0]
 
         for i in range(2, number_of_aval_candles - 1):
-            three_cdl_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=i, ignore_body=True)
+            three_cdl_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=i)
 
             # Find the candles which are in middle of the break point and the trade decision candle
             candles_in_middle = today_candles.iloc[number_of_aval_candles-(i+2): number_of_aval_candles-2]
