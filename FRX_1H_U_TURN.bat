@@ -27,7 +27,7 @@ REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=yes
 set enable_neutralizer=no
-set multiple_positions=by_trades
+set multiple_positions=by_open
 
 set record_pnl=yes
 
