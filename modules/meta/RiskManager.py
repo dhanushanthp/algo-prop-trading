@@ -69,34 +69,27 @@ class RiskManager:
     
     def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades"):
         """
-        Checks the validity of a trade signal based on the given strategy and active positions or today's trades.
-        by disabling `by_active_positions` we only give one chance in each direction for any specific symbol
+        Check the validity of a trading signal based on various criteria.
 
         Args:
             symbol (str): The trading symbol to check.
+            timeframe (int): The timeframe of the trade in minutes.
             trade_direction (Directions): The direction of the trade (LONG or SHORT).
-            strategy (str): The trading strategy being used.
-            by_active_positions (bool, optional): If True, check validity based on active positions; 
-                                                if False, check based on today's trades, which is limited to 2. Defaults to True.
+            strategy (str): The trading strategy to use.
+            multiple_positions (str, optional): The policy for handling multiple positions.
+                Defaults to "by_trades". Valid options are:
+                - "by_active": Only one active position in the same direction per symbol.
+                - "by_trades": Only one trade per direction per symbol per day.
+                - "by_open": Time gap enforcement between trades for the same symbol, Beyond that time the trade can be taken on any direction
 
         Returns:
-            bool: True if the trade signal is valid, False otherwise.
+            bool: True if the signal is valid based on the criteria, False otherwise.
 
-        The function operates as follows:
-        
-        - If the strategy is REVERSE, the trade direction is flipped (LONG to SHORT or SHORT to LONG).
-        - If `by_active_positions` is True, it checks active positions:
-            - If there are no active positions for the given symbol, the trade is valid.
-            - If there are active positions, it ensures no active positions exist in the same direction.
-        - If `by_active_positions` is False, it checks today's trades:
-            - If there are no trades for the given symbol today, the trade is valid.
-            - If there are trades, it ensures no trades exist in the same direction.
-
-        Note:
-            - In the context of active positions, LONG trades must not coincide with any active LONG positions, 
-            and SHORT trades must not coincide with any active SHORT positions.
-            - In the context of today's trades, a LONG trade must not coincide with any previous LONG trades, 
-            and a SHORT trade must not coincide with any previous SHORT trades.
+        Notes:
+            - If `strategy` is set to Directions.REVERSE.name, the trade direction is reversed.
+            - For `multiple_positions == "by_active"`, only one active position in the same direction per symbol is allowed.
+            - For `multiple_positions == "by_trades"`, only one trade per direction per symbol per day is allowed.
+            - For `multiple_positions == "by_open"`, there must be a specific time gap between trades for the same symbol.
         """
         if strategy==Directions.REVERSE.name:
             trade_direction = Directions.LONG if trade_direction == Directions.SHORT else Directions.SHORT
