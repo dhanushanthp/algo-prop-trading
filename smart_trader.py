@@ -137,9 +137,19 @@ class SmartTrader():
             print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
-            print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
-            print(f"{'Risk Config'.ljust(20)}: [BE: {util.cl(self.enable_breakeven)}] [Trail: {util.cl(self.enable_trail_stop)}] [DynRisk: {util.cl(self.enable_dynamic_position_risk)}] [Rcd PnL: {util.cl(self.record_pnl)}] [CLS by SLD CDL {util.cl(self.close_by_solid_cdl)}]")
-            print(f"{'Early Exit'.ljust(20)}: [Loss Exit: {util.cl(self.max_loss_exit)}] [Target Exit: {util.cl(self.max_target_exit)}] [Neutraliser: {util.cl(self.enable_neutralizer)}] [Close by Time: {util.cl(self.close_by_time)}]")
+            print(f"{'RR'.ljust(20)}: {round(rr, 2)}\n")
+            
+            print(f"{'Break Even'.ljust(20)}: {util.cl(self.enable_breakeven)}")
+            print(f"{'Trail Stop'.ljust(20)}: {util.cl(self.enable_trail_stop)}")
+            print(f"{'Dynamic Risk'.ljust(20)}: {util.cl(self.enable_dynamic_position_risk)}")
+            print(f"{'Record PnL'.ljust(20)}: {util.cl(self.record_pnl)}\n")
+
+            print(f"{'Close by Solid CDL'.ljust(20)}: {util.cl(self.close_by_solid_cdl)}")
+            print(f"{'Close by Time'.ljust(20)}: {util.cl(self.close_by_time)}\n")
+
+            print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
+            print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
+            print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)}")
 
             self.orders.cancel_all_pending_orders()
 
