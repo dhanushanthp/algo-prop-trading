@@ -48,6 +48,7 @@ class SmartTrader():
         self.start_hour = kwargs["start_hour"]
         self.record_pnl = kwargs["record_pnl"]
         self.close_by_time = kwargs["close_by_time"]
+        self.close_by_solid_cdl = kwargs["close_by_solid_cdl"]
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -137,7 +138,7 @@ class SmartTrader():
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
-            print(f"{'Risk Config'.ljust(20)}: [BE: {util.cl(self.enable_breakeven)}] [Trail: {util.cl(self.enable_trail_stop)}] [DynRisk: {util.cl(self.enable_dynamic_position_risk)}] [Rcd PnL: {util.cl(self.record_pnl)}]")
+            print(f"{'Risk Config'.ljust(20)}: [BE: {util.cl(self.enable_breakeven)}] [Trail: {util.cl(self.enable_trail_stop)}] [DynRisk: {util.cl(self.enable_dynamic_position_risk)}] [Rcd PnL: {util.cl(self.record_pnl)}] [CLS by SLD CDL {util.cl(self.close_by_solid_cdl)}]")
             print(f"{'Early Exit'.ljust(20)}: [Loss Exit: {util.cl(self.max_loss_exit)}] [Target Exit: {util.cl(self.max_target_exit)}] [Neutraliser: {util.cl(self.enable_neutralizer)}] [Close by Time: {util.cl(self.close_by_time)}]")
 
             self.orders.cancel_all_pending_orders()
@@ -164,6 +165,11 @@ class SmartTrader():
             
             if self.close_by_time:
                 positions = self.risk_manager.close_positions_by_time(timeframe=self.trading_timeframe, wait_factor=3)
+                for obj in positions:
+                    self.orders.close_single_position(obj=obj)
+
+            if self.close_by_solid_cdl:
+                positions = self.risk_manager.close_positions_by_solid_candle(timeframe=self.trading_timeframe, wait_factor=1, close_check_candle=1)
                 for obj in positions:
                     self.orders.close_single_position(obj=obj)
 
@@ -320,6 +326,7 @@ if __name__ == "__main__":
     parser.add_argument('--multiple_positions', type=str, help='How to handle multiple trades at a time: [by_trades, by_active, by_open]')
     parser.add_argument('--record_pnl', type=str, help='Enable to track the PnL')
     parser.add_argument('--close_by_time', type=str, help='Close positions after x min')
+    parser.add_argument('--close_by_solid_cdl', type=str, help='Close positions by solid candle after x min')
     
     
     args = parser.parse_args()
@@ -343,6 +350,8 @@ if __name__ == "__main__":
     multiple_positions = args.multiple_positions
     record_pnl = util.boolean(args.record_pnl)
     close_by_time = util.boolean(args.close_by_time)
+    close_by_solid_cdl = util.boolean(args.close_by_solid_cdl)
+    
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -350,7 +359,7 @@ if __name__ == "__main__":
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
                       systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
-                      close_by_time=close_by_time)
+                      close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl)
 
     win.main()
 

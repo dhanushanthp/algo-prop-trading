@@ -373,6 +373,18 @@ class Wrapper:
     
 
     def get_all_active_positions(self, raw:bool=False):
+        """
+        Retrieves all active trading positions.
+
+        This method fetches all currently active positions from the MetaTrader 5 platform. By default, it returns a pandas
+        DataFrame containing the positions. If the `raw` parameter is set to True, it returns the raw list of positions.
+
+        Args:
+            raw (bool, optional): If True, returns the raw list of positions. If False, returns a pandas DataFrame. Default is False.
+
+        Returns:
+            list or pandas.DataFrame: A list of positions if `raw` is True, otherwise a pandas DataFrame containing the positions.
+        """
         positions = mt5.positions_get()
         if raw:
             return list(positions)

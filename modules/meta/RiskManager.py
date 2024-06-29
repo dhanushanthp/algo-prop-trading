@@ -95,6 +95,45 @@ class RiskManager:
                 list_to_close.append(obj)
         
         return list_to_close
+    
+    def close_positions_by_solid_candle(self, timeframe:int, wait_factor:int=1, close_check_candle:int=1):
+        """
+        Evaluates and identifies active trading positions to close based on the presence of a solid candle in the given timeframe.
+
+        This method fetches all active positions and checks each position to determine if it should be closed. A position
+        is considered for closing if the time since it was opened exceeds the specified `timeframe` multiplied by `wait_factor`.
+        For each such position, the method checks if the candle at the `close_check_candle` index is solid (based on a
+        provided ratio). If the position is a long position (type 0) and the candle's closing price is higher than its opening
+        price, or if the position is a short position (type 1) and the candle's closing price is lower than its opening price,
+        the position is added to the list of positions to be closed.
+
+        Args:
+            timeframe (int): The timeframe in minutes used to evaluate the maximum holding period of a position.
+            wait_factor (int, optional): A multiplier applied to the timeframe to calculate the maximum limit time for holding a position. Default is 1.
+            close_check_candle (int, optional): The index of the candle to check for solidity to determine if a position should be closed. Default is 1.
+
+        Returns:
+            list: A list of positions that meet the criteria for closing based on the candle analysis.
+        """
+        active_positions = self.wrapper.get_all_active_positions(raw=True)
+        current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+        list_to_close = []
+        
+        for obj in active_positions:
+            trade_time =  util.get_traded_time(epoch=obj.time)
+            max_limit_time = trade_time + timedelta(minutes=timeframe*wait_factor)
+            if current_time > max_limit_time:
+                is_prev_solid_candle = self.indicators.is_solid_candle(symbol=obj.symbol, timeframe=timeframe, index=close_check_candle, ratio=0.6)
+                prev_candle = self.wrapper.get_candle_i(symbol=obj.symbol, timeframe=timeframe, i=close_check_candle)
+                if is_prev_solid_candle:
+                    if obj.type == 0:
+                        if prev_candle["close"] > prev_candle["open"]:
+                            list_to_close.append(obj)
+                    elif obj.type == 1:
+                        if prev_candle["close"] < prev_candle["open"]:
+                            list_to_close.append(obj)
+        
+        return list_to_close
 
     
     def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades"):

@@ -30,7 +30,8 @@ set enable_neutralizer=yes
 set multiple_positions=by_trades
 
 set record_pnl=yes
-set close_by_time=yes
+set close_by_time=no
+set close_by_solid_cdl=yes
 
 python smart_trader.py ^
     --strategy %strategy% ^
@@ -51,4 +52,5 @@ python smart_trader.py ^
     --multiple_positions %multiple_positions% ^
     --record_pnl %record_pnl% ^
     --close_by_time %close_by_time% ^
+    --close_by_solid_cdl %close_by_solid_cdl% ^
     --target_ratio %target_ratio%
