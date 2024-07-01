@@ -377,7 +377,7 @@ class Strategies:
 
                     if prev_candle["low"] < break_point and prev_candle["high"] > break_point and (prev_candle["open"] > prev_candle["close"]) and not is_break_overrided:
                         comment = util.get_traded_time(epoch=start_candle['time']).strftime("%H:%M:%S")
-                        return Directions.SHORT, comment
+                        return Directions.LONG, comment
 
                 if three_cdl_strike == Directions.SHORT:
                     break_point = start_candle["high"]                    
@@ -385,7 +385,7 @@ class Strategies:
 
                     if prev_candle["high"] > break_point and prev_candle["low"] < break_point and (prev_candle["open"] < prev_candle["close"]) and not is_break_overrided:
                         comment = util.get_traded_time(epoch=start_candle['time']).strftime("%H:%M:%S")
-                        return Directions.LONG, comment
+                        return Directions.SHORT, comment
         
         return None, None
 
