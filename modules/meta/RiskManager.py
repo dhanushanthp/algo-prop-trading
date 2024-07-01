@@ -123,14 +123,18 @@ class RiskManager:
             trade_time =  util.get_traded_time(epoch=obj.time)
             max_limit_time = trade_time + timedelta(minutes=timeframe*wait_factor)
             if current_time > max_limit_time:
-                is_prev_solid_candle = self.indicators.is_solid_candle(symbol=obj.symbol, timeframe=timeframe, index=close_check_candle, ratio=0.6)
+                is_prev_solid_candle = self.indicators.is_solid_candle(symbol=obj.symbol, timeframe=timeframe, index=close_check_candle, ratio=0.7)
+                is_prev_solid_candle2 = self.indicators.is_solid_candle(symbol=obj.symbol, timeframe=timeframe, index=close_check_candle+1, ratio=0.7)
+
                 prev_candle = self.wrapper.get_candle_i(symbol=obj.symbol, timeframe=timeframe, i=close_check_candle)
-                if is_prev_solid_candle:
+                prev_candle2 = self.wrapper.get_candle_i(symbol=obj.symbol, timeframe=timeframe, i=close_check_candle+1)
+
+                if is_prev_solid_candle and is_prev_solid_candle2:
                     if obj.type == 0:
-                        if prev_candle["close"] > prev_candle["open"]:
+                        if (prev_candle["close"] > prev_candle["open"]) and (prev_candle2["close"] > prev_candle2["open"]):
                             list_to_close.append(obj)
                     elif obj.type == 1:
-                        if prev_candle["close"] < prev_candle["open"]:
+                        if (prev_candle["close"] < prev_candle["open"]) and (prev_candle2["close"] > prev_candle2["open"]):
                             list_to_close.append(obj)
         
         return list_to_close
