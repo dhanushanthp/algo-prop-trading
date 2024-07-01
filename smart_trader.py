@@ -300,6 +300,10 @@ class SmartTrader():
                                 # TODO Introduce namedtuple for this tuple
                                 trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
                                                                                  timeframe=self.trading_timeframe)
+                            case "SINGLES":
+                                # TODO Introduce namedtuple for this tuple
+                                trade_direction = self.strategies.strike_by_solid_candle(symbol=symbol, 
+                                                                                 timeframe=self.trading_timeframe)
                                 
                         if trade_direction:
                             is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
