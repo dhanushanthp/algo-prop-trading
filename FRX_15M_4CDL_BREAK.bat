@@ -4,7 +4,7 @@ set PYTHONPATH=%PYTHONPATH%;%TRADEAU_PATH%
 cd /d %TRADEAU_PATH%
 
 REM Time and Trading
-set start_hour=4
+set start_hour=2
 set timeframe=15
 set trades_per_day=100
 
@@ -26,8 +26,8 @@ set security=FOREX
 REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=yes
-set enable_neutralizer=yes
-set multiple_positions=by_trades
+set enable_neutralizer=no
+set multiple_positions=by_open
 
 set record_pnl=yes
 set close_by_time=no
