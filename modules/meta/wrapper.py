@@ -57,15 +57,12 @@ class Wrapper:
             pips = int(str(f"{spread:.3f}").split(".")[-1])
             if pips <= pips_threshold:
                 return True
-            else:
-                print(symbol, pips)
+            
         elif symbol in curr.master_currencies:
             spread = round(np.mean(self.average_spreads[symbol]), 5)
             pips = int(str(f"{spread:.5f}").split(".")[-1])
             if pips <= pips_threshold:
                 return True
-            else:
-                print(symbol, pips)
         else:
             return True
 
