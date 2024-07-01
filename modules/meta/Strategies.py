@@ -285,6 +285,41 @@ class Strategies:
         
         return None
 
+    def strike_by_solid_candle(self, symbol:str, timeframe:int, spread_factor=3, sld_cld_ratio=0.6) -> Directions:
+        """
+        Determines the trading direction based on the presence of a solid candle in the given timeframe for a specified symbol.
+
+        This function checks if the previous candle is a solid candle based on the provided solid-to-candle ratio.
+        If the absolute difference between the open and close prices of the previous candle is greater than the spread
+        multiplied by the spread factor, it determines the trading direction. A solid candle is defined as a candle
+        where the difference between the open and close prices is significant relative to the overall candle size.
+
+        Args:
+            symbol (str): The trading symbol for which the direction is to be determined.
+            timeframe (int): The timeframe for the candle data (e.g., 1 minute, 5 minutes, etc.).
+            spread_factor (int, optional): A multiplier for the spread to determine the significance of the candle's body.
+                                        Default is 3.
+            sld_cld_ratio (float, optional): The ratio to determine if the candle is solid. Default is 0.6.
+
+        Returns:
+            Directions: The trading direction based on the analysis of the solid candle.
+                        Returns Directions.LONG if the close price is higher than the open price.
+                        Returns Directions.SHORT if the close price is lower than the open price.
+
+        Notes:
+            - This function relies on the `is_solid_candle` method from the `self.indicators` object to determine if a candle is solid.
+            - The spread for the symbol is obtained using the `self.wrapper.get_spread` method.
+            - The previous candle's data is retrieved using the `self.wrapper.get_candle_i` method.
+        """
+        if self.indicators.is_solid_candle(symbol=symbol, timeframe=timeframe, index=1, ratio=sld_cld_ratio):
+            spread = self.wrapper.get_spread(symbol=symbol)
+            prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+            
+            if abs(prev_candle["open"] - prev_candle["close"]) > spread * spread_factor:
+                if prev_candle["close"] > prev_candle["open"]:
+                    return Directions.LONG
+                else:
+                    return Directions.SHORT
 
     def get_u_reversal(self, symbol:str, timeframe:int) -> Tuple[Directions, str]:
         """
