@@ -7,6 +7,7 @@ import pytz
 from modules import config
 import pandas as pd
 from modules.common.Signal import Signal
+from modules.common.Directions import Directions
 from typing import Tuple, List, Dict
 from modules.common import logme
 from modules.meta.wrapper import Wrapper
@@ -142,6 +143,33 @@ class Indicators:
         lenth_body_ratio = round(body/total_length, 1)
         if lenth_body_ratio >= ratio:
             return True
+    
+
+    def solid_candle_direction(self, symbol:str, timeframe:60, index:int, ratio:float=0.6):
+        """
+        Determines if a candle in a given symbol and timeframe is solid based on a specified ratio of body length to total length.
+
+        Args:
+            symbol (str): The symbol of the asset.
+            timeframe (int): The timeframe of the candlestick data in minutes. Default is 60.
+            index (int): The index of the candle in the historical data.
+            ratio (float): The ratio threshold defining a solid candle. Default is 0.6.
+
+        Returns:
+            bool: True if the candle is solid, False otherwise.
+
+        Example:
+            is_solid = is_solid_candle("BTCUSD", timeframe=30, index=5, ratio=0.7)
+        """
+        candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)
+        body = abs(candle["close"] - candle["open"])
+        total_length = candle["high"] - candle["low"]
+        lenth_body_ratio = round(body/total_length, 1)
+        if lenth_body_ratio >= ratio:
+            if candle["close"] > candle["open"]:
+                return Directions.LONG
+            else:
+                return Directions.SHORT
     
 
     def is_wick_candle(self, candle, ratio:float=0.4):
@@ -492,9 +520,6 @@ if __name__ == "__main__":
     indi_obj = Indicators(wrapper=Wrapper(), prices=Prices())
     import sys
     indicator = sys.argv[1]
-    symbol = sys.argv[2]
-    timeframe = int(sys.argv[3])
-    index = int(sys.argv[4])
     # start_reference = int(sys.argv[3])
     # print("ATR", indi_obj.get_atr(symbol, timeframe, 2))
     # print("Body", indi_obj.wrapper.pre_candle_body(symbol, timeframe))
@@ -516,13 +541,22 @@ if __name__ == "__main__":
 
     match indicator:
         case "body_ratio":
+            symbol = sys.argv[2]
+            timeframe = int(sys.argv[3])
+            index = int(sys.argv[4])
             print(indi_obj.is_solid_candle(symbol=symbol, timeframe=timeframe, index=index))
         case "sma_direction":
+            symbol = sys.argv[2]
+            timeframe = int(sys.argv[3])
+            index = int(sys.argv[4])
             print(indi_obj.sma_direction(symbol=symbol, timeframe=timeframe, reverse=True))
         case "daily_levels":
             """
             Test High and Low Of the Day
             """
+            symbol = sys.argv[2]
+            timeframe = int(sys.argv[3])
+            index = int(sys.argv[4])
             previous_candle = indi_obj.wrapper.get_todays_candles(symbol=symbol,timeframe=60, start_candle=1).iloc[-1]
             hod, lod = indi_obj.get_current_day_levels(symbol=symbol, timeframe=60, start_reference_bar=2)
             print("PREV Candle", previous_candle)
@@ -536,3 +570,9 @@ if __name__ == "__main__":
             print(lod)
             print(previous_candle["high"] > lod.level and previous_candle["close"] < lod.level)
             print(previous_candle["index"] - lod.break_bar_index)
+        
+        case "solid_candle":
+            symbol = sys.argv[2]
+            timeframe = int(sys.argv[3])
+            index = int(sys.argv[4])
+            print(indi_obj.solid_candle_direction(symbol=symbol, timeframe=timeframe, index=index))
