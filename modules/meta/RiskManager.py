@@ -96,7 +96,7 @@ class RiskManager:
         
         return list_to_close
     
-    def close_positions_by_solid_candle(self, timeframe:int, wait_factor:int=1, close_check_candle:int=1):
+    def close_positions_by_solid_candle(self, timeframe:int, wait_factor:int=1, close_check_candle:int=1, double_candle_check=False, candle_solid_ratio=0.6):
         """
         Evaluates and identifies active trading positions to close based on the presence of a solid candle in the given timeframe.
 
@@ -123,15 +123,27 @@ class RiskManager:
             trade_time =  util.get_traded_time(epoch=obj.time)
             max_limit_time = trade_time + timedelta(minutes=timeframe*wait_factor)
             if current_time > max_limit_time:
-                prev_cdl = self.indicators.solid_candle_direction(symbol=obj.symbol, timeframe=timeframe, index=close_check_candle, ratio=0.7)
+                prev_cdl = self.indicators.solid_candle_direction(symbol=obj.symbol, timeframe=timeframe, index=close_check_candle, ratio=candle_solid_ratio)
+                
+                if double_candle_check:
+                    second_prev_cdl = self.indicators.solid_candle_direction(symbol=obj.symbol, timeframe=timeframe, index=close_check_candle+1, ratio=candle_solid_ratio)
+                    third_prev_cdl = self.indicators.solid_candle_direction(symbol=obj.symbol, timeframe=timeframe, index=close_check_candle+2, ratio=candle_solid_ratio)
 
-                if prev_cdl:
-                    if obj.type == 0:
-                        if prev_cdl==Directions.LONG:
-                            list_to_close.append(obj)
-                    elif obj.type == 1:
-                        if prev_cdl==Directions.SHORT:
-                            list_to_close.append(obj)
+                    if (prev_cdl and second_prev_cdl) or (prev_cdl and third_prev_cdl):
+                        if obj.type == 0:
+                            if (prev_cdl==Directions.LONG and second_prev_cdl==Directions.LONG) or (prev_cdl==Directions.LONG and third_prev_cdl==Directions.LONG):
+                                list_to_close.append(obj)
+                        elif obj.type == 1:
+                            if (prev_cdl==Directions.SHORT and second_prev_cdl==Directions.SHORT) or (prev_cdl==Directions.SHORT and third_prev_cdl==Directions.SHORT):
+                                list_to_close.append(obj)
+                else:
+                    if prev_cdl:
+                        if obj.type == 0:
+                            if prev_cdl==Directions.LONG:
+                                list_to_close.append(obj)
+                        elif obj.type == 1:
+                            if prev_cdl==Directions.SHORT:
+                                list_to_close.append(obj)
         
         return list_to_close
 

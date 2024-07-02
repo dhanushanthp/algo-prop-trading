@@ -268,6 +268,7 @@ class Strategies:
         
         prev_to_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=2)
         prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+        # curr_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=0)
         prev_candle_direction = Directions.LONG if prev_candle["close"] > prev_candle["open"] else Directions.SHORT
 
         # sma_direction = self.indicators.sma_direction(symbol=symbol, timeframe=timeframe, reverse=True)
@@ -359,23 +360,24 @@ class Strategies:
         
         today_candles = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=0)
         number_of_aval_candles = today_candles.shape[0]
+        signal_check_candle = 0 # 0 means check the reverse break 3rd candle from 3 candle strike, 1 means second and 2 means the initial candle of the 3 strike candle
 
         for i in range(2, number_of_aval_candles - 1):
             three_cdl_strike = self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=i)
 
             # Find the candles which are in middle of the break point and the trade decision candle
-            candles_in_middle = today_candles.iloc[number_of_aval_candles-(i+2): number_of_aval_candles-2]
+            candles_in_middle = today_candles.iloc[number_of_aval_candles-(i+signal_check_candle): number_of_aval_candles-2]
             mid_high, mid_low = candles_in_middle["high"].max(), candles_in_middle["low"].min()
 
             if three_cdl_strike:
-                start_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=i+2)
+                start_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=i+signal_check_candle)
                 prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
                 
                 if three_cdl_strike == Directions.LONG:
                     break_point = start_candle["low"]
                     is_break_overrided = mid_low < break_point < mid_high
-
-                    if prev_candle["low"] < break_point and prev_candle["high"] > break_point and (prev_candle["open"] > prev_candle["close"]) and not is_break_overrided:
+                    # Stick with open and close, since the wick are not really break, they just touch
+                    if prev_candle["close"] < break_point and prev_candle["open"] > break_point and (prev_candle["open"] > prev_candle["close"]) and not is_break_overrided:
                         comment = util.get_traded_time(epoch=start_candle['time']).strftime("%H:%M:%S")
                         return Directions.LONG, comment
 
@@ -383,7 +385,7 @@ class Strategies:
                     break_point = start_candle["high"]                    
                     is_break_overrided = mid_low < break_point < mid_high
 
-                    if prev_candle["high"] > break_point and prev_candle["low"] < break_point and (prev_candle["open"] < prev_candle["close"]) and not is_break_overrided:
+                    if prev_candle["close"] > break_point and prev_candle["open"] < break_point and (prev_candle["open"] < prev_candle["close"]) and not is_break_overrided:
                         comment = util.get_traded_time(epoch=start_candle['time']).strftime("%H:%M:%S")
                         return Directions.SHORT, comment
         
