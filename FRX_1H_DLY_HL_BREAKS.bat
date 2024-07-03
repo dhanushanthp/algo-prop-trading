@@ -39,7 +39,7 @@ python smart_trader.py ^
     --max_loss_exit %max_loss_exit% ^
     --max_target_exit %max_target_exit% ^
     --trades_per_day %trades_per_day% ^
-    --num_prev_cdl_for_stop 2 ^
+    --num_prev_cdl_for_stop 1 ^
     --each_position_risk %each_position_risk% ^
     --systems %systems% ^
     --security %security% ^
