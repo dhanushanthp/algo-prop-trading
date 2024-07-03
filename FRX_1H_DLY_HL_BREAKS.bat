@@ -10,15 +10,15 @@ set trades_per_day=100
 
 REM Risk Management
 set account_risk=0.5
-set each_position_risk=0.125
+set each_position_risk=0.05
 set target_ratio=5.0
 set enable_dynamic_position_risk=no
 set max_loss_exit=yes
-set max_target_exit=yes
+set max_target_exit=no
 
 REM Strategy and System
 set strategy=BREAK
-set systems=DAILY_HL,DAILY_HL_DOUBLE_HIT
+set systems=DAILY_HL
 
 REM Security
 set security=FOREX
@@ -26,7 +26,7 @@ set security=FOREX
 REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=yes
-set enable_neutralizer=yes
+set enable_neutralizer=no
 set multiple_positions=by_trades
 
 set record_pnl=yes
