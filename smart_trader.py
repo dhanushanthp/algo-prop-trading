@@ -269,7 +269,7 @@ class SmartTrader():
                                                                                           extrame=True)
                                 
                             case "DAILY_HL":
-                                
+                                min_gap = 4
                                 trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
                                                                                           timeframe=self.trading_timeframe,
                                                                                           min_gap=min_gap)
@@ -281,10 +281,10 @@ class SmartTrader():
                                                                                                          min_gap=min_gap)
                         
                             case "WEEKLY_HL":
-                                min_gap = 2
+                                min_gap = 4
                                 trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
                                                                                            timeframe=self.trading_timeframe,
-                                                                                           min_gap=2)
+                                                                                           min_gap=min_gap)
                             case "D_TOP_BOTTOM":
                                 trade_direction = self.strategies.get_dtop_dbottom(symbol=symbol, 
                                                                                    timeframe=self.trading_timeframe)
