@@ -18,7 +18,7 @@ set max_target_exit=no
 
 REM Strategy and System
 set strategy=BREAK
-set systems=DAILY_HL
+set systems=DAILY_HL,DAILY_HL_DOUBLE_HIT
 
 REM Security
 set security=FOREX
@@ -26,7 +26,7 @@ set security=FOREX
 REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=yes
-set enable_neutralizer=no
+set enable_neutralizer=yes
 set multiple_positions=by_trades
 
 set record_pnl=yes

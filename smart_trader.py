@@ -196,9 +196,8 @@ class SmartTrader():
                                                            num_cdl_for_stop=self.num_prev_cdl_for_stop)
             
             if self.enable_neutralizer:
-                list_of_positions = self.risk_manager.neutralizer(enable_ratio=0.6, timeframe=self.trading_timeframe)
+                list_of_positions = self.risk_manager.neutralizer(enable_ratio=0.7, timeframe=self.trading_timeframe)
                 for symbol, direction in list_of_positions:
-
                     # This helps to neutralize the reverse option while trading, It's like we take squared for us to to the squreroot
                     if self.risk_manager.strategy==Directions.REVERSE.name:
                         direction = Directions.LONG if direction == Directions.SHORT else Directions.SHORT
@@ -269,7 +268,7 @@ class SmartTrader():
                                                                                           extrame=True)
                                 
                             case "DAILY_HL":
-                                min_gap = 4
+                                min_gap = 2
                                 trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
                                                                                           timeframe=self.trading_timeframe,
                                                                                           min_gap=min_gap)
