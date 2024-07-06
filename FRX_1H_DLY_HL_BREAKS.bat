@@ -9,8 +9,8 @@ set timeframe=60
 set trades_per_day=100
 
 REM Risk Management
-set account_risk=0.5
-set each_position_risk=0.05
+set account_risk=0.25
+set each_position_risk=0.025
 set target_ratio=5.0
 set enable_dynamic_position_risk=no
 set max_loss_exit=yes
