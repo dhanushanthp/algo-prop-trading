@@ -19,8 +19,8 @@ class Indicators:
         self.wrapper = wrapper
         self.prices = prices
     
-    def get_atr(self, symbol:str, timeframe:int, start_candle:int=0) -> float:
-        rates = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=20)
+    def get_atr(self, symbol:str, timeframe:int, start_candle:int=0, n_atr:int=14) -> float:
+        rates = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=n_atr + 3)
         
         if rates.empty:
             return 0
@@ -29,8 +29,8 @@ class Indicators:
         low = rates['low']
         close = rates['close']
 
-        true_range = np.maximum(high[1:] - low[1:], abs(high[1:] - close[:-1]), abs(low[1:] - close[:-1]))
-        atr = np.mean(true_range[-14:])
+        true_range = np.maximum(high[1:] - low[1:], np.abs(high[1:] - close[:-1]), np.abs(low[1:] - close[:-1]))
+        atr = np.mean(true_range[-n_atr:])
 
         return round(atr, 5)
     
@@ -576,3 +576,8 @@ if __name__ == "__main__":
             timeframe = int(sys.argv[3])
             index = int(sys.argv[4])
             print(indi_obj.solid_candle_direction(symbol=symbol, timeframe=timeframe, index=index))
+        
+        case "atr":
+            symbol = sys.argv[2]
+            timeframe = int(sys.argv[3])
+            print(indi_obj.get_atr(symbol=symbol, timeframe=timeframe, start_candle=0))

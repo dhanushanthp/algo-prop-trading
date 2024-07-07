@@ -8,10 +8,11 @@ from modules.meta.wrapper import Wrapper
 from modules.common.logme import log_it
 
 class Orders:
-    def __init__(self, prices:Prices, risk_manager:RiskManager, wrapper:Wrapper) -> None:
+    def __init__(self, prices:Prices, risk_manager:RiskManager, wrapper:Wrapper, stop_selection:str="CANDLE") -> None:
         self.prices = prices
         self.risk_manager=risk_manager
         self.wrapper = wrapper
+        self.stop_selection=stop_selection
 
     def close_single_position(self, obj):        
         order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
@@ -103,7 +104,7 @@ class Orders:
             log_it(reference).info(f"{symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
         
         if entry_price and (hour == latest_hour):
-            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier)
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier, stop_selection=self.stop_selection)
             if shield_object.get_signal_strength:
                 if entry_price > shield_object.get_long_stop:
                     try:
@@ -227,7 +228,7 @@ class Orders:
             log_it(reference).info(f"{symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
         
         if entry_price and (hour == latest_hour):
-            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier)
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier, stop_selection=self.stop_selection)
             if shield_object.get_signal_strength:
                 if entry_price < shield_object.get_short_stop:
                     try:

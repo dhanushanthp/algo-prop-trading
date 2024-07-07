@@ -49,6 +49,12 @@ class SmartTrader():
         self.record_pnl = kwargs["record_pnl"]
         self.close_by_time = kwargs["close_by_time"]
         self.close_by_solid_cdl = kwargs["close_by_solid_cdl"]
+
+        self.primary_symbols = kwargs["primary_symbols"]
+        self.stop_selection = kwargs["stop_selection"]
+
+        self.iterations = 1
+        self.max_iterations = 2
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -63,7 +69,7 @@ class SmartTrader():
         self.account = Account()
         self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
         self.strategies = Strategies(wrapper=self.wrapper, indicators=self.indicators)
-        self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager, wrapper = self.wrapper)
+        self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager, wrapper=self.wrapper, stop_selection=self.stop_selection)
         
         # Account information
         self.account_name = self.account.get_account_name()
@@ -137,8 +143,11 @@ class SmartTrader():
             print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
-            print(f"{'RR'.ljust(20)}: {round(rr, 2)}\n")
+            print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
+            print(f"{'Stop Selection'.ljust(20)}: {self.stop_selection}")
+            print(f"{'Curr/Max Iteration'.ljust(20)}: {self.iterations}/{self.max_iterations}\n")
             
+            print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.primary_symbols)}")
             print(f"{'Break Even'.ljust(20)}: {util.cl(self.enable_breakeven)}")
             print(f"{'Trail Stop'.ljust(20)}: {util.cl(self.enable_trail_stop)}")
             print(f"{'Dynamic Risk'.ljust(20)}: {util.cl(self.enable_dynamic_position_risk)}")
@@ -154,10 +163,9 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if ((rr <= -1 and self.max_loss_exit) or (rr > 1.1 and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
-                self.immidiate_exit = True
+            if ((rr <= -self.iterations and self.max_loss_exit) or (rr > 1.1 * self.iterations and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
                 self.orders.close_all_positions()
-                self.risk_manager.alert.send_msg(f"Early Close: {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
+                self.risk_manager.alert.send_msg(f"Early Close {self.iterations}: {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
 
                 # Write the pnl to a file
                 files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=PnL, rr=rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
@@ -170,7 +178,16 @@ class SmartTrader():
                                                 dynamic_postional_risk=self.enable_dynamic_position_risk,
                                                 strategy=self.strategy)
                 
-                self.sent_result = False # Once sent, Disable
+                self.iterations += 1
+                
+                if rr > 1.1 * self.iterations:
+                    self.sent_result = False # Once sent, Disable
+                    self.immidiate_exit = True
+                else:
+                    # Max 2 iterations
+                    if self.iterations > self.max_iterations:
+                        self.sent_result = False # Once sent, Disable
+                        self.immidiate_exit = True
             
             
             if self.close_by_time:
@@ -243,7 +260,7 @@ class SmartTrader():
                 # Once it's active in market then the initial run become deactive
                 self.is_initial_run = False 
 
-                for symbol in curr.get_major_symbols(security=self.security):
+                for symbol in curr.get_symbols(security=self.security, primary=self.primary_symbols):
                     # Check is the market has resonable spread
                     if not self.wrapper.is_reasonable_spread(symbol=symbol, pips_threshold=15):
                         continue
@@ -303,6 +320,9 @@ class SmartTrader():
                                 # TODO Introduce namedtuple for this tuple
                                 trade_direction = self.strategies.strike_by_solid_candle(symbol=symbol, 
                                                                                  timeframe=self.trading_timeframe)
+                            case "PREV_DAY_CLOSE_DIR":
+                                # TODO Introduce namedtuple for this tuple
+                                trade_direction = self.strategies.previous_day_close(symbol=symbol)
                                 
                         if trade_direction:
                             is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
@@ -340,6 +360,8 @@ if __name__ == "__main__":
     parser.add_argument('--record_pnl', type=str, help='Enable to track the PnL')
     parser.add_argument('--close_by_time', type=str, help='Close positions after x min')
     parser.add_argument('--close_by_solid_cdl', type=str, help='Close positions by solid candle after x min')
+    parser.add_argument('--primary_symbols', type=str, help='Pick Only Primary Symbols')
+    parser.add_argument('--stop_selection', type=str, help='Stop by Candle or any other properties')
     
     
     args = parser.parse_args()
@@ -364,7 +386,8 @@ if __name__ == "__main__":
     record_pnl = util.boolean(args.record_pnl)
     close_by_time = util.boolean(args.close_by_time)
     close_by_solid_cdl = util.boolean(args.close_by_solid_cdl)
-    
+    primary_symbols = util.boolean(args.primary_symbols)
+    stop_selection = args.stop_selection
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -372,7 +395,8 @@ if __name__ == "__main__":
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
                       systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
-                      close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl)
+                      close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
+                      stop_selection=stop_selection)
 
     win.main()
 

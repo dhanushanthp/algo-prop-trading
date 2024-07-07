@@ -12,14 +12,8 @@ jpy_currencies = None
 support_pairs = None
 
 """
-Most of the JPY Follow Currency Move to gether
+All Collections
 """
-# major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", 
-#                "EURCHF", "AUDCHF", "USDCHF",
-#                "USDJPY", "AUDJPY", "GBPJPY",
-#                "AUDNZD",
-#                "EURAUD"]
-
 us_indexes = ["US500.cash", "XAUUSD"]
 
 master_stocks = ["AAPL", "AMZN", "NVDA", "TSLA", "GOOG", "MSFT", "META"]
@@ -32,11 +26,18 @@ master_currencies = ['AUDJPY', 'AUDNZD', 'AUDUSD', 'AUDCHF', "AUDCAD",
                     'NZDJPY', "NZDCAD", "NZDUSD",
                     'USDCAD', 'USDJPY', 'USDCHF']
 
-# master_currencies = major_pairs
-
 master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY', "CADJPY"]
 
-# master_jpy_pairs = ["USDJPY"]
+"""
+Major Symbols
+"""
+major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", 
+               "EURCHF", "AUDCHF", "USDCHF",
+               "USDJPY", "AUDJPY", "GBPJPY",
+               "AUDNZD",
+               "EURAUD"]
+
+major_jpy_pairs = ["USDJPY"]
 
 # Funded Engineer
 if company == "AXSE Brokerage Ltd.":
@@ -179,13 +180,18 @@ def ticker_initiator(security="FOREX"):
         for pair in (master_stocks):
             mt.symbol_select(f"{pair}", True)
 
-def get_major_symbols(security="FOREX"):
+def get_symbols(security="FOREX", primary=False):
     if security == "FOREX":
-        main_pairs = master_currencies.copy()
-
-        if util.is_us_premarket_peroid():
+        main_pairs = []
+        if primary:
+            main_pairs.extend(major_pairs)
+            main_pairs.extend(major_jpy_pairs)
             main_pairs.extend(us_indexes)
-        
+        else:
+            main_pairs.extend(master_currencies)
+            if util.is_us_premarket_peroid():
+                main_pairs.extend(us_indexes)
+
         return main_pairs
     elif security == "STOCK":
         return master_stocks

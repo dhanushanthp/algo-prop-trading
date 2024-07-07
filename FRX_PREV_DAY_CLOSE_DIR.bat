@@ -4,7 +4,7 @@ set PYTHONPATH=%PYTHONPATH%;%TRADEAU_PATH%
 cd /d %TRADEAU_PATH%
 
 REM Time and Trading
-set start_hour=2
+set start_hour=4
 set timeframe=15
 set trades_per_day=100
 
@@ -14,11 +14,11 @@ set each_position_risk=0.05
 set target_ratio=10.0
 set enable_dynamic_position_risk=no
 set max_loss_exit=yes
-set max_target_exit=yes
+set max_target_exit=no
 
 REM Strategy and System
-set strategy=REVERSE
-set systems=4CDL_PULLBACK_EXT
+set strategy=BREAK
+set systems=PREV_DAY_CLOSE_DIR
 
 REM Security
 set security=FOREX
@@ -26,7 +26,7 @@ set security=FOREX
 REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=yes
-set enable_neutralizer=yes
+set enable_neutralizer=no
 set multiple_positions=by_trades
 
 set record_pnl=yes
@@ -34,7 +34,7 @@ set close_by_time=no
 set close_by_solid_cdl=no
 
 set primary_symbols=yes
-set stop_selection=CANDLE
+set stop_selection=ATR1D
 
 python smart_trader.py ^
     --strategy %strategy% ^

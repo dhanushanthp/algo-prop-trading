@@ -720,7 +720,7 @@ if "__main__" == __name__:
 
     from modules.meta import Currencies
     while True:
-        for symbol in Currencies.get_major_symbols():
+        for symbol in Currencies.get_symbols():
             print(symbol, obj.is_reasonable_spread(symbol=symbol))
         print("\n\n\n")
         import time

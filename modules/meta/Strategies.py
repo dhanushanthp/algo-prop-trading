@@ -322,6 +322,22 @@ class Strategies:
                 else:
                     return Directions.SHORT
 
+    def previous_day_close(self, symbol:str) -> Directions:
+        """
+        Determines the market direction (LONG or SHORT) based on the previous day's closing price for a given symbol.
+        This function fetches the previous day's candle data for the specified symbol and compares the closing price with the opening price. If the closing price is higher than the opening price, the market direction is considered LONG; otherwise, it is considered SHORT.
+
+        Args:
+            symbol (str): The trading symbol for which the previous day's closing direction is to be determined.
+
+        Returns:
+            Directions: The market direction for the previous day. It returns Directions.LONG if the closing price is higher than the opening price, otherwise, it returns Directions.SHORT.
+        """
+        previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
+        direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
+        return direction
+
+
     def get_u_reversal(self, symbol:str, timeframe:int) -> Tuple[Directions, str]:
         """
         Detects U-shaped reversals in the price action of a given symbol using a specified timeframe.

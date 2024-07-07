@@ -536,7 +536,7 @@ class RiskManager:
                         if result.comment != "No changes":
                             print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
     
-    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=0) -> Shield:
+    def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=0, stop_selection:str="CANDLE") -> Shield:
         """
         Calculates the stop range based on given parameters.
 
@@ -558,38 +558,47 @@ class RiskManager:
                 - range_distance (float): The distance of the stop range from the mid price.
                 - is_strong_signal (bool): Indicates whether the current candle is considered strong.
         """
-        selected_time = util.match_timeframe(timeframe)
-        
-        # Pick last (num_cdl_for_stop + 1) candles (Including current one) to find high and low
-        previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, num_cdl_for_stop+1)
-        
-        current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
-        current_candle_body = abs(current_candle["close"] - current_candle["open"])
+        if stop_selection == "CANDLE":
+            selected_time = util.match_timeframe(timeframe)
+            
+            # Pick last (num_cdl_for_stop + 1) candles (Including current one) to find high and low
+            previous_candles = mt5.copy_rates_from_pos(symbol, selected_time, 0, num_cdl_for_stop+1)
+            
+            current_candle = mt5.copy_rates_from_pos(symbol, selected_time, 0, 1)[0]
+            current_candle_body = abs(current_candle["close"] - current_candle["open"])
 
-        spread = self.prices.get_spread(symbol)
+            spread = self.prices.get_spread(symbol)
 
-        is_strong_candle = None
+            is_strong_candle = None
 
-        # Current candle should atleaat 3 times more than the spread (Avoid ranging behaviour)
-        if (current_candle_body > spread) :
+            # Current candle should atleaat 3 times more than the spread (Avoid ranging behaviour)
+            if (current_candle_body > spread) :
+                is_strong_candle = True
+
+            # Extracting high and low values from the previous candle
+            higher_stop = max([i["high"] for i in previous_candles])
+            lower_stop = min([i["low"] for i in previous_candles])
+            
+            mid_price = self.prices.get_exchange_price(symbol)
+            
+            # In cooprate ATR along with candle high/low when the candle length is too small/ price ranging
+            atr = self.indicators.get_atr(symbol=symbol, timeframe=timeframe)
+            distance_from_high = max(atr, abs(higher_stop-mid_price))
+            distance_from_low = max(atr, abs(lower_stop-mid_price))
+
+            optimal_distance = max(distance_from_high, distance_from_low) * multiplier
+            optimal_distance = optimal_distance + (optimal_distance*buffer_ratio)
+            
+            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
+            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
+        elif stop_selection=="ATR1D":
+            optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=1440, start_candle=1, n_atr=14)
+            mid_price = self.prices.get_exchange_price(symbol)
+            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
+            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
             is_strong_candle = True
-
-        # Extracting high and low values from the previous candle
-        higher_stop = max([i["high"] for i in previous_candles])
-        lower_stop = min([i["low"] for i in previous_candles])
-        
-        mid_price = self.prices.get_exchange_price(symbol)
-        
-        # In cooprate ATR along with candle high/low when the candle length is too small/ price ranging
-        atr = self.indicators.get_atr(symbol=symbol, timeframe=timeframe)
-        distance_from_high = max(atr, abs(higher_stop-mid_price))
-        distance_from_low = max(atr, abs(lower_stop-mid_price))
-
-        optimal_distance = max(distance_from_high, distance_from_low) * multiplier
-        optimal_distance = optimal_distance + (optimal_distance*buffer_ratio)
-        
-        lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
-        higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
+        else:
+            raise Exception("Stop Selection is not given!")
         
         return Shield(symbol=symbol, long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
 
