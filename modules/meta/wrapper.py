@@ -626,7 +626,7 @@ class Wrapper:
         return 0.0
         
 
-    def get_heikin_ashi(self, symbol:int, timeframe:int, start_candle:int=0, n_candles:int=10):
+    def get_heikin_ashi(self, symbol:int, timeframe:int, start_candle:int=0, n_candles:int=10, is_today:bool=True):
         """
         Calculate the Heikin-Ashi candlesticks for a given symbol and timeframe.
 
@@ -662,8 +662,10 @@ class Wrapper:
             - HA high = max(High, HA open, HA close)
             - HA low = min(Low, HA open, HA close)
         """
-        # df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=n_candles)
-        df = self.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
+        if is_today:
+            df = self.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
+        else:
+            df = self.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=n_candles)
 
         heikin_ashi_df = pd.DataFrame(index=df.index, columns=["time", "open", "high", "low", "close"])
 
