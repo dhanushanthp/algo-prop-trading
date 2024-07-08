@@ -736,7 +736,10 @@ if __name__ == "__main__":
     match decision:
         case "stop_range":
             # Test: Stop Ranges
-            stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
+            timeframe=int(sys.argv[3])
+            stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=timeframe, num_cdl_for_stop=2, stop_selection="CANDLE")
+            print(stp_range)
+            stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=timeframe, stop_selection="ATR1D")
             print(stp_range)
         
         case "target_range":
