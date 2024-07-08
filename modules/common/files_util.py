@@ -113,7 +113,7 @@ def get_most_risk_percentage(file_name:str, **kwargs):
     return MINIMUM_RISK, selected_strategy
 
 
-def record_pnl(pnl, rr, risk_per, strategy, system):
+def record_pnl(iteration, pnl, rr, risk_per, strategy, system):
     """
     Records profit and loss (PnL) data along with risk and reward ratios to a CSV file.
     
@@ -140,7 +140,7 @@ def record_pnl(pnl, rr, risk_per, strategy, system):
     current_date = util.get_current_time().strftime('%Y-%m-%d')
     file_path = f"{dir_path}/{current_date}.csv"
     with open(file_path, mode="a") as file:
-        file.write(f"{system},{strategy},{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{round(pnl, 2)},{round(rr, 2)},{risk_per}\n")
+        file.write(f"{iteration},{system},{strategy},{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{round(pnl, 2)},{round(rr, 2)},{risk_per}\n")
 
 if __name__ == "__main__":
     # update_pnl("testing", "4_CDL", "REVERSE" , 100, -1.2, 0.15)
