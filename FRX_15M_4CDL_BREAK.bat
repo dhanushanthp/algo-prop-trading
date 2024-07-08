@@ -27,6 +27,7 @@ REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=yes
 set enable_neutralizer=yes
+REM by_active or by_trades or by_open
 set multiple_positions=by_trades
 
 set record_pnl=yes
@@ -34,6 +35,7 @@ set close_by_time=no
 set close_by_solid_cdl=no
 
 set primary_symbols=yes
+REM CANDLE or ATR1D or ATR1H
 set stop_selection=CANDLE
 
 python smart_trader.py ^
