@@ -36,7 +36,7 @@ set close_by_solid_cdl=no
 
 set primary_symbols=yes
 REM CANDLE or ATR1D or ATR1H
-set stop_selection=CANDLE
+set stop_selection=ATR1H
 
 python smart_trader.py ^
     --strategy %strategy% ^
