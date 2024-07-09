@@ -603,6 +603,12 @@ class RiskManager:
             lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
             higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
             is_strong_candle = True
+        elif stop_selection=="ATR4H":
+            optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=240, start_candle=1, n_atr=14)
+            mid_price = self.prices.get_exchange_price(symbol)
+            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
+            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
+            is_strong_candle = True
         else:
             raise Exception("Stop Selection is not given!")
         
