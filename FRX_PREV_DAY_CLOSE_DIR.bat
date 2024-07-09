@@ -4,7 +4,7 @@ set PYTHONPATH=%PYTHONPATH%;%TRADEAU_PATH%
 cd /d %TRADEAU_PATH%
 
 REM Time and Trading
-set start_hour=4
+set start_hour=1
 set timeframe=15
 set trades_per_day=100
 
