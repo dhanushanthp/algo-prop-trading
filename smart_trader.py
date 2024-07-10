@@ -54,7 +54,7 @@ class SmartTrader():
         self.stop_selection = kwargs["stop_selection"]
 
         self.iterations = 1
-        self.max_iterations = 1
+        self.max_iterations = 2
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -140,7 +140,7 @@ class SmartTrader():
             PnL = (equity - self.risk_manager.account_size)
             rr = PnL/self.risk_manager.risk_of_an_account
 
-            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
+            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage * self.iterations}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
@@ -163,7 +163,7 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if ((rr <= -self.iterations and self.max_loss_exit) or (rr > 1.1 * self.iterations and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
+            if ((rr <= -self.iterations and self.max_loss_exit) or (rr > (1.1 * self.iterations) and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
                 self.orders.close_all_positions()
                 self.risk_manager.alert.send_msg(f"Early Close {self.iterations}: {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
 
@@ -180,10 +180,13 @@ class SmartTrader():
                 
                 self.iterations += 1
                 
-                if rr > 1.1 * self.iterations:
+                # For profit target
+                if rr > (1.1 * self.iterations):
                     self.sent_result = False # Once sent, Disable
                     self.immidiate_exit = True
-                else:
+                
+                # For stoploss
+                if rr <= -1 * self.iterations:
                     # Max 2 iterations
                     if self.iterations > self.max_iterations:
                         self.sent_result = False # Once sent, Disable
@@ -249,6 +252,7 @@ class SmartTrader():
 
                 self.sent_result = False # Once sent, Disable
                 self.immidiate_exit = False # Reset the Immidiate exit
+                self.iterations = 1
             
             if is_market_open and (not self.immidiate_exit) \
                   and (not is_market_close) \
