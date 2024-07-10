@@ -194,6 +194,33 @@ class RiskManager:
                         if active_symbol.empty:
                             # Shoud not have any active Short Positions
                             return True
+        elif multiple_positions == "by_active_limit":
+            max_trades_on_same_direction = 2
+            todays_trades = self.wrapper.get_todays_trades()
+
+            # Check the entry validity based on active positions. Same directional trades won't took place at same time.
+            active_positions = self.wrapper.get_all_active_positions()
+            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
+                # Check for number of exit traees on same direction
+                traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
+                if len(traded_symbol) < max_trades_on_same_direction:
+                    return True
+            else:
+                match trade_direction:
+                    case Directions.LONG:
+                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 0)]
+                        if active_symbol.empty:
+                            # Check for number of exit traees on same direction
+                            traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
+                            if len(traded_symbol) < max_trades_on_same_direction:
+                                return True
+                    case Directions.SHORT:
+                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 1)]
+                        if active_symbol.empty:
+                            # Check for number of exit traees on same direction
+                            traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
+                            if len(traded_symbol) < max_trades_on_same_direction:
+                                return True
         elif multiple_positions == "by_trades":
             # Check 
             todays_trades = self.wrapper.get_todays_trades()
