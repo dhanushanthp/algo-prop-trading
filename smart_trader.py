@@ -327,6 +327,10 @@ class SmartTrader():
                             case "PREV_DAY_CLOSE_DIR":
                                 # TODO Introduce namedtuple for this tuple
                                 trade_direction = self.strategies.previous_day_close(symbol=symbol)
+                            
+                            case "4H_CLOSE_DIR":
+                                # TODO Introduce namedtuple for this tuple
+                                trade_direction = self.strategies.previous_day_close(symbol=symbol)
                                 
                         if trade_direction:
                             is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,

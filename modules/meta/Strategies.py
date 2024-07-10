@@ -337,6 +337,32 @@ class Strategies:
         direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
         return direction
 
+    def four_hour_close(self, symbol:str) -> Directions:
+        """
+        Determines the market direction (LONG or SHORT) based on the closing and opening prices 
+        of the most recent four-hour candle for a given symbol.
+
+        Parameters:
+        symbol (str): The trading symbol for which the market direction is to be determined.
+
+        Returns:
+        Directions: A Directions enum value indicating the market direction. 
+                    Directions.LONG if the closing price of the most recent four-hour candle 
+                    is greater than its opening price, otherwise Directions.SHORT.
+
+        Example:
+        >>> direction = self.four_hour_close('AAPL')
+        >>> print(direction)
+        Directions.LONG
+
+        Note:
+        This method relies on the `get_candle_i` method of `self.wrapper` to retrieve the candle 
+        data. Ensure that `self.wrapper` and `get_candle_i` are properly defined and accessible.
+        """
+        four_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=240, i=1)
+        direction = Directions.LONG if four_prev_candle["close"] > four_prev_candle["open"] else Directions.SHORT
+        return direction
+
 
     def get_u_reversal(self, symbol:str, timeframe:int) -> Tuple[Directions, str]:
         """
