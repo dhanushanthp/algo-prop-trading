@@ -201,7 +201,10 @@ class RiskManager:
             # Check the entry validity based on active positions. Same directional trades won't took place at same time.
             active_positions = self.wrapper.get_all_active_positions()
             if active_positions.empty or (symbol not in list(active_positions["symbol"])):
-                # Check total number of trades by entry
+                # Check total number of trades by entry, TODO It's a temp fix
+                if todays_trades.empty:
+                    return True
+                
                 traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
                 # Should be less than max trades on a specfic symbol
                 if len(traded_symbol) < max_trades_on_same_direction:
