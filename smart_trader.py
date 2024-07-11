@@ -178,8 +178,6 @@ class SmartTrader():
                                                 dynamic_postional_risk=self.enable_dynamic_position_risk,
                                                 strategy=self.strategy)
                 
-                self.iterations += 1
-                
                 # For profit target
                 if rr > (1.1 * self.iterations):
                     self.sent_result = False # Once sent, Disable
@@ -191,7 +189,8 @@ class SmartTrader():
                     if self.iterations > self.max_iterations:
                         self.sent_result = False # Once sent, Disable
                         self.immidiate_exit = True
-            
+
+                self.iterations += 1            
             
             if self.close_by_time:
                 positions = self.risk_manager.close_positions_by_time(timeframe=self.trading_timeframe, wait_factor=3)
