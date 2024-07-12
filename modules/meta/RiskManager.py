@@ -150,27 +150,41 @@ class RiskManager:
     
     def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades"):
         """
-        Check the validity of a trading signal based on various criteria.
+        Checks the validity of a trade signal based on the given parameters.
 
         Args:
-            symbol (str): The trading symbol to check.
-            timeframe (int): The timeframe of the trade in minutes.
-            trade_direction (Directions): The direction of the trade (LONG or SHORT).
-            strategy (str): The trading strategy to use.
-            multiple_positions (str, optional): The policy for handling multiple positions.
-                Defaults to "by_trades". Valid options are:
-                - "by_active": Only one active position in the same direction per symbol.
-                - "by_trades": Only one trade per direction per symbol per day.
-                - "by_open": Time gap enforcement between trades for the same symbol, Beyond that time the trade can be taken on any direction
+            symbol (str): The trading symbol for which the signal is being checked.
+            timeframe (int): The timeframe for the trade signal in minutes.
+            trade_direction (Directions): The direction of the trade, either LONG or SHORT.
+            strategy (str): The trading strategy being used.
+            multiple_positions (str, optional): The rule for handling multiple positions. Defaults to "by_trades".
+                Possible values:
+                    - "by_active": Only one active position per direction for a symbol.
+                    - "by_active_limit": Limits the number of trades in the same direction for a symbol.
+                    - "by_trades": Only one trade per direction for a symbol per day.
+                    - "by_open": Allows trades based on time gaps since the last trade.
 
         Returns:
-            bool: True if the signal is valid based on the criteria, False otherwise.
+            bool: True if the trade signal is valid based on the given criteria, False otherwise.
+        
+        The method performs the following checks based on the `multiple_positions` parameter:
 
-        Notes:
-            - If `strategy` is set to Directions.REVERSE.name, the trade direction is reversed.
-            - For `multiple_positions == "by_active"`, only one active position in the same direction per symbol is allowed.
-            - For `multiple_positions == "by_trades"`, only one trade per direction per symbol per day is allowed.
-            - For `multiple_positions == "by_open"`, there must be a specific time gap between trades for the same symbol.
+        - "by_active":
+            Checks if there are any active positions for the given symbol and direction. If no active positions are found in the same direction, the signal is valid.
+
+        - "by_active_limit":
+            Limits the number of trades in the same direction for the symbol to a predefined maximum (2). Checks active positions and today's trades to determine validity.
+
+        - "by_trades":
+            Ensures only one trade per direction for the symbol per day. Checks today's trades to determine if a trade in the same direction has already occurred.
+
+        - "by_open":
+            Allows trades based on time gaps since the last trade. Ensures that a minimum time gap (based on timeframe and multiplier) has passed since the last trade for the symbol.
+
+        Additional functionality includes:
+        - Reversing trade direction if the strategy is 'REVERSE'.
+        - Utilizing the wrapper object to fetch active positions and today's trades.
+        - Handling timezone adjustments for time-based checks.
         """
         if strategy==Directions.REVERSE.name:
             trade_direction = Directions.LONG if trade_direction == Directions.SHORT else Directions.SHORT
