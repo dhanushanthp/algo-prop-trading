@@ -54,7 +54,7 @@ class SmartTrader():
         self.stop_selection = kwargs["stop_selection"]
 
         self.iterations = 1
-        self.max_iterations = 2
+        self.max_iterations = 1
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
