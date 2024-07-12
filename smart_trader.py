@@ -122,8 +122,6 @@ class SmartTrader():
                                 num_cdl_for_stop=self.num_prev_cdl_for_stop,
                                 market_entry=market_entry)
                 return status
-        else:
-            raise Exception("Direction for Order is not defined!")
 
     
     def main(self):
