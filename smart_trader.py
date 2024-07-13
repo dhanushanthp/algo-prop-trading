@@ -143,6 +143,7 @@ class SmartTrader():
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
             print(f"{'Stop Selection'.ljust(20)}: {self.stop_selection}")
+            print(f"{'Multip Position'.ljust(20)}: {self.multiple_positions}")
             print(f"{'Curr/Max Iteration'.ljust(20)}: {self.iterations}/{self.max_iterations}\n")
             
             print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.primary_symbols)}")
