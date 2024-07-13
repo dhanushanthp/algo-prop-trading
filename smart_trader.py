@@ -126,7 +126,6 @@ class SmartTrader():
     
     def main(self):
         while True:
-            print(f"\n---{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} {self.systems}---")
             is_market_open, is_market_close = util.get_market_status(start_hour=self.start_hour)
 
             if self.security == "STOCK":
@@ -138,6 +137,8 @@ class SmartTrader():
             PnL = (equity - self.risk_manager.account_size)
             rr = PnL/self.risk_manager.risk_of_an_account
 
+            market_status_string = util.cl_status("Inactive: ", color="red") if is_market_close else util.cl_status("Active: ", color="green")
+            print(f"\n---{market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} {self.systems}---")
             print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage * self.iterations}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
@@ -227,8 +228,6 @@ class SmartTrader():
                 self.risk_manager.breakeven(profit_factor=1)
 
             if is_market_close:
-                print("Market Close!")
-                
                 # Don't close the trades if it's more than 4 hour time frame
                 if self.trading_timeframe < 240:
                     self.orders.close_all_positions()

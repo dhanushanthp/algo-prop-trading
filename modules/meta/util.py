@@ -239,6 +239,9 @@ def cl(status):
     else:
         return colored(status, 'red')
 
+def cl_status(status, color):
+    return colored(status, color)
+
 def is_c_pair_active(currency_pair):
     symbol_info=mt5.symbol_info(currency_pair)
     mt5.symbol_select(currency_pair, True)
