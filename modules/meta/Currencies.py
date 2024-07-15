@@ -189,8 +189,9 @@ def get_symbols(security="FOREX", primary=False):
             main_pairs.extend(us_indexes)
         else:
             main_pairs.extend(master_currencies)
-            if util.is_us_premarket_peroid():
-                main_pairs.extend(us_indexes)
+            main_pairs.extend(us_indexes)
+            # if util.is_us_premarket_peroid():
+            #     main_pairs.extend(us_indexes)
 
         return main_pairs
     elif security == "STOCK":
