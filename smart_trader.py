@@ -263,8 +263,8 @@ class SmartTrader():
 
                 for symbol in curr.get_symbols(security=self.security, primary=self.primary_symbols):
                     # Check is the market has resonable spread
-                    if not self.wrapper.is_reasonable_spread(symbol=symbol, pips_threshold=15):
-                        continue
+                    # if not self.wrapper.is_reasonable_spread(symbol=symbol, pips_threshold=15):
+                    #     continue
 
                     for system in self.systems:
                         # Reset trade direction for each system
