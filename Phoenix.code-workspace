@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"name": "Root",
+			"path": "."
+		},
+		{
+			"name": "Modules",
+			"path": "modules"
+		},
+		{
+			"name": "Meta",
+			"path": "modules/meta"
+		},
+		{
+			"name": "PnL",
+			"path": "data/pnl"
+		}
+		
+	],
+	"settings": {}
+}

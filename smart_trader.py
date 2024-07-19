@@ -52,9 +52,6 @@ class SmartTrader():
 
         self.primary_symbols = kwargs["primary_symbols"]
         self.stop_selection = kwargs["stop_selection"]
-
-        self.iterations = 1
-        self.max_iterations = 1
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -139,13 +136,12 @@ class SmartTrader():
 
             market_status_string = util.cl_status("Inactive: ", color="red") if is_market_close else util.cl_status("Active: ", color="green")
             print(f"\n---{market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} {self.systems}---")
-            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage * self.iterations}%")
+            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
             print(f"{'Stop Selection'.ljust(20)}: {self.stop_selection}")
             print(f"{'Multip Position'.ljust(20)}: {self.multiple_positions}")
-            print(f"{'Curr/Max Iteration'.ljust(20)}: {self.iterations}/{self.max_iterations}\n")
             
             print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.primary_symbols)}")
             print(f"{'Break Even'.ljust(20)}: {util.cl(self.enable_breakeven)}")
@@ -163,9 +159,9 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if ((rr <= -self.iterations and self.max_loss_exit) or (rr > (1.1 * self.iterations) and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
+            if ((rr <= -1 and self.max_loss_exit) or (rr > 1.1 and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
                 self.orders.close_all_positions()
-                self.risk_manager.alert.send_msg(f"Early Close {self.iterations}: {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
+                self.risk_manager.alert.send_msg(f"Early Close : {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
 
                 # Write the pnl to a file
                 files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=PnL, rr=rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
@@ -178,19 +174,8 @@ class SmartTrader():
                                                 dynamic_postional_risk=self.enable_dynamic_position_risk,
                                                 strategy=self.strategy)
                 
-                # For profit target
-                if rr > (1.1 * self.iterations):
-                    self.sent_result = False # Once sent, Disable
-                    self.immidiate_exit = True
-                
-                # For stoploss
-                if rr <= -1 * self.iterations:
-                    # Max 2 iterations
-                    if self.iterations > self.max_iterations:
-                        self.sent_result = False # Once sent, Disable
-                        self.immidiate_exit = True
-
-                self.iterations += 1            
+                self.sent_result = False # Once sent, Disable
+                self.immidiate_exit = True
             
             if self.close_by_time:
                 positions = self.risk_manager.close_positions_by_time(timeframe=self.trading_timeframe, wait_factor=3)
@@ -205,7 +190,7 @@ class SmartTrader():
             if self.record_pnl and not self.immidiate_exit:
                 # Only record when we have actual trades
                 if not self.wrapper.get_todays_trades().empty:
-                    files_util.record_pnl(iteration=self.iterations, pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
+                    files_util.record_pnl(iteration=1, pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
 
             # Each position trail stop
             if self.enable_trail_stop:
@@ -249,7 +234,6 @@ class SmartTrader():
 
                 self.sent_result = False # Once sent, Disable
                 self.immidiate_exit = False # Reset the Immidiate exit
-                self.iterations = 1
             
             if is_market_open and (not self.immidiate_exit) \
                   and (not is_market_close) \
