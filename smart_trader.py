@@ -388,15 +388,3 @@ if __name__ == "__main__":
                       stop_selection=stop_selection)
 
     win.main()
-
-
-"""
-If CAD is new is pushing the price up, then , Employment related news
-USDCAD - DOWN
-CADJPY, CADCHF -  UP
-
-USD Michigan Consumer Related News, Price Goes Up
-It didn't effect much
-
-
-"""
