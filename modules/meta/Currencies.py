@@ -186,10 +186,10 @@ def get_symbols(security="FOREX", primary=False):
         if primary:
             main_pairs.extend(major_pairs)
             main_pairs.extend(major_jpy_pairs)
-            main_pairs.extend(us_indexes)
+            # main_pairs.extend(us_indexes)
         else:
             main_pairs.extend(master_currencies)
-            main_pairs.extend(us_indexes)
+            # main_pairs.extend(us_indexes)
             # if util.is_us_premarket_peroid():
             #     main_pairs.extend(us_indexes)
 
