@@ -316,7 +316,6 @@ class SmartTrader():
                                     trade_direction = self.strategies.four_hour_close(symbol=symbol)
                         except Exception as e:
                             error_trace = traceback.format_exc()
-                            log_it("STRATEGY_SELECTION").info(e)
                             log_it("STRATEGY_SELECTION").info(error_trace)
                                 
                         if trade_direction:
