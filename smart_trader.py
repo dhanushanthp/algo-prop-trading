@@ -2,6 +2,7 @@ import MetaTrader5 as mt
 mt.initialize()
 import time
 import argparse
+import traceback
 
 import modules.meta.util as util
 import modules.meta.Currencies as curr
@@ -15,6 +16,7 @@ from modules.meta.Account import Account
 from modules.meta.Indicators import Indicators
 from modules.meta.wrapper import Wrapper
 from modules.meta.Strategies import Strategies
+from modules.common.logme import log_it
 
 class SmartTrader():
     def __init__(self, **kwargs):
@@ -254,64 +256,68 @@ class SmartTrader():
                         # Reset trade direction for each system
                         trade_direction = None
                         comment = system
-
-                        match system:
-                            case "3CDL_STR":
-                                trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
-                                                                                          timeframe=self.trading_timeframe)
-                            
-                            case "4CDL_PULLBACK":
-                                trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
-                                                                                          timeframe=self.trading_timeframe)
-                            
-                            case "4CDL_PULLBACK_EXT":
-                                trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
-                                                                                          timeframe=self.trading_timeframe,
-                                                                                          extrame=True)
+                        try: 
+                            match system:
+                                case "3CDL_STR":
+                                    trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe)
                                 
-                            case "DAILY_HL":
-                                min_gap = 2
-                                trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
-                                                                                          timeframe=self.trading_timeframe,
-                                                                                          min_gap=min_gap)
+                                case "4CDL_PULLBACK":
+                                    trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe)
+                                
+                                case "4CDL_PULLBACK_EXT":
+                                    trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe,
+                                                                                            extrame=True)
+                                    
+                                case "DAILY_HL":
+                                    min_gap = 2
+                                    trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe,
+                                                                                            min_gap=min_gap)
 
-                            case "DAILY_HL_DOUBLE_HIT":
-                                min_gap = 4
-                                trade_direction = self.strategies.daily_high_low_breakout_double_high_hit(symbol=symbol, 
-                                                                                                         timeframe=self.trading_timeframe,
-                                                                                                         min_gap=min_gap)
-                        
-                            case "WEEKLY_HL":
-                                min_gap = 4
-                                trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
-                                                                                           timeframe=self.trading_timeframe,
-                                                                                           min_gap=min_gap)
-                            case "D_TOP_BOTTOM":
-                                trade_direction = self.strategies.get_dtop_dbottom(symbol=symbol, 
-                                                                                   timeframe=self.trading_timeframe)
+                                case "DAILY_HL_DOUBLE_HIT":
+                                    min_gap = 4
+                                    trade_direction = self.strategies.daily_high_low_breakout_double_high_hit(symbol=symbol, 
+                                                                                                            timeframe=self.trading_timeframe,
+                                                                                                            min_gap=min_gap)
                             
-                            case "HEIKIN_ASHI":
-                                trade_direction = self.strategies.get_heikin_ashi_reversal(symbol=symbol, 
-                                                                                           timeframe=self.trading_timeframe)
-                            case "HEIKIN_ASHI_PRE":
-                                trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
-                                                                                           timeframe=self.trading_timeframe)
-                            
-                            case "U_REVERSAL":
-                                # TODO Introduce namedtuple for this tuple
-                                trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
-                                                                                 timeframe=self.trading_timeframe)
-                            case "SINGLES":
-                                # TODO Introduce namedtuple for this tuple
-                                trade_direction = self.strategies.strike_by_solid_candle(symbol=symbol, 
-                                                                                 timeframe=self.trading_timeframe)
-                            case "PREV_DAY_CLOSE_DIR":
-                                # TODO Introduce namedtuple for this tuple
-                                trade_direction = self.strategies.previous_day_close(symbol=symbol)
-                            
-                            case "4H_CLOSE_DIR":
-                                # TODO Introduce namedtuple for this tuple
-                                trade_direction = self.strategies.four_hour_close(symbol=symbol)
+                                case "WEEKLY_HL":
+                                    min_gap = 4
+                                    trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe,
+                                                                                            min_gap=min_gap)
+                                case "D_TOP_BOTTOM":
+                                    trade_direction = self.strategies.get_dtop_dbottom(symbol=symbol, 
+                                                                                    timeframe=self.trading_timeframe)
+                                
+                                case "HEIKIN_ASHI":
+                                    trade_direction = self.strategies.get_heikin_ashi_reversal(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe)
+                                case "HEIKIN_ASHI_PRE":
+                                    trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe)
+                                
+                                case "U_REVERSAL":
+                                    # TODO Introduce namedtuple for this tuple
+                                    trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
+                                                                                    timeframe=self.trading_timeframe)
+                                case "SINGLES":
+                                    # TODO Introduce namedtuple for this tuple
+                                    trade_direction = self.strategies.strike_by_solid_candle(symbol=symbol, 
+                                                                                    timeframe=self.trading_timeframe)
+                                case "PREV_DAY_CLOSE_DIR":
+                                    # TODO Introduce namedtuple for this tuple
+                                    trade_direction = self.strategies.previous_day_close(symbol=symbol)
+                                
+                                case "4H_CLOSE_DIR":
+                                    # TODO Introduce namedtuple for this tuple
+                                    trade_direction = self.strategies.four_hour_close(symbol=symbol)
+                        except Exception as e:
+                            error_trace = traceback.format_exc()
+                            log_it("STRATEGY_SELECTION").info(e)
+                            log_it("STRATEGY_SELECTION").info(error_trace)
                                 
                         if trade_direction:
                             is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
