@@ -37,6 +37,7 @@ class SmartTrader():
             
         # Default values
         self.target_ratio = kwargs["target_ratio"]  # Default 1:2.0 Ratio
+        self.account_target_ratio = kwargs["account_target_ratio"]
         self.security = kwargs["security"]
         self.trading_timeframe = kwargs["trading_timeframe"]
         self.trades_per_day = kwargs["trades_per_day"]
@@ -161,7 +162,7 @@ class SmartTrader():
             self.orders.cancel_all_pending_orders()
 
             # Early Exit
-            if ((rr <= -1 and self.max_loss_exit) or (rr > 1.1 and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
+            if ((rr <= -1 and self.max_loss_exit) or (rr > self.account_target_ratio and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
                 self.orders.close_all_positions()
                 self.risk_manager.alert.send_msg(f"Early Close : {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
 
@@ -341,6 +342,7 @@ if __name__ == "__main__":
     parser.add_argument('--trades_per_day', type=int, help='Number of trades per day')
     parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')
     parser.add_argument('--target_ratio', type=float, help='Target ratio, assume stop is 1')
+    parser.add_argument('--account_target_ratio', type=float, help='Account Target ratio, assume stop is 1')
     parser.add_argument('--each_position_risk', type=float, help='Each Position risk percentage w.r.t account size') # Just Dummy
     parser.add_argument('--num_prev_cdl_for_stop', type=int, help='Number of previous candle for stops')
     parser.add_argument('--enable_trail_stop', type=str, help='Enable Trail stop')
@@ -364,6 +366,7 @@ if __name__ == "__main__":
     each_position_risk = float(args.each_position_risk)
     account_risk =  float(args.account_risk) # each_position_risk * 10
     target_ratio = float(args.target_ratio)
+    account_target_ratio = float(args.account_target_ratio)
     security = str(args.security)
     trades_per_day = int(args.trades_per_day)
     num_prev_cdl_for_stop = int(args.num_prev_cdl_for_stop)
@@ -390,6 +393,6 @@ if __name__ == "__main__":
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
                       systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
-                      stop_selection=stop_selection)
+                      stop_selection=stop_selection, account_target_ratio=account_target_ratio)
 
     win.main()

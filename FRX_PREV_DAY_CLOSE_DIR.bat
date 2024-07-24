@@ -12,6 +12,7 @@ REM Risk Management
 set account_risk=0.50
 set each_position_risk=0.05
 set target_ratio=10.0
+set account_target_ratio=1.1
 set enable_dynamic_position_risk=yes
 set max_loss_exit=yes
 set max_target_exit=yes
@@ -60,4 +61,5 @@ python smart_trader.py ^
     --close_by_solid_cdl %close_by_solid_cdl% ^
     --primary_symbols %primary_symbols% ^
     --stop_selection %stop_selection% ^
+    --account_target_ratio %account_target_ratio% ^
     --target_ratio %target_ratio%
