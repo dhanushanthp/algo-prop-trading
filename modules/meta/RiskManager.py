@@ -46,7 +46,7 @@ class RiskManager:
 
         # Initial Trail loss w.r.t to account size
         self.account_trail_loss = self.account_size - self.risk_of_an_account
-        self.account_name = self.account.get_account_name()      
+        self.account_name = self.account.get_account_name()
     
     def get_max_loss(self):
         return self.account_trail_loss
@@ -292,10 +292,10 @@ class RiskManager:
         equity = self.account.get_equity()
 
         # Calculate trail loss, where equity will increase based on positive returns
-        # trail_loss = equity - self.risk_of_an_account
+        trail_loss = equity - self.risk_of_an_account
 
         # Update account trail loss with the maximum value between current trail loss and previous maximum
-        # self.account_trail_loss = max(trail_loss, self.account_trail_loss)
+        self.account_trail_loss = max(trail_loss, self.account_trail_loss)
 
         # Check if the daily maximum risk has been reached by comparing equity with account trail loss
         if equity < self.account_trail_loss:
