@@ -133,6 +133,7 @@ class SmartTrader():
                 is_market_close = not util.is_us_activemarket_peroid()
 
             equity = self.account.get_equity()
+            max_possible_loss = round(self.risk_manager.get_max_loss())
 
             PnL = (equity - self.risk_manager.account_size)
             rr = PnL/self.risk_manager.risk_of_an_account
@@ -141,6 +142,7 @@ class SmartTrader():
             print(f"\n---{market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} {self.systems}---")
             print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
             print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
+            print(f"{'Max Loss'.ljust(20)}: {max_possible_loss}$")
             print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
             print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
             print(f"{'Stop Selection'.ljust(20)}: {self.stop_selection}")
@@ -160,6 +162,24 @@ class SmartTrader():
             print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)}")
 
             self.orders.cancel_all_pending_orders()
+
+            # Incase Of there is not max target is set, Then enable the trail account target
+            if not self.max_target_exit:
+                if self.risk_manager.has_daily_maximum_risk_reached():
+                    self.orders.close_all_positions()
+                    self.risk_manager.alert.send_msg(f"Trail Close : {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
+                    files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=PnL, rr=rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
+
+                    # Reset account size for next day
+                    self.risk_manager = RiskManager(account_risk=self.account_risk, 
+                                                    position_risk=self.each_position_risk, 
+                                                    stop_ratio=self.stop_ratio, 
+                                                    target_ratio=self.target_ratio,
+                                                    dynamic_postional_risk=self.enable_dynamic_position_risk,
+                                                    strategy=self.strategy)
+                    
+                    self.sent_result = False # Once sent, Disable
+                    self.immidiate_exit = True
 
             # Early Exit
             if ((rr <= -1 and self.max_loss_exit) or (rr > self.account_target_ratio and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
