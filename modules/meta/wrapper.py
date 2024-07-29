@@ -263,6 +263,25 @@ class Wrapper:
 
         return latest_bar.hour
     
+    def is_chart_upto_date(self) -> bool:
+        """
+        Determine if the current hour matches the latest hour for updating a chart.
+
+        This method checks if the current hour of the day matches the latest bar hour 
+        for a specified symbol and timeframe. It retrieves the current hour using the 
+        `util.get_current_day_hour_min()` function and compares it to the latest bar 
+        hour obtained from `self.get_latest_bar_hour`.
+
+        Returns:
+            bool: True if the current hour matches the latest bar hour, indicating that 
+                it is time to update the chart; otherwise, False.
+        """
+        _,hour,_ = util.get_current_day_hour_min()
+        latest_hour = self.get_latest_bar_hour(symbol=symbol, timeframe=60)
+        if hour == latest_hour:
+            return True
+        return False
+    
     def get_weekly_candles(self, symbol:str, timeframe:int, most_latest_candle:int):
         """
         Retrieves weekly based candles for a given symbol and timeframe up to the specified most recent candle.
