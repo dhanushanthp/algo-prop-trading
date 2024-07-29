@@ -97,13 +97,11 @@ class Orders:
             entry_price = self.prices.get_entry_price(symbol=symbol)
 
         # If the latest base is not loaded, then it trades based on wrong signal
-        _,hour,_ = util.get_current_day_hour_min()
-        latest_hour = self.wrapper.get_latest_bar_hour(symbol=symbol, timeframe=trading_timeframe)
-
-        if hour != latest_hour:
-            log_it(reference).info(f"{symbol}: HOUR NOT MATCH: {latest_hour}, but current: {hour}")
+        is_chart_upto_date = self.wrapper.is_chart_upto_date(symbol=symbol)
+        if not is_chart_upto_date:
+            log_it(reference).info(f"{symbol}: HOUR NOT MATCH")
         
-        if entry_price and (hour == latest_hour):
+        if entry_price and is_chart_upto_date:
             shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier, stop_selection=self.stop_selection)
             if shield_object.get_signal_strength:
                 if entry_price > shield_object.get_long_stop:

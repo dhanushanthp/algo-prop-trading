@@ -263,7 +263,7 @@ class Wrapper:
 
         return latest_bar.hour
     
-    def is_chart_upto_date(self) -> bool:
+    def is_chart_upto_date(self, symbol:str) -> bool:
         """
         Determine if the current hour matches the latest hour for updating a chart.
 

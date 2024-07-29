@@ -333,9 +333,10 @@ class Strategies:
         Returns:
             Directions: The market direction for the previous day. It returns Directions.LONG if the closing price is higher than the opening price, otherwise, it returns Directions.SHORT.
         """
-        previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
-        direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
-        return direction
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
+            direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
+            return direction
 
     def four_hour_close(self, symbol:str) -> Directions:
         """
