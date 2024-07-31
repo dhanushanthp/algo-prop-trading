@@ -337,6 +337,29 @@ class Strategies:
             previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
+    
+    def previous_day_close_heikin_ashi(self, symbol:str) -> Directions:
+        """
+        Determines the trading direction (LONG or SHORT) based on the previous day's Heikin-Ashi candle close for a given symbol.
+
+        This function checks if the chart data for the specified symbol is up-to-date. If it is, it retrieves the last three daily 
+        Heikin-Ashi candles (excluding today's data). The direction is then determined by comparing the close and open prices 
+        of the previous day's candle:
+        
+        - If the close price is greater than the open price, the direction is LONG.
+        - If the close price is less than or equal to the open price, the direction is SHORT.
+
+        Args:
+            symbol (str): The trading symbol for which the direction is to be determined.
+
+        Returns:
+            Directions: Returns `Directions.LONG` if the previous day's close is higher than the open, otherwise `Directions.SHORT`.
+        """
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            previou_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=1440, start_candle=0, n_candles=3, is_today=False)
+            previous_day_candle = previou_candles.iloc[-1]
+            direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
+            return direction
 
     def four_hour_close(self, symbol:str) -> Directions:
         """
@@ -676,3 +699,31 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe))
+        
+        case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
+            # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_HEIKIN_ASHI y 60
+            if batch=="y":
+                same_direction = []
+                opposite_direction = []
+                for symbol in curr.master_currencies:
+                    output = strat_obj.previous_day_close_heikin_ashi(symbol=symbol)
+                    output2 = strat_obj.previous_day_close(symbol=symbol)
+                    
+                    if output == output2:
+                        same_direction.append((symbol, output.name))
+                    else:
+                        opposite_direction.append((symbol, output.name, output2.name))
+                    
+                print("SAME")
+                for i in same_direction:
+                    print(i)
+
+                print("\nOPPOSITE")
+                for i in opposite_direction:
+                    print(i)
+
+                print("\nSUMMARY")
+                print(f"SAME: {len(curr.master_currencies) - len(opposite_direction)}/{len(curr.master_currencies)}")
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.previous_day_close_heikin_ashi(symbol=symbol))
