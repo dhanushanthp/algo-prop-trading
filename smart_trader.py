@@ -170,6 +170,9 @@ class SmartTrader():
                     self.risk_manager.alert.send_msg(f"Trail Close : {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
                     files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=PnL, rr=rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
 
+                    if self.record_pnl:
+                        files_util.record_pnl(iteration=1, pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
+
                     # Reset account size for next day
                     self.risk_manager = RiskManager(account_risk=self.account_risk, 
                                                     position_risk=self.each_position_risk, 
@@ -188,6 +191,9 @@ class SmartTrader():
 
                 # Write the pnl to a file
                 files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=PnL, rr=rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
+
+                if self.record_pnl:
+                    files_util.record_pnl(iteration=1, pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk, 
