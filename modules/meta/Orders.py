@@ -58,6 +58,25 @@ class Orders:
 
 
     def cancel_all_pending_orders(self):
+        """
+        Cancels all pending orders on the MetaTrader 5 platform.
+
+        This method retrieves all active orders from the MetaTrader 5 platform 
+        and attempts to cancel each one. It cancels pending orders regardless 
+        of whether the account is in trial or real mode.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Notes:
+            - If the cancellation of an order fails, a message is printed 
+            indicating the order ticket number and the reason for the failure.
+            - The function does not raise exceptions or return a status, so the 
+            user needs to monitor the printed output for any issues.
+        """
         active_orders = mt5.orders_get()
 
         # Cancell all pending orders regadless of trial or real
