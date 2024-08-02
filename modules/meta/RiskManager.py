@@ -282,10 +282,17 @@ class RiskManager:
     
     def has_daily_maximum_risk_reached(self):
         """
-        Check if the daily maximum risk has been reached based on the account's equity and trail loss.
+        Check if the daily maximum risk has been reached based on the account's equity and trailing loss.
+
+        The method evaluates whether the current equity of the account has dropped below a threshold that represents 
+        the daily maximum risk. This threshold is dynamically adjusted based on the highest equity level achieved 
+        during the day (account's trail loss).
 
         Returns:
-        bool: True if the daily maximum risk has been reached, False otherwise.
+        bool: 
+            True if the current equity has fallen below the trailing loss level, indicating the daily maximum risk 
+            has been reached.
+            False if the equity is still above the trailing loss level, indicating the daily maximum risk has not been reached.
         """
 
         # Retrieve account details including equity
