@@ -215,7 +215,6 @@ def get_market_status(start_hour:int=10) -> Tuple[bool, bool]:
     market_open = False
     market_about_to_close= False
     day, hour, minute = get_current_day_hour_min()
-    print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
 
     if day not in ["Saturday","Sunday"]:
         # Once market open become disabled, No new trades
