@@ -21,12 +21,13 @@ from modules.common.logme import log_it
 class SmartTrader():
     def __init__(self, **kwargs):
         self.timer = 15 # In Seconds
-        self.retries = 0
         self.stop_ratio = 1.0
-        self.immidiate_exit = False
-        self.sent_result:bool = True
+        self.exited_by_pnl:bool = False
+        self.notify_pnl:bool = True
         self.is_initial_run:bool= True # This helps to avoid message and pnl write while market is closed.
         self.account_trail_enabler:bool=False
+        self.PnL:float = 0
+        self.rr:float = 0
 
         # Key Arguments, Below values will be override when the risk is dynamic
         self.systems:list = kwargs["systems"]
@@ -125,7 +126,7 @@ class SmartTrader():
                 return status
 
 
-    def close_trades_early_on_pnl(self, PnL, rr, exit_statement="Early Close"):
+    def close_trades_early_on_pnl(self, exit_statement="Early Close"):
         """
         Handle the closing of all active trades based on the provided Profit and Loss (PnL) and risk-reward (rr) values.
 
@@ -143,84 +144,91 @@ class SmartTrader():
 
         Parameters:
         ----------
-        PnL : float
-            The Profit and Loss value that triggers the closing of trades.
-        rr : float
-            The risk-reward ratio at the time of closing.
         exist_statement : str, optional
             A statement indicating the reason for early closure, by default "Early Close".
         """
         self.orders.close_all_positions()
-        self.risk_manager.alert.send_msg(f"{exit_statement} : {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
+        self.risk_manager.alert.send_msg(f"{exit_statement} : {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
 
         # Write the pnl to a file
-        files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=PnL, rr=rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
+        files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
 
         if self.record_pnl:
-            files_util.record_pnl(iteration=1, pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
+            files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
                 
         # Reset account size for next day
-        self.risk_manager = RiskManager(account_risk=self.account_risk, 
-                                                position_risk=self.each_position_risk, 
-                                                stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio,
-                                                dynamic_postional_risk=self.enable_dynamic_position_risk,
-                                                strategy=self.strategy)
+        self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
+                                        target_ratio=self.target_ratio, dynamic_postional_risk=self.enable_dynamic_position_risk,
+                                        strategy=self.strategy)
                 
-        self.sent_result = False # Once sent, Disable
-        self.immidiate_exit = True
+        self.notify_pnl = False # Once sent, Disable
+        self.exited_by_pnl = True
+
+
+    def verbose(self):
+        """
+        Print the configuration and Pnl parameters in console for monitoring purposes
+        """
+        day, hour, minute = util.get_current_day_hour_min()
+        market_status_string = util.cl_status("Inactive: ", color="red") if self.is_market_close else util.cl_status("Active: ", color="green")
+        print(f"\n--- {market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} ---")
+        print(f"{'Strategy'.ljust(20)}: {self.systems}")
+        print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
+        print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
+        print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
+        print(f"{'Max Loss'.ljust(20)}: {self.max_possible_loss}$")
+        print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
+        print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}")
+        print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}")
+        print(f"{'Stop Selection'.ljust(20)}: {self.stop_selection}")
+        print(f"{'Multip Position'.ljust(20)}: {self.multiple_positions}\n")
+            
+        print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.primary_symbols)}")
+        print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
+        print(f"{'Trail ST Pos..n'.ljust(20)}: {util.cl(self.enable_trail_stop)}")
+        print(f"{'Dynamic Risk'.ljust(20)}: {util.cl(self.enable_dynamic_position_risk)}")
+        print(f"{'Record PnL'.ljust(20)}: {util.cl(self.record_pnl)}\n")
+
+        print(f"{'Close by Solid CDL'.ljust(20)}: {util.cl(self.close_by_solid_cdl)}")
+        print(f"{'Close by Time'.ljust(20)}: {util.cl(self.close_by_time)}\n")
+
+        print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
+        print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
+        print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)}")
+
 
     def main(self):
         while True:
-            is_market_open, is_market_close = util.get_market_status(start_hour=self.start_hour)
+            self.is_market_open, self.is_market_close = util.get_market_status(start_hour=self.start_hour)
 
             if self.security == "STOCK":
-                is_market_open = is_market_open and util.is_us_activemarket_peroid()
-                is_market_close = not util.is_us_activemarket_peroid()
+                self.is_market_open = self.is_market_open and util.is_us_activemarket_peroid()
+                self.is_market_close = not util.is_us_activemarket_peroid()
 
-            equity = self.account.get_equity()
-            max_possible_loss = round(self.risk_manager.get_max_loss())
+            self.equity = self.account.get_equity()
+            self.max_possible_loss = round(self.risk_manager.get_max_loss())
 
-            PnL = (equity - self.risk_manager.account_size)
-            rr = PnL/self.risk_manager.risk_of_an_account
+            self.PnL = (self.equity - self.risk_manager.account_size)
+            self.rr = self.PnL/self.risk_manager.risk_of_an_account
 
-            market_status_string = util.cl_status("Inactive: ", color="red") if is_market_close else util.cl_status("Active: ", color="green")
-            print(f"\n---{market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} {self.systems}---")
-            print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
-            print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
-            print(f"{'Max Loss'.ljust(20)}: {max_possible_loss}$")
-            print(f"{'PnL'.ljust(20)}: ${round(PnL, 2)}")
-            print(f"{'RR'.ljust(20)}: {round(rr, 2)}")
-            print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}")
-            print(f"{'Stop Selection'.ljust(20)}: {self.stop_selection}")
-            print(f"{'Multip Position'.ljust(20)}: {self.multiple_positions}\n")
-            
-            print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.primary_symbols)}")
-            print(f"{'Break Even'.ljust(20)}: {util.cl(self.enable_breakeven)}")
-            print(f"{'Position Trail ST'.ljust(20)}: {util.cl(self.enable_trail_stop)}")
-            print(f"{'Dynamic Risk'.ljust(20)}: {util.cl(self.enable_dynamic_position_risk)}")
-            print(f"{'Record PnL'.ljust(20)}: {util.cl(self.record_pnl)}\n")
+            # Print configs and pnl on console
+            self.verbose()
 
-            print(f"{'Close by Solid CDL'.ljust(20)}: {util.cl(self.close_by_solid_cdl)}")
-            print(f"{'Close by Time'.ljust(20)}: {util.cl(self.close_by_time)}\n")
-
-            print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
-            print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
-            print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)}")
-
+            # Cancel all pending orders
             self.orders.cancel_all_pending_orders()
 
-            # Exit the trade based on the trail move. This could be only leads to breakeven or high profit.
-            if (rr > 1.1 or self.account_trail_enabler) and (not self.immidiate_exit) and self.sent_result:
+            # Check if the risk-reward ratio (RR) is greater than 1.1 or if the account trailing feature is enabled,
+            # and ensure that the trade hasn't been exited by PnL, while notifications for PnL are enabled.
+            if (self.rr > 1.1 or self.account_trail_enabler) and (not self.exited_by_pnl) and self.notify_pnl:
                 if self.risk_manager.has_daily_maximum_risk_reached():
-                    self.close_trades_early_on_pnl(PnL=PnL, rr=rr, exit_statement="Trail Close")
+                    self.close_trades_early_on_pnl(exit_statement="Trail Close")
                 
                 # This helps to track the account level loss once after the RR go above 1.1
                 self.account_trail_enabler = True
 
-            # Early Exit based on max account level Profit or Loss
-            if ((rr <= -1 and self.max_loss_exit) or (rr > self.account_target_ratio and self.max_target_exit)) and (not self.immidiate_exit) and self.sent_result:
-                self.close_trades_early_on_pnl(PnL=PnL, rr=rr)
+            # Early exit based on max account level profit or Loss
+            if ((self.rr <= -1 and self.max_loss_exit) or (self.rr > self.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
+                self.close_trades_early_on_pnl()
             
             if self.close_by_time:
                 positions = self.risk_manager.close_positions_by_time(timeframe=self.trading_timeframe, wait_factor=3)
@@ -232,16 +240,20 @@ class SmartTrader():
                 for obj in positions:
                     self.orders.close_single_position(obj=obj)
 
-            if self.record_pnl and not self.immidiate_exit:
-                # Only record when we have actual trades
+            if self.record_pnl and (not self.exited_by_pnl) and (not self.is_market_close):
+                # Check if PnL recording is enabled, we are not in an immediate exit condition, and the market is still open
+                # Proceed to record PnL only if there are trades made today
                 if not self.wrapper.get_todays_trades().empty:
-                    files_util.record_pnl(iteration=1, pnl=PnL, rr=rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
+                    files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
+                
+                directional_pnl = self.wrapper.get_active_directional_pnl()
+                if directional_pnl:
+                    files_util.record_pnl_directional(long_pnl=directional_pnl.long, short_pnl=directional_pnl.short, strategy=self.strategy, system='|'.join(self.systems))
+
 
             # Each position trail stop
             if self.enable_trail_stop:
-                self.risk_manager.trailing_stop_and_target(stop_multiplier=self.stop_ratio, 
-                                                           target_multiplier=self.target_ratio, 
-                                                           trading_timeframe=self.trading_timeframe,
+                self.risk_manager.trailing_stop_and_target(stop_multiplier=self.stop_ratio, target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe,
                                                            num_cdl_for_stop=self.num_prev_cdl_for_stop)
             
             if self.enable_neutralizer:
@@ -257,35 +269,31 @@ class SmartTrader():
             if self.enable_breakeven:
                 self.risk_manager.breakeven(profit_factor=1)
 
-            if is_market_close:
-                # Don't close the trades if it's more than 4 hour time frame
+            if self.is_market_close:
+                # Don't close the trades on market close if it's more than 4 hour time frame
                 if self.trading_timeframe < 240:
                     self.orders.close_all_positions()
                 
                 # Update the result in Slack
-                if self.sent_result and not self.is_initial_run:
-                    self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(PnL, 2)})  {round(rr, 2)}")
+                if self.notify_pnl and not self.is_initial_run:
+                    self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
-                    files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=PnL, rr=rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
+                    files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
                 
                 # Reset account size for next day
-                self.risk_manager = RiskManager(account_risk=self.account_risk, 
-                                                position_risk=self.each_position_risk, 
-                                                stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio,
-                                                dynamic_postional_risk=self.enable_dynamic_position_risk,
-                                                strategy=self.strategy)
+                self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
+                                                target_ratio=self.target_ratio, dynamic_postional_risk=self.enable_dynamic_position_risk, strategy=self.strategy)
 
-                self.sent_result = False # Once sent, Disable
-                self.immidiate_exit = False # Reset the Immidiate exit
+                self.notify_pnl = False # Once sent, Disable
+                self.exited_by_pnl = False # Reset the Immidiate exit
             
-            if is_market_open and (not self.immidiate_exit) \
-                  and (not is_market_close) \
+            if self.is_market_open and (not self.exited_by_pnl) \
+                  and (not self.is_market_close) \
                     and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
                 
                 # Enable again once market active
-                self.sent_result = True
+                self.notify_pnl = True
                 
                 # Once it's active in market then the initial run become deactive
                 self.is_initial_run = False 
@@ -304,28 +312,23 @@ class SmartTrader():
                                 case "3CDL_STR":
                                     trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)
-                                
                                 case "4CDL_PULLBACK":
                                     trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)
-                                
                                 case "4CDL_PULLBACK_EXT":
                                     trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe,
                                                                                             extrame=True)
-                                    
                                 case "DAILY_HL":
                                     min_gap = 2
                                     trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe,
                                                                                             min_gap=min_gap)
-
                                 case "DAILY_HL_DOUBLE_HIT":
                                     min_gap = 4
                                     trade_direction = self.strategies.daily_high_low_breakout_double_high_hit(symbol=symbol, 
                                                                                                             timeframe=self.trading_timeframe,
                                                                                                             min_gap=min_gap)
-                            
                                 case "WEEKLY_HL":
                                     min_gap = 4
                                     trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
@@ -334,14 +337,12 @@ class SmartTrader():
                                 case "D_TOP_BOTTOM":
                                     trade_direction = self.strategies.get_dtop_dbottom(symbol=symbol, 
                                                                                     timeframe=self.trading_timeframe)
-                                
                                 case "HEIKIN_ASHI":
                                     trade_direction = self.strategies.get_heikin_ashi_reversal(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)
                                 case "HEIKIN_ASHI_PRE":
                                     trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)
-                                
                                 case "U_REVERSAL":
                                     # TODO Introduce namedtuple for this tuple
                                     trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
@@ -371,7 +372,6 @@ class SmartTrader():
                                                                                       trade_direction=trade_direction,
                                                                                       strategy=self.risk_manager.strategy,
                                                                                       multiple_positions=self.multiple_positions)
-                            
                             if is_valid_signal:
                                 if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1):
                                     break # Break the symbol loop
