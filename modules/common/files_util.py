@@ -113,7 +113,7 @@ def get_most_risk_percentage(file_name:str, **kwargs):
     return MINIMUM_RISK, selected_strategy
 
 
-def record_pnl(iteration, pnl, rr, risk_per, strategy, system):
+def record_pnl(iteration, pnl, rr, risk_per, strategy, system, dirc="pnl"):
     """
     Records profit and loss (PnL) data along with risk and reward ratios to a CSV file.
     
@@ -135,7 +135,7 @@ def record_pnl(iteration, pnl, rr, risk_per, strategy, system):
         util.get_current_time(): Retrieves the current time.
         create_directory_if_not_exists(directory_path): Ensures the target directory exists.
     """
-    dir_path = f"data/pnl/{util.get_server_ip()}"
+    dir_path = f"data/{dirc}/{util.get_server_ip()}"
     create_directory_if_not_exists(directory_path=dir_path)
     current_date = util.get_current_time().strftime('%Y-%m-%d')
     file_path = f"{dir_path}/{current_date}.csv"
