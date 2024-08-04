@@ -142,6 +142,35 @@ def record_pnl(iteration, pnl, rr, risk_per, strategy, system, dirc="pnl"):
     with open(file_path, mode="a") as file:
         file.write(f"{iteration},{system},{strategy},{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{round(pnl, 2)},{round(rr, 2)},{risk_per}\n")
 
+def record_pnl_directional(long_pnl, short_pnl, strategy, system, dirc="directional_pnl"):
+    """
+    Records the directional profit and loss (PnL) data to a CSV file.
+
+    This function logs the long and short PnL values for a specific trading strategy and system 
+    to a CSV file. The data is saved in a directory structure organized by the date and the server's IP address.
+
+    Args:
+        long_pnl (float): The profit and loss value for long positions.
+        short_pnl (float): The profit and loss value for short positions.
+        strategy (str): The name of the trading strategy.
+        system (str): The identifier for the trading system.
+        dirc (str, optional): The name of the top-level directory where the PnL data will be stored. 
+                              Defaults to "directional_pnl".
+
+    Details:
+        - The function creates a directory structure under `data/` based on the specified directory 
+          name (`dirc`) and the server's IP address.
+        - The PnL data is appended to a CSV file named with the current date (in the format YYYY-MM-DD).
+        - Each record in the CSV file contains the system, strategy, current timestamp, rounded long PnL, 
+          and rounded short PnL values.
+    """
+    dir_path = f"data/{dirc}/{util.get_server_ip()}"
+    create_directory_if_not_exists(directory_path=dir_path)
+    current_date = util.get_current_time().strftime('%Y-%m-%d')
+    file_path = f"{dir_path}/{current_date}.csv"
+    with open(file_path, mode="a") as file:
+        file.write(f"{system},{strategy},{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{round(long_pnl, 3)},{round(short_pnl, 3)}\n")
+
 if __name__ == "__main__":
     # update_pnl("testing", "4_CDL", "REVERSE" , 100, -1.2, 0.15)
     print(get_most_risk_percentage("testing", strategy="TESTING"))

@@ -5,11 +5,13 @@ import pytz
 from datetime import datetime, timedelta, time
 from modules import config
 from typing import Tuple
+from typing import Type
 import numpy as np
 from collections import deque
 from typing import Dict
 mt5.initialize()
 import modules.meta.Currencies as curr
+from collections import namedtuple
 
 class Wrapper:
     def __init__(self):
@@ -411,6 +413,24 @@ class Wrapper:
             return pd.DataFrame()
     
     
+    def get_active_directional_pnl(self) -> Type[namedtuple]:
+        """
+        Calculate and return the directional profit and loss (PnL) for active positions.
+
+        This method retrieves all active positions and computes the total PnL for each position type (e.g., 'long' and 'short').
+        The PnL values are summed by their type and returned as a namedtuple with fields 'long' and 'short'.
+
+        Returns:
+            namedtuple: A namedtuple 'PnL' containing the summed PnL values for 'long' and 'short' positions.
+            If there are no active positions, returns None.
+        """
+        active_positions = self.get_all_active_positions()
+        pnl_ref = None
+        if not active_positions.empty:
+            PnL = namedtuple("PnL", ["long", "short"])
+            direction_pnl = active_positions.groupby(["type"])["profit"].sum()
+            pnl_ref = PnL(round(direction_pnl.loc[0], 3), round(direction_pnl.loc[1], 3))
+            return pnl_ref
     
     
     def limit_trades_by_same_timeframe(self, timeframe:int) -> list:
@@ -443,9 +463,34 @@ class Wrapper:
     
     def get_active_positions(self, today=False) -> list:
         """
-        List all the symbols which are in trade
+        Retrieve a list of active trading symbols.
+
+        Parameters:
+        -----------
+        today : bool, optional
+            If set to True, returns positions opened today only (default is False).
+
+        Returns:
+        --------
+        list
+            A list of symbols representing active positions. 
+            - If `today` is True, only positions opened on the current day are included.
+            - If `today` is False, all active positions are included.
+
+        Notes:
+        ------
+        - The method uses MetaTrader 5's `positions_get` function to retrieve active positions.
+        - When `today` is True, it compares the trade date of each position with the current date to filter results.
+        - The `util.get_current_time()` function is used to get the current date, and 
+        `util.get_traded_time()` is used to get the date when the position was opened.
+
+        Example usage:
+        --------------
+        >>> active_positions = self.get_active_positions(today=True)
+        >>> print(active_positions)
+        ['EURUSD', 'GBPUSD']
+
         """
-        
         live_symbols = []
         if today:
             today_date = util.get_current_time().strftime("%Y-%m-%d")
@@ -736,13 +781,14 @@ if "__main__" == __name__:
     # print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
     # print(obj.get_latest_bar_hour(symbol=symbol, timeframe=index))
     # print(obj.get_closed_pnl())
+    print(obj.get_active_directional_pnl().long)
 
-    from modules.meta import Currencies
-    while True:
-        for symbol in Currencies.get_symbols():
-            print(symbol, obj.is_reasonable_spread(symbol=symbol))
-        print("\n\n\n")
-        import time
-        time.sleep(15)
+    # from modules.meta import Currencies
+    # while True:
+    #     for symbol in Currencies.get_symbols():
+    #         print(symbol, obj.is_reasonable_spread(symbol=symbol))
+    #     print("\n\n\n")
+    #     import time
+    #     time.sleep(15)
     
 
