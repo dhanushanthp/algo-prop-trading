@@ -356,7 +356,7 @@ class Strategies:
             Directions: Returns `Directions.LONG` if the previous day's close is higher than the open, otherwise `Directions.SHORT`.
         """
         if self.wrapper.is_chart_upto_date(symbol=symbol):
-            previou_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=1440, start_candle=0, n_candles=3, is_today=False)
+            previou_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=1440, is_today=False)
             previous_day_candle = previou_candles.iloc[-2]
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
@@ -710,7 +710,7 @@ if __name__ == "__main__":
                     output2 = strat_obj.previous_day_close(symbol=symbol)
                     
                     if output and output2:
-                        if output == output2:
+                        if output.name == output2.name:
                             same_direction.append((symbol, output.name))
                         else:
                             opposite_direction.append((symbol, output.name, output2.name))
