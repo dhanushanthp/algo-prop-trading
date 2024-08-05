@@ -344,23 +344,18 @@ class SmartTrader():
                                     trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)
                                 case "U_REVERSAL":
-                                    # TODO Introduce namedtuple for this tuple
                                     trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
                                                                                     timeframe=self.trading_timeframe)
                                 case "SINGLES":
-                                    # TODO Introduce namedtuple for this tuple
                                     trade_direction = self.strategies.strike_by_solid_candle(symbol=symbol, 
                                                                                     timeframe=self.trading_timeframe)
                                 case "PREV_DAY_CLOSE_DIR":
-                                    # TODO Introduce namedtuple for this tuple
                                     trade_direction = self.strategies.previous_day_close(symbol=symbol)
                                 
                                 case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
-                                    # TODO Introduce namedtuple for this tuple
                                     trade_direction = self.strategies.previous_day_close_heikin_ashi(symbol=symbol)
                                 
                                 case "4H_CLOSE_DIR":
-                                    # TODO Introduce namedtuple for this tuple
                                     trade_direction = self.strategies.four_hour_close(symbol=symbol)
                         except Exception as e:
                             error_trace = traceback.format_exc()
