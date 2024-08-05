@@ -138,7 +138,7 @@ class Orders:
                             "price": entry_price,
                             "sl": self.prices.round(symbol, entry_price - self.risk_manager.stop_ratio * points_in_stop),
                             "tp": self.prices.round(symbol, entry_price + self.risk_manager.target_ratio * points_in_stop),
-                            "comment": comment,
+                            # "comment": comment, Some time it failed lengthy string
                             "magic": trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_RETURN,
@@ -260,7 +260,7 @@ class Orders:
                             "price": entry_price,
                             "sl": self.prices.round(symbol, entry_price + self.risk_manager.stop_ratio * points_in_stop),
                             "tp": self.prices.round(symbol, entry_price - self.risk_manager.target_ratio * points_in_stop),
-                            "comment": comment,
+                            # "comment": comment, Some time it failed lengthy string
                             "magic":trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_RETURN,

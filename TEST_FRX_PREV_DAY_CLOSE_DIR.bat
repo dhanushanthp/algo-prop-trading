@@ -19,7 +19,7 @@ set max_target_exit=no
 
 REM Strategy and System
 set strategy=BREAK
-set systems=PREV_DAY_CLOSE_DIR
+set systems=PREV_DAY_CLOSE_DIR_HEIKIN_ASHI
 
 REM Security
 set security=FOREX
