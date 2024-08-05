@@ -15,7 +15,7 @@ set target_ratio=10.0
 set account_target_ratio=2.1
 set enable_dynamic_position_risk=yes
 set max_loss_exit=yes
-set max_target_exit=yes
+set max_target_exit=no
 
 REM Strategy and System
 set strategy=BREAK
