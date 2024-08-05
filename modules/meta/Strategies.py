@@ -713,7 +713,7 @@ if __name__ == "__main__":
                         if output.name == output2.name:
                             same_direction.append((symbol, output.name))
                         else:
-                            opposite_direction.append((symbol, output.name, output2.name))
+                            opposite_direction.append((symbol, output.name))
                     
                 print("SAME")
                 for i in same_direction:
