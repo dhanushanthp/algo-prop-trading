@@ -757,7 +757,7 @@ class Wrapper:
 if "__main__" == __name__:
     obj = Wrapper()
     import sys
-    # symbol = sys.argv[1]
+    symbol = sys.argv[1]
     # index = int(sys.argv[2])
     # timeframe = int(sys.argv[2])
     # timeframe = int(sys.argv[2])
@@ -772,7 +772,8 @@ if "__main__" == __name__:
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
-    # print(obj.get_heikin_ashi(symbol=symbol, timeframe=60))
+    candle = obj.get_heikin_ashi(symbol=symbol, timeframe=1440, is_today=False).iloc[-2]
+    print(candle["close"] - candle["open"])
     # print(obj.get_traded_symbols())
     # print(obj.any_remaining_trades(max_trades=11))
     # print(obj.get_all_active_positions())
@@ -781,7 +782,7 @@ if "__main__" == __name__:
     # print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
     # print(obj.get_latest_bar_hour(symbol=symbol, timeframe=index))
     # print(obj.get_closed_pnl())
-    print(obj.get_active_directional_pnl().long)
+    # print(obj.get_active_directional_pnl().long)
 
     # from modules.meta import Currencies
     # while True:
