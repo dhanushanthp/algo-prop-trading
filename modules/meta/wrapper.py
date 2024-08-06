@@ -429,7 +429,9 @@ class Wrapper:
         if not active_positions.empty:
             PnL = namedtuple("PnL", ["long", "short"])
             direction_pnl = active_positions.groupby(["type"])["profit"].sum()
-            pnl_ref = PnL(round(direction_pnl.loc[0], 3), round(direction_pnl.loc[1], 3))
+            long_pnl = round(direction_pnl.loc[0], 3) if 0 in direction_pnl.index else 0
+            short_pnl = round(direction_pnl.loc[1], 3) if 1 in direction_pnl.index else 0
+            pnl_ref = PnL(long_pnl, short_pnl)
             return pnl_ref
     
     
