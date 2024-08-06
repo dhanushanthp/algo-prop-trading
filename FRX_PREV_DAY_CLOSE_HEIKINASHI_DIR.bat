@@ -13,7 +13,7 @@ set account_risk=0.50
 set each_position_risk=0.05
 set target_ratio=10.0
 set account_target_ratio=2.1
-set enable_dynamic_position_risk=yes
+set enable_dynamic_position_risk=no
 set max_loss_exit=yes
 set max_target_exit=no
 
