@@ -667,6 +667,28 @@ class RiskManager:
         return Shield(symbol=symbol, long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
 
     def get_lot_size(self, symbol, entry_price, stop_price) -> Tuple[float, float]:
+        """
+        Calculates the lot size for a given trading position based on the entry price,
+        stop price, and symbol. The method adjusts the lot size based on specific symbols
+        and their respective scaling factors.
+
+        Args:
+            symbol (str): The trading symbol (e.g., currency pair, stock index).
+            entry_price (float): The entry price for the trade.
+            stop_price (float): The stop price for the trade.
+
+        Returns:
+            Tuple[float, float]: A tuple containing:
+                - The number of points in the stop (float).
+                - The calculated lot size (float).
+
+        Notes:
+            - The method uses the dollar value of the symbol to compute the lot size.
+            - Adjustments are made for various symbols, including currency pairs, stock indices,
+            and commodities, based on predefined scaling factors.
+            - The resulting lot size is rounded to two decimal places, and a minimum lot size
+            of 0.01 is enforced.
+        """
         dollor_value = self.prices.get_dollar_value(symbol)
         points_in_stop = abs(entry_price-stop_price)
         lots = self.risk_of_a_position/(points_in_stop * dollor_value)
@@ -692,6 +714,9 @@ class RiskManager:
             # Some reason the amount is comes as 4 times. So divide by 4
             lots = lots*100/4
         
+        if lots <= 0.01:
+            lots = 0.01
+
         lots = round(lots, 2)
 
         return points_in_stop, lots
@@ -813,8 +838,9 @@ if __name__ == "__main__":
         
         case "lot_size":
             # Test: Lot Size
+            # python modules\meta\RiskManager.py CADJPY lot_size
             entry_price = obj.prices.get_entry_price(symbol=test_symbol)
-            stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60)
+            stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60,  stop_selection="ATR4H")
             size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
             print(size)
         
