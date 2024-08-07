@@ -714,8 +714,8 @@ class RiskManager:
             # Some reason the amount is comes as 4 times. So divide by 4
             lots = lots*100/4
         
-        if lots <= 0.01:
-            lots = 0.01
+        # if lots <= 0.01:
+        #     lots = 0.01
 
         lots = round(lots, 2)
 
