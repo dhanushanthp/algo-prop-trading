@@ -64,8 +64,8 @@ class Prices:
         increasing the dollar value will lead to a decrease in lots, ultimately reducing the overall risk
         for a single position.
         """
-        symbol_lead = symbol[0:3]
-        symbol_follow = symbol[3:6]
+        symbol_base = symbol[0:3]
+        symbol_quote = symbol[3:6]
 
         if curr.company == "FTMO S.R.O.":
             if symbol == "US500.cash" or (symbol in curr.master_stocks):
@@ -88,15 +88,17 @@ class Prices:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCAD")
             elif symbol in ["CHFJPY"]:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCHF")
-            elif symbol_lead == "USD":
+            elif symbol_base == "USD":
                 """
+                When USD is a BASE Currency, First currency of the pair
                 e.g USDJPY, USDCAD, USDCHF
                 If the currency is lead by USD then we just calculate the inverse of the exchange
                 """
                 return 1/self.get_exchange_price(symbol)
-            elif symbol_follow == "USD":
+            elif symbol_quote == "USD":
                 """
-                e.g GBPUSD, EURUSD
+                When USD is a QUOTE Currency, the second currency
+                e.g XAUUSD, GBPUSD, EURUSD
                 If the currency is followed by USD then we just calculate the exchange
                 """
                 return self.get_exchange_price(symbol)
@@ -105,7 +107,7 @@ class Prices:
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
                 None of the currency lead by USD
                 """
-                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USD")
+                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_base}USD")
             
         elif curr.company == "Black Bull Group Limited":
             if symbol == "SPX500":
@@ -124,13 +126,13 @@ class Prices:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCAD")
             elif symbol in ["CHFJPY"]:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCHF")
-            elif symbol_lead == "USD":
+            elif symbol_base == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF, USDHKD
                 If the currency is lead by USD then we just calculate the inverse of the exchange
                 """
                 return 1/self.get_exchange_price(symbol)
-            elif symbol_follow == "USD":
+            elif symbol_quote == "USD":
                 """
                 e.g GBPUSD, EURUSD
                 If the currency is followed by USD then we just calculate the exchange
@@ -141,7 +143,7 @@ class Prices:
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
                 None of the currency lead by USD
                 """
-                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USD")
+                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_base}USD")
             
         elif curr.company == "AXSE Brokerage Ltd.":
             if symbol == "SP_raw":
@@ -164,13 +166,13 @@ class Prices:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCAD_raw")
             elif symbol in ["CHFJPY_raw"]:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCHF_raw")
-            elif symbol_lead == "USD":
+            elif symbol_base == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
                 If the currency is lead by USD then we just calculate the inverse of the exchange
                 """
                 return 1/self.get_exchange_price(symbol)
-            elif symbol_follow == "USD":
+            elif symbol_quote == "USD":
                 """
                 e.g GBPUSD, EURUSD
                 If the currency is followed by USD then we just calculate the exchange
@@ -181,7 +183,7 @@ class Prices:
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
                 None of the currency lead by USD
                 """
-                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USD_raw")
+                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_base}USD_raw")
             
         elif curr.company == "TF Global Markets (Aust) Pty Ltd":
             if symbol == "SPX500x":
@@ -204,13 +206,13 @@ class Prices:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCADx")
             elif symbol in ["CHFJPYx"]:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCHFx")
-            elif symbol_lead == "USD":
+            elif symbol_base == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF
                 If the currency is lead by USD then we just calculate the inverse of the exchange
                 """
                 return 1/self.get_exchange_price(symbol)
-            elif symbol_follow == "USD":
+            elif symbol_quote == "USD":
                 """
                 e.g GBPUSD, EURUSD
                 If the currency is followed by USD then we just calculate the exchange
@@ -221,7 +223,7 @@ class Prices:
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
                 None of the currency lead by USD
                 """
-                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USDx")
+                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_base}USDx")
         
         elif curr.company == "GrowthNext - F.Z.C":
             if symbol == "SPX500":
@@ -244,13 +246,13 @@ class Prices:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCAD")
             elif symbol in ["CHFJPY"]:
                 return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCHF")
-            elif symbol_lead == "USD":
+            elif symbol_base == "USD":
                 """
                 e.g USDJPY, USDCAD, USDCHF, USDHKD
                 If the currency is lead by USD then we just calculate the inverse of the exchange
                 """
                 return 1/self.get_exchange_price(symbol)
-            elif symbol_follow == "USD":
+            elif symbol_quote == "USD":
                 """
                 e.g GBPUSD, EURUSD
                 If the currency is followed by USD then we just calculate the exchange
@@ -261,7 +263,7 @@ class Prices:
                 e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
                 None of the currency lead by USD
                 """
-                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_lead}USD")
+                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_base}USD")
         else:
             raise Exception(f"The << {curr.company} >> Trading platform not found")
 
