@@ -841,8 +841,8 @@ if __name__ == "__main__":
             # python modules\meta\RiskManager.py CADJPY lot_size
             entry_price = obj.prices.get_entry_price(symbol=test_symbol)
             stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=60,  stop_selection="ATR4H")
-            size = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
-            print(size)
+            point_in_stop, lots = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
+            print(f"Entry:{entry_price + point_in_stop} \nSTP SRT:{entry_price + point_in_stop + point_in_stop} \nSTP LNG: {entry_price} \nLOT: {lots}")
         
         case "wait_time":
             check_time = obj.check_trade_wait_time(symbol=test_symbol)
