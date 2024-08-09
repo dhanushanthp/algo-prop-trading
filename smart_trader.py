@@ -219,7 +219,11 @@ class SmartTrader():
 
             # Check if the risk-reward ratio (RR) is greater than 1.1 or if the account trailing feature is enabled,
             # and ensure that the trade hasn't been exited by PnL, while notifications for PnL are enabled.
-            if (self.rr > 1.1 or self.account_trail_enabler) and (not self.exited_by_pnl) and self.notify_pnl:
+            """
+            From the results, enabling the account trail from start will protect some of the losses rather wait till to enable at 1.1 RR
+            (self.rr > 1.1 or self.account_trail_enabler) and 
+            """
+            if (not self.exited_by_pnl) and self.notify_pnl:
                 if self.risk_manager.has_daily_maximum_risk_reached() and self.max_loss_exit:
                     self.close_trades_early_on_pnl(exit_statement="Trail Close")
                 
