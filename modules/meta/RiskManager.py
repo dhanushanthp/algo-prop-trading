@@ -148,7 +148,7 @@ class RiskManager:
         return list_to_close
 
     
-    def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades"):
+    def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades", max_trades_on_same_direction:int=2):
         """
         Checks the validity of a trade signal based on the given parameters.
 
@@ -163,6 +163,7 @@ class RiskManager:
                     - "by_active_limit": Limits the number of trades in the same direction for a symbol.
                     - "by_trades": Only one trade per direction for a symbol per day.
                     - "by_open": Allows trades based on time gaps since the last trade.
+            max_trades_on_same_direction (int, optional): The number of trades that can be take on a same direction once exit from the current position.
 
         Returns:
             bool: True if the trade signal is valid based on the given criteria, False otherwise.
@@ -209,7 +210,6 @@ class RiskManager:
                             # Shoud not have any active Short Positions
                             return True
         elif multiple_positions == "by_active_limit":
-            max_trades_on_same_direction = 2
             todays_trades = self.wrapper.get_todays_trades()
 
             # Check the entry validity based on active positions. Same directional trades won't took place at same time.

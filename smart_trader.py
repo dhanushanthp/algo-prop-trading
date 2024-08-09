@@ -366,7 +366,8 @@ class SmartTrader():
                                                                                       timeframe=self.trading_timeframe,
                                                                                       trade_direction=trade_direction,
                                                                                       strategy=self.risk_manager.strategy,
-                                                                                      multiple_positions=self.multiple_positions)
+                                                                                      multiple_positions=self.multiple_positions,
+                                                                                      max_trades_on_same_direction=2)
                             if is_valid_signal:
                                 if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1):
                                     break # Break the symbol loop
