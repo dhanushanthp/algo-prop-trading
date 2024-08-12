@@ -46,7 +46,33 @@ class Orders:
 
 
     def cancel_single_pending_order(self, active_order):
-        
+        """
+        Cancels a single pending order in MetaTrader 5 (MT5).
+
+        This method sends a request to cancel the specified pending order using MT5's trading API.
+        If the cancellation request fails, the method will print an error message and wait for 3 seconds
+        before potentially retrying or reloading existing trades.
+
+        Args:
+            active_order (Order): An instance of the Order class representing the pending order to be canceled.
+                The `ticket` attribute of this instance is used to identify the order to be canceled.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Notes:
+            - The method uses `mt5.TRADE_ACTION_REMOVE` to specify that the action is to remove the order.
+            - The `order_send` function is called to execute the cancellation request.
+            - The method checks the return code to determine if the cancellation was successful. If not, an error message is printed.
+            - There is a 3-second delay if the cancellation fails, which may help in scenarios where the trading platform needs time to process the request.
+
+        Example:
+            order = Order(ticket=123456)
+            cancel_single_pending_order(order)
+        """
         request = {
                 "action": mt5.TRADE_ACTION_REMOVE,
                 "order": active_order.ticket,
@@ -84,15 +110,7 @@ class Orders:
 
         # Cancell all pending orders regadless of trial or real
         for active_order in active_orders:
-            request = {
-                "action": mt5.TRADE_ACTION_REMOVE,
-                "order": active_order.ticket,
-            }
-
-            result = mt5.order_send(request)
-
-            if result.retcode != mt5.TRADE_RETCODE_DONE:
-                print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
+            self.cancel_single_pending_order(active_order=active_order)
     
 
     def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False) -> bool:
