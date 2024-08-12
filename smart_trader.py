@@ -194,7 +194,9 @@ class SmartTrader():
 
         print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
         print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
-        print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)}")
+        print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)}\n")
+
+        print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
 
 
     def main(self):
@@ -210,6 +212,22 @@ class SmartTrader():
 
             self.PnL = (self.equity - self.risk_manager.account_size)
             self.rr = self.PnL/self.risk_manager.risk_of_an_account
+
+            """
+            1. Retrieves all active positions and today's trades
+            2. Checks if there are no active positions (`active_position.empty`) and if there are trades for today (`not today_trades.empty`).
+            3. If the conditions are met, it prints a message indicating that this is the initial run with exited trades.
+            4. Sets `self.exited_by_pnl` to `True` to indicate that trades have exited by profit and loss (PnL).
+            5. Disables PnL notifications by setting `self.notify_pnl` to `False`.
+            6. Marks the initial run as complete by setting `self.is_initial_run` to `False`.
+            """
+            if self.is_initial_run:
+                active_position = self.wrapper.get_all_active_positions()
+                today_trades = self.wrapper.get_todays_trades()
+                if active_position.empty and (not today_trades.empty):
+                    self.exited_by_pnl=True
+                    self.notify_pnl = False
+                    self.is_initial_run = False
 
             # Print configs and pnl on console
             self.verbose()
