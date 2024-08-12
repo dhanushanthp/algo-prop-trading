@@ -6,6 +6,7 @@ import modules.meta.util as util
 from modules.meta.Prices import Prices
 from modules.meta.wrapper import Wrapper
 from modules.common.logme import log_it
+import time
 
 class Orders:
     def __init__(self, prices:Prices, risk_manager:RiskManager, wrapper:Wrapper, stop_selection:str="CANDLE") -> None:
@@ -55,6 +56,8 @@ class Orders:
 
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
+            # If the cancle fails, Give some time to reload existing trades.
+            time.sleep(3)
 
 
     def cancel_all_pending_orders(self):
