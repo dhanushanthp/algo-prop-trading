@@ -360,6 +360,35 @@ class Strategies:
             previous_day_candle = previou_candles.iloc[-2]
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
+        
+    def same_prev_day_direction_with_heikin(self, symbol:str, start_candle:int=0):
+        """
+        Determines if the previous day's price direction matches the previous day's
+        Heikin-Ashi candlestick direction for a given symbol.
+
+        This function compares the direction of the previous day's close (either up or down) 
+        with the direction indicated by the Heikin-Ashi candlestick for the same day. If both 
+        directions are the same, it returns that direction. Otherwise, it returns `None`.
+
+        Parameters:
+        -----------
+        symbol : str
+            The trading symbol (e.g., 'AAPL', 'BTCUSD') for which to evaluate the price direction.
+        start_candle : int, optional
+            An offset to specify which day's data to start evaluating from (default is 0, 
+            which means the most recent day).
+
+        Returns:
+        --------
+        str or None
+            Returns the direction of the previous day's close ('up' or 'down') if it matches 
+            the Heikin-Ashi direction, otherwise returns `None`.
+        """
+        prev_day_direction = self.previous_day_close(symbol=symbol, start_candle=start_candle)
+        prev_heikin_ashi = self.previous_day_close_heikin_ashi(symbol=symbol, start_candle=start_candle)
+        if prev_day_direction == prev_heikin_ashi:
+            return prev_day_direction
+
 
     def four_hour_close(self, symbol:str) -> Directions:
         """
@@ -695,6 +724,17 @@ if __name__ == "__main__":
                 for symbol in curr.master_currencies:
                     output = strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe)
                     if output[0]:
+                        print(symbol, output)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe))
+        
+        case "SAME_DIRECTION_PREV_HEIKIN":
+            # python modules\meta\Strategies.py SAME_DIRECTION_PREV_HEIKIN y 0
+            if batch=="y":
+                for symbol in curr.master_currencies:
+                    output = strat_obj.same_prev_day_direction_with_heikin(symbol=symbol, start_candle=timeframe)
+                    if output:
                         print(symbol, output)
             else:
                 symbol = sys.argv[4]

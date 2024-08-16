@@ -376,6 +376,9 @@ class SmartTrader():
                                 case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
                                     trade_direction = self.strategies.previous_day_close_heikin_ashi(symbol=symbol)
                                 
+                                case "SAME_DIRECTION_PREV_HEIKIN":
+                                    trade_direction = self.strategies.same_prev_day_direction_with_heikin(symbol=symbol)
+
                                 case "4H_CLOSE_DIR":
                                     trade_direction = self.strategies.four_hour_close(symbol=symbol)
                         except Exception as e:
