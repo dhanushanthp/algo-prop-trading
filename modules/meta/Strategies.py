@@ -322,7 +322,7 @@ class Strategies:
                 else:
                     return Directions.SHORT
 
-    def previous_day_close(self, symbol:str) -> Directions:
+    def previous_day_close(self, symbol:str, start_candle:int=0) -> Directions:
         """
         Determines the market direction (LONG or SHORT) based on the previous day's closing price for a given symbol.
         This function fetches the previous day's candle data for the specified symbol and compares the closing price with the opening price. If the closing price is higher than the opening price, the market direction is considered LONG; otherwise, it is considered SHORT.
@@ -334,11 +334,11 @@ class Strategies:
             Directions: The market direction for the previous day. It returns Directions.LONG if the closing price is higher than the opening price, otherwise, it returns Directions.SHORT.
         """
         if self.wrapper.is_chart_upto_date(symbol=symbol):
-            previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
+            previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=start_candle+1)
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
-    def previous_day_close_heikin_ashi(self, symbol:str) -> Directions:
+    def previous_day_close_heikin_ashi(self, symbol:str, start_candle:int=0) -> Directions:
         """
         Determines the trading direction (LONG or SHORT) based on the previous day's Heikin-Ashi candle close for a given symbol.
 
@@ -356,7 +356,7 @@ class Strategies:
             Directions: Returns `Directions.LONG` if the previous day's close is higher than the open, otherwise `Directions.SHORT`.
         """
         if self.wrapper.is_chart_upto_date(symbol=symbol):
-            previou_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=1440, is_today=False)
+            previou_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=1440, is_today=False, start_candle=start_candle)
             previous_day_candle = previou_candles.iloc[-2]
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
@@ -701,13 +701,13 @@ if __name__ == "__main__":
                 print(strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe))
         
         case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
-            # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_HEIKIN_ASHI y 60
+            # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_HEIKIN_ASHI y 0
             if batch=="y":
                 same_direction = []
                 opposite_direction = []
                 for symbol in curr.master_currencies:
-                    output = strat_obj.previous_day_close_heikin_ashi(symbol=symbol)
-                    output2 = strat_obj.previous_day_close(symbol=symbol)
+                    output = strat_obj.previous_day_close_heikin_ashi(symbol=symbol, start_candle=timeframe)
+                    output2 = strat_obj.previous_day_close(symbol=symbol, start_candle=timeframe)
                     
                     if output and output2:
                         if output.name == output2.name:
