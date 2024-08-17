@@ -240,12 +240,13 @@ class SmartTrader():
             """
             From the results, enabling the account trail from start will protect some of the losses rather wait till to enable at 1.1 RR
             """
-            if (self.rr > 2.1 or self.account_trail_enabler) and (not self.exited_by_pnl) and self.notify_pnl:
-                if self.risk_manager.has_daily_maximum_risk_reached() and self.max_loss_exit:
-                    self.close_trades_early_on_pnl(exit_statement="Trail Close")
+            # Disabled the trail loss. So we hold the trade until the close of the market.
+            # if (self.rr > 2.1 or self.account_trail_enabler) and (not self.exited_by_pnl) and self.notify_pnl:
+            #     if self.risk_manager.has_daily_maximum_risk_reached() and self.max_loss_exit:
+            #         self.close_trades_early_on_pnl(exit_statement="Trail Close")
                 
-                # This helps to track the account level loss once after the RR go above 1.1
-                self.account_trail_enabler = True
+            #     # This helps to track the account level loss once after the RR go above 1.1
+            #     self.account_trail_enabler = True
 
             # Early exit based on max account level profit or Loss
             if ((self.rr <= -1 and self.max_loss_exit) or (self.rr > self.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
