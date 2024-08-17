@@ -18,6 +18,22 @@ From my experience, I've learned that the market doesn't always move in one dire
 
 
 # Selected Strategies
+## [Trade Based on Previos Day Close](FRX_PREV_DAY_CLOSE_DIR.bat)
+| year_month | Win Rate |
+|------------|--------------|
+| 2023_10    | 49.0%        |
+| 2023_11    | 57.0%        |
+| 2023_12    | 50.0%        |
+| 2024_1     | 44.0%        |
+| 2024_2     | 56.0%        |
+| 2024_3     | 48.0%        |
+| 2024_4     | 51.0%        |
+| 2024_5     | 57.0%        |
+| 2024_6     | 52.0%        |
+| 2024_7     | 58.0%        |
+| 2024_8     | 52.0%        |
+
+
 ## [15 minutes 4 Candle Break](FRX_15M_4CDL_BREAK.bat)
 
 
