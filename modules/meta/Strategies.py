@@ -386,9 +386,24 @@ class Strategies:
         """
         prev_day_direction = self.previous_day_close(symbol=symbol, start_candle=start_candle)
         prev_heikin_ashi = self.previous_day_close_heikin_ashi(symbol=symbol, start_candle=start_candle)
-        if prev_day_direction == prev_heikin_ashi:
+        if (prev_day_direction == prev_heikin_ashi) and ((prev_day_direction != None) and (prev_heikin_ashi != None)):
             return prev_day_direction
+    
+    def get_same_direction_ratio(self, symbols:list) -> int:
+        same_direction = []
+        opposite_direction = []
+        for symbol in symbols:
+            prev_day_direction = self.previous_day_close(symbol=symbol)
+            prev_heikin_ashi = self.previous_day_close_heikin_ashi(symbol=symbol)
+            if (prev_day_direction == prev_heikin_ashi) and ((prev_day_direction != None) and (prev_heikin_ashi != None)):
+                same_direction.append(symbol)
+            elif (prev_day_direction != prev_heikin_ashi) and ((prev_day_direction != None) and (prev_heikin_ashi != None)):
+                opposite_direction.append(symbol)
+        
+        if len(symbols) == len(same_direction) + len(opposite_direction):
+            return round(len(same_direction)/len(symbols), 2)
 
+        return -1
 
     def four_hour_close(self, symbol:str) -> Directions:
         """
@@ -736,6 +751,8 @@ if __name__ == "__main__":
                     output = strat_obj.same_prev_day_direction_with_heikin(symbol=symbol, start_candle=timeframe)
                     if output:
                         print(symbol, output)
+                
+                print("Ratio" + strat_obj.get_same_direction_ratio(curr.master_currencies))
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe))
@@ -765,6 +782,7 @@ if __name__ == "__main__":
 
                 print("\nSUMMARY")
                 print(f"SAME: {len(curr.master_currencies) - len(opposite_direction)}/{len(curr.master_currencies)}")
+                print("Ratio" + strat_obj.get_same_direction_ratio(curr.master_currencies))
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.previous_day_close_heikin_ashi(symbol=symbol))
