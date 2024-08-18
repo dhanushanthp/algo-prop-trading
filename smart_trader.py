@@ -55,7 +55,7 @@ class SmartTrader():
         self.close_by_time = kwargs["close_by_time"]
         self.close_by_solid_cdl = kwargs["close_by_solid_cdl"]
 
-        self.primary_symbols = kwargs["primary_symbols"]
+        self.symbol_selection = kwargs["primary_symbols"]
         self.stop_selection = kwargs["stop_selection"]
         
         # External dependencies
@@ -183,7 +183,7 @@ class SmartTrader():
         print(f"{'Stop Selection'.ljust(20)}: {self.stop_selection}")
         print(f"{'Multip Position'.ljust(20)}: {self.multiple_positions}\n")
             
-        print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.primary_symbols)}")
+        print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.symbol_selection)}")
         print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
         print(f"{'Trail ST Pos..n'.ljust(20)}: {util.cl(self.enable_trail_stop)}")
         print(f"{'Dynamic Risk'.ljust(20)}: {util.cl(self.enable_dynamic_position_risk)}")
@@ -321,7 +321,7 @@ class SmartTrader():
                 # Once it's active in market then the initial run become deactive
                 self.is_initial_run = False 
 
-                for symbol in curr.get_symbols(security=self.security, primary=self.primary_symbols):
+                for symbol in curr.get_symbols(security=self.security, symbol_selection=self.symbol_selection):
                     # Check is the market has resonable spread
                     # if not self.wrapper.is_reasonable_spread(symbol=symbol, pips_threshold=15):
                     #     continue
