@@ -451,7 +451,7 @@ if __name__ == "__main__":
     record_pnl = util.boolean(args.record_pnl)
     close_by_time = util.boolean(args.close_by_time)
     close_by_solid_cdl = util.boolean(args.close_by_solid_cdl)
-    primary_symbols = util.boolean(args.primary_symbols)
+    primary_symbols = args.primary_symbols
     stop_selection = args.stop_selection
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 

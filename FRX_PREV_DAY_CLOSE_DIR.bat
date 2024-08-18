@@ -35,7 +35,8 @@ set record_pnl=yes
 set close_by_time=no
 set close_by_solid_cdl=no
 
-set primary_symbols=no
+REM NON-PRIMARY, PRIMARY, SINGLE
+set primary_symbols=NON-PRIMARY
 REM CANDLE or ATR1D or ATR4H or ATR1H
 set stop_selection=ATR4H
 

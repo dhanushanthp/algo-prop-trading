@@ -180,18 +180,22 @@ def ticker_initiator(security="FOREX"):
         for pair in (master_stocks):
             mt.symbol_select(f"{pair}", True)
 
-def get_symbols(security="FOREX", primary=False):
+def get_symbols(security="FOREX", primary="NON-PRIMARY"):
     if security == "FOREX":
         main_pairs = []
-        if primary:
+        if primary == "PRIMARY":
             main_pairs.extend(major_pairs)
             main_pairs.extend(major_jpy_pairs)
-            # main_pairs.extend(us_indexes)
-        else:
+            main_pairs.extend(us_indexes)
+        elif primary == "NON-PRIMARY":
             main_pairs.extend(master_currencies)
-            # main_pairs.extend(us_indexes)
+            main_pairs.extend(us_indexes)
             # if util.is_us_premarket_peroid():
             #     main_pairs.extend(us_indexes)
+        elif primary == "SINGLE":
+            main_pairs.append("AUDCAD")
+        else:
+            raise Exception ("Currency Selection Not Defined")
 
         return main_pairs
     elif security == "STOCK":
@@ -233,4 +237,5 @@ def get_major_symbols_market_events(security="FOREX"):
         raise Exception("Security is not defined!") 
 
 if __name__ == "__main__":
-    print(get_major_symbols_market_events())
+    # print(get_major_symbols_market_events())
+    print(get_symbols(primary="NON-PRIMARY"))
