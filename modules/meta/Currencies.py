@@ -193,7 +193,7 @@ def get_symbols(security="FOREX", symbol_selection="NON-PRIMARY"):
             # if util.is_us_premarket_peroid():
             #     main_pairs.extend(us_indexes)
         elif symbol_selection == "SINGLE":
-            main_pairs.append("AUDCAD")
+            main_pairs.append("US500.cash")
         else:
             raise Exception ("Currency Selection Not Defined")
 
