@@ -475,18 +475,17 @@ class RiskManager:
                 pnl = position.profit
 
                 # Move the stop to breakeven once the price moved to R
-                # is_stop_updated=False
-                is_stop_updated=True # This won't wait until the price move to 1R
-                if pnl > self.risk_of_a_position:
-                    match position.type:
-                        case 0:
-                            # Long Position
-                            if stop_price < open_price:
-                                is_stop_updated = True
-                        case 1:
-                            # Short Position
-                            if stop_price > open_price:
-                                is_stop_updated = True
+                is_stop_updated=False
+                # if pnl > self.risk_of_a_position:
+                #     match position.type:
+                #         case 0:
+                #             # Long Position
+                #             if stop_price < open_price:
+                #                 is_stop_updated = True
+                #         case 1:
+                #             # Short Position
+                #             if stop_price > open_price:
+                #                 is_stop_updated = True
                 
                 # Increase the range of the spread to eliminate the sudden stopouts
                 stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier, num_cdl_for_stop=num_cdl_for_stop, stop_selection=stop_selection)
