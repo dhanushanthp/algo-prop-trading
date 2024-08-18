@@ -25,7 +25,7 @@ REM Security
 set security=FOREX
 
 REM Trade Controls
-set enable_trail_stop=yes
+set enable_trail_stop=no
 set enable_breakeven=no
 set enable_neutralizer=no
 REM by_active or by_trades or by_open or by_active_limit
@@ -37,7 +37,7 @@ set close_by_solid_cdl=no
 
 REM NON-PRIMARY, PRIMARY, SINGLE
 set primary_symbols=SINGLE
-REM CANDLE or ATR1D or ATR4H or ATR1H
+REM CANDLE or ATR1D or ATR4H or ATR1H or ATR15M
 set stop_selection=ATR1H
 
 python smart_trader.py ^
