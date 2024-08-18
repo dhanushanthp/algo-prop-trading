@@ -277,7 +277,7 @@ class SmartTrader():
             # Each position trail stop
             if self.enable_trail_stop:
                 self.risk_manager.trailing_stop_and_target(stop_multiplier=self.stop_ratio, target_multiplier=self.target_ratio, trading_timeframe=self.trading_timeframe,
-                                                           num_cdl_for_stop=self.num_prev_cdl_for_stop)
+                                                           num_cdl_for_stop=self.num_prev_cdl_for_stop, stop_selection=self.stop_selection)
             
             if self.enable_neutralizer:
                 list_of_positions = self.risk_manager.neutralizer(enable_ratio=0.7, timeframe=self.trading_timeframe)

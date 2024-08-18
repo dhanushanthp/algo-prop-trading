@@ -441,7 +441,7 @@ class RiskManager:
                     print("Re-enabling STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 
-    def trailing_stop_and_target(self, stop_multiplier:float, target_multiplier:float, trading_timeframe:int, num_cdl_for_stop:int):
+    def trailing_stop_and_target(self, stop_multiplier:float, target_multiplier:float, trading_timeframe:int, num_cdl_for_stop:int, stop_selection:str):
         """
         Function to manage trailing stops and targets for existing positions based on specified multipliers and trading timeframe.
 
@@ -475,7 +475,8 @@ class RiskManager:
                 pnl = position.profit
 
                 # Move the stop to breakeven once the price moved to R
-                is_stop_updated=False
+                # is_stop_updated=False
+                is_stop_updated=True # This won't wait until the price move to 1R
                 if pnl > self.risk_of_a_position:
                     match position.type:
                         case 0:
@@ -488,8 +489,8 @@ class RiskManager:
                                 is_stop_updated = True
                 
                 # Increase the range of the spread to eliminate the sudden stopouts
-                stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier, num_cdl_for_stop=num_cdl_for_stop)
-                tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier, num_cdl_for_stop=num_cdl_for_stop)
+                stp_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=stop_multiplier, num_cdl_for_stop=num_cdl_for_stop, stop_selection=stop_selection)
+                tgt_shield_obj = self.get_stop_range(symbol=symbol, timeframe=trading_timeframe, multiplier=target_multiplier, num_cdl_for_stop=num_cdl_for_stop, stop_selection=stop_selection)
                 
                 match position.type:
                     case 0:
@@ -503,7 +504,8 @@ class RiskManager:
                         trail_target = max(target_price, tgt_shield_obj.get_long_stop)
                         stop_enabler = stp_shield_obj.get_short_stop
                 
-                if (trail_stop != stop_price) or (target_price != trail_target) or is_stop_updated or (stop_price == 0):
+                # if (trail_stop != stop_price) or (target_price != trail_target) or is_stop_updated or (stop_price == 0):
+                if (trail_stop != stop_price) or is_stop_updated or (stop_price == 0):
                     
                     # If the position don't have the stop, then it will be reactivated
                     if stop_price == 0:
@@ -523,7 +525,7 @@ class RiskManager:
                         "type": position.type,
                         "position": position.ticket,
                         "sl": trail_stop,
-                        "tp": trail_target,
+                        "tp": target_price, # trail_target
                         "comment": position.comment,
                         "magic": position.magic,
                         "type_time": mt5.ORDER_TIME_GTC,
