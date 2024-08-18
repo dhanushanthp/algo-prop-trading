@@ -383,6 +383,9 @@ class SmartTrader():
 
                                 case "4H_CLOSE_DIR":
                                     trade_direction = self.strategies.four_hour_close(symbol=symbol)
+                                
+                                case "SINGLE_SYMBOL":
+                                    trade_direction = self.strategies.previous_candle_close(symbol=symbol, timeframe=self.trading_timeframe)
                         except Exception as e:
                             error_trace = traceback.format_exc()
                             log_it("STRATEGY_SELECTION").info(error_trace)

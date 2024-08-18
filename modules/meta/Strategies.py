@@ -338,6 +338,30 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
+    def previous_candle_close(self, symbol:str, timeframe:int, start_candle:int=0) -> Directions:
+        """
+        Determines the market direction (LONG or SHORT) based on the previous candle closing price for a given symbol.
+
+        Args:
+            symbol (str): The trading symbol to analyze (e.g., 'BTCUSD').
+            timeframe (int): The timeframe of the candles in minutes (e.g., 60 for 1-hour candles).
+            start_candle (int, optional): The index of the candle to start from, where 0 is the current candle. 
+                                        Defaults to 0.
+
+        Returns:
+            Directions: The direction of the previous candle's close. 
+                        Returns `Directions.LONG` if the close is higher than the open, 
+                        otherwise `Directions.SHORT`.
+
+        Notes:
+            - This method first checks if the chart data is up-to-date using the `is_chart_upto_date` method.
+            - It retrieves the previous candle's data by accessing the candle at `start_candle + 1`.
+        """
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=start_candle+1)
+            direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
+            return direction
+    
     def previous_day_close_heikin_ashi(self, symbol:str, start_candle:int=0) -> Directions:
         """
         Determines the trading direction (LONG or SHORT) based on the previous day's Heikin-Ashi candle close for a given symbol.
