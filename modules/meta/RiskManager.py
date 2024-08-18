@@ -263,7 +263,7 @@ class RiskManager:
             if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
                 return True
             else:
-                last_traded_time = util.get_traded_time(epoch=max(todays_trades[todays_trades["symbol"] == symbol]["time"]))
+                last_traded_time = util.get_traded_time(epoch=max(todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]["time"]))
                 current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
                 time_gap = (current_time-last_traded_time).total_seconds()/60
                 
@@ -658,6 +658,12 @@ class RiskManager:
             is_strong_candle = True
         elif stop_selection=="ATR4H":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=240, start_candle=1, n_atr=14)
+            mid_price = self.prices.get_exchange_price(symbol)
+            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
+            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
+            is_strong_candle = True
+        elif stop_selection=="ATR15M":
+            optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=15, start_candle=1, n_atr=14)
             mid_price = self.prices.get_exchange_price(symbol)
             lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
             higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
