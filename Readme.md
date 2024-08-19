@@ -15,6 +15,20 @@ In trading, there's no single right or wrong approach. If a method works for you
 From my experience, I've learned that the market doesn't always move in one direction. Some trading experts suggest holding your position until the market closes if you're day trading. However, I believe it's better to develop a strategy that allows taking multiple positions simultaneously.
 
 # Mindset of trading
+| **Win Rate (%)** | **Risk-Reward Ratio 1:1** | **Risk-Reward Ratio 1:2** | **Risk-Reward Ratio 1:3** | **Risk-Reward Ratio 1:4** | **Risk-Reward Ratio 1:5** |
+|------------------|---------------------------|---------------------------|---------------------------|---------------------------|---------------------------|
+| 90%              | 0.8                        | 1.7                        | 2.6                        | 3.5                        | 4.4                        |
+| 80%              | 0.6                        | 1.4                        | 2.2                        | 3.0                        | 3.8                        |
+| 70%              | 0.4                        | 1.1                        | 1.8                        | 2.5                        | 3.2                        |
+| 60%              | 0.2                        | 0.8                        | 1.4                        | 2.0                        | 2.6                        |
+| 55%              | 0.1                        | 0.65                       | 1.2                        | 1.75                       | 2.3                        |
+| 50%              | 0.0                        | 0.5                        | 1.0                        | 1.5                        | 2.0                        |
+| 45%              | -0.1                       | 0.35                       | 0.8                        | 1.25                       | 1.7                        |
+| 40%              | -0.2                       | 0.2                        | 0.6                        | 1.0                        | 1.4                        |
+| 35%              | -0.3                       | 0.05                       | 0.4                        | 0.75                       | 1.1                        |
+| 30%              | -0.4                       | -0.1                       | 0.2                        | 0.5                        | 0.8                        |
+| 25%              | -0.5                       | -0.25                      | 0.0                        | 0.25                       | 0.5                        |
+
 
 
 # Selected Strategies
