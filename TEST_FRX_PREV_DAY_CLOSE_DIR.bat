@@ -5,7 +5,7 @@ cd /d %TRADEAU_PATH%
 
 REM Time and Trading
 set start_hour=2
-set timeframe=60
+set timeframe=15
 set trades_per_day=100
 
 REM Risk Management
@@ -19,26 +19,28 @@ set max_target_exit=yes
 
 REM Strategy and System
 set strategy=BREAK
-set systems=SINGLE_SYMBOL
+set systems=PREV_DAY_CLOSE_DIR
 
 REM Security
 set security=FOREX
 
 REM Trade Controls
 set enable_trail_stop=no
-set enable_breakeven=yes
+set enable_breakeven=no
 set enable_neutralizer=no
 REM by_active or by_trades or by_open or by_active_limit
-set multiple_positions=by_open
+set multiple_positions=by_active_limit
 
 set record_pnl=yes
 set close_by_time=no
 set close_by_solid_cdl=no
 
 REM NON-PRIMARY, PRIMARY, SINGLE
-set primary_symbols=SINGLE
-REM CANDLE or ATR1D or ATR4H or ATR1H or ATR15M
-set stop_selection=ATR1H
+set primary_symbols=NON-PRIMARY
+REM CANDLE or ATR1D or ATR4H or ATR1H
+set stop_selection=ATR4H
+set secondary_stop_selection=ATR1H
+set enable_sec_stop_selection=yes
 
 python smart_trader.py ^
     --strategy %strategy% ^
@@ -62,5 +64,7 @@ python smart_trader.py ^
     --close_by_solid_cdl %close_by_solid_cdl% ^
     --primary_symbols %primary_symbols% ^
     --stop_selection %stop_selection% ^
+    --secondary_stop_selection %secondary_stop_selection% ^
+    --enable_sec_stop_selection %enable_sec_stop_selection% ^
     --account_target_ratio %account_target_ratio% ^
     --target_ratio %target_ratio%

@@ -57,6 +57,8 @@ class SmartTrader():
 
         self.symbol_selection = kwargs["primary_symbols"]
         self.stop_selection = kwargs["stop_selection"]
+        self.secondary_stop_selection = kwargs["secondary_stop_selection"] 
+        self.enable_sec_stop_selection = kwargs["enable_sec_stop_selection"] # Even it might be TRUE, But only activate after a first trade of a symbol.
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -71,7 +73,7 @@ class SmartTrader():
         self.account = Account()
         self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
         self.strategies = Strategies(wrapper=self.wrapper, indicators=self.indicators)
-        self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager, wrapper=self.wrapper, stop_selection=self.stop_selection)
+        self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager, wrapper=self.wrapper)
         
         # Account information
         self.account_name = self.account.get_account_name()
@@ -83,7 +85,7 @@ class SmartTrader():
         curr.ticker_initiator(security=self.security)
 
 
-    def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False) -> bool:
+    def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False, stop_selection:str="ATR4H") -> bool:
         """
         Executes a trade based on the given strategy and direction.
 
@@ -93,6 +95,7 @@ class SmartTrader():
         - reference (str): A reference string to annotate the trade.
         - break_level (float): The price level at which the trade should be executed.
         - market_entry (bool, optional): Flag indicating whether to enter the market immediately or use another entry method. Default is False.
+        - stop_selection (str, optional): Defaults to ATR4H
 
         Returns:
         - bool: True if the trade was successfully executed, False otherwise.
@@ -122,7 +125,8 @@ class SmartTrader():
                                 break_level=break_level, 
                                 trading_timeframe=self.trading_timeframe,
                                 num_cdl_for_stop=self.num_prev_cdl_for_stop,
-                                market_entry=market_entry)
+                                market_entry=market_entry,
+                                stop_selection=stop_selection)
                 return status
 
 
@@ -180,8 +184,10 @@ class SmartTrader():
         print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}")
         print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}")
-        print(f"{'Stop Selection'.ljust(20)}: {self.stop_selection}")
-        print(f"{'Multip Position'.ljust(20)}: {self.multiple_positions}\n")
+        print(f"{'Primary STP'.ljust(20)}: {util.cl(self.stop_selection)}")
+        print(f"{'Secondary STP'.ljust(20)}: {util.cl(self.secondary_stop_selection)}")
+        print(f"{'Secondary STP Sts'.ljust(20)}: {util.cl(self.enable_sec_stop_selection)}")
+        print(f"{'Multiple Position'.ljust(20)}: {self.multiple_positions}\n")
             
         print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.symbol_selection)}")
         print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
@@ -392,14 +398,21 @@ class SmartTrader():
                             log_it("STRATEGY_SELECTION").info(error_trace)
                                 
                         if trade_direction:
-                            is_valid_signal = self.risk_manager.check_signal_validity(symbol=symbol,
+                            is_valid_signal, is_opening_trade = self.risk_manager.check_signal_validity(symbol=symbol,
                                                                                       timeframe=self.trading_timeframe,
                                                                                       trade_direction=trade_direction,
                                                                                       strategy=self.risk_manager.strategy,
                                                                                       multiple_positions=self.multiple_positions,
                                                                                       max_trades_on_same_direction=2)
+                            
+                            if self.enable_sec_stop_selection:
+                                # If it's considered as opening trade then choose the primary stop selection else choose secondary
+                                dynamic_stop_selection = self.stop_selection if is_opening_trade else self.secondary_stop_selection
+                            else:
+                                dynamic_stop_selection = self.stop_selection
+                            
                             if is_valid_signal:
-                                if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1):
+                                if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1, stop_selection=dynamic_stop_selection):
                                     break # Break the symbol loop
 
             time.sleep(self.timer)
@@ -430,7 +443,8 @@ if __name__ == "__main__":
     parser.add_argument('--close_by_solid_cdl', type=str, help='Close positions by solid candle after x min')
     parser.add_argument('--primary_symbols', type=str, help='Pick Only Primary Symbols')
     parser.add_argument('--stop_selection', type=str, help='Stop by Candle or any other properties')
-    
+    parser.add_argument('--secondary_stop_selection', type=str, help='Stop by Candle or any other properties')
+    parser.add_argument('--enable_sec_stop_selection', type=str, help='Enable secondary stop selection')
     
     args = parser.parse_args()
     
@@ -457,6 +471,8 @@ if __name__ == "__main__":
     close_by_solid_cdl = util.boolean(args.close_by_solid_cdl)
     primary_symbols = args.primary_symbols
     stop_selection = args.stop_selection
+    secondary_stop_selection = args.secondary_stop_selection
+    enable_sec_stop_selection = util.boolean(args.enable_sec_stop_selection)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -465,6 +481,7 @@ if __name__ == "__main__":
                       start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
                       systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
-                      stop_selection=stop_selection, account_target_ratio=account_target_ratio)
+                      stop_selection=stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
+                      enable_sec_stop_selection=enable_sec_stop_selection)
 
     win.main()

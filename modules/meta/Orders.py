@@ -9,13 +9,12 @@ from modules.common.logme import log_it
 import time
 
 class Orders:
-    def __init__(self, prices:Prices, risk_manager:RiskManager, wrapper:Wrapper, stop_selection:str="CANDLE") -> None:
+    def __init__(self, prices:Prices, risk_manager:RiskManager, wrapper:Wrapper) -> None:
         self.prices = prices
         self.risk_manager=risk_manager
         self.wrapper = wrapper
-        self.stop_selection=stop_selection
 
-    def close_single_position(self, obj):        
+    def close_single_position(self, obj):
         order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
         exist_price = mt5.symbol_info_tick(obj.symbol).bid if obj.type == 1 else mt5.symbol_info_tick(obj.symbol).ask
         
@@ -81,7 +80,7 @@ class Orders:
         result = mt5.order_send(request)
 
         if result.retcode != mt5.TRADE_RETCODE_DONE:
-            print(f"Failed to cancel order {active_order.ticket}, reason: {result.comment}")
+            print(f"{active_order.symbol.ljust(12)}: Failed to cancel order {active_order.ticket}, reason: {result.comment}")
             # If the cancle fails, Give some time to reload existing trades.
             time.sleep(3)
 
@@ -113,7 +112,7 @@ class Orders:
             self.cancel_single_pending_order(active_order=active_order)
     
 
-    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False) -> bool:
+    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False, stop_selection:str="CANDLE") -> bool:
         """
         Executes a long entry based on given parameters.
 
@@ -126,6 +125,7 @@ class Orders:
             num_cdl_for_stop (int, optional): Number of candles for determining stop. Defaults to 2.
             multiplier (float, optional): Multiplier for stop range calculation. Defaults to 1.
             market_entry (bo0=ol, optional): Entry the trade with market price. Defaults to False.
+            stop_selection (str, optional): Stop selection strategy, e.g Candle based, ATR based etc. Defaults to CANDLE
 
         Returns:
             bool: True if the entry is successfully executed, False otherwise.
@@ -142,11 +142,11 @@ class Orders:
             log_it(reference).info(f"{symbol}: HOUR NOT MATCH")
         
         if entry_price and is_chart_upto_date:
-            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier, stop_selection=self.stop_selection)
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier, stop_selection=stop_selection)
             if shield_object.get_signal_strength:
                 if entry_price > shield_object.get_long_stop:
                     try:
-                        print(f"{symbol.ljust(12)}: {Directions.LONG}")        
+                        print(f"{symbol.ljust(12)}: {Directions.LONG}, {stop_selection}")
                         points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_long_stop)
 
                         comment = f"{reference}-{break_level}" if break_level != -1 else reference
@@ -235,7 +235,7 @@ class Orders:
                     print(f"{symbol.ljust(12)}: {e}")
     
 
-    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False) -> bool:
+    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False, stop_selection:str="CANDLE") -> bool:
         """
         Executes a short entry based on given parameters.
 
@@ -248,6 +248,7 @@ class Orders:
             num_cdl_for_stop (int, optional): Number of candles for determining stop. Defaults to 2.
             multiplier (float, optional): Multiplier the for stop range calculation. Defaults to 1.
             market_entry (bo0=ol, optional): Entry the trade with market price. Defaults to False
+            stop_selection (str, optional): Stop selection strategy, e.g Candle based, ATR based etc. Defaults to CANDLE
 
         Returns:
             bool: True if the entry is successfully executed, False otherwise.
@@ -264,11 +265,11 @@ class Orders:
             log_it(reference).info(f"{symbol}: HOUR NOT MATCH")
         
         if entry_price and is_chart_upto_date:
-            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier, stop_selection=self.stop_selection)
+            shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=trading_timeframe, num_cdl_for_stop=num_cdl_for_stop, multiplier=multiplier, stop_selection=stop_selection)
             if shield_object.get_signal_strength:
                 if entry_price < shield_object.get_short_stop:
                     try:
-                        print(f"{symbol.ljust(12)}: {Directions.SHORT}")      
+                        print(f"{symbol.ljust(12)}: {Directions.SHORT}, {stop_selection}")
                         points_in_stop, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_short_stop)
 
                         comment = f"{reference}-{break_level}" if break_level != -1 else reference

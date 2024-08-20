@@ -39,6 +39,8 @@ REM NON-PRIMARY, PRIMARY, SINGLE
 set primary_symbols=NON-PRIMARY
 REM CANDLE or ATR1D or ATR4H or ATR1H
 set stop_selection=ATR4H
+set secondary_stop_selection=ATR1H
+set enable_sec_stop_selection=no
 
 python smart_trader.py ^
     --strategy %strategy% ^
@@ -62,5 +64,7 @@ python smart_trader.py ^
     --close_by_solid_cdl %close_by_solid_cdl% ^
     --primary_symbols %primary_symbols% ^
     --stop_selection %stop_selection% ^
+    --secondary_stop_selection %secondary_stop_selection% ^
+    --enable_sec_stop_selection %enable_sec_stop_selection% ^
     --account_target_ratio %account_target_ratio% ^
     --target_ratio %target_ratio%
