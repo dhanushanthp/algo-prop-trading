@@ -200,7 +200,7 @@ class SmartTrader():
 
         print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
         print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
-        print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)}\n")
+        print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.account_target_ratio}R)\n")
 
         print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
 
