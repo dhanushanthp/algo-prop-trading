@@ -30,6 +30,24 @@ From my experience, I've learned that the market doesn't always move in one dire
 | 25%              | -0.5                       | -0.25                      | 0.0                        | 0.25                       | 0.5                        |
 
 
+# Configuration
+### enable_neutralizer
+Assesses existing trading positions and identifies those that need neutralization based on a specified risk threshold. It compares the current price of each open position to a dynamically calculated midpoint. If the price crosses the threshold defined by `enable_ratio`, it recommends taking an opposite position to mitigate risk.
+
+### enable_breakeven
+Moves the stop-loss of existing positions to the breakeven point once a certain profit threshold is met for each position.
+
+### enable_trail_stop
+Activates trailing stops and targets for existing positions, guided by predefined multipliers and the trading timeframe.
+
+### multiple_positions
+Defines the rule for managing multiple positions in the same symbol and direction. The default is "by_trades":
+
+- **"by_active"**: Permits only one active position per direction for a symbol.
+- **"by_active_limit"**: Limits the number of trades in the same direction for a symbol to a specified maximum.
+- **"by_trades"**: Allows only one trade per direction per day for a symbol.
+- **"by_open"**: Allows additional trades if a specified time interval has passed since the last trade.
+
 
 # Selected Strategies
 ## [Trade Based on Previos Day Close](FRX_PREV_DAY_CLOSE_DIR.bat)

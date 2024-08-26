@@ -551,7 +551,32 @@ class RiskManager:
                             print("Trailing STOP for " + position.symbol + " failed!!...Error: "+str(result.comment))
 
 
-    def breakeven(self, profit_factor:int):        
+    def breakeven(self, profit_factor:int):
+        """
+        Adjusts the stop-loss of existing positions to breakeven once a specified profit threshold is reached.
+
+        Args:
+            profit_factor (int): The profit multiple of the initial risk (`R`) at which the stop-loss should be moved to the breakeven point.
+
+        Behavior:
+            - Iterates through all existing positions.
+            - For each position, checks if the profit (`pnl`) exceeds the specified `profit_factor` multiplied by the initial risk of the position.
+            - If the condition is met:
+                - For long positions, the stop-loss is moved to the entry price if the current stop-loss is below the entry price.
+                - For short positions, the stop-loss is moved to the entry price if the current stop-loss is above the entry price.
+            - If the stop-loss is updated, a modification request is sent to MetaTrader 5 to adjust the stop-loss and target prices.
+
+        Side Effects:
+            - Prints a message indicating that the stop-loss has been moved to breakeven for the specified symbol.
+            - If the modification request fails, an error message is printed with the failure reason.
+
+        Note:
+            - The function assumes that `self.risk_of_a_position` is defined elsewhere in the class and represents the initial risk (`R`) for each position.
+
+        Raises:
+            None: The function handles errors internally by printing messages if the stop-loss modification fails.
+
+        """
         existing_positions = mt5.positions_get()
         for position in existing_positions:
             symbol = position.symbol
@@ -603,25 +628,27 @@ class RiskManager:
     
     def get_stop_range(self, symbol, timeframe, buffer_ratio=config.buffer_ratio, multiplier=1, num_cdl_for_stop=0, stop_selection:str="CANDLE") -> Shield:
         """
-        Calculates the stop range based on given parameters.
-
-        If the time frame is greater than 4 hours, the stop is set to the high or low of the previous and current bar based on the trade direction.
+        Calculates the stop loss range for a given trading symbol based on the specified strategy.
 
         Args:
-            self: The instance of the class.
-            symbol (str): The symbol for which the stop range is calculated.
-            timeframe: The timeframe for calculation.
-            buffer_ratio (float, optional): The buffer ratio for adjusting the stop range. Defaults to config.buffer_ratio.
-            multiplier (int, optional): Multiplier for the stop range calculation. Defaults to 1.
-            num_cdl_for_stop (int, optional): Number of previous candles considered for stop calculation. Defaults to 0.
+            symbol (str): The trading symbol (e.g., currency pair, stock ticker) for which the stop range is being calculated.
+            timeframe (int): The timeframe in minutes (e.g., 1, 5, 15, 60) to be used for the analysis.
+            buffer_ratio (float, optional): A buffer ratio added to the calculated stop range to account for volatility. Defaults to config.buffer_ratio.
+            multiplier (float, optional): A multiplier to adjust the calculated stop range. Defaults to 1.
+            num_cdl_for_stop (int, optional): The number of candles to consider for calculating the stop range. Only used when stop_selection is "CANDLE". Defaults to 0.
+            stop_selection (str, optional): The method to be used for stop calculation. Options include:
+                - "CANDLE": Uses recent candles' high/low prices and ATR to determine the stop range.
+                - "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D": Uses ATR of the respective timeframe to determine the stop range.
+                Defaults to "CANDLE".
 
         Returns:
-            Shield: An object representing the stop range with attributes:
-                - symbol (str): The symbol.
-                - long_range (float): The lower stop range for a long trade.
-                - short_range (float): The upper stop range for a short trade.
-                - range_distance (float): The distance of the stop range from the mid price.
-                - is_strong_signal (bool): Indicates whether the current candle is considered strong.
+            Shield: An object containing the calculated stop ranges (`long_range` and `short_range`), 
+                    the range distance (`range_distance`), and a flag indicating if the current signal 
+                    is based on a strong candle (`is_strong_signal`).
+
+        Raises:
+            Exception: If an invalid stop_selection is provided.
+        
         """
         if stop_selection == "CANDLE":
             selected_time = util.match_timeframe(timeframe)
