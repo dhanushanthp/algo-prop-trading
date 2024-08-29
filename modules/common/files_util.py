@@ -50,6 +50,19 @@ def update_pnl(file_name:str, system:str, strategy:str, pnl:float, rr:float, eac
     df.to_csv(file_name, index=False)
 
 
+def get_strategy():
+    file_name = f"data/trade_tracker_{util.get_server_ip()}.csv" 
+    if check_file_exists(file_path=file_name):
+        df = pd.read_csv(file_name)
+        previous_day = df.iloc[-1]
+        pnl = previous_day["pnl"]
+        strategy = previous_day["strategy"]
+        # If PnL is positve, then use the previous day strategy, else toggle
+        selected_strategy = strategy if pnl > 0 else ("BREAK" if strategy == "REVERSE" else "REVERSE")
+        return selected_strategy
+    else:
+        return "BREAK"
+
 def get_most_risk_percentage(file_name:str, **kwargs):
     """
     Calculate the adjusted risk percentage based on the most recent trades from a CSV file.

@@ -31,7 +31,7 @@ class SmartTrader():
 
         # Key Arguments, Below values will be override when the risk is dynamic
         self.systems:list = kwargs["systems"]
-        self.strategy:str = kwargs["strategy"]
+        self.strategy:str = files_util.get_strategy() #kwargs["strategy"]
         self.account_risk = kwargs["account_risk"]
         self.each_position_risk = kwargs["each_position_risk"]
         self.enable_dynamic_position_risk = kwargs["enable_dynamic_position_risk"]
