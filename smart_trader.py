@@ -156,6 +156,8 @@ class SmartTrader():
 
         # Write the pnl to a file
         files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
+        # Update the strategy
+        self.strategy:str = files_util.get_strategy()
 
         if self.record_pnl:
             files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
@@ -309,13 +311,15 @@ class SmartTrader():
                     
                     # Write the pnl to a file
                     files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
+                    # Update the strategy
+                    self.strategy:str = files_util.get_strategy()
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio, dynamic_postional_risk=self.enable_dynamic_position_risk, strategy=self.strategy)
 
                 self.notify_pnl = False # Once sent, Disable
-                self.exited_by_pnl = False # Reset the Immidiate exit
+                self.exited_by_pnl = False # Reset the Immidiate exit                
             
             if self.is_market_open and (not self.exited_by_pnl) \
                   and (not self.is_market_close) \
