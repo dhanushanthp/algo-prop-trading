@@ -62,6 +62,7 @@ class SmartTrader():
 
         # Applies only for 
         self.atr_check_timeframe = kwargs["atr_check_timeframe"]
+        self.max_trades_on_same_direction = kwargs["max_trades_on_same_direction"]
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -186,8 +187,6 @@ class SmartTrader():
         print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
         print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
         print(f"{'Max Loss'.ljust(20)}: {self.max_possible_loss}$")
-        if "ATR_BASED_DIRECTION" in self.systems:
-            print(f"{'ATR TF'.ljust(20)}: {util.cl(self.atr_check_timeframe)}")    
         print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}")
         print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}")
@@ -209,9 +208,14 @@ class SmartTrader():
         print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
         print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.account_target_ratio}R)\n")
 
-        print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
+        print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}\n")
         
-
+        print("System Based Parameters")
+        if "ATR_BASED_DIRECTION" in self.systems:
+            print(f"{'ATR TF'.ljust(20)}: {util.cl(self.atr_check_timeframe)}")
+        
+        if "_limit" in self.multiple_positions:
+            print(f"{'Muli Positions'.ljust(20)}: {util.cl(self.max_trades_on_same_direction)}")
 
     def main(self):
         while True:
@@ -420,7 +424,7 @@ class SmartTrader():
                                                                                       trade_direction=trade_direction,
                                                                                       strategy=self.risk_manager.strategy,
                                                                                       multiple_positions=self.multiple_positions,
-                                                                                      max_trades_on_same_direction=2)
+                                                                                      max_trades_on_same_direction=self.max_trades_on_same_direction)
                             
                             if self.enable_sec_stop_selection:
                                 # If it's considered as opening trade then choose the primary stop selection else choose secondary
@@ -463,6 +467,7 @@ if __name__ == "__main__":
     parser.add_argument('--primary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--secondary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--enable_sec_stop_selection', type=str, help='Enable secondary stop selection')
+    parser.add_argument('--max_trades_on_same_direction', type=int, help='Max number of trades by direction')
     
     
     args = parser.parse_args()
@@ -493,6 +498,7 @@ if __name__ == "__main__":
     stop_selection = args.primary_stop_selection
     secondary_stop_selection = args.secondary_stop_selection
     enable_sec_stop_selection = util.boolean(args.enable_sec_stop_selection)
+    max_trades_on_same_direction = int(args.max_trades_on_same_direction)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -502,6 +508,7 @@ if __name__ == "__main__":
                       systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
                       stop_selection=stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
-                      enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe)
+                      enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
+                      max_trades_on_same_direction=max_trades_on_same_direction)
 
     win.main()

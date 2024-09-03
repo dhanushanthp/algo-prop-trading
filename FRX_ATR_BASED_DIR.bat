@@ -42,6 +42,7 @@ REM CANDLE or "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
 set primary_stop_selection=ATR4H
 set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
+set max_trades_on_same_direction=2
 
 python smart_trader.py ^
     --strategy %strategy% ^
@@ -68,5 +69,6 @@ python smart_trader.py ^
     --primary_stop_selection %primary_stop_selection% ^
     --secondary_stop_selection %secondary_stop_selection% ^
     --enable_sec_stop_selection %enable_sec_stop_selection% ^
+    --max_trades_on_same_direction %max_trades_on_same_direction% ^
     --account_target_ratio %account_target_ratio% ^
     --target_ratio %target_ratio%
