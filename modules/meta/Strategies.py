@@ -338,6 +338,47 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
+    def atr_based_direction(self, symbol:str) -> Directions:
+        """
+        Determines the trading direction (LONG or SHORT) for a given symbol based on the Average True Range (ATR) indicator.
+
+        This function compares the current price movement of a symbol to its ATR value over a 15-minute timeframe.
+        If the absolute difference between the current price and the opening price of the day exceeds the ATR value, 
+        it indicates a significant movement in the market, and the function returns a direction for trading (LONG or SHORT).
+        
+        Parameters:
+        ----------
+        symbol : str
+            The trading symbol (e.g., stock ticker) for which the direction is to be determined.
+
+        Returns:
+        -------
+        Directions
+            The direction for trading the given symbol. 
+            - Returns `Directions.LONG` if the current price is greater than the opening price and exceeds the ATR.
+            - Returns `Directions.SHORT` if the current price is less than the opening price and exceeds the ATR.
+
+        Notes:
+        ------
+        - The function checks if the chart data is up to date for the provided symbol before making any calculations.
+        - Uses a daily (1440-minute) timeframe to obtain the opening price of the day.
+        - The ATR is calculated over a 15-minute timeframe.
+
+        """
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            current_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
+            open = current_candle["open"]
+            current_price = self.indicators.prices.get_entry_price(symbol=symbol)
+            atr_15min = self.indicators.get_atr(symbol=symbol, timeframe=15)
+            price_movement = abs(open - current_price)
+            if price_movement > atr_15min:
+                print(f"{symbol}: open: {round(open, 4)}, entry at: L{round(open + atr_15min, 4)}, S{round(open - atr_15min, 4)}")
+                if current_price > open:
+                    return Directions.LONG
+                else:
+                    return Directions.SHORT
+
+    
     def previous_day_close_advanced(self, symbol:str, start_candle:int=0) -> Directions:
         if self.wrapper.is_chart_upto_date(symbol=symbol):
             previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=start_candle+1)
@@ -812,6 +853,17 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.previous_day_close_advanced(symbol=symbol, timeframe=timeframe))
+        
+        case "ATR_BASED_DIRECTION":
+            # python modules\meta\Strategies.py ATR_BASED_DIRECTION y 0
+            if batch=="y":
+                for symbol in curr.master_currencies:
+                    output = strat_obj.atr_based_direction(symbol=symbol)
+                    if output:
+                        print(symbol, output)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.atr_based_direction(symbol=symbol))
         
         case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
             # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_HEIKIN_ASHI y 0

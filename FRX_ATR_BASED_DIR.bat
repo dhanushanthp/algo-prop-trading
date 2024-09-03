@@ -19,7 +19,7 @@ set max_target_exit=yes
 
 REM Strategy and System
 set strategy=BREAK
-set systems=PREV_DAY_CLOSE_DIR
+set systems=ATR_BASED_DIRECTION
 
 REM Security
 set security=FOREX
@@ -37,10 +37,10 @@ set close_by_solid_cdl=no
 
 REM NON-PRIMARY, PRIMARY, SINGLE
 set primary_symbols=NON-PRIMARY
-REM CANDLE or ATR1D or ATR4H or ATR1H
-set primary_stop_selection=ATR4H
+REM CANDLE or "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
+set primary_stop_selection=ATR15M
 set enable_sec_stop_selection=no
-set secondary_stop_selection=ATR1H
+set secondary_stop_selection=ATR15M
 
 python smart_trader.py ^
     --strategy %strategy% ^
