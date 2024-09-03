@@ -338,7 +338,7 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
-    def atr_based_direction(self, symbol:str) -> Directions:
+    def atr_based_direction(self, symbol:str, entry_atr_timeframe:int=15) -> Directions:
         """
         Determines the trading direction (LONG or SHORT) for a given symbol based on the Average True Range (ATR) indicator.
 
@@ -369,10 +369,10 @@ class Strategies:
             current_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
             open = current_candle["open"]
             current_price = self.indicators.prices.get_entry_price(symbol=symbol)
-            atr_15min = self.indicators.get_atr(symbol=symbol, timeframe=15)
+            atr_15min = self.indicators.get_atr(symbol=symbol, timeframe=entry_atr_timeframe)
             price_movement = abs(open - current_price)
             if price_movement > atr_15min:
-                print(f"{symbol}: open: {round(open, 4)}, entry at: L{round(open + atr_15min, 4)}, S{round(open - atr_15min, 4)}")
+                # print(f"{symbol}: open: {round(open, 4)}, entry at: L{round(open + atr_15min, 4)}, S{round(open - atr_15min, 4)}")
                 if current_price > open:
                     return Directions.LONG
                 else:

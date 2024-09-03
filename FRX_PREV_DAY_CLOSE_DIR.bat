@@ -63,7 +63,7 @@ python smart_trader.py ^
     --close_by_time %close_by_time% ^
     --close_by_solid_cdl %close_by_solid_cdl% ^
     --primary_symbols %primary_symbols% ^
-    --stop_selection %stop_selection% ^
+    --primary_stop_selection %primary_stop_selection% ^
     --secondary_stop_selection %secondary_stop_selection% ^
     --enable_sec_stop_selection %enable_sec_stop_selection% ^
     --account_target_ratio %account_target_ratio% ^

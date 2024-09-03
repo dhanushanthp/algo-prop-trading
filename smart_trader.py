@@ -236,6 +236,7 @@ class SmartTrader():
                     self.exited_by_pnl=True
                     self.notify_pnl = False
                     self.is_initial_run = False
+                    print(f"Initial Entry Check: Early Exit by PnL: {self.exited_by_pnl}")
 
             # Print configs and pnl on console
             self.verbose()
@@ -385,6 +386,9 @@ class SmartTrader():
                                 case "PREV_DAY_CLOSE_DIR":
                                     trade_direction = self.strategies.previous_day_close(symbol=symbol)
                                 
+                                case "ATR_BASED_DIRECTION":
+                                    trade_direction = self.strategies.atr_based_direction(symbol=symbol, entry_atr_timeframe=15)
+                                
                                 case "PREV_DAY_CLOSE_DIR_ADVANCED":
                                     trade_direction = self.strategies.previous_day_close_advanced(symbol=symbol)
                                 
@@ -449,7 +453,7 @@ if __name__ == "__main__":
     parser.add_argument('--close_by_time', type=str, help='Close positions after x min')
     parser.add_argument('--close_by_solid_cdl', type=str, help='Close positions by solid candle after x min')
     parser.add_argument('--primary_symbols', type=str, help='Pick Only Primary Symbols')
-    parser.add_argument('--stop_selection', type=str, help='Stop by Candle or any other properties')
+    parser.add_argument('--primary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--secondary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--enable_sec_stop_selection', type=str, help='Enable secondary stop selection')
     
@@ -477,7 +481,7 @@ if __name__ == "__main__":
     close_by_time = util.boolean(args.close_by_time)
     close_by_solid_cdl = util.boolean(args.close_by_solid_cdl)
     primary_symbols = args.primary_symbols
-    stop_selection = args.stop_selection
+    stop_selection = args.primary_stop_selection
     secondary_stop_selection = args.secondary_stop_selection
     enable_sec_stop_selection = util.boolean(args.enable_sec_stop_selection)
 

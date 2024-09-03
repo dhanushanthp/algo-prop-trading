@@ -38,7 +38,7 @@ set close_by_solid_cdl=no
 REM NON-PRIMARY, PRIMARY, SINGLE
 set primary_symbols=NON-PRIMARY
 REM CANDLE or "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
-set primary_stop_selection=ATR15M
+set primary_stop_selection=ATR4H
 set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
 
@@ -63,7 +63,7 @@ python smart_trader.py ^
     --close_by_time %close_by_time% ^
     --close_by_solid_cdl %close_by_solid_cdl% ^
     --primary_symbols %primary_symbols% ^
-    --stop_selection %stop_selection% ^
+    --primary_stop_selection %primary_stop_selection% ^
     --secondary_stop_selection %secondary_stop_selection% ^
     --enable_sec_stop_selection %enable_sec_stop_selection% ^
     --account_target_ratio %account_target_ratio% ^
