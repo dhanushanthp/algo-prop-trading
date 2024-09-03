@@ -31,7 +31,7 @@ class SmartTrader():
 
         # Key Arguments, Below values will be override when the risk is dynamic
         self.systems:list = kwargs["systems"]
-        self.strategy:str = files_util.get_strategy() #kwargs["strategy"]
+        self.strategy:str = kwargs["strategy"] # files_util.get_strategy()
         self.account_risk = kwargs["account_risk"]
         self.each_position_risk = kwargs["each_position_risk"]
         self.enable_dynamic_position_risk = kwargs["enable_dynamic_position_risk"]
@@ -157,7 +157,7 @@ class SmartTrader():
         # Write the pnl to a file
         files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
         # Update the strategy
-        self.strategy:str = files_util.get_strategy()
+        # self.strategy:str = files_util.get_strategy()
 
         if self.record_pnl:
             files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
@@ -312,7 +312,7 @@ class SmartTrader():
                     # Write the pnl to a file
                     files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
                     # Update the strategy
-                    self.strategy:str = files_util.get_strategy()
+                    # self.strategy:str = files_util.get_strategy()
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
@@ -384,6 +384,9 @@ class SmartTrader():
                                                                                     timeframe=self.trading_timeframe)
                                 case "PREV_DAY_CLOSE_DIR":
                                     trade_direction = self.strategies.previous_day_close(symbol=symbol)
+                                
+                                case "PREV_DAY_CLOSE_DIR_ADVANCED":
+                                    trade_direction = self.strategies.previous_day_close_advanced(symbol=symbol)
                                 
                                 case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
                                     trade_direction = self.strategies.previous_day_close_heikin_ashi(symbol=symbol)

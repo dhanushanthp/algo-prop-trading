@@ -172,16 +172,31 @@ class Indicators:
                 return Directions.SHORT
     
 
-    def is_wick_candle(self, candle, ratio:float=0.4):
+    def is_wick_candle(self, symbol, timeframe, index, ratio:float=0.4):
+        candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)
         body = abs(candle["close"] - candle["open"])
         total_length = candle["high"] - candle["low"]
         lenth_body_ratio = round(body/total_length, 1)
-        print(round(lenth_body_ratio, 3))
         if lenth_body_ratio <= ratio:
             return True
     
-    
     def hammer_candle(self, symbol, timeframe, index):
+        """
+        Analyzes a specific candlestick to determine if it forms a hammer pattern, which can signal potential 
+        market reversals. The method calculates the body, upper wick, and lower wick of the candlestick and 
+        determines if it meets the criteria for a bullish or bearish hammer pattern.
+
+        Args:
+            symbol (str): The trading symbol (e.g., 'EURUSD') of the asset being analyzed.
+            timeframe (str): The timeframe for the candlestick data (e.g., '1h', '4h', '1d').
+            index (int): The index of the candlestick to analyze (0 for the most recent candlestick).
+
+        Returns:
+            Directions: An enumeration indicating the trade direction:
+                - Directions.SHORT: If a bearish hammer pattern is detected.
+                - Directions.LONG: If a bullish hammer pattern is detected.
+                - None: If no hammer pattern is detected.
+        """
         candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)
         body = candle["close"] - candle["open"]
         spread = self.wrapper.get_spread(symbol=symbol)
@@ -196,9 +211,6 @@ class Indicators:
                 upper_wick = candle["high"] - candle["open"]
             else:
                 lower_wick = upper_wick = None
-            
-
-            print(lower_wick, 2* upper_wick, upper_wick)
 
             if lower_wick:
                 if (upper_wick > 2* lower_wick) and (upper_wick > 2 * abs(body)):
@@ -577,7 +589,24 @@ if __name__ == "__main__":
             index = int(sys.argv[4])
             print(indi_obj.solid_candle_direction(symbol=symbol, timeframe=timeframe, index=index))
         
+        case "other_candle":
+            symbol = sys.argv[2]
+            timeframe = int(sys.argv[3])
+            index = int(sys.argv[4])
+            print(indi_obj.hammer_candle(symbol=symbol, timeframe=timeframe, index=index))
+            print(indi_obj.is_wick_candle(symbol=symbol, timeframe=timeframe, index=index))
+        
         case "atr":
             symbol = sys.argv[2]
             timeframe = int(sys.argv[3])
             print(indi_obj.get_atr(symbol=symbol, timeframe=timeframe, start_candle=0))
+        
+        case "atr_ratio":
+            # python modules/meta/Indicators.py atr_ratio AUDUSD
+            symbol = sys.argv[2]
+            atr_15 = indi_obj.get_atr(symbol=symbol, timeframe=15, start_candle=0)
+            atr_1h = indi_obj.get_atr(symbol=symbol, timeframe=60, start_candle=0)
+            atr_4h = indi_obj.get_atr(symbol=symbol, timeframe=240, start_candle=0)
+            print(f"15: {round(atr_15 , 4)}, 60: {round(atr_1h, 4)}")
+            print(f"15/60 {round(atr_1h/atr_15, 2)}")
+            print(f"15/240 {round(atr_4h/atr_15, 2)}")

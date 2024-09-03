@@ -1,5 +1,5 @@
-pip install pandas
-pip install numpy
+pip install pandas==2.2.2
+pip install numpy==1.26.1
 pip install tabulate
 pip install MetaTrader5
 pip install slackclient

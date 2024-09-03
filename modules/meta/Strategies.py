@@ -338,6 +338,27 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
+    def previous_day_close_advanced(self, symbol:str, start_candle:int=0) -> Directions:
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=start_candle+1)
+            prev_to_previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=start_candle+2)
+            
+            # hammer_candle_direction =  self.indicators.hammer_candle(symbol=symbol, timeframe=1440, index=start_candle+1)
+            # if hammer_candle_direction:
+            #     return hammer_candle_direction
+            
+            prev_direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
+            prev_to_prev_direction = Directions.LONG if prev_to_previous_day_candle["close"] > prev_to_previous_day_candle["open"] else Directions.SHORT
+
+            if prev_direction == prev_to_prev_direction == Directions.LONG:
+                return Directions.LONG
+            elif prev_direction == prev_to_prev_direction == Directions.SHORT:
+                return Directions.LONG
+            elif prev_to_prev_direction == Directions.LONG and prev_direction == Directions.SHORT:
+                return Directions.LONG
+            elif prev_to_prev_direction == Directions.SHORT and prev_direction == Directions.LONG:
+                return Directions.SHORT
+    
     def previous_candle_close(self, symbol:str, timeframe:int, start_candle:int=0) -> Directions:
         """
         Determines the market direction (LONG or SHORT) based on the previous candle closing price for a given symbol.
@@ -780,6 +801,17 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe))
+        
+        case "PREV_DAY_CLOSE_DIR_ADVANCED":
+            # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_ADVANCED y 0
+            if batch=="y":
+                for symbol in curr.master_currencies:
+                    output = strat_obj.previous_day_close_advanced(symbol=symbol, start_candle=timeframe)
+                    if output:
+                        print(symbol, output)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.previous_day_close_advanced(symbol=symbol, timeframe=timeframe))
         
         case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
             # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_HEIKIN_ASHI y 0
