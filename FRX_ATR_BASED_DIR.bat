@@ -5,6 +5,7 @@ cd /d %TRADEAU_PATH%
 
 REM Time and Trading
 set start_hour=2
+set atr_check_timeframe=60
 set timeframe=15
 set trades_per_day=100
 
@@ -55,6 +56,7 @@ python smart_trader.py ^
     --systems %systems% ^
     --security %security% ^
     --timeframe %timeframe% ^
+    --atr_check_timeframe %atr_check_timeframe% ^
     --account_risk %account_risk% ^
     --start_hour %start_hour% ^
     --enable_dynamic_position_risk %enable_dynamic_position_risk% ^

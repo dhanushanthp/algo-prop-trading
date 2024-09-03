@@ -59,6 +59,9 @@ class SmartTrader():
         self.stop_selection = kwargs["stop_selection"]
         self.secondary_stop_selection = kwargs["secondary_stop_selection"] 
         self.enable_sec_stop_selection = kwargs["enable_sec_stop_selection"] # Even it might be TRUE, But only activate after a first trade of a symbol.
+
+        # Applies only for 
+        self.atr_check_timeframe = kwargs["atr_check_timeframe"]
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -183,6 +186,8 @@ class SmartTrader():
         print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
         print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
         print(f"{'Max Loss'.ljust(20)}: {self.max_possible_loss}$")
+        if "ATR_BASED_DIRECTION" in self.systems:
+            print(f"{'ATR TF'.ljust(20)}: {util.cl(self.atr_check_timeframe)}")    
         print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}")
         print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}")
@@ -205,6 +210,7 @@ class SmartTrader():
         print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.account_target_ratio}R)\n")
 
         print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
+        
 
 
     def main(self):
@@ -387,7 +393,7 @@ class SmartTrader():
                                     trade_direction = self.strategies.previous_day_close(symbol=symbol)
                                 
                                 case "ATR_BASED_DIRECTION":
-                                    trade_direction = self.strategies.atr_based_direction(symbol=symbol, entry_atr_timeframe=15)
+                                    trade_direction = self.strategies.atr_based_direction(symbol=symbol, entry_atr_timeframe=self.atr_check_timeframe)
                                 
                                 case "PREV_DAY_CLOSE_DIR_ADVANCED":
                                     trade_direction = self.strategies.previous_day_close_advanced(symbol=symbol)
@@ -435,6 +441,7 @@ if __name__ == "__main__":
     parser.add_argument('--strategy', type=str, help='Selected Strategy')
     parser.add_argument('--security', type=str, help='Selected Type - Forex or Stock')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
+    parser.add_argument('--atr_check_timeframe', type=int, help='Selected timeframe for ATR Check entry')
     parser.add_argument('--trades_per_day', type=int, help='Number of trades per day')
     parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')
     parser.add_argument('--target_ratio', type=float, help='Target ratio, assume stop is 1')
@@ -457,9 +464,11 @@ if __name__ == "__main__":
     parser.add_argument('--secondary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--enable_sec_stop_selection', type=str, help='Enable secondary stop selection')
     
+    
     args = parser.parse_args()
     
     trading_timeframe = int(args.timeframe)
+    atr_check_timeframe = int(args.atr_check_timeframe)
     each_position_risk = float(args.each_position_risk)
     account_risk =  float(args.account_risk) # each_position_risk * 10
     target_ratio = float(args.target_ratio)
@@ -493,6 +502,6 @@ if __name__ == "__main__":
                       systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
                       stop_selection=stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
-                      enable_sec_stop_selection=enable_sec_stop_selection)
+                      enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe)
 
     win.main()
