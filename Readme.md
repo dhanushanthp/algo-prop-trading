@@ -1,3 +1,6 @@
+# History
+The first commit has been made on 2023 Nov 06, to start this as Meta Query Project.
+
 # Automated Trading
 I recommend automating trading instead of doing it manually. While it's possible for individuals to trade manually, emotions can negatively impact their decisions. For instance, a trader might gain confidence from a series of winning trades, not realizing that the market was simply favorable at that time. This confidence can lead to increased risk due to greed. If the market then reverses, the trader may not adapt, resulting in significant losses. Over time, this cycle can erode their confidence.
 
