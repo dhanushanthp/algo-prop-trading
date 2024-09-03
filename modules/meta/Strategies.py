@@ -338,7 +338,7 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
-    def atr_based_direction(self, symbol:str, entry_atr_timeframe:int=15) -> Directions:
+    def atr_based_direction(self, symbol:str, entry_atr_timeframe:int=15, verbose:bool=False) -> Directions:
         """
         Determines the trading direction (LONG or SHORT) for a given symbol based on the Average True Range (ATR) indicator.
 
@@ -371,8 +371,9 @@ class Strategies:
             current_price = self.indicators.prices.get_entry_price(symbol=symbol)
             atr_15min = self.indicators.get_atr(symbol=symbol, timeframe=entry_atr_timeframe)
             price_movement = abs(open - current_price)
+            if verbose:
+                    print(f"{symbol}: open: {round(open, 4)}, entry at: L: {round(open + atr_15min, 4)}, S: {round(open - atr_15min, 4)}")
             if price_movement > atr_15min:
-                # print(f"{symbol}: open: {round(open, 4)}, entry at: L{round(open + atr_15min, 4)}, S{round(open - atr_15min, 4)}")
                 if current_price > open:
                     return Directions.LONG
                 else:
@@ -858,12 +859,14 @@ if __name__ == "__main__":
             # python modules\meta\Strategies.py ATR_BASED_DIRECTION y 0
             if batch=="y":
                 for symbol in curr.master_currencies:
-                    output = strat_obj.atr_based_direction(symbol=symbol)
-                    if output:
-                        print(symbol, output)
+                    output = strat_obj.atr_based_direction(symbol=symbol, verbose=True, entry_atr_timeframe=15)
+                    output60 = strat_obj.atr_based_direction(symbol=symbol, verbose=True, entry_atr_timeframe=60)
+                    print("")
+                    # if output:
+                    #     print(symbol, output)
             else:
                 symbol = sys.argv[4]
-                print(strat_obj.atr_based_direction(symbol=symbol))
+                print(strat_obj.atr_based_direction(symbol=symbol, verbose=True))
         
         case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
             # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_HEIKIN_ASHI y 0
