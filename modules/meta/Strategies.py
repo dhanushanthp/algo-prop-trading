@@ -340,43 +340,49 @@ class Strategies:
     
     def atr_based_direction(self, symbol:str, entry_atr_timeframe:int=15, verbose:bool=False) -> Directions:
         """
-        Determines the trading direction (LONG or SHORT) for a given symbol based on the Average True Range (ATR) indicator.
+        Determines the trading direction (LONG or SHORT) based on the Average True Range (ATR) and current price movement.
 
-        This function compares the current price movement of a symbol to its ATR value over a 15-minute timeframe.
-        If the absolute difference between the current price and the opening price of the day exceeds the ATR value, 
-        it indicates a significant movement in the market, and the function returns a direction for trading (LONG or SHORT).
-        
-        Parameters:
-        ----------
-        symbol : str
-            The trading symbol (e.g., stock ticker) for which the direction is to be determined.
+        This function uses the ATR of a specified timeframe to decide whether the price movement of a given symbol is 
+        significant enough to warrant a LONG or SHORT trading decision. The decision is based on the opening price, 
+        current price, the high and low of the day, and the ATR value. 
+
+        Args:
+            symbol (str): The symbol or ticker of the financial instrument being analyzed.
+            entry_atr_timeframe (int, optional): The timeframe in minutes used to calculate the ATR. Default is 15 minutes.
+            verbose (bool, optional): If True, prints detailed information about the current symbol's trading data. Default is False.
 
         Returns:
-        -------
-        Directions
-            The direction for trading the given symbol. 
-            - Returns `Directions.LONG` if the current price is greater than the opening price and exceeds the ATR.
-            - Returns `Directions.SHORT` if the current price is less than the opening price and exceeds the ATR.
+            Directions: An enumeration indicating the trading direction:
+                - Directions.LONG: If the conditions favor a long position.
+                - Directions.SHORT: If the conditions favor a short position.
+                - None: If no clear direction is determined.
+                
+        Raises:
+            Exception: If the chart data for the symbol is not up-to-date.
 
-        Notes:
-        ------
-        - The function checks if the chart data is up to date for the provided symbol before making any calculations.
-        - Uses a daily (1440-minute) timeframe to obtain the opening price of the day.
-        - The ATR is calculated over a 15-minute timeframe.
-
+        Note:
+            The function assumes that the wrapper and indicators objects are initialized and accessible, and that 
+            the necessary data for calculating ATR, price levels, and current prices is available.
         """
         if self.wrapper.is_chart_upto_date(symbol=symbol):
             current_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
+            high_of_day, low_of_day = self.indicators.get_current_day_levels(symbol=symbol, timeframe=15, start_reference_bar=0)
             open = current_candle["open"]
+            
+            move_on_upside = high_of_day.level - open
+            move_on_downside = open - low_of_day.level
+
             current_price = self.indicators.prices.get_entry_price(symbol=symbol)
             atr_15min = self.indicators.get_atr(symbol=symbol, timeframe=entry_atr_timeframe)
-            price_movement = abs(open - current_price)
+
             if verbose:
                     print(f"{symbol}: open: {round(open, 4)}, entry at: L: {round(open + atr_15min, 4)}, S: {round(open - atr_15min, 4)}")
-            if price_movement > atr_15min:
-                if current_price > open:
+            
+            if current_price > open:
+                if move_on_downside > atr_15min:
                     return Directions.LONG
-                else:
+            else:
+                if move_on_upside > atr_15min:
                     return Directions.SHORT
 
     

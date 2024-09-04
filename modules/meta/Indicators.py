@@ -566,11 +566,12 @@ if __name__ == "__main__":
             """
             Test High and Low Of the Day
             """
+            # python modules/meta/Indicators.py daily_levels AUDUSD 15
             symbol = sys.argv[2]
             timeframe = int(sys.argv[3])
-            index = int(sys.argv[4])
+            # index = int(sys.argv[4])
             previous_candle = indi_obj.wrapper.get_todays_candles(symbol=symbol,timeframe=60, start_candle=1).iloc[-1]
-            hod, lod = indi_obj.get_current_day_levels(symbol=symbol, timeframe=60, start_reference_bar=2)
+            hod, lod = indi_obj.get_current_day_levels(symbol=symbol, timeframe=60, start_reference_bar=0)
             print("PREV Candle", previous_candle)
             
             print("HOD")
