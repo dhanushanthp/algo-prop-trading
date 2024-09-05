@@ -30,12 +30,16 @@ master_jpy_pairs = ['AUDJPY', 'CHFJPY', 'EURJPY', 'GBPJPY' , 'NZDJPY', 'USDJPY',
 
 """
 Major Symbols
+'EURJPY', 'GBPJPY', 'CADJPY', 'CHFJPY', 'AUDJPY', "NZDJPY", "USDJPY": All move on same direcion, So pick USDJPY
+'EURUSD', 'GBPUSD': Pick 'GBPUSD'
+'NZDUSD', 'NZDCAD': Pick 'NZDUSD'
+'EURAUD', 'EURNZD', 'GBPAUD':  Pick 'EURAUD'
+'CADCHF', 'AUDCHF', 'USDCHF' Pick USDCHF
+'EURCHF', 'GBPCHF': Pick EURCHF
+"AUDUSD", "AUDCAD": Pick AUDUSD
+"NZDUSD, "AUDUSD": Pick AUSUSD
 """
-major_pairs = ["EURUSD", "GBPUSD", "AUDUSD", 
-               "EURCHF", "AUDCHF", "USDCHF",
-               "USDJPY", "AUDJPY", "GBPJPY",
-               "AUDNZD",
-               "EURAUD"]
+major_pairs = ['AUDNZD', 'AUDUSD', 'EURCAD', 'EURAUD', 'EURCHF', 'GBPUSD', 'USDCAD', 'USDCHF']
 
 major_jpy_pairs = ["USDJPY"]
 

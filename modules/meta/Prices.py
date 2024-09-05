@@ -270,6 +270,8 @@ class Prices:
 if __name__ == "__main__":
     price_obj = Prices()
     import sys
-    symbol = sys.argv[1]
-    print(price_obj.get_dollar_value(symbol=symbol))
+    # symbol = sys.argv[1]
+    # print(price_obj.get_dollar_value(symbol=symbol))
+    for i in curr.master_currencies:
+        print(i, price_obj.get_dollar_value(symbol=i))
     # print(price_obj.get_exchange_price(symbol))
