@@ -231,12 +231,14 @@ class Wrapper:
         Returns:
             pd.DataFrame: DataFrame containing today's candles for the specified symbol and timeframe.
         """
-        if timeframe == 15:
+        if timeframe == 5:
+            n_candles = 3*4*24
+        elif timeframe == 15:
             n_candles = 4*24
-        elif timeframe == 60:
-            n_candles = 24
         elif timeframe == 30:
             n_candles = 2*24
+        elif timeframe == 60:
+            n_candles = 24
         else:
             raise Exception("Timeframe based candles are not defined!")
         
