@@ -366,22 +366,25 @@ class Strategies:
         """
         if self.wrapper.is_chart_upto_date(symbol=symbol):
             current_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
-            high_of_day, low_of_day = self.indicators.get_current_day_levels(symbol=symbol, timeframe=15, start_reference_bar=0)
+            high_of_day, low_of_day = self.indicators.get_today_high_low(symbol=symbol)
             open = current_candle["open"]
             
-            move_on_upside = high_of_day.level - open
-            move_on_downside = open - low_of_day.level
+            # Up and down side move from the opening price
+            move_on_upside = high_of_day - open
+            move_on_downside = open - low_of_day
 
             current_price = self.indicators.prices.get_entry_price(symbol=symbol)
             atr_15min = self.indicators.get_atr(symbol=symbol, timeframe=entry_atr_timeframe)
 
             if verbose:
-                    print(f"{symbol}: open: {round(open, 4)}, entry at: L: {round(open + atr_15min, 4)}, S: {round(open - atr_15min, 4)}")
+                print(f"{symbol}: open: {round(open, 4)}, entry at: L: {round(open + atr_15min, 4)}, S: {round(open - atr_15min, 4)}")
             
             if current_price > open:
+                # Check if the price has already moved downward by a specific ATR from the opening price and move above the opening price, indicating a potential long direction
                 if move_on_downside > atr_15min:
                     return Directions.LONG
             else:
+                # Check if the price has already moved upward by a specific ATR from the opening price and move below the opening price, indicating a potential short direction
                 if move_on_upside > atr_15min:
                     return Directions.SHORT
 

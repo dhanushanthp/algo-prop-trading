@@ -304,6 +304,37 @@ class Indicators:
 
         return None, None
     
+    def get_today_high_low(self, symbol) -> Tuple[float, float]:
+        """
+        Retrieves the highest and lowest prices for today's trading session for a given symbol.
+
+        This function fetches today's candlestick data for the specified symbol with a 5-minute timeframe.
+        It then adjusts the high and low prices of the first bar based on the opening and closing prices
+        to ignore opening price fluctuations. Finally, it returns the maximum high and minimum low prices
+        from the adjusted data.
+
+        Parameters:
+        symbol (str): The trading symbol for which to retrieve the high and low prices.
+
+        Returns:
+        Tuple[float, float]: A tuple containing the highest and lowest prices for today's trading session.
+                            Returns (None, None) if no data is available.
+        """
+        previous_bars = self.wrapper.get_todays_candles(symbol=symbol, timeframe=5, start_candle=1)
+        if not previous_bars.empty:
+            first_bar = previous_bars.iloc[0]
+            # Ignore the opening price flutations by seeting the high and low to open and close prices.
+            if first_bar["close"] > first_bar["open"]:
+                previous_bars.loc[0, "low"] = previous_bars.loc[0, "open"]
+                previous_bars.loc[0, "high"] = previous_bars.loc[0, "close"]
+            else:
+                previous_bars.loc[0, "high"] = previous_bars.loc[0, "open"]
+                previous_bars.loc[0, "low"] = previous_bars.loc[0, "close"]
+            
+            return max(previous_bars["high"]), min(previous_bars["low"])
+
+        return None, None
+    
     def get_weekly_day_levels(self, symbol, timeframe, most_latest_candle=1) -> Tuple[Signal, Signal]:
         """
         Retrieves the weekly high and low levels for a given symbol and timeframe.
@@ -574,6 +605,9 @@ if __name__ == "__main__":
             hod, lod = indi_obj.get_current_day_levels(symbol=symbol, timeframe=60, start_reference_bar=0)
             print("PREV Candle", previous_candle)
             
+            print("Today High/Low")
+            print(indi_obj.get_today_high_low(symbol=symbol))
+
             print("HOD")
             print(hod)
             print(previous_candle["low"] < hod.level and previous_candle["close"] > hod.level)
