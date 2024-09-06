@@ -2,13 +2,13 @@ __pycache__/*
 __pycache__/
 */__pycache__/*
 */__pycache__/
-analysis
+analysis/
 data
 .DS_Store
 equity.csv
 *.ipynb_checkpoints
 *.csv
-*.ipynb
 archive
 *.log
 bat_scripts
+notebooks/data/candles/

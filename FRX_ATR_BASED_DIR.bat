@@ -20,7 +20,7 @@ set max_target_exit=yes
 
 REM Strategy and System
 set strategy=BREAK
-set systems=ATR_BASED_DIRECTION
+set systems=PREV_DAY_CLOSE_DIR
 
 REM Security
 set security=FOREX
@@ -37,7 +37,7 @@ set close_by_time=no
 set close_by_solid_cdl=no
 
 REM NON-PRIMARY, PRIMARY, SINGLE
-set primary_symbols=NON-PRIMARY
+set primary_symbols=PRIMARY
 REM CANDLE or "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
 set primary_stop_selection=ATR4H
 set enable_sec_stop_selection=no

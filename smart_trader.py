@@ -86,7 +86,7 @@ class SmartTrader():
         self.closed_pnl = self.wrapper.get_closed_pnl() # Only when starting the process first time
 
         # Initiate the ticker
-        curr.ticker_initiator(security=self.security)
+        curr.ticker_initiator(security=self.security, symbol_selection=self.symbol_selection)
 
 
     def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False, stop_selection:str="ATR4H") -> bool:

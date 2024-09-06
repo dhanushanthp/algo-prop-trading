@@ -175,14 +175,10 @@ def get_ordered_symbols(without_index=False):
     
     return sorted_list
 
-def ticker_initiator(security="FOREX"):
-    # + indexes + support_pairs+
-    if security == "FOREX":
-        for pair in (currencies + us_indexes):
-            mt.symbol_select(f"{pair}", True)
-    elif security == "STOCK":
-        for pair in (master_stocks):
-            mt.symbol_select(f"{pair}", True)
+def ticker_initiator(security="FOREX", symbol_selection="NON-PRIMARY"):
+    symbols = get_symbols(security=security, symbol_selection=symbol_selection)
+    for symbol in symbols:
+        mt.symbol_select(symbol, True)
 
 def get_symbols(security="FOREX", symbol_selection="NON-PRIMARY"):
     if security == "FOREX":
