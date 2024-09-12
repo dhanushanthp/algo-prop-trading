@@ -338,7 +338,7 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
-    def atr_based_direction(self, symbol:str, entry_atr_timeframe:int=15, verbose:bool=False) -> Directions:
+    def atr_referenced_previous_close_direction(self, symbol:str, entry_atr_timeframe:int=15, start_candle:int=0, verbose:bool=False) -> Directions:
         """
         Determines the trading direction (LONG or SHORT) based on the Average True Range (ATR) and current price movement.
 
@@ -365,28 +365,22 @@ class Strategies:
             the necessary data for calculating ATR, price levels, and current prices is available.
         """
         if self.wrapper.is_chart_upto_date(symbol=symbol):
-            current_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
+            open = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)["open"]
             high_of_day, low_of_day = self.indicators.get_today_high_low(symbol=symbol)
-            open = current_candle["open"]
             
             # Up and down side move from the opening price
             move_on_upside = high_of_day - open
             move_on_downside = open - low_of_day
+            valid_atr_move = self.indicators.get_atr(symbol=symbol, timeframe=entry_atr_timeframe)
 
-            current_price = self.indicators.prices.get_entry_price(symbol=symbol)
-            atr_15min = self.indicators.get_atr(symbol=symbol, timeframe=entry_atr_timeframe)
+            previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=start_candle+1)
 
-            if verbose:
-                print(f"{symbol}: open: {round(open, 4)}, entry at: L: {round(open + atr_15min, 4)}, S: {round(open - atr_15min, 4)}")
-            
-            if current_price > open:
-                # Check if the price has already moved downward by a specific ATR from the opening price and move above the opening price, indicating a potential long direction
-                if move_on_downside > atr_15min:
-                    return Directions.LONG
-            else:
-                # Check if the price has already moved upward by a specific ATR from the opening price and move below the opening price, indicating a potential short direction
-                if move_on_upside > atr_15min:
+            if previous_day_candle["close"] < previous_day_candle["open"]:
+                if move_on_downside > valid_atr_move:
                     return Directions.SHORT
+            else:
+                if move_on_upside > valid_atr_move:
+                    return Directions.LONG
 
     
     def previous_day_close_advanced(self, symbol:str, start_candle:int=0) -> Directions:
@@ -868,14 +862,14 @@ if __name__ == "__main__":
             # python modules\meta\Strategies.py ATR_BASED_DIRECTION y 0
             if batch=="y":
                 for symbol in curr.master_currencies:
-                    output = strat_obj.atr_based_direction(symbol=symbol, verbose=True, entry_atr_timeframe=15)
-                    output60 = strat_obj.atr_based_direction(symbol=symbol, verbose=True, entry_atr_timeframe=60)
+                    output = strat_obj.atr_referenced_previous_close_direction(symbol=symbol, verbose=True, entry_atr_timeframe=15)
+                    output60 = strat_obj.atr_referenced_previous_close_direction(symbol=symbol, verbose=True, entry_atr_timeframe=60)
                     print("")
                     # if output:
                     #     print(symbol, output)
             else:
                 symbol = sys.argv[4]
-                print(strat_obj.atr_based_direction(symbol=symbol, verbose=True))
+                print(strat_obj.atr_referenced_previous_close_direction(symbol=symbol, verbose=True))
         
         case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
             # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_HEIKIN_ASHI y 0

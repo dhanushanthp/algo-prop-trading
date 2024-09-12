@@ -399,7 +399,7 @@ class SmartTrader():
                                     trade_direction = self.strategies.previous_day_close(symbol=symbol)
                                 
                                 case "ATR_BASED_DIRECTION":
-                                    trade_direction = self.strategies.atr_based_direction(symbol=symbol, entry_atr_timeframe=self.atr_check_timeframe)
+                                    trade_direction = self.strategies.atr_referenced_previous_close_direction(symbol=symbol, entry_atr_timeframe=self.atr_check_timeframe)
                                 
                                 case "PREV_DAY_CLOSE_DIR_ADVANCED":
                                     trade_direction = self.strategies.previous_day_close_advanced(symbol=symbol)

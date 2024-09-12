@@ -5,7 +5,7 @@ cd /d %TRADEAU_PATH%
 
 REM Time and Trading
 set start_hour=1
-set atr_check_timeframe=60
+set atr_check_timeframe=15
 set timeframe=15
 set trades_per_day=100
 
@@ -19,8 +19,8 @@ set max_loss_exit=yes
 set max_target_exit=yes
 
 REM Strategy and System
-set strategy=BREAK
-set systems=PREV_DAY_CLOSE_DIR
+set strategy=REVERSE
+set systems=ATR_BASED_DIRECTION
 
 REM Security
 set security=FOREX
