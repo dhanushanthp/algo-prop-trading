@@ -375,6 +375,9 @@ class Strategies:
 
             previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=start_candle+1)
 
+            if verbose:
+                print(f"{symbol}: open: {round(open, 4)}, entry at: L: {round(open + valid_atr_move, 4)}, S: {round(open - valid_atr_move, 4)}")
+            
             if previous_day_candle["close"] < previous_day_candle["open"]:
                 if move_on_downside > valid_atr_move:
                     return Directions.SHORT
@@ -861,7 +864,7 @@ if __name__ == "__main__":
         case "ATR_BASED_DIRECTION":
             # python modules\meta\Strategies.py ATR_BASED_DIRECTION y 0
             if batch=="y":
-                for symbol in curr.master_currencies:
+                for symbol in curr.get_symbols(symbol_selection="PRIMARY"):
                     output = strat_obj.atr_referenced_previous_close_direction(symbol=symbol, verbose=True, entry_atr_timeframe=15)
                     output60 = strat_obj.atr_referenced_previous_close_direction(symbol=symbol, verbose=True, entry_atr_timeframe=60)
                     print("")
