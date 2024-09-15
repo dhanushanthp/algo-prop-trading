@@ -55,7 +55,7 @@ elif company == "FTMO S.R.O.":
     currencies = master_currencies
     jpy_currencies = master_jpy_pairs
     indexes = ['AUS200.cash', 'HK50.cash', 'JP225.cash',  'US500.cash', 'UK100.cash']
-    support_pairs = ["NZDUSD", "USDCAD"]
+    support_pairs = ["NZDUSD", "USDCAD", "EURUSD"]
 
 # FundingPips
 elif company == "Black Bull Group Limited":
@@ -177,6 +177,7 @@ def get_ordered_symbols(without_index=False):
 
 def ticker_initiator(security="FOREX", symbol_selection="NON-PRIMARY"):
     symbols = get_symbols(security=security, symbol_selection=symbol_selection)
+    symbols.extend(support_pairs)
     for symbol in symbols:
         mt.symbol_select(symbol, True)
 
