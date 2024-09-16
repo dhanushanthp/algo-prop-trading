@@ -20,7 +20,7 @@ set max_target_exit=yes
 
 REM Strategy and System
 set strategy=REVERSE
-set systems=ATR_BASED_DIRECTION
+set systems=PREV_DAY_CLOSE_DIR
 
 REM Security
 set security=FOREX
