@@ -338,6 +338,22 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
+    def previous_day_close_prev_high_low(self, symbol:str, start_candle:int=0) -> Directions:
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=start_candle+1)
+            master_direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
+
+            # Entry decision based on previous day high/low. For long position today price should break below the previou day low
+            # and for short position today price should break previou day high.
+            today_high, today_low = self.indicators.get_today_high_low(symbol=symbol)
+
+            if master_direction == Directions.LONG:
+                if today_high > previous_day_candle["high"]:
+                    return Directions.LONG
+            elif master_direction == Directions.SHORT:
+                if today_low < previous_day_candle["low"]:
+                    return Directions.SHORT
+    
     def atr_referenced_previous_close_direction(self, symbol:str, entry_atr_timeframe:int=15, start_candle:int=0, verbose:bool=False) -> Directions:
         """
         Determines the trading direction (LONG or SHORT) based on the Average True Range (ATR) and current price movement.
@@ -860,6 +876,17 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.previous_day_close_advanced(symbol=symbol, timeframe=timeframe))
+        
+        case "PREV_DAY_CLOSE_DIR_PREV_HIGH_LOW":
+            # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_PREV_HIGH_LOW y 0
+            if batch=="y":
+                for symbol in curr.get_symbols(symbol_selection="PRIMARY"):
+                    output = strat_obj.previous_day_close_prev_high_low(symbol=symbol, start_candle=timeframe)
+                    if output:
+                        print(symbol, output)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.previous_day_close_prev_high_low(symbol=symbol, timeframe=timeframe))
         
         case "ATR_BASED_DIRECTION":
             # python modules\meta\Strategies.py ATR_BASED_DIRECTION y 0
