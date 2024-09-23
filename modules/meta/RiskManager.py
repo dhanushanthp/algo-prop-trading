@@ -178,6 +178,9 @@ class RiskManager:
         - "by_active": 
             Validates the signal by checking if there are any active positions in the same direction for the given symbol. If none exist, the signal is valid.
 
+        - "by_active_time_enforced": 
+            Validates the signal by checking if there are any active positions in the same direction for the given symbol. If none exist, the signal is valid also enforce time.
+
         - "by_active_limit": 
             Limits the number of trades in the same direction to the `max_trades_on_same_direction` parameter. It checks both active positions and trades made today.
 
@@ -212,6 +215,38 @@ class RiskManager:
                     case Directions.SHORT:
                         active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 1)]
                         if active_symbol.empty:
+                            # Shoud not have any active Short Positions
+                            return True, is_opening_trade
+        elif multiple_positions == "by_active_time_enforced":
+            is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
+            # Check the entry validity based on active positions. Same directional trades won't took place at same time.
+            active_positions = self.wrapper.get_all_active_positions()
+            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
+                return True, is_opening_trade
+            else:
+                todays_trades = self.wrapper.get_todays_trades()
+                last_traded_time = util.get_traded_time(epoch=max(todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]["time"]))
+                current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+                time_gap = (current_time-last_traded_time).total_seconds()/60
+                
+                # If more than 30 minutes
+                if timeframe == 15:
+                    time_multiplier=4
+                elif timeframe == 30:
+                    time_multiplier=2
+                else:
+                    time_multiplier=1
+
+                match trade_direction:
+                    case Directions.LONG:
+                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 0)]
+                        if active_symbol.empty and time_gap > timeframe * time_multiplier:
+                            # Shoud not have any active Long Positions
+                            return True, is_opening_trade
+
+                    case Directions.SHORT:
+                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 1)]
+                        if active_symbol.empty and time_gap > timeframe * time_multiplier:
                             # Shoud not have any active Short Positions
                             return True, is_opening_trade
         elif multiple_positions == "by_active_limit":
