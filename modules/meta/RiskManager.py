@@ -225,7 +225,7 @@ class RiskManager:
                 return True, is_opening_trade
             else:
                 todays_trades = self.wrapper.get_todays_trades()
-                last_traded_time = util.get_traded_time(epoch=max(todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]["time"]))
+                last_traded_time = util.get_traded_time(epoch=max(todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]["time"]))
                 current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
                 time_gap = (current_time-last_traded_time).total_seconds()/60
                 
@@ -310,7 +310,7 @@ class RiskManager:
             if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
                 return True, is_opening_trade
             else:
-                last_traded_time = util.get_traded_time(epoch=max(todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]["time"]))
+                last_traded_time = util.get_traded_time(epoch=max(todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]["time"]))
                 current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
                 time_gap = (current_time-last_traded_time).total_seconds()/60
                 
