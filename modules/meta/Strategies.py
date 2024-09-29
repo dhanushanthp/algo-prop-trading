@@ -67,6 +67,45 @@ class Strategies:
             if is_bearish:
                 return Directions.SHORT
     
+    def fib_retracement_ref_previous_day(self, symbol:str, fib_level:str="78"):
+        yesday_cdl = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
+        today_cdl = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
+        current_price = self.indicators.prices.get_entry_price(symbol=symbol)
+        # print(yesday_cdl["high"], yesday_cdl["low"], today_cdl["open"])
+
+        # Fib levels could be 23, 38, 50, 61, 78
+
+        if today_cdl["open"] < yesday_cdl["high"]:
+            short_levels = self.indicators.fib_retracement(high=yesday_cdl["high"], low=today_cdl["open"])
+        
+        if today_cdl["open"] > yesday_cdl["low"]:
+            long_levels = self.indicators.fib_retracement(high=today_cdl["open"], low=yesday_cdl["high"])
+
+        print("long")
+        print(long_levels)
+
+        print("short")
+        print(short_levels)
+
+    
+    def get_three_candle_reverse(self, symbol:str, timeframe:int, start_candle=1, ignore_body:bool=False) -> Directions:
+        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=3)
+
+        if len(previous_bars) >= 3:
+            last_3_bars = previous_bars.tail(3).copy()
+            last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
+            
+            start_candle = last_3_bars.iloc[-3]
+            middle_candle = last_3_bars.iloc[-2]
+            end_candle = last_3_bars.iloc[-1]
+
+            # RED and GREEN and END CDL HIGH > MIDD CDL HIGH and 
+            if (start_candle["body_size"] < 0) and (end_candle["body_size"] > 0) and (end_candle["high"] > middle_candle["high"]) and (start_candle["high"] > middle_candle["high"]):
+                return Directions.LONG
+            
+            if (start_candle["body_size"] > 0) and (end_candle["body_size"] < 0) and (end_candle["low"] < middle_candle["low"]) and (start_candle["low"] < middle_candle["low"]):
+                return Directions.SHORT
+    
     def get_dtop_dbottom(self, symbol:str, timeframe:int=60) -> Directions:
         """
         Double Top and Double Bottom
@@ -887,6 +926,18 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.previous_day_close_prev_high_low(symbol=symbol, timeframe=timeframe))
+        
+        case "FIB_RETRACEMENT":
+            # python modules\meta\Strategies.py FIB_RETRACEMENT y 0
+            if batch=="y":
+                for symbol in curr.get_symbols(symbol_selection="PRIMARY"):
+                    output = strat_obj.fib_retracement_ref_previous_day(symbol=symbol)
+                    if output:
+                        print(symbol, output)
+            else:
+                # python modules\meta\Strategies.py FIB_RETRACEMENT y 0 AUDUSD
+                symbol = sys.argv[4]
+                print(strat_obj.fib_retracement_ref_previous_day(symbol=symbol))
         
         case "ATR_BASED_DIRECTION":
             # python modules\meta\Strategies.py ATR_BASED_DIRECTION y 0

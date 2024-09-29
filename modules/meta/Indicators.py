@@ -86,15 +86,6 @@ class Indicators:
         else:
             return Directions.SHORT if not reverse else Directions.LONG
 
-    def get_previous_day_levels(self, symbol, timeframe=60) -> Tuple[Signal, Signal]:
-        previous_bars = pd.DataFrame(self.wrapper.get_previous_day_candles_by_time(symbol=symbol, 
-                                                                                   timeframe=timeframe))
-        if not previous_bars.empty:
-            off_hour_highs = Signal(reference="PDH", level=max(previous_bars["high"]), break_bar_index=previous_bars["high"].idxmax())
-            off_hour_lows = Signal(reference="PDL", level=min(previous_bars["low"]), break_bar_index=previous_bars["low"].idxmin())
-            return off_hour_highs, off_hour_lows
-
-        return None, None
     
     def get_candle_cross_sma(self, symbol:str, timeframe:int, sma_crossing:int) -> Tuple[Directions, int]:
         sma_direction = self.sma_direction(symbol=symbol, timeframe=timeframe, short_ma=10, long_ma=20)
@@ -303,6 +294,19 @@ class Indicators:
             return off_hour_highs, off_hour_lows
 
         return None, None
+
+    def fib_retracement(self, high: float, low: float):
+        # Fibonacci retracement levels
+        fib_levels = [0.236, 0.382, 0.500, 0.618, 0.786]
+
+        # Calculate the difference between high and low
+        difference = high - low
+
+        # Calculate the retracement levels
+        retracement_levels = {f"{int(level*100)}": high - difference * level for level in fib_levels}
+
+        return retracement_levels
+        
     
     def get_today_high_low(self, symbol) -> Tuple[float, float]:
         """

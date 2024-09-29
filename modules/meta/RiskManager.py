@@ -236,11 +236,11 @@ class RiskManager:
                 todays_trades = self.wrapper.get_todays_trades()
                 all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]["time"]
 
+                last_traded_time = None
                 if not all_symbol_exist_times.empty:
                     last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times))
                     current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
                     time_gap = (current_time-last_traded_time).total_seconds()/60
-                    log_it("RiskManager").info(f"{symbol}: Time: {time_gap}, lastT: {last_traded_time}, currT: {current_time}")
                 else:
                     time_gap = timeframe * time_multiplier * 2 # allways max time, kind of constant
 
@@ -249,12 +249,16 @@ class RiskManager:
                         active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 0)]
                         if active_symbol.empty and (time_gap > timeframe * time_multiplier):
                             # Shoud not have any active Long Positions
+                            if last_traded_time:
+                                log_it("RiskManager").info(f"LONG: {symbol}: Time: {time_gap}, lastT: {last_traded_time}, currT: {current_time}")
                             return True, is_opening_trade
 
                     case Directions.SHORT:
                         active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 1)]
                         if active_symbol.empty and (time_gap > timeframe * time_multiplier):
                             # Shoud not have any active Short Positions
+                            if last_traded_time:
+                                log_it("RiskManager").info(f"SHORT: {symbol}: Time: {time_gap}, lastT: {last_traded_time}, currT: {current_time}")
                             return True, is_opening_trade
         elif multiple_positions == "by_active_limit":
             todays_trades = self.wrapper.get_todays_trades()
