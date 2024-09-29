@@ -85,6 +85,35 @@ class Indicators:
             return Directions.LONG if not reverse else Directions.SHORT
         else:
             return Directions.SHORT if not reverse else Directions.LONG
+        
+
+    def get_three_cdl_reversal_points(self, symbol:str, timeframe:int=60, start_candle:int=1) -> pd.DataFrame:
+        today_candles = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
+
+        df_dict = {"time":[], "type":[], "value":[]}
+
+        if len(today_candles) >= 3:
+            today_candles = today_candles.value_counts()
+            for i in range(len(today_candles)-2):
+                start_candle = today_candles[i].reset_index().iloc[0]
+                start_cdl_body = start_candle["close"] - start_candle["open"]
+                middle_candle = today_candles[i+1].reset_index().iloc[0]
+                end_candle = today_candles[i+2].reset_index().iloc[0]
+                end_cdl_body = end_candle["close"] - end_candle["open"]
+
+                # RED and GREEN and END CDL HIGH > MIDD CDL HIGH and 
+                if (start_cdl_body < 0) and (end_cdl_body > 0) and (end_candle["high"] > middle_candle["high"]) and (start_candle["high"] > middle_candle["high"]):
+                    # print("LOWPOINT", middle_candle["time"] ,middle_candle["low"])
+                    df_dict["time"].append(middle_candle["time"])
+                    df_dict["type"].append("low")
+                    df_dict["value"].append(middle_candle["low"])
+                
+                if (start_cdl_body > 0) and (end_cdl_body < 0) and (end_candle["low"] < middle_candle["low"]) and (start_candle["low"] < middle_candle["low"]):
+                    df_dict["time"].append(middle_candle["time"])
+                    df_dict["type"].append("high")
+                    df_dict["value"].append(middle_candle["high"])
+        
+        return pd.DataFrame(df_dict)
 
     
     def get_candle_cross_sma(self, symbol:str, timeframe:int, sma_crossing:int) -> Tuple[Directions, int]:
@@ -649,3 +678,8 @@ if __name__ == "__main__":
             print(f"15: {round(atr_15 , 4)}, 60: {round(atr_1h, 4)}")
             print(f"15/60 {round(atr_1h/atr_15, 2)}")
             print(f"15/240 {round(atr_4h/atr_15, 2)}")
+        
+        case "3cdl_reversal":
+            # python modules/meta/Indicators.py 3cdl_reversal AUDUSD
+            symbol = sys.argv[2]
+            print(indi_obj.get_three_cdl_reversal_points(symbol=symbol))
