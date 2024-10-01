@@ -680,6 +680,7 @@ if __name__ == "__main__":
             print(f"15/240 {round(atr_4h/atr_15, 2)}")
         
         case "3cdl_reversal":
-            # python modules/meta/Indicators.py 3cdl_reversal AUDUSD
+            # python modules/meta/Indicators.py 3cdl_reversal AUDUSD 15
             symbol = sys.argv[2]
-            print(indi_obj.get_three_cdl_reversal_points(symbol=symbol))
+            timeframe = int(sys.argv[3])
+            print(indi_obj.get_three_cdl_reversal_points(symbol=symbol, timeframe=timeframe))

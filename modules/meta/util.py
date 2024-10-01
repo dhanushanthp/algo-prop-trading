@@ -78,6 +78,23 @@ def get_local_time(city) -> Tuple[int, int, int]:
     
     return day_of_week, hour, minute
 
+
+def get_str_date_object(date_str:str):
+    # Convert the string to a datetime object
+    date_str = date_str.split(" ")[-1]
+    date_str = date_str.split(":")
+    hour = int(date_str[0])
+    min = int(date_str[1])
+    return hour, min
+
+
+def find_trade_time_gap(date_str:str):
+    signal_hour, signal_min = get_str_date_object(date_str=date_str)
+    _, hour, min = get_current_day_hour_min()
+    time_gap = (hour * 60 + min) - (signal_hour*60 + signal_min)
+    return time_gap
+
+
 def get_traded_time(epoch)-> datetime:
     """
     Converts an epoch timestamp to a timezone-aware datetime object in the 'Etc/GMT' timezone.
@@ -264,8 +281,13 @@ if __name__ == "__main__":
     # print(get_market_status())
     # print(get_today_profit())
     # print(index_of_active_bar(symbol, timeframe))
-    # print(get_current_time())
+    curr_date = get_current_day_hour_min()
+    print(curr_date)
+    given_time = get_str_date_object(date_str="2024-09-30 00:50:17")
+    print(given_time)
+    print(find_trade_time_gap(date_str="2024-09-30 00:50:17"))
+
     # print(get_current_day_hour_min())
     # print(is_us_premarket_peroid())
-    print(get_maket_events())
+    # print(get_maket_events())
     # print(get_last_sunday())

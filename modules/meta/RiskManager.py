@@ -218,6 +218,14 @@ class RiskManager:
                         if active_symbol.empty:
                             # Shoud not have any active Short Positions
                             return True, is_opening_trade
+        elif multiple_positions == "by_active_one_direction":
+            is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
+            # Check the entry validity based on active positions. Same directional trades won't took place at same time.
+            active_positions = self.wrapper.get_all_active_positions()
+            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
+                return True, is_opening_trade
+            else:
+                return False, is_opening_trade
         elif multiple_positions == "by_active_time_enforced":
             is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
             # Check the entry validity based on active positions. Same directional trades won't took place at same time.

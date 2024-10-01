@@ -195,6 +195,7 @@ class SmartTrader():
             print(f"{'Multi Positions'.ljust(20)}: {util.cl(self.max_trades_on_same_direction)}")
 
         print("")
+        print(f"{'Target Ratio'.ljust(20)}: 1:{int(self.target_ratio)}")
         print(f"{'Max Account Risk'.ljust(20)}: {self.risk_manager.account_risk_percentage}%")
         print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
         print(f"{'Max Loss'.ljust(20)}: {self.max_possible_loss}$")
