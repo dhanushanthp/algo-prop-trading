@@ -394,6 +394,11 @@ class SmartTrader():
                                 case "HEIKIN_ASHI_PRE":
                                     trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)
+                                
+                                case "HEIKIN_ASHI_3CDL_REV":
+                                    trade_direction = self.strategies.get_heikin_ashi_3_cdl_reversal(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe, start=1)
+
                                 case "U_REVERSAL":
                                     trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
                                                                                     timeframe=self.trading_timeframe)

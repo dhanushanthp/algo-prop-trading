@@ -85,7 +85,22 @@ class Indicators:
             return Directions.LONG if not reverse else Directions.SHORT
         else:
             return Directions.SHORT if not reverse else Directions.LONG
-        
+    
+    @staticmethod
+    def has_three_consecutive_same_direction(lst):
+        if len(lst) > 2:
+            for i in range(len(lst) - 2):
+                if lst[i] == lst[i+1] == lst[i+2]:
+                    return True
+                return False
+
+    def get_three_candle_strike_data_points(self, symbol:str, timeframe:int, start_candle=1, ignore_body:bool=False) -> Directions:
+        previous_bars = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
+
+        if not previous_bars.empty:
+            previous_bars["direction"] = previous_bars["close"] - previous_bars["open"] > 0
+            has_three_cdls = self.has_three_consecutive_same_direction(previous_bars["direction"].tolist())
+            return has_three_cdls
 
     def get_three_cdl_reversal_points(self, symbol:str, timeframe:int=60, start_candle:int=1) -> pd.DataFrame:
         today_candles = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
@@ -684,3 +699,4 @@ if __name__ == "__main__":
             symbol = sys.argv[2]
             timeframe = int(sys.argv[3])
             print(indi_obj.get_three_cdl_reversal_points(symbol=symbol, timeframe=timeframe))
+            print(indi_obj.get_three_candle_strike_data_points(symbol=symbol, timeframe=timeframe))

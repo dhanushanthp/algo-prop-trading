@@ -6,13 +6,13 @@ cd /d %TRADEAU_PATH%
 REM Time and Trading
 set start_hour=1
 set atr_check_timeframe=15
-set timeframe=60
+set timeframe=15
 set trades_per_day=100
 
 REM Risk Management
-set account_risk=0.50
-set each_position_risk=0.05
-set target_ratio=3.0
+set account_risk=5.0
+set each_position_risk=0.1
+set target_ratio=30.0
 set account_target_ratio=3.0
 set enable_dynamic_position_risk=no
 set max_loss_exit=yes
@@ -20,26 +20,26 @@ set max_target_exit=yes
 
 REM Strategy and System
 set strategy=BREAK
-set systems=3CDL_STR
+set systems=3CDL_REV
 
 REM Security
 set security=FOREX
 
 REM Trade Controls
-set enable_trail_stop=yes
+set enable_trail_stop=no
 set enable_breakeven=no
 set enable_neutralizer=no
-REM by_active or by_trades or by_open or by_active_limit or by_active_time_enforced
-set multiple_positions=by_active_time_enforced
+REM by_active or by_trades or by_open or by_active_limit or by_active_time_enforced or by_active_one_direction
+set multiple_positions=by_active_one_direction
 
 set record_pnl=yes
 set close_by_time=no
 set close_by_solid_cdl=no
 
 REM NON-PRIMARY, PRIMARY, SINGLE
-set primary_symbols=PRIMARY
+set primary_symbols=NON-PRIMARY
 REM CANDLE or "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
-set primary_stop_selection=ATR1H
+set primary_stop_selection=ATR15M
 set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
 set max_trades_on_same_direction=1

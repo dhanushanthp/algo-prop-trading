@@ -148,7 +148,28 @@ class RiskManager:
         
         return list_to_close
 
+
+    def get_target_ratio(self, symbol:str, atr_timeframe:int=15) -> float:
+        """
+        Calculate the target ratio based on the Average True Range (ATR) and the range of the previous day's high and low prices.
+
+        Args:
+            symbol (str): The trading symbol for which the target ratio is calculated.
+            atr_timeframe (int, optional): The timeframe for calculating the ATR. Defaults to 15.
+
+        Returns:
+            float: The target ratio calculated as the ratio of the previous day's range to the ATR. Returns 1 if ATR is not available
+        """
+        yesterday_range = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
+        yesterday_range = abs(yesterday_range["high"] - yesterday_range["low"])
+        atr = self.indicators.get_atr(symbol=symbol, timeframe=atr_timeframe)
+        if atr:
+            target_factor = round(yesterday_range/atr)
+            return target_factor
+
+        return 5
     
+
     def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades", max_trades_on_same_direction:int=2) -> Tuple[bool, bool]:
         """
         Validates a trade signal based on several parameters and trading rules.
@@ -976,5 +997,10 @@ if __name__ == "__main__":
             print(obj.neutralizer())
 
         case "close_by_time":
-            for i in obj.close_positions_by_time(60, 3):
-                print(i.symbol)
+            for symbol in obj.close_positions_by_time(60, 3):
+                print(symbol.symbol)
+        
+        case "target_ratio":
+            # python modules\meta\RiskManager.py CADJPY target_ratio
+            for symbol in curr.get_symbols(symbol_selection="PRIMARY"):
+                print(symbol, obj.get_target_ratio(symbol=symbol, atr_timeframe=15))

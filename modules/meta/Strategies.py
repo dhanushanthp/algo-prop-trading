@@ -87,24 +87,46 @@ class Strategies:
         print("short")
         print(short_levels)
 
-    
     def get_three_candle_reverse(self, symbol:str, timeframe:int, start_candle=1, ignore_body:bool=False) -> Directions:
-        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=3)
+        """
+        Identifies a three-candle reversal pattern for a given symbol and timeframe.
 
-        if len(previous_bars) >= 3:
-            last_3_bars = previous_bars.tail(3).copy()
-            last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
-            
-            start_candle = last_3_bars.iloc[-3]
-            middle_candle = last_3_bars.iloc[-2]
-            end_candle = last_3_bars.iloc[-1]
+        This method analyzes the candlestick data to detect a three-candle reversal pattern, which can indicate a potential change in market direction. It uses the latest reversal points to determine if a LONG or SHORT direction should be taken based on the pattern identified.
 
-            # RED and GREEN and END CDL HIGH > MIDD CDL HIGH and 
-            if (start_candle["body_size"] < 0) and (end_candle["body_size"] > 0) and (end_candle["high"] > middle_candle["high"]) and (start_candle["high"] > middle_candle["high"]):
-                return Directions.LONG
+        Parameters:
+        symbol (str): The trading symbol to analyze.
+        timeframe (int): The timeframe for the candlestick data.
+        start_candle (int, optional): The starting candle for the analysis. Defaults to 1.
+        ignore_body (bool, optional): Whether to ignore the candle body in the analysis. Defaults to False.
+
+        Returns:
+        Directions: The direction of the trade based on the identified reversal pattern. Returns Directions.LONG for a bullish reversal and Directions.SHORT for a bearish reversal.
+
+        """
+        all_reversal_points = self.indicators.get_three_cdl_reversal_points(symbol=symbol, timeframe=timeframe)
+        # This confirms the price has moved rather ranging
+        check_cdl_strikes = self.indicators.get_three_candle_strike_data_points(symbol=symbol, timeframe=timeframe)
+        
+        if not all_reversal_points.empty and len(all_reversal_points) >= 2 and check_cdl_strikes:
+
+            latest_time_stamp = all_reversal_points.iloc[-1]["time"].strftime("%Y-%m-%d %H:%M:%S")
+            time_gap = util.find_trade_time_gap(date_str=latest_time_stamp)
             
-            if (start_candle["body_size"] > 0) and (end_candle["body_size"] < 0) and (end_candle["low"] < middle_candle["low"]) and (start_candle["low"] < middle_candle["low"]):
-                return Directions.SHORT
+            # Since we pick the middle candle time it start of 15 min, then end candle is end of 30 min. So we give another 15 min time for entry signal
+            if time_gap < (timeframe*2) + 2 :
+                l_1 = all_reversal_points.iloc[-1]
+                l_2 = all_reversal_points.iloc[-2]
+
+                if l_1["type"] == "low" and l_2["type"] == "high":
+                    print(all_reversal_points.tail(2))
+                    print(symbol, time_gap)
+                    return Directions.LONG
+                
+                if l_1["type"] == "high" and l_2["type"] == "low":
+                    print(all_reversal_points.tail(2))
+                    print(symbol, time_gap)
+                    return Directions.SHORT
+
     
     def get_dtop_dbottom(self, symbol:str, timeframe:int=60) -> Directions:
         """
@@ -142,6 +164,19 @@ class Strategies:
             return Directions.LONG
         
         return None
+    
+    def get_heikin_ashi_3_cdl_reversal(self, symbol:str, timeframe:int, start:int=1) -> Directions:
+        heikin_ashi_candles = self.wrapper.get_heikin_ashi(symbol=symbol, timeframe=timeframe, n_candles=4, start_candle=start).tail(3)
+        heikin_ashi_candles["body"] = heikin_ashi_candles["close"] - heikin_ashi_candles["open"]
+        heikin_ashi_candles["body"] = heikin_ashi_candles["body"].apply(lambda x: "long" if x > 0 else "short")
+        candles_direction = heikin_ashi_candles["body"].tolist()
+
+        if candles_direction[0] == candles_direction[0] == "long" and candles_direction[1] == "short":
+            return Directions.SHORT
+
+        if candles_direction[0] == candles_direction[0] == "short" and candles_direction[1] == "long":
+            return Directions.LONG
+        
 
     def get_heikin_ashi_reversal(self, symbol:str, timeframe:int, start:int=0) -> Directions:
         """
@@ -951,6 +986,17 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.atr_referenced_previous_close_direction(symbol=symbol, verbose=True))
+        
+        case "HEIKIN_ASHI_3CDL_REV":
+            # python modules\meta\Strategies.py HEIKIN_ASHI_3CDL_REV y 15 AUDUSD
+            if batch=="y":
+                same_direction = []
+                opposite_direction = []
+                for symbol in curr.master_currencies:
+                    print(symbol, strat_obj.get_heikin_ashi_3_cdl_reversal(symbol=symbol, timeframe=timeframe))
+            else:
+                symbol = sys.argv[4]
+                print(symbol, strat_obj.get_heikin_ashi_3_cdl_reversal(symbol=symbol, timeframe=timeframe))
         
         case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
             # python modules\meta\Strategies.py PREV_DAY_CLOSE_DIR_HEIKIN_ASHI y 0
