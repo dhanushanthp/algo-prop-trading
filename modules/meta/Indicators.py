@@ -92,9 +92,21 @@ class Indicators:
             for i in range(len(lst) - 2):
                 if lst[i] == lst[i+1] == lst[i+2]:
                     return True
-                return False
+        return False
 
     def get_three_candle_strike_data_points(self, symbol:str, timeframe:int, start_candle=1, ignore_body:bool=False) -> Directions:
+        """
+        This function checks if there are three consecutive candles in the same direction for a given symbol and timeframe.
+
+        Parameters:
+        symbol (str): The trading symbol to analyze.
+        timeframe (int): The timeframe for the candles.
+        start_candle (int, optional): The starting candle index. Defaults to 1.
+        ignore_body (bool, optional): Flag to ignore the candle body. Defaults to False.
+
+        Returns:
+        Directions: Indicates if there are three consecutive candles in the same direction.
+        """
         previous_bars = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
 
         if not previous_bars.empty:
