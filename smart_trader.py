@@ -242,8 +242,7 @@ class SmartTrader():
             5. Disables PnL notifications by setting `self.notify_pnl` to `False`.
             6. Marks the initial run as complete by setting `self.is_initial_run` to `False`.
             """
-            # if self.is_initial_run:
-            if False:
+            if self.is_initial_run:
                 active_position = self.wrapper.get_all_active_positions()
                 today_trades = self.wrapper.get_todays_trades()
                 if active_position.empty and (not today_trades.empty):
@@ -321,8 +320,7 @@ class SmartTrader():
                     self.orders.close_all_positions()
                 
                 # Update the result in Slack
-                # and not self.is_initial_run
-                if self.notify_pnl:
+                if self.notify_pnl and not self.is_initial_run:
                     self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
