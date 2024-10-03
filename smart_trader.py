@@ -321,7 +321,8 @@ class SmartTrader():
                     self.orders.close_all_positions()
                 
                 # Update the result in Slack
-                if self.notify_pnl and not self.is_initial_run:
+                # and not self.is_initial_run
+                if self.notify_pnl:
                     self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
