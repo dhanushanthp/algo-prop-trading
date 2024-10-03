@@ -117,6 +117,14 @@ class Strategies:
                 l_1 = all_reversal_points.iloc[-1]
                 l_2 = all_reversal_points.iloc[-2]
 
+                """
+                Why should I use a high-to-low or low-to-high signal check instead of simply going long at lows and short at highs? 
+                In general, the market tends to range, so we need to allow time for it to settle. When the market ranges, 
+                it will have highs and lows. I don't want to short when the market is consistently making new highs, as that would lead to losses. 
+                Similarly, I don't want to go long when the market is continually making lower lows. 
+                Therefore, having a high-to-low and low-to-high signal check is crucial to avoid market noise.
+                """
+
                 if l_1["type"] == "low" and l_2["type"] == "high":
                     print(all_reversal_points.tail(2))
                     print(symbol, time_gap)
