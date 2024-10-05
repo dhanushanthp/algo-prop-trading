@@ -132,7 +132,7 @@ class Indicators:
         hod, lod = self.get_today_high_low(symbol=symbol, start_candle=start_candle)
         
         # Calculate ATR and split it by the given factor
-        atr = self.get_atr(symbol=symbol, timeframe=timeframe) / atr_split
+        split_atr = self.get_atr(symbol=symbol, timeframe=timeframe) / atr_split
         
         # Initialize a dictionary to track signals
         track_signals = {"time": [], "isHigh": [], "isLow": [], "range": [], "actualPeak":[]}
@@ -147,7 +147,7 @@ class Indicators:
             lod = todays_candles.iloc[0:index]["low"].min()
             
             # Check for higher high reversal
-            top_range = hod - atr
+            top_range = hod - split_atr
             if each_candle["high"] > top_range and each_candle["low"] < top_range and each_candle["open"] < top_range:
                 track_signals["time"].append(each_candle["time"])
                 track_signals["isHigh"].append(True)
@@ -156,7 +156,7 @@ class Indicators:
                 track_signals["actualPeak"].append(hod)
 
             # Check for lower low reversal
-            bottom_range = lod + atr
+            bottom_range = lod + split_atr
             if each_candle["low"] < bottom_range and each_candle["high"] > bottom_range and each_candle["open"] > bottom_range:
                 track_signals["time"].append(each_candle["time"])
                 track_signals["isHigh"].append(False)
