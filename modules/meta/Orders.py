@@ -39,9 +39,67 @@ class Orders:
     
 
     def close_all_positions(self):
+        """
+        Closes all currently open positions.
+
+        Description:
+        ------------
+        This method retrieves all currently open positions using MetaTrader 5 (MT5) and attempts to close each one.
+        It calls the `close_single_position` method for every open position, passing the position object to be closed.
+
+        Usage:
+        ------
+        - This method closes all open positions, regardless of the symbol.
+        - It is useful when you need to exit all trades immediately, such as in cases of market volatility, or to stop all trading activity.
+
+        Example:
+        --------
+        self.close_all_positions()
+
+        Note:
+        -----
+        This method assumes that the `close_single_position` method is implemented and 
+        properly handles the logic for closing individual positions.
+
+        """
         positions = mt5.positions_get()
         for obj in positions: 
             self.close_single_position(obj=obj)
+    
+    def close_all_selected_position(self, symbol_list:list):
+        """
+        Closes all open positions for the given list of symbols.
+
+        Parameters:
+        ----------
+        symbol_list : list
+            A list of symbol names (strings) for which open positions should be closed.
+
+        Description:
+        ------------
+        This method retrieves all currently open positions using MetaTrader 5 (MT5) and iterates through them.
+        If a position's symbol matches any of the symbols in the provided `symbol_list`, it calls 
+        the `close_single_position` method to close that particular position.
+
+        Usage:
+        ------
+        - Pass a list of symbols (e.g., ['EURUSD', 'GBPUSD']) that you want to close positions for.
+        - The method will close only those positions with symbols present in the `symbol_list`.
+
+        Example:
+        --------
+        self.close_all_selected_position(['EURUSD', 'GBPUSD'])
+
+        Note:
+        -----
+        This method assumes that the `close_single_position` method is implemented and 
+        properly handles the logic of closing individual positions.
+
+        """
+        positions = mt5.positions_get()
+        for obj in positions:
+            if obj.symbol in symbol_list:
+                self.close_single_position(obj=obj)
 
 
     def cancel_single_pending_order(self, active_order):
@@ -174,6 +232,7 @@ class Orders:
                 print(f"{symbol.ljust(12)}: {Directions.LONG} -  Waiting for signal strength...")
                 return False
 
+    @DeprecationWarning
     def long_waited_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
         entry_price = self.prices.get_entry_price(symbol=symbol)
 
@@ -203,7 +262,7 @@ class Orders:
                 except Exception as e:
                     print(f"{symbol.ljust(12)}: {e}")
 
-
+    @DeprecationWarning
     def long_waited_prev_candle_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
         entry_price = self.prices.get_entry_price(symbol=symbol)
         prev_candle_low = self.wrapper.get_previous_candle(symbol=symbol, timeframe=trading_timeframe)['low']
@@ -297,6 +356,7 @@ class Orders:
                 print(f"{symbol.ljust(12)}: {Directions.SHORT} - Waiting for signal strength...")
                 return False
 
+    @DeprecationWarning
     def short_waited_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
         entry_price = self.prices.get_entry_price(symbol)
         
@@ -326,7 +386,7 @@ class Orders:
                 except Exception as e:
                     print(f"{symbol.ljust(12)}: {e}")
 
-
+    @DeprecationWarning
     def short_waited_prev_candle_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int) -> bool:
         entry_price = self.prices.get_entry_price(symbol)
         prev_candle_high = self.wrapper.get_previous_candle(symbol=symbol, timeframe=trading_timeframe)['high']

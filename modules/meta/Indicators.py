@@ -117,6 +117,8 @@ class Indicators:
     def get_three_cdl_reversal_points(self, symbol:str, timeframe:int=60, start_candle:int=1) -> pd.DataFrame:
         today_candles = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
 
+        hod, lod = self.get_today_high_low(symbol=symbol)
+
         df_dict = {"time":[], "type":[], "value":[]}
 
         if len(today_candles) >= 3:
@@ -134,11 +136,14 @@ class Indicators:
                     df_dict["time"].append(middle_candle["time"])
                     df_dict["type"].append("low")
                     df_dict["value"].append(middle_candle["low"])
+                    df_dict["peak_level"].append(lod >= middle_candle["low"])
+
                 
                 if (start_cdl_body > 0) and (end_cdl_body < 0) and (end_candle["low"] < middle_candle["low"]) and (start_candle["low"] < middle_candle["low"]):
                     df_dict["time"].append(middle_candle["time"])
                     df_dict["type"].append("high")
                     df_dict["value"].append(middle_candle["high"])
+                    df_dict["peak_level"].append(hod >= middle_candle["high"])
         
         return pd.DataFrame(df_dict)
 
