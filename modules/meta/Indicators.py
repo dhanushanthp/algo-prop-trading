@@ -135,7 +135,7 @@ class Indicators:
         atr = self.get_atr(symbol=symbol, timeframe=timeframe) / atr_split
         
         # Initialize a dictionary to track signals
-        track_signals = {"time": [], "isHigh": [], "isLow": [], "range": []}
+        track_signals = {"time": [], "isHigh": [], "isLow": [], "range": [], "actualPeak":[]}
         
         # Get today's candles data
         todays_candles: pd.DataFrame = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
@@ -152,6 +152,7 @@ class Indicators:
                 track_signals["isHigh"].append(True)
                 track_signals["isLow"].append(False)
                 track_signals["range"].append(hod - atr)
+                track_signals["actualPeak"].append(hod)
             
             # Check for lower low reversal
             if each_candle["low"] < lod + atr and each_candle["high"] > lod + atr and each_candle["open"] > lod + atr:
@@ -159,6 +160,7 @@ class Indicators:
                 track_signals["isHigh"].append(False)
                 track_signals["isLow"].append(True)
                 track_signals["range"].append(lod + atr)
+                track_signals["actualPeak"].append(lod)
         
         # Return the signals as a DataFrame
         return pd.DataFrame(track_signals)
