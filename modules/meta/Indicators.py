@@ -143,23 +143,25 @@ class Indicators:
         # Iterate over each candle
         for index, each_candle in todays_candles.iterrows():
             # Update high of the day (HOD) and low of the day (LOD) up to the current candle
-            # hod = todays_candles.iloc[0:index]["high"].max()
-            # lod = todays_candles.iloc[0:index]["low"].min()
+            hod = todays_candles.iloc[0:index]["high"].max()
+            lod = todays_candles.iloc[0:index]["low"].min()
             
             # Check for higher high reversal
-            if each_candle["high"] > hod - atr and each_candle["low"] < hod - atr and each_candle["open"] < hod - atr:
+            top_range = hod - atr
+            if each_candle["high"] > top_range and each_candle["low"] < top_range and each_candle["open"] < top_range:
                 track_signals["time"].append(each_candle["time"])
                 track_signals["isHigh"].append(True)
                 track_signals["isLow"].append(False)
-                track_signals["range"].append(hod - atr)
+                track_signals["range"].append(top_range)
                 track_signals["actualPeak"].append(hod)
-            
+
             # Check for lower low reversal
-            if each_candle["low"] < lod + atr and each_candle["high"] > lod + atr and each_candle["open"] > lod + atr:
+            bottom_range = lod + atr
+            if each_candle["low"] < bottom_range and each_candle["high"] > bottom_range and each_candle["open"] > bottom_range:
                 track_signals["time"].append(each_candle["time"])
                 track_signals["isHigh"].append(False)
                 track_signals["isLow"].append(True)
-                track_signals["range"].append(lod + atr)
+                track_signals["range"].append(bottom_range)
                 track_signals["actualPeak"].append(lod)
         
         # Return the signals as a DataFrame
