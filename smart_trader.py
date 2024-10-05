@@ -314,6 +314,22 @@ class SmartTrader():
             if self.enable_breakeven:
                 self.risk_manager.breakeven(profit_factor=1)
 
+            if "PEAK_REVERSAL" in self.systems and self.is_market_open:
+                postions_to_close = []
+                active_positions = self.wrapper.get_all_active_positions(raw=True)
+                for active_position in active_positions:
+                    possible_exit = self.strategies.get_peak_level_revesals(symbol=active_position.symbol, timeframe=self.trading_timeframe)
+                    active_position_direction = active_position.type
+
+                    if possible_exit == Directions.LONG and active_position_direction == 1:
+                        postions_to_close.append(active_position_direction.symbol)
+                    
+                    if possible_exit == Directions.SHORT and active_position_direction == 0:
+                        postions_to_close.append(active_position_direction.symbol)
+                
+                self.orders.close_all_selected_position(symbol_list=postions_to_close)
+
+
             if self.is_market_close:
                 # Don't close the trades on market close if it's more than 4 hour time frame
                 if self.trading_timeframe < 240:
@@ -424,6 +440,9 @@ class SmartTrader():
 
                                 case "4H_CLOSE_DIR":
                                     trade_direction = self.strategies.four_hour_close(symbol=symbol)
+                                
+                                case "PEAK_REVERSAL":
+                                    trade_direction = self.strategies.get_peak_level_revesals(symbol=symbol, timeframe=self.trading_timeframe)
                                 
                                 case "SINGLE_SYMBOL":
                                     print(f"{'Selected Symb'.ljust(20)}: {util.cl(symbol)}")

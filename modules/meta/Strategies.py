@@ -3,7 +3,7 @@ from modules.meta.wrapper import Wrapper
 from modules.meta import util
 from modules.meta.Indicators import Indicators
 from typing import Dict, Tuple
-
+import pandas as pd
 
 class Strategies:
     def __init__(self, wrapper:Wrapper, indicators:Indicators):
@@ -86,6 +86,24 @@ class Strategies:
 
         print("short")
         print(short_levels)
+
+
+    def get_peak_level_revesals(self, symbol:str, timeframe:int) -> Directions:
+        peak_signals = self.indicators.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe)
+        current_price = self.indicators.prices.get_entry_price(symbol=symbol)
+
+        if len(peak_signals) > 2:
+            last_signal = peak_signals.iloc[-1]
+            previous_signal = peak_signals.iloc[-2]
+
+            if last_signal["isHigh"] and previous_signal["isHigh"] and (last_signal["range"] == previous_signal["range"]):
+                if current_price > last_signal["range"]:
+                    return Directions.SHORT
+                
+            if last_signal["isLow"] and previous_signal["isLow"] and (last_signal["range"] == previous_signal["range"]):
+                if current_price < last_signal["range"]:
+                    return Directions.LONG
+
 
     def get_three_candle_reverse(self, symbol:str, timeframe:int, start_candle=1, ignore_body:bool=False) -> Directions:
         """
@@ -854,6 +872,17 @@ if __name__ == "__main__":
             else:
                 symbol = sys.argv[4]
                 print(strat_obj.get_four_candle_pullback(symbol=symbol, timeframe=timeframe))
+        
+        case "PEAK_REVERSAL":
+            # python modules\meta\Strategies.py PEAK_REVERSAL y 15
+            if batch == "y":
+                for symbol in curr.master_currencies:
+                    direction = strat_obj.get_peak_level_revesals(symbol=symbol, timeframe=timeframe)
+                    if direction:
+                        print(symbol, ": ", direction)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.get_peak_level_revesals(symbol=symbol, timeframe=timeframe))
 
         case "4CDL_REV_EXT":
             # python modules\meta\Strategies.py 4CDL_REV_EXT y 60

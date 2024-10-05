@@ -94,7 +94,7 @@ class Indicators:
                     return True
         return False
 
-    def get_three_candle_strike_data_points(self, symbol:str, timeframe:int, start_candle=1, ignore_body:bool=False) -> Directions:
+    def get_three_candle_strike_data_points(self, symbol:str, timeframe:int, start_candle=1, ignore_body:bool=False) -> bool:
         """
         This function checks if there are three consecutive candles in the same direction for a given symbol and timeframe.
 
@@ -114,12 +114,62 @@ class Indicators:
             has_three_cdls = self.has_three_consecutive_same_direction(previous_bars["direction"].tolist())
             return has_three_cdls
 
+    def higher_high_lower_low_reversal(self, symbol: str, timeframe: int, start_candle: int = 1, atr_split: int = 2) -> pd.DataFrame:
+        """
+        Identify higher high and lower low reversals based on ATR Range.
+        
+        Parameters:
+        symbol (str): The trading symbol.
+        timeframe (int): The timeframe for the candles.
+        start_candle (int): The starting candle index.
+        atr_split (int): The factor to split the ATR.
+        
+        Returns:
+        pd.DataFrame: DataFrame containing the reversal signals.
+        """
+        
+        # Get today's high and low
+        hod, lod = self.get_today_high_low(symbol=symbol, start_candle=start_candle)
+        
+        # Calculate ATR and split it by the given factor
+        atr = self.get_atr(symbol=symbol, timeframe=timeframe) / atr_split
+        
+        # Initialize a dictionary to track signals
+        track_signals = {"time": [], "isHigh": [], "isLow": [], "range": []}
+        
+        # Get today's candles data
+        todays_candles: pd.DataFrame = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
+        
+        # Iterate over each candle
+        for index, each_candle in todays_candles.iterrows():
+            # Update high of the day (HOD) and low of the day (LOD) up to the current candle
+            # hod = todays_candles.iloc[0:index]["high"].max()
+            # lod = todays_candles.iloc[0:index]["low"].min()
+            
+            # Check for higher high reversal
+            if each_candle["high"] > hod - atr and each_candle["low"] < hod - atr and each_candle["open"] < hod - atr:
+                track_signals["time"].append(each_candle["time"])
+                track_signals["isHigh"].append(True)
+                track_signals["isLow"].append(False)
+                track_signals["range"].append(hod - atr)
+            
+            # Check for lower low reversal
+            if each_candle["low"] < lod + atr and each_candle["high"] > lod + atr and each_candle["open"] > lod + atr:
+                track_signals["time"].append(each_candle["time"])
+                track_signals["isHigh"].append(False)
+                track_signals["isLow"].append(True)
+                track_signals["range"].append(lod + atr)
+        
+        # Return the signals as a DataFrame
+        return pd.DataFrame(track_signals)
+
+
     def get_three_cdl_reversal_points(self, symbol:str, timeframe:int=60, start_candle:int=1) -> pd.DataFrame:
         today_candles = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
 
-        hod, lod = self.get_today_high_low(symbol=symbol)
+        hod, lod = self.get_today_high_low(symbol=symbol, start_candle=2)
 
-        df_dict = {"time":[], "type":[], "value":[]}
+        df_dict = {"time":[], "type":[], "value":[], "peak_level":[]}
 
         if len(today_candles) >= 3:
             today_candles = today_candles.value_counts()
@@ -143,7 +193,7 @@ class Indicators:
                     df_dict["time"].append(middle_candle["time"])
                     df_dict["type"].append("high")
                     df_dict["value"].append(middle_candle["high"])
-                    df_dict["peak_level"].append(hod >= middle_candle["high"])
+                    df_dict["peak_level"].append(hod <= middle_candle["high"])
         
         return pd.DataFrame(df_dict)
 
@@ -369,7 +419,7 @@ class Indicators:
         return retracement_levels
         
     
-    def get_today_high_low(self, symbol) -> Tuple[float, float]:
+    def get_today_high_low(self, symbol, start_candle=1) -> Tuple[float, float]:
         """
         Retrieves the highest and lowest prices for today's trading session for a given symbol.
 
@@ -385,7 +435,7 @@ class Indicators:
         Tuple[float, float]: A tuple containing the highest and lowest prices for today's trading session.
                             Returns (None, None) if no data is available.
         """
-        previous_bars = self.wrapper.get_todays_candles(symbol=symbol, timeframe=5, start_candle=1)
+        previous_bars = self.wrapper.get_todays_candles(symbol=symbol, timeframe=5, start_candle=start_candle)
         if not previous_bars.empty:
             first_bar = previous_bars.iloc[0]
             # Ignore the opening price flutations by seeting the high and low to open and close prices.
@@ -717,3 +767,9 @@ if __name__ == "__main__":
             timeframe = int(sys.argv[3])
             print(indi_obj.get_three_cdl_reversal_points(symbol=symbol, timeframe=timeframe))
             print(indi_obj.get_three_candle_strike_data_points(symbol=symbol, timeframe=timeframe))
+        
+        case "high_low_range_hunt":
+            # python modules/meta/Indicators.py high_low_range_hunt AUDUSD 15
+            symbol = sys.argv[2]
+            timeframe = int(sys.argv[3])
+            print(indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe))

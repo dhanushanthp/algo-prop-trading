@@ -20,7 +20,7 @@ set max_target_exit=yes
 
 REM Strategy and System
 set strategy=BREAK
-set systems=3CDL_REV
+set systems=PEAK_REVERSAL
 
 REM Security
 set security=FOREX
