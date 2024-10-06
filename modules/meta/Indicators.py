@@ -143,8 +143,8 @@ class Indicators:
         # Iterate over each candle
         for index, each_candle in todays_candles.iterrows():
             # Update high of the day (HOD) and low of the day (LOD) up to the current candle
-            hod = todays_candles.iloc[0:index]["high"].max()
-            lod = todays_candles.iloc[0:index]["low"].min()
+            # hod = todays_candles.iloc[0:index]["high"].max()
+            # lod = todays_candles.iloc[0:index]["low"].min()
             
             # Check for higher high reversal
             top_range = hod - split_atr
@@ -776,4 +776,5 @@ if __name__ == "__main__":
             # python modules/meta/Indicators.py high_low_range_hunt AUDUSD 15
             symbol = sys.argv[2]
             timeframe = int(sys.argv[3])
-            print(indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe))
+            split = int(sys.argv[4])
+            print(indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split))
