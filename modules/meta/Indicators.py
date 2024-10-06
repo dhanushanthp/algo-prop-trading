@@ -773,7 +773,7 @@ if __name__ == "__main__":
             print(indi_obj.get_three_candle_strike_data_points(symbol=symbol, timeframe=timeframe))
         
         case "high_low_range_hunt":
-            # python modules/meta/Indicators.py high_low_range_hunt AUDUSD 15
+            # python modules/meta/Indicators.py high_low_range_hunt AUDUSD 15 2
             symbol = sys.argv[2]
             timeframe = int(sys.argv[3])
             split = int(sys.argv[4])

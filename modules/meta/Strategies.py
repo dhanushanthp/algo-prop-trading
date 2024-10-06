@@ -91,17 +91,18 @@ class Strategies:
     def get_peak_level_revesals(self, symbol:str, timeframe:int) -> Directions:
         peak_signals = self.indicators.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe)
         current_price = self.indicators.prices.get_entry_price(symbol=symbol)
+        current_candle_open = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=0)["open"]
 
         if len(peak_signals) > 2:
             last_signal = peak_signals.iloc[-1]
             previous_signal = peak_signals.iloc[-2]
 
             if last_signal["isHigh"] and previous_signal["isHigh"] and (last_signal["range"] == previous_signal["range"]):
-                if current_price > last_signal["range"]:
+                if current_price > last_signal["range"] and current_candle_open < last_signal["range"]:
                     return Directions.SHORT
                 
             if last_signal["isLow"] and previous_signal["isLow"] and (last_signal["range"] == previous_signal["range"]):
-                if current_price < last_signal["range"]:
+                if current_price < last_signal["range"]  and current_candle_open > last_signal["range"]:
                     return Directions.LONG
 
 
