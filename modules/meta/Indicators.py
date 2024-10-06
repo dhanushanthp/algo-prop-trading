@@ -777,4 +777,24 @@ if __name__ == "__main__":
             symbol = sys.argv[2]
             timeframe = int(sys.argv[3])
             split = int(sys.argv[4])
-            print(indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split))
+            import modules.meta.Currencies as curr
+            for symbol in curr.master_currencies:
+                peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split)
+                
+                if len(peak_signals) >= 2:
+                    last_signal = peak_signals.iloc[-1]
+                    previous_signal = peak_signals.iloc[-2]
+
+                    if last_signal["isHigh"] and previous_signal["isHigh"]:
+                        print(symbol)
+                        print("HIGH")
+                        print(peak_signals)
+                        print()
+                    
+                    if last_signal["isLow"] and previous_signal["isLow"]:
+                        print(symbol)
+                        print("LOW")
+                        print(peak_signals)
+                        print()
+
+                    
