@@ -322,10 +322,10 @@ class SmartTrader():
                     active_position_direction = active_position.type
 
                     if possible_exit == Directions.LONG and active_position_direction == 1:
-                        postions_to_close.append(active_position_direction.symbol)
+                        postions_to_close.append(active_position.symbol)
                     
                     if possible_exit == Directions.SHORT and active_position_direction == 0:
-                        postions_to_close.append(active_position_direction.symbol)
+                        postions_to_close.append(active_position.symbol)
                 
                 self.orders.close_all_selected_position(symbol_list=postions_to_close)
 
