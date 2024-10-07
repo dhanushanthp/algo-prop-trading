@@ -97,11 +97,11 @@ class Strategies:
             last_signal = peak_signals.iloc[-1]
             previous_signal = peak_signals.iloc[-2]
 
-            if last_signal["isHigh"] and previous_signal["isHigh"] and (last_signal["range"] == previous_signal["range"]):
+            if (last_signal["reversal_at"] == previous_signal["reversal_at"] == "high") and (last_signal["range"] == previous_signal["range"]):
                 if current_price > last_signal["range"] and current_candle_open < last_signal["range"]:
                     return Directions.SHORT
                 
-            if last_signal["isLow"] and previous_signal["isLow"] and (last_signal["range"] == previous_signal["range"]):
+            if (last_signal["reversal_at"] == previous_signal["reversal_at"] == "low") and (last_signal["range"] == previous_signal["range"]):
                 if current_price < last_signal["range"]  and current_candle_open > last_signal["range"]:
                     return Directions.LONG
 

@@ -135,7 +135,7 @@ class Indicators:
         split_atr = self.get_atr(symbol=symbol, timeframe=timeframe) / atr_split
         
         # Initialize a dictionary to track signals
-        track_signals = {"time": [], "isHigh": [], "isLow": [], "range": [], "actualPeak":[]}
+        track_signals = {"time": [], "reversal_at": [], "range": [], "actualPeak":[]}
         
         # Get today's candles data
         todays_candles: pd.DataFrame = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
@@ -163,15 +163,13 @@ class Indicators:
             if top_range > bottom_range:
                 if each_candle["high"] > top_range and each_candle["low"] < top_range:
                     track_signals["time"].append(each_candle["time"])
-                    track_signals["isHigh"].append(True)
-                    track_signals["isLow"].append(False)
+                    track_signals["reversal_at"].append("high")
                     track_signals["range"].append(top_range)
                     track_signals["actualPeak"].append(hod)
 
                 if each_candle["low"] < bottom_range and each_candle["high"] > bottom_range:
                     track_signals["time"].append(each_candle["time"])
-                    track_signals["isHigh"].append(False)
-                    track_signals["isLow"].append(True)
+                    track_signals["reversal_at"].append("low")
                     track_signals["range"].append(bottom_range)
                     track_signals["actualPeak"].append(lod)
         
@@ -799,12 +797,12 @@ if __name__ == "__main__":
                     last_signal = peak_signals.iloc[-1]
                     previous_signal = peak_signals.iloc[-2]
 
-                    if last_signal["isHigh"] and previous_signal["isHigh"]:
+                    if last_signal["reversal_at"] == previous_signal["reversal_at"] == "high" and last_signal["range"] == previous_signal["range"]:
                         signals["symbol"].append(symbol)
                         signals["signal"].append("SHORT")
                         signals["level"].append(last_signal["range"])
                     
-                    if last_signal["isLow"] and previous_signal["isLow"]:
+                    if last_signal["reversal_at"] == previous_signal["reversal_at"] == "low" and last_signal["range"] == previous_signal["range"]:
                         signals["symbol"].append(symbol)
                         signals["signal"].append("LONG")
                         signals["level"].append(last_signal["range"])
@@ -818,6 +816,7 @@ if __name__ == "__main__":
             split = int(sys.argv[3])
             symbol = sys.argv[4]
             peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split, testing=True)
+            peak_signals = peak_signals.map(lambda x: "" if x==False else x)
             print(peak_signals)
 
 
