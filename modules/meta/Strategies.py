@@ -93,7 +93,7 @@ class Strategies:
         current_price = self.indicators.prices.get_entry_price(symbol=symbol)
         current_candle_open = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=0)["open"]
 
-        if len(peak_signals) > 2:
+        if len(peak_signals) >= 2:
             last_signal = peak_signals.iloc[-1]
             previous_signal = peak_signals.iloc[-2]
 
