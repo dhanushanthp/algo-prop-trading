@@ -773,11 +773,14 @@ if __name__ == "__main__":
             print(indi_obj.get_three_candle_strike_data_points(symbol=symbol, timeframe=timeframe))
         
         case "high_low_range_hunt":
-            # python modules/meta/Indicators.py high_low_range_hunt AUDUSD 15 2
-            symbol = sys.argv[2]
-            timeframe = int(sys.argv[3])
-            split = int(sys.argv[4])
+            # python modules/meta/Indicators.py high_low_range_hunt 15 2
+            timeframe = int(sys.argv[2])
+            split = int(sys.argv[3])
+
+            # symbol = sys.argv[4]
+            
             import modules.meta.Currencies as curr
+            signals = {"symbol":[], "signal":[], "level":[]}
             for symbol in curr.get_symbols():
                 peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split)
 
@@ -786,15 +789,25 @@ if __name__ == "__main__":
                     previous_signal = peak_signals.iloc[-2]
 
                     if last_signal["isHigh"] and previous_signal["isHigh"]:
-                        print(symbol)
-                        print("HIGH")
-                        print(peak_signals)
-                        print()
+                        signals["symbol"].append(symbol)
+                        signals["signal"].append("SHORT")
+                        signals["level"].append(last_signal["range"])
                     
                     if last_signal["isLow"] and previous_signal["isLow"]:
-                        print(symbol)
-                        print("LOW")
-                        print(peak_signals)
-                        print()
+                        signals["symbol"].append(symbol)
+                        signals["signal"].append("LONG")
+                        signals["level"].append(last_signal["range"])
+            
+            df = pd.DataFrame(signals)
+            print(df.sort_values("symbol"))
+        
+        case "high_low_range_hunt_single":
+            # python modules/meta/Indicators.py high_low_range_hunt_single 15 2 XAUUSD
+            timeframe = int(sys.argv[2])
+            split = int(sys.argv[3])
+            symbol = sys.argv[4]
+            peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split)
+            print(peak_signals)
+
 
                     
