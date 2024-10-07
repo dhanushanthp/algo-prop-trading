@@ -147,23 +147,33 @@ class Indicators:
                 hod = todays_candles.iloc[0:index]["high"].max()
                 lod = todays_candles.iloc[0:index]["low"].min()
             
-            # Check for higher high reversal
+            # Check for higher high reversal, If we are taking of the the open condition, then we need to have the max number trade limit
             top_range = hod - split_atr
-            if each_candle["high"] > top_range and each_candle["low"] < top_range and each_candle["open"] < top_range:
-                track_signals["time"].append(each_candle["time"])
-                track_signals["isHigh"].append(True)
-                track_signals["isLow"].append(False)
-                track_signals["range"].append(top_range)
-                track_signals["actualPeak"].append(hod)
-
             # Check for lower low reversal
             bottom_range = lod + split_atr
-            if each_candle["low"] < bottom_range and each_candle["high"] > bottom_range and each_candle["open"] > bottom_range:
-                track_signals["time"].append(each_candle["time"])
-                track_signals["isHigh"].append(False)
-                track_signals["isLow"].append(True)
-                track_signals["range"].append(bottom_range)
-                track_signals["actualPeak"].append(lod)
+            
+            """
+            I was considering adding candle-based conditions, like having the open price fall below or above a certain range. 
+            However, let's keep the indicator focused purely on price movements, without being tied to a specific candle timeframe. 
+            For instance, if the timeframe is switched to 5 minutes, it would remain purely based on price movement. Every 15 seconds, 
+            during each iteration, we would check the high and low values, without considering the candle's open or close prices.
+            For now, we're sticking with a 15-minute timeframe to avoid too many checks
+            """
+            # This condition avoid the intersection of the ranges, Where the candle movement is less.
+            if top_range > bottom_range:
+                if each_candle["high"] > top_range and each_candle["low"] < top_range:
+                    track_signals["time"].append(each_candle["time"])
+                    track_signals["isHigh"].append(True)
+                    track_signals["isLow"].append(False)
+                    track_signals["range"].append(top_range)
+                    track_signals["actualPeak"].append(hod)
+
+                if each_candle["low"] < bottom_range and each_candle["high"] > bottom_range:
+                    track_signals["time"].append(each_candle["time"])
+                    track_signals["isHigh"].append(False)
+                    track_signals["isLow"].append(True)
+                    track_signals["range"].append(bottom_range)
+                    track_signals["actualPeak"].append(lod)
         
         # Return the signals as a DataFrame
         return pd.DataFrame(track_signals)
