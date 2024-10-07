@@ -314,20 +314,20 @@ class SmartTrader():
             if self.enable_breakeven:
                 self.risk_manager.breakeven(profit_factor=1)
 
-            if "PEAK_REVERSAL" in self.systems and self.is_market_open:
-                postions_to_close = []
-                active_positions = self.wrapper.get_all_active_positions(raw=True)
-                for active_position in active_positions:
-                    possible_exit = self.strategies.get_peak_level_revesals(symbol=active_position.symbol, timeframe=self.trading_timeframe)
-                    active_position_direction = active_position.type
+            # if "PEAK_REVERSAL" in self.systems and self.is_market_open:
+            #     postions_to_close = []
+            #     active_positions = self.wrapper.get_all_active_positions(raw=True)
+            #     for active_position in active_positions:
+            #         possible_exit = self.strategies.get_peak_level_revesals(symbol=active_position.symbol, timeframe=self.trading_timeframe)
+            #         active_position_direction = active_position.type
 
-                    if possible_exit == Directions.LONG and active_position_direction == 1:
-                        postions_to_close.append(active_position.symbol)
+            #         if possible_exit == Directions.LONG and active_position_direction == 1:
+            #             postions_to_close.append(active_position.symbol)
                     
-                    if possible_exit == Directions.SHORT and active_position_direction == 0:
-                        postions_to_close.append(active_position.symbol)
+            #         if possible_exit == Directions.SHORT and active_position_direction == 0:
+            #             postions_to_close.append(active_position.symbol)
                 
-                self.orders.close_all_selected_position(symbol_list=postions_to_close)
+            #     self.orders.close_all_selected_position(symbol_list=postions_to_close)
 
 
             if self.is_market_close:
