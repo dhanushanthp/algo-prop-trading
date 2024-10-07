@@ -114,7 +114,7 @@ class Indicators:
             has_three_cdls = self.has_three_consecutive_same_direction(previous_bars["direction"].tolist())
             return has_three_cdls
 
-    def higher_high_lower_low_reversal(self, symbol: str, timeframe: int, start_candle: int = 1, atr_split: int = 2) -> pd.DataFrame:
+    def higher_high_lower_low_reversal(self, symbol: str, timeframe: int, start_candle: int = 1, atr_split: int = 2, testing:bool=False) -> pd.DataFrame:
         """
         Identify higher high and lower low reversals based on ATR Range.
         
@@ -142,9 +142,10 @@ class Indicators:
         
         # Iterate over each candle
         for index, each_candle in todays_candles.iterrows():
-            # Update high of the day (HOD) and low of the day (LOD) up to the current candle
-            # hod = todays_candles.iloc[0:index]["high"].max()
-            # lod = todays_candles.iloc[0:index]["low"].min()
+            # Update high of the day (HOD) and low of the day (LOD) up to the current candle for testing purpose, otherwise use the overall high and low of the day
+            if testing:
+                hod = todays_candles.iloc[0:index]["high"].max()
+                lod = todays_candles.iloc[0:index]["low"].min()
             
             # Check for higher high reversal
             top_range = hod - split_atr
@@ -782,7 +783,7 @@ if __name__ == "__main__":
             import modules.meta.Currencies as curr
             signals = {"symbol":[], "signal":[], "level":[]}
             for symbol in curr.get_symbols():
-                peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split)
+                peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split, testing=True)
 
                 if len(peak_signals) >= 2:
                     last_signal = peak_signals.iloc[-1]
@@ -806,7 +807,7 @@ if __name__ == "__main__":
             timeframe = int(sys.argv[2])
             split = int(sys.argv[3])
             symbol = sys.argv[4]
-            peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split)
+            peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split, testing=True)
             print(peak_signals)
 
 
