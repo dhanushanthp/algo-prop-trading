@@ -149,7 +149,7 @@ class RiskManager:
         return list_to_close
 
 
-    def get_target_ratio(self, symbol:str, atr_timeframe:int=15) -> float:
+    def get_target_ratio(self, symbol:str, atr_timeframe:int=15, by_type="by_atr_spread") -> float:
         """
         Calculate the target ratio based on the Average True Range (ATR) and the range of the previous day's high and low prices.
 
@@ -160,14 +160,24 @@ class RiskManager:
         Returns:
             float: The target ratio calculated as the ratio of the previous day's range to the ATR. Returns 1 if ATR is not available
         """
-        yesterday_range = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
-        yesterday_range = abs(yesterday_range["high"] - yesterday_range["low"])
-        atr = self.indicators.get_atr(symbol=symbol, timeframe=atr_timeframe)
-        if atr:
-            target_factor = round(yesterday_range/atr)
-            return target_factor
+        if by_type == "default":
+            return self.target_ratio
+        elif by_type == "atr_day_vs_selected":
+            return round(self.indicators.get_atr(symbol=symbol, timeframe=1440)/self.indicators.get_atr(symbol=symbol, timeframe=atr_timeframe))
+        if by_type == "by_atr_spread":
+            get_atr = self.indicators.get_atr(symbol=symbol, timeframe=atr_timeframe)
+            spread = self.prices.get_spread(symbol=symbol)
+            ratio = get_atr/spread
+            return round(ratio)
+        else:
+            yesterday_range = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
+            yesterday_range = abs(yesterday_range["high"] - yesterday_range["low"])
+            atr = self.indicators.get_atr(symbol=symbol, timeframe=atr_timeframe)
+            if atr:
+                target_factor = round(yesterday_range/atr)
+                return target_factor
 
-        return 5
+        return 10
     
 
     def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades", max_trades_on_same_direction:int=2) -> Tuple[bool, bool]:
@@ -223,6 +233,25 @@ class RiskManager:
         if multiple_positions == "by_active":
             is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
             # Check the entry validity based on active positions. Same directional trades won't took place at same time.
+            
+            todays_trades = self.wrapper.get_todays_trades()
+            if not todays_trades.empty:
+                traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
+                all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]
+
+                last_traded_time = None
+                if not all_symbol_exist_times.empty:
+                    last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times["time"]))
+                    current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+                    time_gap = (current_time-last_traded_time).total_seconds()/60
+                else:
+                    time_gap = timeframe * 2 # allways max time, kind of constant
+            
+                # Should be less than max trades on a specfic symbol on any direction
+                if time_gap < timeframe:
+                    return False, is_opening_trade 
+                
+            
             active_positions = self.wrapper.get_all_active_positions()
             if active_positions.empty or (symbol not in list(active_positions["symbol"])):
                 return True, is_opening_trade
@@ -243,6 +272,24 @@ class RiskManager:
             is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
             # Check the entry validity based on active positions. Same directional trades won't took place at same time.
             active_positions = self.wrapper.get_all_active_positions()
+            todays_trades = self.wrapper.get_todays_trades()
+
+            if not todays_trades.empty:
+                traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
+                all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]
+
+                last_traded_time = None
+                if not all_symbol_exist_times.empty:
+                    last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times["time"]))
+                    current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+                    time_gap = (current_time-last_traded_time).total_seconds()/60
+                else:
+                    time_gap = timeframe * 2 # allways max time, kind of constant
+            
+                # Should be less than max trades on a specfic symbol on any direction
+                if len(traded_symbol) >= max_trades_on_same_direction or time_gap < timeframe:
+                    return False, is_opening_trade 
+
             if active_positions.empty or (symbol not in list(active_positions["symbol"])):
                 return True, is_opening_trade
             else:
@@ -991,7 +1038,8 @@ if __name__ == "__main__":
             print(obj.close_on_candle_close(timeframe=5))
 
         case "validity":
-            print(obj.check_signal_validity(symbol=test_symbol, trade_direction=Directions.LONG))
+            # python modules\meta\RiskManager.py EURUSD validity
+            print(obj.check_signal_validity(symbol=test_symbol, timeframe=15, trade_direction=Directions.LONG,  multiple_positions="by_active_one_direction", strategy=Directions.BREAK.name))
 
         case "neutral":
             print(obj.neutralizer())
@@ -1002,5 +1050,5 @@ if __name__ == "__main__":
         
         case "target_ratio":
             # python modules\meta\RiskManager.py CADJPY target_ratio
-            for symbol in curr.get_symbols(symbol_selection="PRIMARY"):
-                print(symbol, obj.get_target_ratio(symbol=symbol, atr_timeframe=15))
+            for symbol in curr.get_symbols(symbol_selection="NON-PRIMARY"):
+                print(symbol, obj.get_target_ratio(symbol=symbol, atr_timeframe=15, by_type="by_atr_spread"))

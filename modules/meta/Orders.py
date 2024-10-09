@@ -216,7 +216,7 @@ class Orders:
                             "type": mt5.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
                             "sl": self.prices.round(symbol, entry_price - self.risk_manager.stop_ratio * points_in_stop),
-                            "tp": self.prices.round(symbol, entry_price + self.risk_manager.target_ratio * points_in_stop),
+                            "tp": self.prices.round(symbol, entry_price + self.risk_manager.get_target_ratio(symbol=symbol, atr_timeframe=trading_timeframe) * points_in_stop),
                             # "comment": comment, Some time it failed lengthy string
                             "magic": trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
@@ -340,7 +340,7 @@ class Orders:
                             "type": mt5.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
                             "sl": self.prices.round(symbol, entry_price + self.risk_manager.stop_ratio * points_in_stop),
-                            "tp": self.prices.round(symbol, entry_price - self.risk_manager.target_ratio * points_in_stop),
+                            "tp": self.prices.round(symbol, entry_price - self.risk_manager.get_target_ratio(symbol=symbol, atr_timeframe=trading_timeframe) * points_in_stop),
                             # "comment": comment, Some time it failed lengthy string
                             "magic":trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
