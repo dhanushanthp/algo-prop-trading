@@ -96,15 +96,37 @@ class Strategies:
         if len(peak_signals) >= 2:
             last_signal = peak_signals.iloc[-1]
             previous_signal = peak_signals.iloc[-2]
+            
+            time_gap = last_signal["time"] - previous_signal["time"]
+            time_gap = time_gap.total_seconds() / 60
+
+            # TODO, The first signal start and the end signal with  same range value. the gap should be more thans
 
             if (last_signal["reversal_at"] == previous_signal["reversal_at"] == "high") and (last_signal["range"] == previous_signal["range"]):
-                if current_price > last_signal["range"] and current_candle_open < last_signal["range"]:
+                if current_price > last_signal["range"] and current_candle_open < last_signal["range"] and time_gap > timeframe:
                     return Directions.SHORT
                 
             if (last_signal["reversal_at"] == previous_signal["reversal_at"] == "low") and (last_signal["range"] == previous_signal["range"]):
-                if current_price < last_signal["range"]  and current_candle_open > last_signal["range"]:
+                if current_price < last_signal["range"]  and current_candle_open > last_signal["range"] and time_gap > timeframe:
                     return Directions.LONG
 
+    def get_three_candle_reversal(self, symbol:str, timeframe:int, start_candle:int=0) -> Directions:
+        today_candles = self.wrapper.get_todays_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
+        bid, ask = self.indicators.prices.get_bid_ask(symbol=symbol)
+
+        current_candle = today_candles.iloc[-1]
+        previous_candle = today_candles.iloc[-2]
+        prev2prev_candle = today_candles.iloc[-3]
+        prev3prev_candle = today_candles.iloc[-4]
+
+        # Short Positions
+        if previous_candle["close"] < min(prev2prev_candle["open"], prev2prev_candle["close"]) and prev3prev_candle["open"] <  min(prev2prev_candle["open"], prev2prev_candle["close"]):
+            if current_candle["high"] > max(prev2prev_candle["open"], prev2prev_candle["close"]) and ask > max(prev2prev_candle["open"], prev2prev_candle["close"]):
+                return Directions.SHORT
+        
+        if previous_candle["close"] > max(prev2prev_candle["open"], prev2prev_candle["close"]) and prev3prev_candle["open"] >  max(prev2prev_candle["open"], prev2prev_candle["close"]):
+            if current_candle["low"] < min(prev2prev_candle["open"], prev2prev_candle["close"]) and bid < min(prev2prev_candle["open"], prev2prev_candle["close"]):
+                return Directions.LONG
 
     def get_three_candle_reverse(self, symbol:str, timeframe:int, start_candle=1, ignore_body:bool=False) -> Directions:
         """
@@ -864,15 +886,16 @@ if __name__ == "__main__":
                 print(strat_obj.get_three_candle_strike(symbol=symbol, timeframe=timeframe))
 
         case "4CDL_REV":
-            # python modules\meta\Strategies.py 4CDL_REV y 60
+            # python modules\meta\Strategies.py 4CDL_REV y 60 0
+            start_candle = int(sys.argv[4])
             if batch == "y":
                 for symbol in curr.master_currencies:
-                    direction = strat_obj.get_four_candle_pullback(symbol=symbol, timeframe=timeframe)
+                    direction = strat_obj.get_three_candle_reversal(symbol=symbol, timeframe=timeframe, start_candle=start_candle)
                     if direction:
                         print(symbol, ": ", direction)
             else:
                 symbol = sys.argv[4]
-                print(strat_obj.get_four_candle_pullback(symbol=symbol, timeframe=timeframe))
+                print(strat_obj.get_three_candle_reversal(symbol=symbol, timeframe=timeframe))
         
         case "PEAK_REVERSAL":
             # python modules\meta\Strategies.py PEAK_REVERSAL y 15

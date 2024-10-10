@@ -288,6 +288,21 @@ class Indicators:
     
 
     def is_wick_candle(self, symbol, timeframe, index, ratio:float=0.4):
+        """
+        Determines if a candle is a 'wick candle' based on the body-to-total length ratio.
+
+        A 'wick candle' is defined as a candle where the body length is less than or equal to
+        a specified ratio of the total candle length.
+
+        Parameters:
+        symbol (str): The symbol for the financial instrument.
+        timeframe (str): The timeframe of the candle (e.g., '1m', '5m', '1h').
+        index (int): The index of the candle in the data series.
+        ratio (float, optional): The maximum body-to-total length ratio to consider a candle as a 'wick candle'. Default is 0.4.
+
+        Returns:
+        bool: True if the candle is a 'wick candle', False otherwise.
+        """
         candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=index)
         body = abs(candle["close"] - candle["open"])
         total_length = candle["high"] - candle["low"]
@@ -753,6 +768,7 @@ if __name__ == "__main__":
             print(indi_obj.solid_candle_direction(symbol=symbol, timeframe=timeframe, index=index))
         
         case "other_candle":
+            # python modules/meta/Indicators.py other_candle AUDUSD 15 1
             symbol = sys.argv[2]
             timeframe = int(sys.argv[3])
             index = int(sys.argv[4])
@@ -818,6 +834,11 @@ if __name__ == "__main__":
             peak_signals = indi_obj.higher_high_lower_low_reversal(symbol=symbol, timeframe=timeframe, atr_split=split, testing=True)
             peak_signals = peak_signals.map(lambda x: "" if x==False else x)
             print(peak_signals)
+            last_signal = peak_signals.iloc[-1]
+            previous_signal = peak_signals.iloc[-2]
+            
+            time_gap = last_signal["time"] - previous_signal["time"]
+            print(time_gap.total_seconds() / 60)
 
 
                     
