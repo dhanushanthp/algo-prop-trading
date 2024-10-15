@@ -4,9 +4,9 @@ set PYTHONPATH=%PYTHONPATH%;%TRADEAU_PATH%
 cd /d %TRADEAU_PATH%
 
 REM Time and Trading
-set start_hour=3
+set start_hour=1
 set atr_check_timeframe=60
-set timeframe=60
+set timeframe=15
 set trades_per_day=100
 
 REM Risk Management
