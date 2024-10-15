@@ -348,7 +348,7 @@ class Strategies:
         return None
 
 
-    def get_four_candle_pullback(self, symbol:str, timeframe:int, extrame=False) -> Directions:
+    def get_four_candle_reversal(self, symbol:str, timeframe:int, extrame=False) -> Directions:
         """
         Determines the directional change based on four-candle pattern analysis.
 
@@ -912,12 +912,12 @@ if __name__ == "__main__":
             # python modules\meta\Strategies.py 4CDL_REV_EXT y 60
             if batch == "y":
                 for symbol in curr.master_currencies:
-                    direction = strat_obj.get_four_candle_pullback(symbol=symbol, timeframe=timeframe, extrame=True)
+                    direction = strat_obj.get_four_candle_reversal(symbol=symbol, timeframe=timeframe, extrame=True)
                     if direction:
                         print(symbol, ": ", direction)
             else:
                 symbol = sys.argv[4]
-                print(strat_obj.get_four_candle_pullback(symbol=symbol, timeframe=timeframe))
+                print(strat_obj.get_four_candle_reversal(symbol=symbol, timeframe=timeframe))
         
         case "DLY_BRK":
             # python modules\meta\Strategies.py DLY_BRK y 60

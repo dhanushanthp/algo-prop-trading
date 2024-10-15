@@ -3,7 +3,8 @@ mt.initialize()
 import time
 import argparse
 import traceback
-
+from datetime import timedelta
+import modules.config as config
 import modules.meta.util as util
 import modules.meta.Currencies as curr
 from modules.meta.RiskManager import RiskManager
@@ -242,14 +243,14 @@ class SmartTrader():
             5. Disables PnL notifications by setting `self.notify_pnl` to `False`.
             6. Marks the initial run as complete by setting `self.is_initial_run` to `False`.
             """
-            if self.is_initial_run:
-                active_position = self.wrapper.get_all_active_positions()
-                today_trades = self.wrapper.get_todays_trades()
-                if active_position.empty and (not today_trades.empty):
-                    self.exited_by_pnl=True
-                    self.notify_pnl = False
-                    self.is_initial_run = False
-                    print(f"\n************* Initial Entry Check: Early Exit by PnL: {self.exited_by_pnl}*************")
+            # if self.is_initial_run:
+            #     active_position = self.wrapper.get_all_active_positions()
+            #     today_trades = self.wrapper.get_todays_trades()
+            #     if active_position.empty and (not today_trades.empty):
+            #         self.exited_by_pnl=True
+            #         self.notify_pnl = False
+            #         self.is_initial_run = False
+            #         print(f"\n************* Initial Entry Check: Early Exit by PnL: {self.exited_by_pnl}*************")
 
             # Print configs and pnl on console
             self.verbose()
@@ -314,21 +315,6 @@ class SmartTrader():
             if self.enable_breakeven:
                 self.risk_manager.breakeven(profit_factor=1)
 
-            # if "PEAK_REVERSAL" in self.systems and self.is_market_open:
-            #     postions_to_close = []
-            #     active_positions = self.wrapper.get_all_active_positions(raw=True)
-            #     for active_position in active_positions:
-            #         possible_exit = self.strategies.get_peak_level_revesals(symbol=active_position.symbol, timeframe=self.trading_timeframe)
-            #         active_position_direction = active_position.type
-
-            #         if possible_exit == Directions.LONG and active_position_direction == 1:
-            #             postions_to_close.append(active_position.symbol)
-                    
-            #         if possible_exit == Directions.SHORT and active_position_direction == 0:
-            #             postions_to_close.append(active_position.symbol)
-                
-            #     self.orders.close_all_selected_position(symbol_list=postions_to_close)
-
 
             if self.is_market_close:
                 # Don't close the trades on market close if it's more than 4 hour time frame
@@ -379,10 +365,10 @@ class SmartTrader():
                                     trade_direction = self.strategies.get_three_candle_reverse(symbol=symbol, 
                                                                                               timeframe=self.trading_timeframe)                 
                                 case "4CDL_PULLBACK":
-                                    trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
+                                    trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)
                                 case "4CDL_PULLBACK_EXT":
-                                    trade_direction = self.strategies.get_four_candle_pullback(symbol=symbol, 
+                                    trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe,
                                                                                             extrame=True)
                                 case "DAILY_HL":
@@ -457,7 +443,7 @@ class SmartTrader():
                                                                                       trade_direction=trade_direction,
                                                                                       strategy=self.risk_manager.strategy,
                                                                                       multiple_positions=self.multiple_positions,
-                                                                                      max_trades_on_same_direction=self.max_trades_on_same_direction)
+                                                                                      max_trades_per_day=self.max_trades_on_same_direction)
                             
                             if self.enable_sec_stop_selection:
                                 # If it's considered as opening trade then choose the primary stop selection else choose secondary
