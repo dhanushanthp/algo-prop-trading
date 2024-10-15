@@ -149,7 +149,7 @@ class RiskManager:
         return list_to_close
 
 
-    def get_target_ratio(self, symbol:str, atr_timeframe:int=15, by_type="by_atr_spread") -> float:
+    def get_target_ratio(self, symbol:str, atr_timeframe:int=15, by_type="default") -> float:
         """
         Calculate the target ratio based on the Average True Range (ATR) and the range of the previous day's high and low prices.
 
@@ -179,237 +179,102 @@ class RiskManager:
 
         return 10
     
-
-    def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_trades", max_trades_on_same_direction:int=2) -> Tuple[bool, bool]:
+    def find_last_trade_time_gap(self, symbol:str, timeframe:int, from_exit_time:bool=True) -> int:
         """
-        Validates a trade signal based on several parameters and trading rules.
+        Finds the time gap in minutes between the current time and the last trade time for a given symbol.
+        
+        This function retrieves today's trades for the given symbol and calculates the time difference between the current time
+        and the last trade's exit or entry time (based on the `from_exit_time` flag). The result is returned in minutes.
+        
+        If there are no trades found for the symbol, a fallback value, which is three times the specified `timeframe`, is returned.
 
         Args:
-            symbol (str): The trading symbol to check the signal for.
-            timeframe (int): The timeframe of the trade signal in minutes.
-            trade_direction (Directions): The direction of the trade (LONG or SHORT).
-            strategy (str): The trading strategy applied, potentially altering trade direction.
-            multiple_positions (str, optional): The rule for handling multiple positions for the same symbol and direction. Defaults to "by_trades".
-                Options include:
-                    - "by_active": Only allows one active position per direction for a symbol.
-                    - "by_active_limit": Limits the number of trades in the same direction for a symbol to a maximum.
-                    - "by_trades": Restricts to one trade per direction per day for a symbol.
-                    - "by_open": Allows additional trades if a specified time gap has passed since the last trade.
-            max_trades_on_same_direction (int, optional): The maximum number of trades allowed in the same direction after closing the current position. Defaults to 2.
+            symbol (str): The symbol (e.g., stock ticker) for which the last trade time gap is calculated.
+            timeframe (int): The default timeframe in minutes used for calculating the fallback time gap.
+            from_exit_time (bool, optional): If True (default), calculates the gap from the last trade's exit time; 
+                                            if False, calculates it from the last trade's entry time.
 
         Returns:
-            Tuple[bool, bool]: 
-                - The first element is True if the trade signal is valid according to the provided criteria, otherwise False.
-                - The second element indicates whether it is an opening trade.
-
-        Raises:
-            None
-
-        This function performs different checks depending on the `multiple_positions` parameter:
-
-        - "by_active": 
-            Validates the signal by checking if there are any active positions in the same direction for the given symbol. If none exist, the signal is valid.
-
-        - "by_active_time_enforced": 
-            Validates the signal by checking if there are any active positions in the same direction for the given symbol. If none exist, the signal is valid also enforce time.
-
-        - "by_active_limit": 
-            Limits the number of trades in the same direction to the `max_trades_on_same_direction` parameter. It checks both active positions and trades made today.
-
-        - "by_trades": 
-            Ensures that only one trade per direction is made per day for a given symbol.
-
-        - "by_open": 
-            Allows trades only if a specified time gap has passed since the last trade for the symbol, calculated using the provided timeframe and a multiplier.
-
-        The function also includes special handling for the 'REVERSE' strategy, where the trade direction is reversed. It fetches active positions and today's trades using the wrapper object and accounts for time zone differences when performing time-based checks.
+            int: The time gap in minutes between the current time and the last trade's time for the symbol.
+                If no trades are found, returns `timeframe * 3` as a fallback.
         """
+        todays_trades = self.wrapper.get_todays_trades()
+
+        if from_exit_time:
+            all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]["time"]
+        else:
+            all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]["time"]
+
+        if not all_symbol_exist_times.empty:
+            last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times))
+            current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+            time_gap = (current_time-last_traded_time).total_seconds()/60
+            return round(time_gap)
+        
+        # Return the highest numbe
+        return timeframe * 3
+
+
+    def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_active_single_direction", max_trades_per_day:int=2) -> Tuple[bool, bool]:
         is_opening_trade = False
 
         if strategy==Directions.REVERSE.name:
             trade_direction = Directions.LONG if trade_direction == Directions.SHORT else Directions.SHORT
         
-
-        if multiple_positions == "by_active":
-            is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
-            # Check the entry validity based on active positions. Same directional trades won't took place at same time.
-            
-            todays_trades = self.wrapper.get_todays_trades()
-            if not todays_trades.empty:
-                traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
-                all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]
-
-                last_traded_time = None
-                if not all_symbol_exist_times.empty:
-                    last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times["time"]))
-                    current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
-                    time_gap = (current_time-last_traded_time).total_seconds()/60
-                else:
-                    time_gap = timeframe * 2 # allways max time, kind of constant
-            
-                # Should be less than max trades on a specfic symbol on any direction
-                if time_gap < timeframe:
-                    return False, is_opening_trade 
-                
-            
+        trade_time_gap = self.find_last_trade_time_gap(symbol=symbol, timeframe=timeframe, from_exit_time=True)
+        
+        if multiple_positions == "by_active_both_direction":
+            is_opening_trade = True
+            # Get all active position
             active_positions = self.wrapper.get_all_active_positions()
+
+            # If there is no active position and the trade time gap exceeds the specified timeframe, 
+            # we skip taking a new position to prevent reacting to sudden price movements (which could 
+            # trigger a stop-loss and immediately open a new position based on the same signal).
             if active_positions.empty or (symbol not in list(active_positions["symbol"])):
-                return True, is_opening_trade
-            else:
-                match trade_direction:
-                    case Directions.LONG:
-                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 0)]
-                        if active_symbol.empty:
-                            # Shoud not have any active Long Positions
-                            return True, is_opening_trade
-
-                    case Directions.SHORT:
-                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 1)]
-                        if active_symbol.empty:
-                            # Shoud not have any active Short Positions
-                            return True, is_opening_trade
-        elif multiple_positions == "by_active_one_direction":
-            is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
-            # Check the entry validity based on active positions. Same directional trades won't took place at same time.
-            active_positions = self.wrapper.get_all_active_positions()
-            todays_trades = self.wrapper.get_todays_trades()
-
-            if not todays_trades.empty:
-                traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
-                all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]
-
-                last_traded_time = None
-                if not all_symbol_exist_times.empty:
-                    last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times["time"]))
-                    current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
-                    time_gap = (current_time-last_traded_time).total_seconds()/60
-                else:
-                    time_gap = timeframe * 2 # allways max time, kind of constant
-            
-                # Should be less than max trades on a specfic symbol on any direction
-                if len(traded_symbol) >= max_trades_on_same_direction or time_gap < timeframe:
-                    return False, is_opening_trade 
-
-            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
-                return True, is_opening_trade
-            else:
-                return False, is_opening_trade
-        elif multiple_positions == "by_active_time_enforced":
-            is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
-            # Check the entry validity based on active positions. Same directional trades won't took place at same time.
-            active_positions = self.wrapper.get_all_active_positions()
-            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
-                return True, is_opening_trade
-            else:
-                # If more than 30 minutes
-                if timeframe == 15:
-                    time_multiplier=4
-                elif timeframe == 30:
-                    time_multiplier=2
-                else:
-                    time_multiplier=1
-
-                todays_trades = self.wrapper.get_todays_trades()
-                all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]["time"]
-
-                last_traded_time = None
-                if not all_symbol_exist_times.empty:
-                    last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times))
-                    current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
-                    time_gap = (current_time-last_traded_time).total_seconds()/60
-                else:
-                    time_gap = timeframe * time_multiplier * 2 # allways max time, kind of constant
-
-                match trade_direction:
-                    case Directions.LONG:
-                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 0)]
-                        if active_symbol.empty and (time_gap > timeframe * time_multiplier):
-                            # Shoud not have any active Long Positions
-                            if last_traded_time:
-                                log_it("RiskManager").info(f"LONG: {symbol}: Time: {time_gap}, lastT: {last_traded_time}, currT: {current_time}")
-                            return True, is_opening_trade
-
-                    case Directions.SHORT:
-                        active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 1)]
-                        if active_symbol.empty and (time_gap > timeframe * time_multiplier):
-                            # Shoud not have any active Short Positions
-                            if last_traded_time:
-                                log_it("RiskManager").info(f"SHORT: {symbol}: Time: {time_gap}, lastT: {last_traded_time}, currT: {current_time}")
-                            return True, is_opening_trade
-        elif multiple_positions == "by_active_limit":
-            todays_trades = self.wrapper.get_todays_trades()
-
-            # Check is it a first trade of the day, So from second trades we can place tight risk, e.g From ATR4H -> ATR4H
-            if todays_trades.empty or (symbol not in todays_trades["symbol"].unique()):
-                is_opening_trade = True
-
-            # Check the entry validity based on active positions. Same directional trades won't took place at same time.
-            active_positions = self.wrapper.get_all_active_positions()
-            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
-                # Check total number of trades by entry, TODO It's a temp fix
-                if todays_trades.empty:
-                    return True, is_opening_trade
-                
-                traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
-                # Should be less than max trades on a specfic symbol
-                if len(traded_symbol) < max_trades_on_same_direction:
+                if trade_time_gap > timeframe:
                     return True, is_opening_trade
             else:
                 match trade_direction:
                     case Directions.LONG:
                         active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 0)]
-                        if active_symbol.empty:
-                            # Check for number of exit traees on same direction
-                            traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
-                            if len(traded_symbol) < max_trades_on_same_direction:
-                                return True, is_opening_trade
+                        if active_symbol.empty and (trade_time_gap > timeframe):
+                            return True, is_opening_trade
+
                     case Directions.SHORT:
                         active_symbol = active_positions[(active_positions["symbol"] == symbol) & (active_positions["type"] == 1)]
-                        if active_symbol.empty:
-                            # Check for number of exit traees on same direction
-                            traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
-                            if len(traded_symbol) < max_trades_on_same_direction:
-                                return True, is_opening_trade
-        elif multiple_positions == "by_trades":
-            # Check 
-            todays_trades = self.wrapper.get_todays_trades()
-            is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
-
-            # If the symbol is not already traded, then take the trade. And it's alloowd only one side per trade for a specific symbol
-            if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
-                return True, is_opening_trade
-            else:
-                match trade_direction:
-                    case Directions.LONG:
-                        traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 0) & (todays_trades["entry"] == 0)]
-                        if traded_symbol.empty:
-                            # Shoud not have any previous trades on Long Direction
+                        if active_symbol.empty and (trade_time_gap > timeframe):
                             return True, is_opening_trade
-                    case Directions.SHORT:
-                        traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["type"] == 1) & (todays_trades["entry"] == 0)]
-                        if traded_symbol.empty:
-                            # Shoud not have any previous trades on Short Direction
-                            return True, is_opening_trade
-        elif multiple_positions == "by_open":
-            todays_trades = self.wrapper.get_todays_trades()
-            is_opening_trade = True # Keep it simple, Consider all trades as opening trade to maintain the risk same
-            
-            if todays_trades.empty or (symbol not in list(todays_trades["symbol"])):
-                return True, is_opening_trade
-            else:
-                last_traded_time = util.get_traded_time(epoch=max(todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]["time"]))
-                current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
-                time_gap = (current_time-last_traded_time).total_seconds()/60
-                
-                # If more than 30 minutes
-                if timeframe == 15:
-                    time_multiplier=4
-                elif timeframe == 30:
-                    time_multiplier=2
-                else:
-                    time_multiplier=1
+        elif multiple_positions == "by_active_single_direction":
+            # Which means one trade at a time, So we just need to check the active trades
+            is_opening_trade = True
+            # Get all active position
+            active_positions = self.wrapper.get_all_active_positions()
 
-                if time_gap > timeframe * time_multiplier:
+            # If there is no active position and the trade time gap exceeds the specified timeframe, 
+            # we skip taking a new position to prevent reacting to sudden price movements (which could 
+            # trigger a stop-loss and immediately open a new position based on the same signal).
+            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
+                if trade_time_gap > timeframe:
+                    return True, is_opening_trade
+        elif multiple_positions == "by_active_single_direction_with_limit":
+            # Which means one trade at a time, So we just need to check the active trades
+            is_opening_trade = True
+            # Get all active position
+            active_positions = self.wrapper.get_all_active_positions()
+
+            # If there is no active position and the trade time gap exceeds the specified timeframe, 
+            # we skip taking a new position to prevent reacting to sudden price movements (which could 
+            # trigger a stop-loss and immediately open a new position based on the same signal).
+            if active_positions.empty or (symbol not in list(active_positions["symbol"])):
+                if trade_time_gap > timeframe:
+                    todays_trades = self.wrapper.get_todays_trades()
+                    if not todays_trades:
+                        traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
+                        # Limit the number of trades by day by symbol regardless of it's direction
+                        if len(todays_trades) < max_trades_per_day:
+                            return True, is_opening_trade
+                        
                     return True, is_opening_trade
 
         return False, is_opening_trade
@@ -1052,3 +917,8 @@ if __name__ == "__main__":
             # python modules\meta\RiskManager.py CADJPY target_ratio
             for symbol in curr.get_symbols(symbol_selection="NON-PRIMARY"):
                 print(symbol, obj.get_target_ratio(symbol=symbol, atr_timeframe=15, by_type="by_atr_spread"))
+        
+        case "time_gap":
+            # python modules\meta\RiskManager.py CADJPY time_gap
+            for symbol in curr.get_symbols():
+                print(symbol, obj.find_last_trade_time_gap(symbol=symbol, timeframe=60))
