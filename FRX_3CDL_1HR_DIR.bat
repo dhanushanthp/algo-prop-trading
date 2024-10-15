@@ -4,33 +4,33 @@ set PYTHONPATH=%PYTHONPATH%;%TRADEAU_PATH%
 cd /d %TRADEAU_PATH%
 
 REM Time and Trading
-set start_hour=1
-set atr_check_timeframe=15
-set timeframe=15
+set start_hour=3
+set atr_check_timeframe=60
+set timeframe=60
 set trades_per_day=100
 
 REM Risk Management
 set account_risk=5.0
+set account_target_ratio=0.2
 set each_position_risk=0.1
-set target_ratio=30.0
-set account_target_ratio=3.0
+set target_ratio=5.0
 set enable_dynamic_position_risk=no
 set max_loss_exit=yes
 set max_target_exit=yes
 
 REM Strategy and System
-set strategy=BREAK
-set systems=PEAK_REVERSAL
+set strategy=REVERSE
+set systems=4CDL_PULLBACK
 
 REM Security
 set security=FOREX
 
 REM Trade Controls
 set enable_trail_stop=no
-set enable_breakeven=no
+set enable_breakeven=yes
 set enable_neutralizer=no
-REM by_active or by_trades or by_open or by_active_limit or by_active_time_enforced or by_active_one_direction
-set multiple_positions=by_active_one_direction
+REM by_active or by_trades or by_open or by_active_limit or by_active_both_direction or by_active_single_direction
+set multiple_positions=by_active_both_direction
 
 set record_pnl=yes
 set close_by_time=no
@@ -42,7 +42,7 @@ REM CANDLE or "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
 set primary_stop_selection=ATR15M
 set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
-set max_trades_on_same_direction=1
+set max_trades_on_same_direction=100
 
 python smart_trader.py ^
     --strategy %strategy% ^
