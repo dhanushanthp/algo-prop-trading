@@ -19,7 +19,7 @@ set max_loss_exit=yes
 set max_target_exit=yes
 
 REM Strategy and System
-set strategy=REVERSE
+set strategy=BREAK
 set systems=4CDL_PULLBACK
 
 REM Security
