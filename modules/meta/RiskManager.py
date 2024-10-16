@@ -200,16 +200,17 @@ class RiskManager:
         """
         todays_trades = self.wrapper.get_todays_trades()
 
-        if from_exit_time:
-            all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]["time"]
-        else:
-            all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]["time"]
+        if not todays_trades.empty: 
+            if from_exit_time:
+                all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 1)]["time"]
+            else:
+                all_symbol_exist_times = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]["time"]
 
-        if not all_symbol_exist_times.empty:
-            last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times))
-            current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
-            time_gap = (current_time-last_traded_time).total_seconds()/60
-            return round(time_gap)
+            if not all_symbol_exist_times.empty:
+                last_traded_time = util.get_traded_time(epoch=max(all_symbol_exist_times))
+                current_time = util.get_current_time() + timedelta(hours=config.server_timezone)
+                time_gap = (current_time-last_traded_time).total_seconds()/60
+                return round(time_gap)
         
         # Return the highest numbe
         return timeframe * 3
