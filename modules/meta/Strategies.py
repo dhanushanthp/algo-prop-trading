@@ -461,6 +461,20 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
+    def previou_day_dominant_direction(self):
+        is_long = []
+        total_candles_count = 0
+        for symbol in curr.get_symbols(symbol_selection="PRIMARY"):
+            total_candles_count += 1
+            previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
+            direction = 1 if previous_day_candle["close"] > previous_day_candle["open"] else 0
+            is_long.append(direction)
+        
+        combined_direction_score = sum(is_long)
+        trade_direction = Directions.LONG if (combined_direction_score/total_candles_count) > 0.5 else Directions.SHORT
+        return trade_direction
+
+    
     def previous_day_close_prev_high_low(self, symbol:str, start_candle:int=0) -> Directions:
         if self.wrapper.is_chart_upto_date(symbol=symbol):
             previous_day_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=start_candle+1)

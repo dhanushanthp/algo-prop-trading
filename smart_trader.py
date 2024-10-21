@@ -37,6 +37,9 @@ class SmartTrader():
         self.each_position_risk = kwargs["each_position_risk"]
         self.enable_dynamic_position_risk = kwargs["enable_dynamic_position_risk"]
         self.multiple_positions = kwargs["multiple_positions"]
+
+        # Enter with Stop and Target or Open
+        self.entry_with_st_tgt = kwargs["entry_with_st_tgt"]
             
         # Default values
         self.target_ratio = kwargs["target_ratio"]  # Default 1:2.0 Ratio
@@ -90,7 +93,7 @@ class SmartTrader():
         curr.ticker_initiator(security=self.security, symbol_selection=self.symbol_selection)
 
 
-    def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False, stop_selection:str="ATR4H") -> bool:
+    def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False, stop_selection:str="ATR4H", entry_with_st_tgt:bool=True) -> bool:
         """
         Executes a trade based on the given strategy and direction.
 
@@ -131,7 +134,8 @@ class SmartTrader():
                                 trading_timeframe=self.trading_timeframe,
                                 num_cdl_for_stop=self.num_prev_cdl_for_stop,
                                 market_entry=market_entry,
-                                stop_selection=stop_selection)
+                                stop_selection=stop_selection,
+                                entry_with_st_tgt=entry_with_st_tgt)
                 return status
 
 
@@ -188,6 +192,7 @@ class SmartTrader():
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}\n")
 
         print(f"{'Strategy'.ljust(20)}: {self.systems}")
+        print(f"{'Entry with ST & TGT'.ljust(20)}: {util.cl(self.entry_with_st_tgt)}")
         print(f"{'Multiple Position'.ljust(20)}: {self.multiple_positions}")
         if "ATR_BASED_DIRECTION" in self.systems:
             print(f"{'ATR TF'.ljust(20)}: {util.cl(self.atr_check_timeframe)}")
@@ -408,6 +413,7 @@ class SmartTrader():
                                                                                     timeframe=self.trading_timeframe)
                                 case "PREV_DAY_CLOSE_DIR":
                                     trade_direction = self.strategies.previous_day_close(symbol=symbol)
+                                    # trade_direction = self.strategies.previou_day_dominant_direction()
                                 
                                 case "PREV_DAY_CLOSE_DIR_PREV_HIGH_LOW":
                                     trade_direction = self.strategies.previous_day_close_prev_high_low(symbol=symbol)
@@ -452,7 +458,7 @@ class SmartTrader():
                                 dynamic_stop_selection = self.primary_stop_selection
                             
                             if is_valid_signal:
-                                if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1, stop_selection=dynamic_stop_selection):
+                                if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1, stop_selection=dynamic_stop_selection, entry_with_st_tgt=self.entry_with_st_tgt):
                                     break # Break the symbol loop
 
             time.sleep(self.timer)
@@ -474,6 +480,7 @@ if __name__ == "__main__":
     parser.add_argument('--enable_trail_stop', type=str, help='Enable Trail stop')
     parser.add_argument('--enable_breakeven', type=str, help='Enable breakeven')
     parser.add_argument('--enable_neutralizer', type=str, help='Enable neutralizer')
+    parser.add_argument('--entry_with_st_tgt', type=str, help='Entry with Target and Stop')
     parser.add_argument('--max_loss_exit', type=str, help='Enable Account Protect')
     parser.add_argument('--max_target_exit', type=str, help='Enable Early Profit')
     parser.add_argument('--enable_dynamic_position_risk', type=str, help='Enable dynamic risk based on past history')
@@ -518,6 +525,7 @@ if __name__ == "__main__":
     secondary_stop_selection = args.secondary_stop_selection
     enable_sec_stop_selection = util.boolean(args.enable_sec_stop_selection)
     max_trades_on_same_direction = int(args.max_trades_on_same_direction)
+    entry_with_st_tgt = util.boolean(args.entry_with_st_tgt)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -528,6 +536,6 @@ if __name__ == "__main__":
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
-                      max_trades_on_same_direction=max_trades_on_same_direction)
+                      max_trades_on_same_direction=max_trades_on_same_direction, entry_with_st_tgt=entry_with_st_tgt)
 
     win.main()

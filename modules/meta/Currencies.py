@@ -35,11 +35,11 @@ Major Symbols
 'NZDUSD', 'NZDCAD': Pick 'NZDUSD'
 'EURAUD', 'EURNZD', 'GBPAUD':  Pick 'EURAUD'
 'CADCHF', 'AUDCHF', 'USDCHF' Pick USDCHF
-'EURCHF', 'GBPCHF': Pick EURCHF
+'EURCHF', 'GBPCHF': Pick EURCHF, Ignored the spread is huge
 "AUDUSD", "AUDCAD": Pick AUDUSD
 "NZDUSD, "AUDUSD": Pick AUSUSD
 """
-major_pairs = ['AUDNZD', 'AUDUSD', 'EURCAD', 'EURAUD', 'EURCHF', 'GBPUSD', 'USDCAD', 'USDCHF']
+major_pairs = ['AUDNZD', 'AUDUSD', 'EURCAD', 'EURAUD', 'GBPUSD', 'USDCAD', 'USDCHF']
 
 major_jpy_pairs = ["USDJPY"]
 

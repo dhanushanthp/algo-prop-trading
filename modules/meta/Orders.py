@@ -170,7 +170,7 @@ class Orders:
             self.cancel_single_pending_order(active_order=active_order)
     
 
-    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False, stop_selection:str="CANDLE") -> bool:
+    def long_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False, stop_selection:str="CANDLE", entry_with_st_tgt:bool=True) -> bool:
         """
         Executes a long entry based on given parameters.
 
@@ -215,13 +215,15 @@ class Orders:
                             "volume": lots,
                             "type": mt5.ORDER_TYPE_BUY_LIMIT,
                             "price": entry_price,
-                            "sl": self.prices.round(symbol, entry_price - self.risk_manager.stop_ratio * points_in_stop),
-                            "tp": self.prices.round(symbol, entry_price + self.risk_manager.get_target_ratio(symbol=symbol, atr_timeframe=trading_timeframe) * points_in_stop),
                             # "comment": comment, Some time it failed lengthy string
                             "magic": trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_RETURN,
                         }
+
+                        if entry_with_st_tgt:
+                            order_request["sl"] = self.prices.round(symbol, entry_price - self.risk_manager.stop_ratio * points_in_stop)
+                            order_request["tp"] = self.prices.round(symbol, entry_price + self.risk_manager.get_target_ratio(symbol=symbol, atr_timeframe=trading_timeframe) * points_in_stop)
                         
                         request_log = mt5.order_send(order_request)
                         return util.error_logging(request_log, order_request)
@@ -294,7 +296,7 @@ class Orders:
                     print(f"{symbol.ljust(12)}: {e}")
     
 
-    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False, stop_selection:str="CANDLE") -> bool:
+    def short_entry(self, symbol:str, reference:str, break_level:float, trading_timeframe:int, num_cdl_for_stop:int=2, multiplier:float=1, market_entry:bool=False, stop_selection:str="CANDLE", entry_with_st_tgt:bool= True) -> bool:
         """
         Executes a short entry based on given parameters.
 
@@ -339,13 +341,15 @@ class Orders:
                             "volume": lots,
                             "type": mt5.ORDER_TYPE_SELL_LIMIT,
                             "price": entry_price,
-                            "sl": self.prices.round(symbol, entry_price + self.risk_manager.stop_ratio * points_in_stop),
-                            "tp": self.prices.round(symbol, entry_price - self.risk_manager.get_target_ratio(symbol=symbol, atr_timeframe=trading_timeframe) * points_in_stop),
                             # "comment": comment, Some time it failed lengthy string
                             "magic":trading_timeframe,
                             "type_time": mt5.ORDER_TIME_GTC,
                             "type_filling": mt5.ORDER_FILLING_RETURN,
                         }
+
+                        if entry_with_st_tgt:
+                            order_request["sl"] = self.prices.round(symbol, entry_price - self.risk_manager.stop_ratio * points_in_stop)
+                            order_request["tp"] = self.prices.round(symbol, entry_price + self.risk_manager.get_target_ratio(symbol=symbol, atr_timeframe=trading_timeframe) * points_in_stop)
                         
                         request_log = mt5.order_send(order_request)
                         return util.error_logging(request_log, order_request)

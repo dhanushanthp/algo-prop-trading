@@ -10,9 +10,10 @@ set timeframe=15
 set trades_per_day=100
 
 REM Risk Management
+set entry_with_st_tgt=no
 set account_risk=5.0
 set account_target_ratio=0.2
-set each_position_risk=0.1
+set each_position_risk=0.05
 set target_ratio=5.0
 set enable_dynamic_position_risk=no
 set max_loss_exit=yes
@@ -20,24 +21,24 @@ set max_target_exit=yes
 
 REM Strategy and System
 set strategy=BREAK
-set systems=4CDL_PULLBACK
+set systems=PREV_DAY_CLOSE_DIR
 
 REM Security
 set security=FOREX
 
 REM Trade Controls
 set enable_trail_stop=no
-set enable_breakeven=yes
+set enable_breakeven=no
 set enable_neutralizer=no
 REM by_active or by_trades or by_open or by_active_limit or by_active_both_direction or by_active_single_direction
-set multiple_positions=by_active_both_direction
+set multiple_positions=by_active_single_direction
 
 set record_pnl=yes
 set close_by_time=no
 set close_by_solid_cdl=no
 
 REM NON-PRIMARY, PRIMARY, SINGLE
-set primary_symbols=NON-PRIMARY
+set primary_symbols=PRIMARY
 REM CANDLE or "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
 set primary_stop_selection=ATR15M
 set enable_sec_stop_selection=no
@@ -71,4 +72,5 @@ python smart_trader.py ^
     --enable_sec_stop_selection %enable_sec_stop_selection% ^
     --max_trades_on_same_direction %max_trades_on_same_direction% ^
     --account_target_ratio %account_target_ratio% ^
+    --entry_with_st_tgt %entry_with_st_tgt% ^
     --target_ratio %target_ratio%
