@@ -17,10 +17,10 @@ set each_position_risk=0.05
 set target_ratio=5.0
 set enable_dynamic_position_risk=no
 set max_loss_exit=yes
-set max_target_exit=yes
+set max_target_exit=no
 
 REM Strategy and System
-set strategy=BREAK
+set strategy=REVERSE
 set systems=PREV_DAY_CLOSE_DIR
 
 REM Security

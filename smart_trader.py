@@ -248,14 +248,14 @@ class SmartTrader():
             5. Disables PnL notifications by setting `self.notify_pnl` to `False`.
             6. Marks the initial run as complete by setting `self.is_initial_run` to `False`.
             """
-            # if self.is_initial_run:
-            #     active_position = self.wrapper.get_all_active_positions()
-            #     today_trades = self.wrapper.get_todays_trades()
-            #     if active_position.empty and (not today_trades.empty):
-            #         self.exited_by_pnl=True
-            #         self.notify_pnl = False
-            #         self.is_initial_run = False
-            #         print(f"\n************* Initial Entry Check: Early Exit by PnL: {self.exited_by_pnl}*************")
+            if self.is_initial_run:
+                active_position = self.wrapper.get_all_active_positions()
+                today_trades = self.wrapper.get_todays_trades()
+                if active_position.empty and (not today_trades.empty):
+                    self.exited_by_pnl=True
+                    self.notify_pnl = False
+                    self.is_initial_run = False
+                    print(f"\n************* Initial Entry Check: Early Exit by PnL: {self.exited_by_pnl}*************")
 
             # Print configs and pnl on console
             self.verbose()

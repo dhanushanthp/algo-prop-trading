@@ -571,6 +571,36 @@ class Wrapper:
         # return empty dataframe
         return pd.DataFrame()
     
+    
+    def get_pnls(self) -> pd.DataFrame:
+        """
+        This include entry and exit position of a trade
+        """
+
+        server_date = util.get_current_time()
+
+        # Generate off market hours high and lows
+        start_time = datetime(int(server_date.year), int(server_date.month), int(server_date.day), 
+                                hour=0, minute=0, tzinfo=pytz.timezone('Etc/GMT')) - timedelta(days=4)
+        
+        tm_zone = pytz.timezone('Etc/GMT')
+        end_time = datetime.now(tm_zone) + timedelta(hours=config.server_timezone)
+
+        position_deals = mt5.history_deals_get(start_time,  end_time)
+
+        if len(position_deals) > 0:
+            df = pd.DataFrame(position_deals, columns=position_deals[0]._asdict().keys())
+            df["time"] = df["time"].apply(lambda x: util.get_traded_time(x))
+            df["date"] = pd.to_datetime(df["time"]).dt.date
+            df = df.groupby(["date"]).agg({"profit":["sum"], "commission":["sum"]}).reset_index()
+            df.columns = ["date", "profit", "commission"]
+            df["total"] = df["profit"] + df["commission"]
+            df = df.sort_values("date", ascending=False)
+            return df
+        
+        # return empty dataframe
+        return pd.DataFrame()
+    
 
     def get_traded_symbols(self):
         trades = self.get_todays_trades()
@@ -776,9 +806,9 @@ if "__main__" == __name__:
     # print(obj.get_spread(symbol))
     # print(obj.get_candles_by_time(symbol, timeframe, start_hour, end_hour))
     # print(obj.get_candles_by_index(symbol=symbol, timeframe=timeframe, candle_look_back=start_hour))
-    candle = obj.get_heikin_ashi(symbol=symbol, timeframe=1440, is_today=False).iloc[-2]
-    print(candle["close"] - candle["open"])
-    # print(obj.get_traded_symbols())
+    # candle = obj.get_heikin_ashi(symbol=symbol, timeframe=1440, is_today=False).iloc[-2]
+    # print(candle["close"] - candle["open"])
+    print(obj.get_pnls())
     # print(obj.any_remaining_trades(max_trades=11))
     # print(obj.get_all_active_positions())
     # print(obj.candle_i_body(symbol=symbol, timeframe=60, candle_index=int(index)))
