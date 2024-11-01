@@ -36,6 +36,8 @@ class RiskManager:
         self.alert = Slack()
         self.account_size = self.account.get_liquid_balance() - self.wrapper.get_closed_pnl()
         self.position_risk_percentage, self.strategy = files_util.get_most_risk_percentage(file_name=util.get_server_ip(), strategy=kwargs["strategy"]) if dynamic_postional_risk else (position_risk, kwargs["strategy"])
+        prev_pnl, prev_strategy = files_util.get_previous_pnl_direction()
+        self.strategy = prev_strategy if prev_pnl > 0 else "BREAK" if prev_strategy == "REVERSE" else "REVERSE"
         self.account_risk_percentage = self.position_risk_percentage * 10 if dynamic_postional_risk else account_risk
         self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
         self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)

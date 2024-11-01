@@ -12,7 +12,15 @@ def check_file_exists(file_path):
 def create_directory_if_not_exists(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
-    
+
+def get_previous_pnl_direction():
+    file_name = f"data/trade_tracker_{util.get_server_ip()}.csv"
+    data = pd.read_csv(file_name)
+    data = data.iloc[-1]
+    pnl = data["pnl"]
+    strategy = data["strategy"]
+    return pnl, strategy
+
 def update_pnl(file_name:str, system:str, strategy:str, pnl:float, rr:float, each_pos_percentage:float):
     """
     Updates the profit and loss (PnL) tracker with the provided data.
@@ -186,4 +194,5 @@ def record_pnl_directional(long_pnl, short_pnl, strategy, system, dirc="directio
 
 if __name__ == "__main__":
     # update_pnl("testing", "4_CDL", "REVERSE" , 100, -1.2, 0.15)
-    print(get_most_risk_percentage("testing", strategy="TESTING"))
+    # print(get_most_risk_percentage("testing", strategy="TESTING"))
+    print(get_previous_pnl_direction())

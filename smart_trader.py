@@ -169,7 +169,7 @@ class SmartTrader():
         # self.strategy:str = files_util.get_strategy()
 
         if self.record_pnl:
-            files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
+            files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
                 
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
@@ -295,11 +295,11 @@ class SmartTrader():
                 # Check if PnL recording is enabled, we are not in an immediate exit condition, and the market is still open
                 # Proceed to record PnL only if there are trades made today
                 if not self.wrapper.get_todays_trades().empty:
-                    files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.strategy, system='|'.join(self.systems))
+                    files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
                 
                 directional_pnl = self.wrapper.get_active_directional_pnl()
                 if directional_pnl:
-                    files_util.record_pnl_directional(long_pnl=directional_pnl.long, short_pnl=directional_pnl.short, strategy=self.strategy, system='|'.join(self.systems))
+                    files_util.record_pnl_directional(long_pnl=directional_pnl.long, short_pnl=directional_pnl.short, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
 
 
             # Each position trail stop
