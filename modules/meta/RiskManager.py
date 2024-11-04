@@ -99,6 +99,36 @@ class RiskManager:
         
         return list_to_close
     
+    def calculate_trades_based_pnl(self):
+        """
+        Calculates the total profit and loss (PnL) for today's trades.
+        
+        The function first defines a nested function to calculate directional PnL based on the trade entry price,
+        current price, and trade direction. It then retrieves today's trades and filters them to include only those
+        where 'entry' is 0 (indicating a new trade). For each trade, it updates the current price, calculates the 
+        price change, calculates the PnL for the position, and adjusts for commission to determine the net PnL.
+        Finally, it sums the net PnL for all trades to return the total PnL for the day.
+
+        Returns:
+            float: Total PnL for today's trades.
+        """
+        def directional_pnl(entry, current, direction):
+            if direction == 0:
+                return current - entry
+            elif direction == 1:
+                return entry - current
+            
+
+        todays_trades = self.wrapper.get_todays_trades()
+        todays_trades = todays_trades[["symbol", "entry", "type", "price", "commission", "volume"]].copy()
+        todays_trades = todays_trades[todays_trades["entry"] == 0]
+        todays_trades["current_price"] = todays_trades["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
+        todays_trades["change"] =  todays_trades.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
+        todays_trades["pnl"] = todays_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
+        todays_trades["net_pnl"] = todays_trades["pnl"] + todays_trades["commission"]
+        total_pnl = round(todays_trades["net_pnl"].sum(), 2)
+        return total_pnl
+    
     def close_positions_by_solid_candle(self, timeframe:int, wait_factor:int=1, close_check_candle:int=1, double_candle_check=False, candle_solid_ratio=0.6):
         """
         Evaluates and identifies active trading positions to close based on the presence of a solid candle in the given timeframe.
@@ -708,6 +738,33 @@ class RiskManager:
         
         return Shield(symbol=symbol, long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
 
+    
+    def get_pnl_of_position(self, symbol, lots, points_in_stop):
+         # This change made of fundedEngineer account!
+
+        if symbol in curr.currencies:
+            lots = lots*10**5
+    
+        if symbol in ['ASX_raw', 'FTSE_raw', 'FTSE100']:
+            lots = lots*10
+        
+        if symbol in ['SP_raw', "SPX500"]:
+            lots = lots*40
+        
+        if symbol in ['HK50_raw']:
+            lots = lots*100
+        
+        if symbol in ['NIKKEI_raw']:
+            lots = lots*1000
+
+        if symbol in ["XAUUSD"]:
+            # Some reason the amount is comes as 4 times. So divide by 4
+            lots = lots*4/100
+        
+        dollor_value = self.prices.get_dollar_value(symbol)
+        position_dollor_value = lots * dollor_value * points_in_stop
+        return position_dollor_value
+
     def get_lot_size(self, symbol, entry_price, stop_price) -> Tuple[float, float]:
         """
         Calculates the lot size for a given trading position based on the entry price,
@@ -925,3 +982,10 @@ if __name__ == "__main__":
             # python modules\meta\RiskManager.py CADJPY time_gap
             for symbol in curr.get_symbols():
                 print(symbol, obj.find_last_trade_time_gap(symbol=symbol, timeframe=60))
+
+        case "get_pnl":
+            # python modules\meta\RiskManager.py CADJPY get_pnl
+            for i in range(100):
+                print(obj.calculate_trades_based_pnl())
+                import time
+                time.sleep(1)
