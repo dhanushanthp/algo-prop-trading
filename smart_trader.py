@@ -291,11 +291,16 @@ class SmartTrader():
                 for obj in positions:
                     self.orders.close_single_position(obj=obj)
 
+            # Record PNL even once after the positions are exit based on todays trades
+            if not self.wrapper.get_todays_trades().empty:
+                today_pnl = self.risk_manager.calculate_trades_based_pnl()
+                files_util.record_pnl(iteration=1, pnl=today_pnl, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
+
             if self.record_pnl and (not self.exited_by_pnl) and (not self.is_market_close):
                 # Check if PnL recording is enabled, we are not in an immediate exit condition, and the market is still open
                 # Proceed to record PnL only if there are trades made today
-                if not self.wrapper.get_todays_trades().empty:
-                    files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
+                # if not self.wrapper.get_todays_trades().empty:
+                #     files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
                 
                 directional_pnl = self.wrapper.get_active_directional_pnl()
                 if directional_pnl:
