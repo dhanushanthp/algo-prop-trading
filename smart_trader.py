@@ -294,7 +294,8 @@ class SmartTrader():
             # Record PNL even once after the positions are exit based on todays trades
             if not self.wrapper.get_todays_trades().empty:
                 today_pnl = self.risk_manager.calculate_trades_based_pnl()
-                files_util.record_pnl(iteration=1, pnl=today_pnl, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
+                total_rr = today_pnl/self.risk_manager.risk_of_an_account
+                files_util.record_pnl(iteration=1, pnl=today_pnl, rr=total_rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
 
             if self.record_pnl and (not self.exited_by_pnl) and (not self.is_market_close):
                 # Check if PnL recording is enabled, we are not in an immediate exit condition, and the market is still open
