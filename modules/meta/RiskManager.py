@@ -20,14 +20,34 @@ mt5.initialize()
 class RiskManager:
     def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1.0, position_risk:float=0.1, dynamic_postional_risk:bool=False, **kwargs) -> None:
         """
-        The RiskManager class handles risk management for trading accounts by integrating with MetaTrader 5 (MT5) and leveraging various financial utilities and configurations. 
+        A class for managing trading risk at both the account and position levels, ensuring 
+        proper risk exposure and adherence to defined risk strategies.
 
-        Key functionalities include:
+        Attributes:
+            stop_ratio (float): The stop-loss ratio for calculating stop-loss levels.
+            target_ratio (float): The target profit ratio for calculating take-profit levels.
+            account_risk_percentage (float): The percentage of the account balance allocated for total risk.
+            position_risk_percentage (float): The percentage of the account balance allocated per position.
+            dynamic_postional_risk (bool): Determines if position risk is dynamically calculated.
+            risk_of_an_account (int): The maximum allowable loss at the account level.
+            risk_of_a_position (int): The maximum allowable loss per position.
+            max_account_risk (int): The maximum allowable risk based on the account size.
+            partial_profit (int): The amount of profit to lock in for partial position closures.
+            account_trail_loss (int): The account size threshold for trailing stop-loss adjustments.
+            account_size (float): The liquid balance of the account adjusted for closed PnL.
+            account_name (str): The name of the trading account.
+            strategy (str): The current trading strategy, determined dynamically or via input.
 
-        1. **Initialization**:
-        - Initializes various components such as account details, price data, indicators, and alert mechanisms.
-        - Configures risk parameters including stop and target ratios, account and position risk percentages, and dynamic risk adjustments.
+        Methods:
+            get_max_loss() -> int:
+                Returns the current maximum allowable loss for the account.
 
+            reduce_risk_exposure() -> bool:
+                Checks if risk exposure should be reduced based on trading activity and time of day.
+
+                Note:
+                    At least one trade should be executed before 5 AM server time. 
+                    Returns True if no trades were executed by that time, False otherwise.
         """
         self.account = Account()
         self.wrapper = Wrapper()

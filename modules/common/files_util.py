@@ -14,6 +14,20 @@ def create_directory_if_not_exists(directory_path):
         os.makedirs(directory_path)
 
 def get_previous_pnl_direction():
+    """
+    Retrieves the most recent profit and loss (PnL) and strategy information 
+    from a trade tracker CSV file specific to the server's IP.
+
+    The function reads the last entry in a CSV file named 
+    `trade_tracker_<server_ip>.csv` located in the `data/` directory. 
+    The server IP is determined dynamically using the `util.get_server_ip()` function.
+    It extracts the PnL and strategy from the last record in the file.
+
+    Returns:
+        tuple: A tuple containing:
+            - pnl (float): The profit and loss value from the last trade record.
+            - strategy (str): The trading strategy used for the last trade.
+    """
     file_name = f"data/trade_tracker_{util.get_server_ip()}.csv"
     data = pd.read_csv(file_name)
     data = data.iloc[-1]
