@@ -461,6 +461,52 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
+    def day_close_sma(self, symbol:str) -> Directions:
+        """
+        Determines the market direction based on the daily (1440-minute timeframe) simple moving averages (SMA) 
+        of 10 and 20 periods.
+
+        The method compares the 10-period SMA and the 20-period SMA to decide the trading direction:
+        - `Directions.LONG` if the 10-period SMA is greater than the 20-period SMA.
+        - `Directions.SHORT` otherwise.
+
+        Parameters:
+        ----------
+        symbol : str
+            The trading symbol (e.g., 'AAPL', 'BTC/USD') for which the market direction is to be determined.
+        start_candle : int, optional
+            The starting candle index for SMA calculation, default is 0.
+
+        Returns:
+        -------
+        Directions
+            The market direction:
+            - `Directions.LONG` if the 10-period SMA > 20-period SMA.
+            - `Directions.SHORT` otherwise.
+
+        Raises:
+        ------
+        Exception
+            If the chart data for the symbol is not up-to-date or other errors occur in SMA computation.
+
+        Notes:
+        ------
+        - The method assumes that `self.wrapper.is_chart_upto_date` validates the availability of recent data.
+        - This method uses `self.indicators.simple_moving_average` to calculate the SMAs.
+
+        Example:
+        -------
+        >>> direction = obj.day_close_ma(symbol='BTC/USD')
+        >>> print(direction)
+        Directions.LONG
+        """
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            sma_10 = self.indicators.simple_moving_average(symbol=symbol, timeframe=1440, n_moving_average=10)
+            sma_20 = self.indicators.simple_moving_average(symbol=symbol, timeframe=1440, n_moving_average=20)
+
+            direction = Directions.LONG if sma_10 > sma_20 else Directions.SHORT
+            return direction
+    
     def previou_day_dominant_direction(self):
         is_long = []
         total_candles_count = 0

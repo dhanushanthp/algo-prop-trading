@@ -419,7 +419,9 @@ class SmartTrader():
                                                                                     timeframe=self.trading_timeframe)
                                 case "PREV_DAY_CLOSE_DIR":
                                     trade_direction = self.strategies.previous_day_close(symbol=symbol)
-                                    # trade_direction = self.strategies.previou_day_dominant_direction()
+                                
+                                case "DAY_CLOSE_SMA":
+                                    trade_direction = self.strategies.day_close_sma(symbol=symbol)
                                 
                                 case "PREV_DAY_CLOSE_DIR_PREV_HIGH_LOW":
                                     trade_direction = self.strategies.previous_day_close_prev_high_low(symbol=symbol)

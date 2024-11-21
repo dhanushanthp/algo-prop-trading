@@ -36,7 +36,39 @@ class Indicators:
     
     def simple_moving_average(self, symbol:str, timeframe:int, n_moving_average:int=10) -> float:
         """
-        Find the simple moving average of last candle
+        Calculates the Simple Moving Average (SMA) of the closing prices for the last `n_moving_average` candles.
+
+        The SMA is computed by summing the closing prices of the last `n_moving_average` candles and dividing by `n_moving_average`.
+
+        Parameters:
+        ----------
+        symbol : str
+            The trading symbol (e.g., 'AAPL', 'BTC/USD') for which the SMA is to be calculated.
+        timeframe : int
+            The timeframe of the candles (e.g., 1 for 1-minute candles, 60 for hourly candles).
+        n_moving_average : int, optional
+            The number of candles to include in the SMA calculation. Default is 10.
+
+        Returns:
+        -------
+        float
+            The computed Simple Moving Average (SMA) for the last `n_moving_average` candles.
+
+        Raises:
+        ------
+        KeyError
+            If the 'close' field is missing in the candle data returned by the wrapper.
+
+        Notes:
+        ------
+        This method assumes the existence of a `wrapper.get_last_n_candles` method that retrieves the candle data. The 
+        returned candle data is expected to be a dictionary with a 'close' key containing the closing prices.
+
+        Example:
+        -------
+        >>> sma = obj.simple_moving_average(symbol='BTC/USD', timeframe=60, n_moving_average=5)
+        >>> print(sma)
+        43500.25
         """
         last_n_candles = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=0, n_candles=n_moving_average)
         close_prices = last_n_candles["close"]
