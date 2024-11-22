@@ -15,7 +15,7 @@ set account_risk=1.0
 set account_target_ratio=2.0
 set each_position_risk=0.02
 set target_ratio=5.0
-set enable_dynamic_position_risk=no
+set enable_dynamic_direction=no
 set max_loss_exit=yes
 set max_target_exit=yes
 
@@ -61,7 +61,7 @@ python smart_trader.py ^
     --atr_check_timeframe %atr_check_timeframe% ^
     --account_risk %account_risk% ^
     --start_hour %start_hour% ^
-    --enable_dynamic_position_risk %enable_dynamic_position_risk% ^
+    --enable_dynamic_direction %enable_dynamic_direction% ^
     --multiple_positions %multiple_positions% ^
     --record_pnl %record_pnl% ^
     --close_by_time %close_by_time% ^

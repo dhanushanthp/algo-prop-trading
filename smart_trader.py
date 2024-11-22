@@ -35,7 +35,7 @@ class SmartTrader():
         self.strategy:str = kwargs["strategy"] # files_util.get_strategy()
         self.account_risk = kwargs["account_risk"]
         self.each_position_risk = kwargs["each_position_risk"]
-        self.enable_dynamic_position_risk = kwargs["enable_dynamic_position_risk"]
+        self.enable_dynamic_direction = kwargs["enable_dynamic_direction"]
         self.multiple_positions = kwargs["multiple_positions"]
 
         # Enter with Stop and Target or Open
@@ -73,7 +73,7 @@ class SmartTrader():
                                         position_risk=self.each_position_risk, 
                                         stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio,
-                                        dynamic_postional_risk=self.enable_dynamic_position_risk,
+                                        enable_dynamic_direction=self.enable_dynamic_direction,
                                         strategy=self.strategy)
         self.alert = Slack()
         self.prices = Prices()
@@ -173,7 +173,7 @@ class SmartTrader():
                 
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
-                                        target_ratio=self.target_ratio, dynamic_postional_risk=self.enable_dynamic_position_risk,
+                                        target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction,
                                         strategy=self.strategy)
                 
         self.notify_pnl = False # Once sent, Disable
@@ -214,7 +214,7 @@ class SmartTrader():
         print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.symbol_selection)}")
         print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
         print(f"{'Trail ST Pos..n'.ljust(20)}: {util.cl(self.enable_trail_stop)}")
-        print(f"{'Dynamic Risk'.ljust(20)}: {util.cl(self.enable_dynamic_position_risk)}")
+        print(f"{'Dynamic Direction'.ljust(20)}: {util.cl(self.enable_dynamic_direction)}")
         print(f"{'Record PnL'.ljust(20)}: {util.cl(self.record_pnl)}\n")
 
         print(f"{'Close by Solid CDL'.ljust(20)}: {util.cl(self.close_by_solid_cdl)}")
@@ -343,7 +343,7 @@ class SmartTrader():
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio, dynamic_postional_risk=self.enable_dynamic_position_risk, strategy=self.strategy)
+                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy)
 
                 self.notify_pnl = False # Once sent, Disable
                 self.exited_by_pnl = False # Reset the Immidiate exit                
@@ -491,7 +491,7 @@ if __name__ == "__main__":
     parser.add_argument('--entry_with_st_tgt', type=str, help='Entry with Target and Stop')
     parser.add_argument('--max_loss_exit', type=str, help='Enable Account Protect')
     parser.add_argument('--max_target_exit', type=str, help='Enable Early Profit')
-    parser.add_argument('--enable_dynamic_position_risk', type=str, help='Enable dynamic risk based on past history')
+    parser.add_argument('--enable_dynamic_direction', type=str, help='Enable dynamic direction')
     parser.add_argument('--start_hour', type=int, help='Start Hour Of Trading')
     parser.add_argument('--multiple_positions', type=str, help='How to handle multiple trades at a time: [by_trades, by_active, by_open]')
     parser.add_argument('--record_pnl', type=str, help='Enable to track the PnL')
@@ -518,7 +518,7 @@ if __name__ == "__main__":
     enable_trail_stop = util.boolean(args.enable_trail_stop)
     enable_breakeven = util.boolean(args.enable_breakeven)
     enable_neutralizer = util.boolean(args.enable_neutralizer)
-    enable_dynamic_position_risk = util.boolean(args.enable_dynamic_position_risk)
+    enable_dynamic_direction = util.boolean(args.enable_dynamic_direction)
     start_hour = int(args.start_hour)
     max_loss_exit = util.boolean(args.max_loss_exit)
     max_target_exit = util.boolean(args.max_target_exit)
@@ -539,7 +539,7 @@ if __name__ == "__main__":
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
-                      start_hour=start_hour, enable_dynamic_position_risk=enable_dynamic_position_risk, strategy=strategy,
+                      start_hour=start_hour, enable_dynamic_direction=enable_dynamic_direction, strategy=strategy,
                       systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,

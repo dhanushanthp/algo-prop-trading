@@ -18,7 +18,7 @@ from modules.common.logme import log_it
 mt5.initialize()
 
 class RiskManager:
-    def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1.0, position_risk:float=0.1, dynamic_postional_risk:bool=False, **kwargs) -> None:
+    def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1.0, position_risk:float=0.1, enable_dynamic_direction:bool=False, **kwargs) -> None:
         """
         A class for managing trading risk at both the account and position levels, ensuring 
         proper risk exposure and adherence to defined risk strategies.
@@ -28,7 +28,7 @@ class RiskManager:
             target_ratio (float): The target profit ratio for calculating take-profit levels.
             account_risk_percentage (float): The percentage of the account balance allocated for total risk.
             position_risk_percentage (float): The percentage of the account balance allocated per position.
-            dynamic_postional_risk (bool): Determines if position risk is dynamically calculated.
+            enable_dynamic_direction (bool): Change the trade direction based on previous day win/loss
             risk_of_an_account (int): The maximum allowable loss at the account level.
             risk_of_a_position (int): The maximum allowable loss per position.
             max_account_risk (int): The maximum allowable risk based on the account size.
@@ -55,10 +55,14 @@ class RiskManager:
         self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
         self.alert = Slack()
         self.account_size = self.account.get_liquid_balance() - self.wrapper.get_closed_pnl()
-        self.position_risk_percentage, self.strategy = files_util.get_most_risk_percentage(file_name=util.get_server_ip(), strategy=kwargs["strategy"]) if dynamic_postional_risk else (position_risk, kwargs["strategy"])
-        prev_pnl, prev_strategy = files_util.get_previous_pnl_direction()
-        self.strategy = prev_strategy if prev_pnl > 0 else "BREAK" if prev_strategy == "REVERSE" else "REVERSE"
-        self.account_risk_percentage = self.position_risk_percentage * 10 if dynamic_postional_risk else account_risk
+        # self.position_risk_percentage, self.strategy = files_util.get_most_risk_percentage(file_name=util.get_server_ip(), strategy=kwargs["strategy"]) if dynamic_postional_risk else (position_risk, kwargs["strategy"])
+        self.strategy = kwargs["strategy"]
+        self.position_risk_percentage = position_risk
+        # If it's a dynamic risk then change the todays direction based on previous direction.
+        if enable_dynamic_direction:
+            prev_pnl, prev_strategy = files_util.get_previous_pnl_direction()
+            self.strategy = prev_strategy if prev_pnl > 0 else "BREAK" if prev_strategy == "REVERSE" else "REVERSE"
+        self.account_risk_percentage = account_risk
         self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
         self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)
         self.max_account_risk = round(self.account_size/100)
