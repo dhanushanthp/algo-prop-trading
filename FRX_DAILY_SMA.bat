@@ -39,7 +39,7 @@ set close_by_solid_cdl=no
 
 REM NON-PRIMARY, PRIMARY, SINGLE
 set primary_symbols=PRIMARY
-REM CANDLE or "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
+REM CANDLE or "ATR5M", "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D"
 set primary_stop_selection=ATR15M
 set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
