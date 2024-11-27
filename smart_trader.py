@@ -161,7 +161,7 @@ class SmartTrader():
             A statement indicating the reason for early closure, by default "Early Close".
         """
         self.orders.close_all_positions()
-        self.risk_manager.alert.send_msg(f"{exit_statement} : {self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
+        self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
 
         # Write the pnl to a file
         files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
@@ -334,7 +334,7 @@ class SmartTrader():
                 
                 # Update the result in Slack
                 if self.notify_pnl and not self.is_initial_run:
-                    self.risk_manager.alert.send_msg(f"{self.trading_timeframe} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
+                    self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
                     files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
