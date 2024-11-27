@@ -727,6 +727,13 @@ class RiskManager:
             
             lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
             higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
+        elif stop_selection=="ATR5M":
+            # Stop based on last 1 hour of movement
+            optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=5, start_candle=1, n_atr=12)
+            mid_price = self.prices.get_exchange_price(symbol)
+            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
+            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
+            is_strong_candle = True
         elif stop_selection=="ATR15M":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=15, start_candle=1, n_atr=14)
             mid_price = self.prices.get_exchange_price(symbol)
@@ -753,6 +760,12 @@ class RiskManager:
             is_strong_candle = True
         elif stop_selection=="ATR1D":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=1440, start_candle=1, n_atr=14)
+            mid_price = self.prices.get_exchange_price(symbol)
+            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
+            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
+            is_strong_candle = True
+        elif stop_selection=="ATR1D_FACTOR":
+            optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=1440, start_candle=1, n_atr=14)/14
             mid_price = self.prices.get_exchange_price(symbol)
             lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
             higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)

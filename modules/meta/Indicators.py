@@ -815,12 +815,16 @@ if __name__ == "__main__":
         case "atr_ratio":
             # python modules/meta/Indicators.py atr_ratio AUDUSD
             symbol = sys.argv[2]
+            atr_5 = indi_obj.get_atr(symbol=symbol, timeframe=5, start_candle=0, n_atr=12)
             atr_15 = indi_obj.get_atr(symbol=symbol, timeframe=15, start_candle=0)
-            atr_1h = indi_obj.get_atr(symbol=symbol, timeframe=60, start_candle=0)
-            atr_4h = indi_obj.get_atr(symbol=symbol, timeframe=240, start_candle=0)
-            print(f"15: {round(atr_15 , 4)}, 60: {round(atr_1h, 4)}")
-            print(f"15/60 {round(atr_1h/atr_15, 2)}")
-            print(f"15/240 {round(atr_4h/atr_15, 2)}")
+            atr_day = indi_obj.get_atr(symbol=symbol, timeframe=1440, start_candle=0)
+            # price = indi_obj.prices.get_exchange_price(symbol=symbol)
+            # If the move is 0.05%
+            factor_of_price = atr_day/14
+            print(f"5: {round(atr_5 , 4)}, 15: {round(atr_15, 4)}, 0.1% {round(factor_of_price, 5)}")
+            print(f"15/5 {round(atr_15/atr_5, 2)}")
+            print(f"5/0.1% {round(atr_5/factor_of_price, 3)}")
+            print(f"15/0.1% {round(atr_15/factor_of_price, 3)}")
         
         case "3cdl_reversal":
             # python modules/meta/Indicators.py 3cdl_reversal AUDUSD 15
