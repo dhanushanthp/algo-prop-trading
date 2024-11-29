@@ -693,6 +693,8 @@ class RiskManager:
             Exception: If an invalid stop_selection is provided.
         
         """
+        mid_price = self.prices.get_exchange_price(symbol)
+
         if stop_selection == "CANDLE":
             selected_time = util.match_timeframe(timeframe)
             
@@ -714,7 +716,6 @@ class RiskManager:
             higher_stop = max([i["high"] for i in previous_candles])
             lower_stop = min([i["low"] for i in previous_candles])
             
-            mid_price = self.prices.get_exchange_price(symbol)
             
             # In cooprate ATR along with candle high/low when the candle length is too small/ price ranging
             atr = self.indicators.get_atr(symbol=symbol, timeframe=timeframe)
@@ -723,16 +724,9 @@ class RiskManager:
 
             optimal_distance = max(distance_from_high, distance_from_low) * multiplier
             optimal_distance = optimal_distance + (optimal_distance*buffer_ratio)
-            
-            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
-            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
         elif stop_selection=="ATR5M":
             # Stop based on last 1 hour of movement
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=5, start_candle=1, n_atr=12)
-            mid_price = self.prices.get_exchange_price(symbol)
-            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
-            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
-            is_strong_candle = True
         elif stop_selection=="ATR15M":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=15, start_candle=1, n_atr=14)
             mid_price = self.prices.get_exchange_price(symbol)
@@ -741,36 +735,22 @@ class RiskManager:
             is_strong_candle = True
         elif stop_selection=="ATR1H":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=60, start_candle=1, n_atr=14)
-            mid_price = self.prices.get_exchange_price(symbol)
-            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
-            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
-            is_strong_candle = True
         elif stop_selection=="ATR2H":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=120, start_candle=1, n_atr=14)
-            mid_price = self.prices.get_exchange_price(symbol)
-            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
-            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
-            is_strong_candle = True
         elif stop_selection=="ATR4H":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=240, start_candle=1, n_atr=14)
-            mid_price = self.prices.get_exchange_price(symbol)
-            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
-            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
-            is_strong_candle = True
         elif stop_selection=="ATR1D":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=1440, start_candle=1, n_atr=14)
-            mid_price = self.prices.get_exchange_price(symbol)
-            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
-            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
-            is_strong_candle = True
         elif stop_selection=="ATR1D_FACTOR":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=1440, start_candle=1, n_atr=14)/14
-            mid_price = self.prices.get_exchange_price(symbol)
-            lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
-            higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
-            is_strong_candle = True
+        elif stop_selection=="FACTOR":
+            optimal_distance = mid_price/100 * 0.05 # 0.05% Move expected
         else:
             raise Exception("Stop Selection is not given!")
+        
+        lower_stop = self.prices.round(symbol=symbol, price=mid_price - optimal_distance)
+        higher_stop = self.prices.round(symbol=symbol, price=mid_price + optimal_distance)
+        is_strong_candle = True
         
         return Shield(symbol=symbol, long_range=lower_stop, short_range=higher_stop, range_distance=optimal_distance, is_strong_signal=is_strong_candle)
 
