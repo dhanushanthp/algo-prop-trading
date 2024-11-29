@@ -76,14 +76,18 @@ def get_strategy():
     file_name = f"data/trade_tracker_{util.get_server_ip()}.csv" 
     if check_file_exists(file_path=file_name):
         df = pd.read_csv(file_name)
-        previous_day = df.iloc[-1]
-        pnl = previous_day["pnl"]
-        strategy = previous_day["strategy"]
-        # If PnL is positve, then use the previous day strategy, else toggle
-        selected_strategy = strategy if pnl > 0 else ("BREAK" if strategy == "REVERSE" else "REVERSE")
-        return selected_strategy
-    else:
-        return "BREAK"
+        if len(df) >= 2:
+            previous_day = df.iloc[-1]
+            prev_strategy = previous_day["strategy"]
+            day_before_prev_day = df.iloc[-2]
+            
+            if previous_day["pnl"] < 0 and day_before_prev_day["pnl"] < 0 and previous_day["strategy"] == day_before_prev_day["strategy"]:
+                # If PnL is negative for previous and day before previous then toggle
+                return "BREAK" if prev_strategy == "REVERSE" else "REVERSE"
+            else:
+                return previous_day["strategy"]
+    
+    return "BREAK"
 
 def get_most_risk_percentage(file_name:str, **kwargs):
     """
@@ -209,4 +213,5 @@ def record_pnl_directional(long_pnl, short_pnl, strategy, system, dirc="directio
 if __name__ == "__main__":
     # update_pnl("testing", "4_CDL", "REVERSE" , 100, -1.2, 0.15)
     # print(get_most_risk_percentage("testing", strategy="TESTING"))
-    print(get_previous_pnl_direction())
+    # print(get_previous_pnl_direction())
+    print(get_strategy())

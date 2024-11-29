@@ -60,8 +60,7 @@ class RiskManager:
         self.position_risk_percentage = position_risk
         # If it's a dynamic risk then change the todays direction based on previous direction.
         if enable_dynamic_direction:
-            prev_pnl, prev_strategy = files_util.get_previous_pnl_direction()
-            self.strategy = prev_strategy if prev_pnl > 0 else "BREAK" if prev_strategy == "REVERSE" else "REVERSE"
+            self.strategy = files_util.get_strategy()
         self.account_risk_percentage = account_risk
         self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
         self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)
