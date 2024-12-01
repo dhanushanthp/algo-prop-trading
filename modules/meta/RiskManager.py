@@ -745,6 +745,7 @@ class RiskManager:
         elif stop_selection=="ATR1D_FACTOR":
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=1440, start_candle=1, n_atr=14)/14
         elif stop_selection=="FACTOR":
+            # Lower the expected move, Higher the risk we will be taking. 0.04% expected move is risker than 0.05% expected move
             optimal_distance = mid_price/100 * 0.05 # 0.05% Move expected
         else:
             raise Exception("Stop Selection is not given!")
