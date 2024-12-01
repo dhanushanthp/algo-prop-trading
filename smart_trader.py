@@ -123,20 +123,23 @@ class SmartTrader():
                 case Directions.REVERSE.name:
                     method_name = "short_entry" if direction == Directions.LONG else "long_entry"
                 case _:
-                    raise Exception("Strategy is not added!")
+                    # Because some cases if the chart is not loaded then the direction will be UKNOWN
+                    log_it("DIR_TRADE_SELECTION").info(f"{symbol}: Trade Skip! Direction not defined!")
             
-            method = getattr(self.orders, method_name, None)
+            # Only take trades with valid method names
+            if method_name in ["long_entry", "short_entry"]:
+                method = getattr(self.orders, method_name, None)
 
-            if method:
-                status = method(symbol=symbol, 
-                                reference=f"{comment}", 
-                                break_level=break_level, 
-                                trading_timeframe=self.trading_timeframe,
-                                num_cdl_for_stop=self.num_prev_cdl_for_stop,
-                                market_entry=market_entry,
-                                stop_selection=stop_selection,
-                                entry_with_st_tgt=entry_with_st_tgt)
-                return status
+                if method:
+                    status = method(symbol=symbol, 
+                                    reference=f"{comment}", 
+                                    break_level=break_level, 
+                                    trading_timeframe=self.trading_timeframe,
+                                    num_cdl_for_stop=self.num_prev_cdl_for_stop,
+                                    market_entry=market_entry,
+                                    stop_selection=stop_selection,
+                                    entry_with_st_tgt=entry_with_st_tgt)
+                    return status
 
 
     def close_trades_early_on_pnl(self, exit_statement="Early Close"):

@@ -768,9 +768,16 @@ class Indicators:
 
         """
         symbols = curr.get_symbols(symbol_selection="PRIMARY")
+        # Ignore US500 and XAUUSD since they don't open at the time of forex open
+        symbols = [i for i in symbols if i not in ["US500.cash", "XAUUSD"]]
         break_count = 0
         reverse_count = 0
         for symbol in symbols:
+            if not self.wrapper.is_chart_upto_date(symbol=symbol):
+                # If the chart is not update to then don't take the trade atleast for single symbol
+                logme.log_it(f"MISSING Symbol Chart, Dominant Direction: {symbol}")
+                return "UNKNOWN"
+            
             prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback)
             prev_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback+1)
             prev_dir = "long" if prev_candle["close"] > prev_candle["open"] else "short"
@@ -781,8 +788,10 @@ class Indicators:
                 reverse_count += 1
 
         if break_count > reverse_count:
+            print(f"Break Confidence: {round(break_count/8, 2)}")
             return "BREAK"
-
+        
+        print(f"Reverse Confidence: {round(reverse_count/8, 2)}")
         return "REVERSE"
 
 
@@ -890,7 +899,7 @@ if __name__ == "__main__":
         case "trade_direction":
             # python modules/meta/Indicators.py trade_direction
             for i in range(0, 10):
-                print(i, indi_obj.get_dominant_direction(lookback=i))
+                print(f"Today - {i}", indi_obj.get_dominant_direction(lookback=i))
         
         case "high_low_range_hunt":
             # python modules/meta/Indicators.py high_low_range_hunt 15 2

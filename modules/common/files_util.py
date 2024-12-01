@@ -74,6 +74,11 @@ def update_pnl(file_name:str, system:str, strategy:str, pnl:float, rr:float, eac
 
 def get_strategy():
     file_name = f"data/trade_tracker_{util.get_server_ip()}.csv" 
+    today_day = util.get_current_time().strftime("%A")
+    # If it's a monday then reset to BREAK
+    if today_day == "Monday":
+        return "BREAK"
+    
     if check_file_exists(file_path=file_name):
         df = pd.read_csv(file_name)
         if len(df) >= 2:
@@ -81,7 +86,9 @@ def get_strategy():
             prev_strategy = previous_day["strategy"]
             day_before_prev_day = df.iloc[-2]
             
-            if previous_day["pnl"] < 0 and day_before_prev_day["pnl"] < 0 and previous_day["strategy"] == day_before_prev_day["strategy"]:
+            # if previous_day["pnl"] < 0 and day_before_prev_day["pnl"] < 0 and previous_day["strategy"] == day_before_prev_day["strategy"]:
+            # Just a flip
+            if previous_day["pnl"] < 0:
                 # If PnL is negative for previous and day before previous then toggle
                 return "BREAK" if prev_strategy == "REVERSE" else "REVERSE"
             else:

@@ -60,7 +60,8 @@ class RiskManager:
         self.position_risk_percentage = position_risk
         # If it's a dynamic risk then change the todays direction based on previous direction.
         if enable_dynamic_direction:
-            self.strategy = files_util.get_strategy()
+            # self.strategy = files_util.get_strategy()
+            self.strategy = self.indicators.get_dominant_direction()
         self.account_risk_percentage = account_risk
         self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
         self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)
