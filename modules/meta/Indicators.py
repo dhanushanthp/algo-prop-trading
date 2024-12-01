@@ -13,6 +13,7 @@ from modules.common import logme
 from modules.meta.wrapper import Wrapper
 from modules.meta.Prices import Prices
 from modules.common.Directions import Directions
+import modules.meta.Currencies as curr
 
 class Indicators:
     def __init__(self, wrapper: Wrapper, prices:Prices) -> None:
@@ -734,6 +735,57 @@ class Indicators:
         return None, None
 
 
+    def get_dominant_direction(self, lookback=1):
+        """
+        Identify the potential direction of the market move.
+
+        This method analyzes the direction of previous market movements to predict the potential direction of the market. 
+        It compares the direction of two consecutive candles (previous and the one before it) to determine if the market is 
+        more likely to continue in the same direction (BREAK) or reverse (REVERSE).
+
+        Parameters:
+        lookback (int): The number of previous days to look back. Default is 1, referring to the previous trading day. 
+                        For example, if `lookback=1`, the method compares the previous day's candle to the candle of 
+                        the day before the previous day (lookback+1).
+
+        Returns:
+        str: "BREAK" if the market direction is expected to continue in the same direction, "REVERSE" if the market direction 
+            is expected to change.
+
+        Example:
+        >>> market_direction = instance.get_dominant_direction(lookback=1)
+        >>> print(market_direction)
+        "BREAK"
+
+        Calculation:
+        - The method loops through a list of symbols.
+        - For each symbol, it retrieves the candle data for the given lookback period and the period before it.
+        - It determines the direction of each candle (either "long" if the close price is higher than the open price, or "short" if the close price is lower than the open price).
+        - It compares the directions of the two candles:
+            - If the directions are the same (both "long" or both "short"), it increments the `break_count`.
+            - If the directions are different (one "long" and the other "short"), it increments the `reverse_count`.
+        - After looping through all symbols, the method returns "BREAK" if `break_count` is greater than `reverse_count`, indicating that the market is likely to continue in the same direction. Otherwise, it returns "REVERSE", indicating that the market is likely to change direction.
+
+        """
+        symbols = curr.get_symbols(symbol_selection="PRIMARY")
+        break_count = 0
+        reverse_count = 0
+        for symbol in symbols:
+            prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback)
+            prev_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback+1)
+            prev_dir = "long" if prev_candle["close"] > prev_candle["open"] else "short"
+            prev_prev_dir = "long" if prev_prev_candle["close"] > prev_prev_candle["open"] else "short"
+            if prev_dir == prev_prev_dir:
+                break_count += 1
+            else:
+                reverse_count += 1
+
+        if break_count > reverse_count:
+            return "BREAK"
+
+        return "REVERSE"
+
+
 if __name__ == "__main__":
     indi_obj = Indicators(wrapper=Wrapper(), prices=Prices())
     import sys
@@ -833,6 +885,12 @@ if __name__ == "__main__":
             timeframe = int(sys.argv[3])
             print(indi_obj.get_three_cdl_reversal_points(symbol=symbol, timeframe=timeframe))
             print(indi_obj.get_three_candle_strike_data_points(symbol=symbol, timeframe=timeframe))
+
+        
+        case "trade_direction":
+            # python modules/meta/Indicators.py trade_direction
+            for i in range(0, 10):
+                print(i, indi_obj.get_dominant_direction(lookback=i))
         
         case "high_low_range_hunt":
             # python modules/meta/Indicators.py high_low_range_hunt 15 2
