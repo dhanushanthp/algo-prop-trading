@@ -37,6 +37,7 @@ class RiskManager:
             account_size (float): The liquid balance of the account adjusted for closed PnL.
             account_name (str): The name of the trading account.
             strategy (str): The current trading strategy, determined dynamically or via input.
+            stop_expected_move (float): Rather using ATR we can use the Potential % of move based on the symbol current price. Because the ATR could be vary based on the specific day of move
 
         Methods:
             get_max_loss() -> int:
@@ -62,6 +63,8 @@ class RiskManager:
         if enable_dynamic_direction:
             # self.strategy = files_util.get_strategy()
             self.strategy = self.indicators.get_dominant_direction()
+        
+        self.stop_expected_move:float = kwargs["stop_expected_move"]
         self.account_risk_percentage = account_risk
         self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
         self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)
@@ -746,7 +749,7 @@ class RiskManager:
             optimal_distance = self.indicators.get_atr(symbol=symbol, timeframe=1440, start_candle=1, n_atr=14)/14
         elif stop_selection=="FACTOR":
             # Lower the expected move, Higher the risk we will be taking. 0.04% expected move is risker than 0.05% expected move
-            optimal_distance = mid_price/100 * 0.05 # 0.05% Move expected
+            optimal_distance = mid_price * self.stop_expected_move/100 # 0.05% Move expected
         else:
             raise Exception("Stop Selection is not given!")
         

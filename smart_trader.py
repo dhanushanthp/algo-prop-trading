@@ -67,6 +67,8 @@ class SmartTrader():
         # Applies only for 
         self.atr_check_timeframe = kwargs["atr_check_timeframe"]
         self.max_trades_on_same_direction = kwargs["max_trades_on_same_direction"]
+
+        self.stop_expected_move = 0.05
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -74,7 +76,8 @@ class SmartTrader():
                                         stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio,
                                         enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.strategy)
+                                        strategy=self.strategy,
+                                        stop_expected_move=self.stop_expected_move)
         self.alert = Slack()
         self.prices = Prices()
         self.wrapper = Wrapper()
@@ -177,7 +180,7 @@ class SmartTrader():
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.strategy)
+                                        strategy=self.strategy, stop_expected_move=self.stop_expected_move)
                 
         self.notify_pnl = False # Once sent, Disable
         self.exited_by_pnl = True
@@ -210,7 +213,10 @@ class SmartTrader():
         print(f"{'Max Loss'.ljust(20)}: {self.max_possible_loss}$")
         print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}\n")
         
-        print(f"{'Primary STP Status'.ljust(20)}: {util.cl(self.primary_stop_selection)}")
+        if self.primary_stop_selection == "FACTOR":
+            print(f"{'Factor STP %'.ljust(20)}: {util.cl(self.primary_stop_selection)}, {util.cl(self.stop_expected_move)}{util.cl('%')}")
+        else:
+            print(f"{'Primary STP Status'.ljust(20)}: {util.cl(self.primary_stop_selection)}")
         print(f"{'Secondary STP Status'.ljust(20)}: {util.cl(self.enable_sec_stop_selection)}")
         print(f"{'Secondary STP'.ljust(20)}: {util.cl(self.secondary_stop_selection)}\n")
             
@@ -346,7 +352,8 @@ class SmartTrader():
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy)
+                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy,
+                                                stop_expected_move=self.stop_expected_move)
 
                 self.notify_pnl = False # Once sent, Disable
                 self.exited_by_pnl = False # Reset the Immidiate exit                
