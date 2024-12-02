@@ -68,7 +68,7 @@ class SmartTrader():
         self.atr_check_timeframe = kwargs["atr_check_timeframe"]
         self.max_trades_on_same_direction = kwargs["max_trades_on_same_direction"]
 
-        self.stop_expected_move = 0.05
+        self.stop_expected_move = kwargs["stop_expected_move"]
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -509,6 +509,7 @@ if __name__ == "__main__":
     parser.add_argument('--close_by_solid_cdl', type=str, help='Close positions by solid candle after x min')
     parser.add_argument('--primary_symbols', type=str, help='Pick Only Primary Symbols')
     parser.add_argument('--primary_stop_selection', type=str, help='Stop by Candle or any other properties')
+    parser.add_argument('--stop_expected_move', type=float, help='% of expected move of an symbol based on the price')
     parser.add_argument('--secondary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--enable_sec_stop_selection', type=str, help='Enable secondary stop selection')
     parser.add_argument('--max_trades_on_same_direction', type=int, help='Max number of trades by direction')
@@ -544,6 +545,7 @@ if __name__ == "__main__":
     enable_sec_stop_selection = util.boolean(args.enable_sec_stop_selection)
     max_trades_on_same_direction = int(args.max_trades_on_same_direction)
     entry_with_st_tgt = util.boolean(args.entry_with_st_tgt)
+    stop_expected_move = float(args.stop_expected_move)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -554,6 +556,7 @@ if __name__ == "__main__":
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
-                      max_trades_on_same_direction=max_trades_on_same_direction, entry_with_st_tgt=entry_with_st_tgt)
+                      max_trades_on_same_direction=max_trades_on_same_direction, entry_with_st_tgt=entry_with_st_tgt,
+                      stop_expected_move=stop_expected_move)
 
     win.main()
