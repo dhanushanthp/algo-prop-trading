@@ -96,6 +96,22 @@ def get_strategy():
     
     return "BREAK"
 
+
+def get_previous_pnls():
+    """
+    Get last 3 records of the PnL
+    """
+    file_name = f"data/trade_tracker_{util.get_server_ip()}.csv"
+    
+    if check_file_exists(file_path=file_name):
+        df = pd.read_csv(file_name)
+        if len(df) > 3:
+            df = df.tail(3).copy()
+            return df
+    
+    return None
+
+
 def get_most_risk_percentage(file_name:str, **kwargs):
     """
     Calculate the adjusted risk percentage based on the most recent trades from a CSV file.
