@@ -14,6 +14,7 @@ from modules.meta.wrapper import Wrapper
 from modules.meta.Prices import Prices
 from modules.common.Directions import Directions
 import modules.meta.Currencies as curr
+from modules.common import files_util
 
 class Indicators:
     def __init__(self, wrapper: Wrapper, prices:Prices) -> None:
@@ -767,6 +768,21 @@ class Indicators:
         - After looping through all symbols, the method returns "BREAK" if `break_count` is greater than `reverse_count`, indicating that the market is likely to continue in the same direction. Otherwise, it returns "REVERSE", indicating that the market is likely to change direction.
 
         """
+
+        """
+        This function fetches the previous PNLs data, checks if all values in 
+        the 'rr' column are greater than 0, and then verifies if there's only 
+        one unique strategy value that is 'REVERSE'. If both conditions are met, 
+        it returns 'BREAK'.
+        """
+        pnl_df = files_util.get_previous_pnls()
+        if pnl_df is not None:
+            if all(pnl_df["rr"] > 0):
+                unique_strategy = pnl_df["strategy"].unique()
+                if len(unique_strategy) == 1 and unique_strategy == "REVERSE":
+                    print("Previous 3 REVERSE Win")
+                    return "BREAK"
+
         symbols = curr.get_symbols(symbol_selection="PRIMARY")
         # Ignore US500 and XAUUSD since they don't open at the time of forex open
         symbols = [i for i in symbols if i not in ["US500.cash", "XAUUSD"]]
