@@ -41,7 +41,7 @@ REM NON-PRIMARY, PRIMARY, SINGLE
 set primary_symbols=PRIMARY
 REM CANDLE or "ATR5M", "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D", "FACTOR", I stick with 5 min it's based on that last 1 hour of movement of that specific day
 set primary_stop_selection=FACTOR
-set stop_expected_move=0.05
+set stop_expected_move=0.025
 set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
 set max_trades_on_same_direction=100
