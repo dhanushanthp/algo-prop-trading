@@ -39,7 +39,7 @@ set close_by_solid_cdl=no
 
 REM NON-PRIMARY, PRIMARY, SINGLE
 set primary_symbols=PRIMARY
-REM CANDLE or "ATR5M", "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D", "FACTOR", I stick with 5 min it's based on that last 1 hour of movement of that specific day
+REM CANDLE or "ATR5M", "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D", "FACTOR"
 set primary_stop_selection=FACTOR
 set stop_expected_move=0.025
 set enable_sec_stop_selection=no
