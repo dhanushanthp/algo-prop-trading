@@ -74,7 +74,7 @@ def generate_insights(file_name):
 
     return data
 
-directory = "data/pnl/10_1_0_4/*"
+directory = "C:\\Users\\DHANUSHANTHPUSHPARAJ\\OneDrive\\Financial Freedom\\Phoenix\\data\\pnl\\10_1_0_4\\*"
 files = glob(directory)
 
 for file_name in tqdm(files):
