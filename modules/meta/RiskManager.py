@@ -72,6 +72,7 @@ class RiskManager:
         self.partial_profit = round(self.account_size/1000)
         self.stop_ratio = stop_ratio
         self.target_ratio = target_ratio
+        self.account_target_ratio = files_util.get_dynamic_rr()
         
 
         # Initial Trail loss w.r.t to account size

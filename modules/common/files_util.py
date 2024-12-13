@@ -2,6 +2,8 @@ import pandas as pd
 from datetime import datetime
 import os
 from modules.meta import util
+from glob import glob
+from modules import config
 
 def check_file_exists(file_path):
     if os.path.isfile(file_path):
@@ -110,6 +112,20 @@ def get_previous_pnls():
             return df
     
     return None
+
+def get_dynamic_rr(num_records:int=3) -> float:
+    all_files = sorted(glob(f"data/pnl/{config.local_ip}/*"), reverse=True)[:num_records]
+    df_dict = {"date":[], "max_rr":[]}
+    for file_name in all_files:
+        date = file_name.split("/")[-1]
+        single_file = pd.read_csv(file_name, names=["index", "system", "Strategy", "pnl", "rr", "risk"])
+        single_file["rr"] = single_file["rr"].abs()
+        df_dict["date"].append(date)
+        max_rr = max(1, single_file["rr"].max())
+        df_dict["max_rr"].append(max_rr)
+
+    df = pd.DataFrame(df_dict)
+    return round(df["max_rr"].mean(), 2)
 
 
 def get_most_risk_percentage(file_name:str, **kwargs):
@@ -237,4 +253,5 @@ if __name__ == "__main__":
     # update_pnl("testing", "4_CDL", "REVERSE" , 100, -1.2, 0.15)
     # print(get_most_risk_percentage("testing", strategy="TESTING"))
     # print(get_previous_pnl_direction())
-    print(get_strategy())
+    # print(get_strategy())
+    print(get_dynamic_rr())
