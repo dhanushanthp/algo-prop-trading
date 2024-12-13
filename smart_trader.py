@@ -29,6 +29,7 @@ class SmartTrader():
         self.account_trail_enabler:bool=False
         self.PnL:float = 0
         self.rr:float = 0
+        self.dynamic_exit_rr:float = -1
 
         # Key Arguments, Below values will be override when the risk is dynamic
         self.systems:list = kwargs["systems"]
@@ -233,7 +234,8 @@ class SmartTrader():
         print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
         print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.account_target_ratio}R)\n")
 
-        print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}\n")
+        print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
+        print(f"{'Exited RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}\n")
 
     def main(self):
         while True:
@@ -264,7 +266,7 @@ class SmartTrader():
                     self.exited_by_pnl=True
                     self.notify_pnl = False
                     self.is_initial_run = False
-                    print(f"\n************* Initial Entry Check: Early Exit by PnL: {self.exited_by_pnl}*************")
+                    print(f"\n************* Initial Entry Check: Early Exit by PnL: {self.exited_by_pnl} *************")
 
             # Print configs and pnl on console
             self.verbose()
@@ -286,8 +288,15 @@ class SmartTrader():
             #     # This helps to track the account level loss once after the RR go above 1.1
             #     self.account_trail_enabler = True
 
+            """
+            Enable account level breakeven when RR hit 0.8 RR, This way we protect the downside of it.
+            # Just accept the loss, that what you have agreed for...
+            """
+            # if self.rr > 0.8:
+            #     self.dynamic_exit_rr = 0.0
+
             # Early exit based on max account level profit or Loss
-            if ((self.rr <= -1 and self.max_loss_exit) or (self.rr > self.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
+            if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
                 self.close_trades_early_on_pnl()
             
             if self.close_by_time:
@@ -356,7 +365,8 @@ class SmartTrader():
                                                 stop_expected_move=self.stop_expected_move)
 
                 self.notify_pnl = False # Once sent, Disable
-                self.exited_by_pnl = False # Reset the Immidiate exit                
+                self.exited_by_pnl = False # Reset the Immidiate exit
+                self.dynamic_exit_rr = -1 # Reset the exit RR to -1           
             
             if self.is_market_open and (not self.exited_by_pnl) \
                   and (not self.is_market_close) \
