@@ -12,12 +12,12 @@ set trades_per_day=100
 REM Risk Management
 set entry_with_st_tgt=no
 set account_risk=1.0
-set account_target_ratio=2.0
+set account_target_ratio=3.0
 set each_position_risk=0.02
 set target_ratio=5.0
 set enable_dynamic_direction=yes
 set max_loss_exit=yes
-set max_target_exit=no
+set max_target_exit=yes
 
 REM Strategy and System
 set strategy=BREAK
