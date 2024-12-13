@@ -113,9 +113,22 @@ def get_previous_pnls():
     
     return None
 
-def get_dynamic_rr(num_records:int=3) -> float:
+def get_dynamic_rr(num_records: int = 3) -> float:
+    """
+    Calculate the dynamic risk-reward ratio (RR) based on the most traded files.
+
+    This function reads the most recent CSV files from a specified directory, extracts the
+    risk-reward ratio (RR) values, and calculates the average of the maximum RR values from
+    each file. The RR values are converted to their absolute values before calculating the maximum.
+
+    Args:
+    num_records (int): The number of most recent files to consider. Default is 3.
+
+    Returns:
+    float: The average of the maximum RR values from the most recent files, rounded to 2 decimal places.
+    """
     all_files = sorted(glob(f"data/pnl/{config.local_ip}/*"), reverse=True)[:num_records]
-    df_dict = {"date":[], "max_rr":[]}
+    df_dict = {"date": [], "max_rr": []}
     for file_name in all_files:
         date = file_name.split("/")[-1]
         single_file = pd.read_csv(file_name, names=["index", "system", "Strategy", "pnl", "rr", "risk"])
@@ -126,6 +139,7 @@ def get_dynamic_rr(num_records:int=3) -> float:
 
     df = pd.DataFrame(df_dict)
     return round(df["max_rr"].mean(), 2)
+
 
 
 def get_most_risk_percentage(file_name:str, **kwargs):
