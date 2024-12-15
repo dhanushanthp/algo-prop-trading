@@ -145,6 +145,13 @@ def get_current_time() -> datetime:
     current_time =  datetime.now(pytz.timezone(f'Etc/GMT-{config.server_timezone}'))
     return current_time
 
+def get_week_day() -> int:
+    """
+    Get the weekday (0 = Monday, 6 = Sunday)
+    """
+    week_day = get_current_time().weekday()
+    return week_day
+
 def get_current_gmt_time() -> datetime:
     current_time =  datetime.now(pytz.timezone('Etc/GMT'))
     return current_time

@@ -232,7 +232,7 @@ class SmartTrader():
 
         print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
         print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
-        print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.account_target_ratio}R)\n")
+        print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.risk_manager.account_target_ratio} R)\n")
 
         print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
         print(f"{'Exited RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}\n")
@@ -296,7 +296,7 @@ class SmartTrader():
             #     self.dynamic_exit_rr = 0.0
 
             # Early exit based on max account level profit or Loss
-            if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
+            if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
                 self.close_trades_early_on_pnl()
             
             if self.close_by_time:

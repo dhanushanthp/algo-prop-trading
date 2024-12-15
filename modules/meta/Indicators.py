@@ -782,6 +782,15 @@ class Indicators:
                 if len(unique_strategy) == 1 and unique_strategy == "REVERSE":
                     print("Previous 3 REVERSE Win")
                     return "BREAK"
+        
+        """
+        Most of the days If it's monday then REVERSE works the best, So we manually overide the rule
+        """
+        week_day = util.get_week_day()
+        if week_day == 0:
+            print("Monday Reversal Manual Set")
+            return "REVERSE"
+
 
         symbols = curr.get_symbols(symbol_selection="PRIMARY")
         # Ignore US500 and XAUUSD since they don't open at the time of forex open
