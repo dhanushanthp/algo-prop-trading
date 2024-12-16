@@ -1,4 +1,5 @@
 import MetaTrader5 as mt
+mt.initialize()
 from typing import Tuple
 
 class Account:
@@ -22,6 +23,9 @@ class Account:
         
         account_info=mt.account_info()
         return account_info
+    
+    def get_account_id(self):
+        return self.get_account_details().login
 
     def get_liquid_balance(self) -> float:
         return self.get_account_details().balance
@@ -31,3 +35,7 @@ class Account:
     
     def get_profit(self) -> float:
         return self.get_account_details().profit
+    
+if __name__ == "__main__":
+    ref = Account()
+    print(ref.get_account_id())
