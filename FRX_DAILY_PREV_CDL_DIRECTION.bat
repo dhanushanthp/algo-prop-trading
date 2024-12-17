@@ -18,6 +18,7 @@ set target_ratio=5.0
 set enable_dynamic_direction=yes
 set max_loss_exit=yes
 set max_target_exit=yes
+set account_trail_enabler=yes
 
 REM Strategy and System
 set strategy=BREAK
@@ -75,4 +76,5 @@ python smart_trader.py ^
     --account_target_ratio %account_target_ratio% ^
     --entry_with_st_tgt %entry_with_st_tgt% ^
     --stop_expected_move %stop_expected_move% ^
+    --account_trail_enabler %account_trail_enabler% ^
     --target_ratio %target_ratio%

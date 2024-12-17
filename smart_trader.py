@@ -26,7 +26,7 @@ class SmartTrader():
         self.exited_by_pnl:bool = False
         self.notify_pnl:bool = True
         self.is_initial_run:bool= True # This helps to avoid message and pnl write while market is closed.
-        self.account_trail_enabler:bool=False
+        self.account_trail_enabler:bool=kwargs["account_trail_enabler"]
         self.PnL:float = 0
         self.rr:float = 0
         self.dynamic_exit_rr:float = -1
@@ -281,12 +281,13 @@ class SmartTrader():
             """
             # Disabled the trail loss. So we hold the trade until the close of the market.
             # the thought behind disabling is, We don't know how the market move. Sometime it may come down and go up so we just keep the position until it close for max profit.
-            # if (self.rr > 2.1 or self.account_trail_enabler) and (not self.exited_by_pnl) and self.notify_pnl:
-            #     if self.risk_manager.has_daily_maximum_risk_reached() and self.max_loss_exit:
-            #         self.close_trades_early_on_pnl(exit_statement="Trail Close")
+            # Also this helps to protect he down side of the market as well.
+            if self.account_trail_enabler and (not self.exited_by_pnl) and self.notify_pnl:
+                if self.risk_manager.has_daily_maximum_risk_reached() and self.max_loss_exit:
+                    self.close_trades_early_on_pnl(exit_statement="Trail Close")
                 
-            #     # This helps to track the account level loss once after the RR go above 1.1
-            #     self.account_trail_enabler = True
+                # This helps to track the account level loss once after the RR go above 1.1
+                self.account_trail_enabler = True
 
             """
             Enable account level breakeven when RR hit 0.8 RR, This way we protect the downside of it.
@@ -520,6 +521,7 @@ if __name__ == "__main__":
     parser.add_argument('--primary_symbols', type=str, help='Pick Only Primary Symbols')
     parser.add_argument('--primary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--stop_expected_move', type=float, help='% of expected move of an symbol based on the price')
+    parser.add_argument('--account_trail_enabler', type=str, help='Enable/Disable Account Trail')
     parser.add_argument('--secondary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--enable_sec_stop_selection', type=str, help='Enable secondary stop selection')
     parser.add_argument('--max_trades_on_same_direction', type=int, help='Max number of trades by direction')
@@ -556,6 +558,7 @@ if __name__ == "__main__":
     max_trades_on_same_direction = int(args.max_trades_on_same_direction)
     entry_with_st_tgt = util.boolean(args.entry_with_st_tgt)
     stop_expected_move = float(args.stop_expected_move)
+    account_trail_enabler = util.boolean(args.account_trail_enabler)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -567,6 +570,6 @@ if __name__ == "__main__":
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
                       max_trades_on_same_direction=max_trades_on_same_direction, entry_with_st_tgt=entry_with_st_tgt,
-                      stop_expected_move=stop_expected_move)
+                      stop_expected_move=stop_expected_move, account_trail_enabler=account_trail_enabler)
 
     win.main()

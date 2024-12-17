@@ -342,6 +342,7 @@ class RiskManager:
     
     def has_daily_maximum_risk_reached(self):
         """
+        This is 1 RR Trail move.
         Check if the daily maximum risk has been reached based on the account's equity and trailing loss.
 
         The method evaluates whether the current equity of the account has dropped below a threshold that represents 

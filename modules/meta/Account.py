@@ -31,6 +31,9 @@ class Account:
         return self.get_account_details().balance
     
     def get_equity(self) -> float:
+        """
+        What is the actual amount that my account is holding with the reflection of PnL
+        """
         return self.get_account_details().equity
     
     def get_profit(self) -> float:
