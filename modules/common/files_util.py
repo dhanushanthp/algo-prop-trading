@@ -113,7 +113,7 @@ def get_previous_pnls():
     
     return None
 
-def get_dynamic_rr(num_records: int = 3) -> float:
+def get_dynamic_rr(num_records: int = 3, default:bool=True) -> float:
     """
     Calculate the dynamic risk-reward ratio (RR) based on the most traded files.
 
@@ -127,18 +127,21 @@ def get_dynamic_rr(num_records: int = 3) -> float:
     Returns:
     float: The average of the maximum RR values from the most recent files, rounded to 2 decimal places.
     """
-    all_files = sorted(glob(f"data/pnl/{config.local_ip}/*"), reverse=True)[:num_records]
-    df_dict = {"date": [], "max_rr": []}
-    for file_name in all_files:
-        date = file_name.split("/")[-1]
-        single_file = pd.read_csv(file_name, names=["index", "system", "Strategy", "pnl", "rr", "risk"])
-        single_file["rr"] = single_file["rr"].abs()
-        df_dict["date"].append(date)
-        max_rr = max(1, single_file["rr"].max())
-        df_dict["max_rr"].append(max_rr)
+    if default:
+        return 2.0
+    else:
+        all_files = sorted(glob(f"data/pnl/{config.local_ip}/*"), reverse=True)[:num_records]
+        df_dict = {"date": [], "max_rr": []}
+        for file_name in all_files:
+            date = file_name.split("/")[-1]
+            single_file = pd.read_csv(file_name, names=["index", "system", "Strategy", "pnl", "rr", "risk"])
+            single_file["rr"] = single_file["rr"].abs()
+            df_dict["date"].append(date)
+            max_rr = max(1, single_file["rr"].max())
+            df_dict["max_rr"].append(max_rr)
 
-    df = pd.DataFrame(df_dict)
-    return round(df["max_rr"].mean(), 2)
+        df = pd.DataFrame(df_dict)
+        return min(2, round(df["max_rr"].mean(), 2))
 
 
 
