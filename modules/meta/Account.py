@@ -6,7 +6,7 @@ class Account:
     def get_account_name(self):
         info = mt.account_info()
         balance = round(info.balance/1000)
-        return f"{info.name} {balance}K "
+        return f"{info.name}"
 
     def get_account_details(self):
         """

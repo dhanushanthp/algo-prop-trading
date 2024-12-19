@@ -18,6 +18,7 @@ from modules.meta.Indicators import Indicators
 from modules.meta.wrapper import Wrapper
 from modules.meta.Strategies import Strategies
 from modules.common.logme import log_it
+from modules.meta.TradeTracker import TradeTracker
 
 class SmartTrader():
     def __init__(self, **kwargs):
@@ -86,6 +87,7 @@ class SmartTrader():
         self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
         self.strategies = Strategies(wrapper=self.wrapper, indicators=self.indicators)
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager, wrapper=self.wrapper)
+        self.trade_tracker = TradeTracker()
         
         # Account information
         self.account_name = self.account.get_account_name()
@@ -172,11 +174,13 @@ class SmartTrader():
 
         # Write the pnl to a file
         files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
+        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system='|'.join(self.systems), strategy=self.risk_manager.strategy, account_risk_percentage=self.risk_manager.account_risk_percentage, each_position_risk_percentage=self.risk_manager.position_risk_percentage)
         # Update the strategy
         # self.strategy:str = files_util.get_strategy()
 
         if self.record_pnl:
             files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
+            self.trade_tracker.record_pnl_logs(pnl=self.PnL, rr=self.rr)
                 
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
@@ -315,6 +319,8 @@ class SmartTrader():
                 today_pnl = self.risk_manager.calculate_trades_based_pnl()
                 total_rr = today_pnl/self.risk_manager.risk_of_an_account
                 files_util.record_pnl(iteration=1, pnl=today_pnl, rr=total_rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
+                self.trade_tracker.record_pnl_logs(pnl=today_pnl, rr=total_rr)
+                print(f"Current RR: {round(total_rr, 2)}")
 
             if self.record_pnl and (not self.exited_by_pnl) and (not self.is_market_close):
                 # Check if PnL recording is enabled, we are not in an immediate exit condition, and the market is still open
@@ -357,6 +363,7 @@ class SmartTrader():
                     
                     # Write the pnl to a file
                     files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
+                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system='|'.join(self.systems), strategy=self.risk_manager.strategy, account_risk_percentage=self.risk_manager.account_risk_percentage, each_position_risk_percentage=self.risk_manager.position_risk_percentage)
                     # Update the strategy
                     # self.strategy:str = files_util.get_strategy()
                 
@@ -367,7 +374,7 @@ class SmartTrader():
 
                 self.notify_pnl = False # Once sent, Disable
                 self.exited_by_pnl = False # Reset the Immidiate exit
-                self.dynamic_exit_rr = -1 # Reset the exit RR to -1           
+                self.dynamic_exit_rr = -1 # Reset the exit RR to -1
             
             if self.is_market_open and (not self.exited_by_pnl) \
                   and (not self.is_market_close) \
