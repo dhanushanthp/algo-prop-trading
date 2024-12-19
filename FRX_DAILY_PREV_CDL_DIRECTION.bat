@@ -11,9 +11,9 @@ set trades_per_day=100
 
 REM Risk Management
 set entry_with_st_tgt=no
-set account_risk=0.7
+set account_risk=1.0
 set account_target_ratio=2.5
-set each_position_risk=0.07
+set each_position_risk=0.1
 set target_ratio=5.0
 set enable_dynamic_direction=yes
 set max_loss_exit=yes
@@ -42,7 +42,8 @@ REM NON-PRIMARY, PRIMARY, SINGLE
 set primary_symbols=PRIMARY
 REM CANDLE or "ATR5M", "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D", "FACTOR"
 set primary_stop_selection=FACTOR
-set stop_expected_move=0.025
+REM Lower it goes, tigher the risk is
+set stop_expected_move=0.05 
 set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
 set max_trades_on_same_direction=100
