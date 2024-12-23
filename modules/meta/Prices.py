@@ -1,14 +1,23 @@
 import MetaTrader5 as mt5
 import modules.meta.Currencies as curr
+from modules.meta.wrapper import Wrapper
 from typing import Tuple
 mt5.initialize()
 
-class Prices:    
+class Prices:
+    def __init__(self):
+        self.wrapper = Wrapper()
+
     def get_exchange_price(self, symbol) -> float:
         ask_price = mt5.symbol_info_tick(symbol).ask
         bid_price = mt5.symbol_info_tick(symbol).bid
         exchange_rate = round((bid_price + ask_price)/2, 4)
         return exchange_rate
+    
+    def get_last_price(self, symbol)-> float:
+        candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
+        last_price = candle["close"]
+        return last_price
 
     def get_bid_ask(self, symbol) -> Tuple[float, float]:
         """

@@ -150,7 +150,7 @@ class RiskManager:
         todays_trades = self.wrapper.get_todays_trades()
         todays_trades = todays_trades[["symbol", "entry", "type", "price", "commission", "volume"]].copy()
         todays_trades = todays_trades[todays_trades["entry"] == 0]
-        todays_trades["current_price"] = todays_trades["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
+        todays_trades["current_price"] = todays_trades["symbol"].apply(lambda x: self.prices.get_last_price(symbol=x))
         todays_trades["change"] =  todays_trades.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
         todays_trades["pnl"] = todays_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
         todays_trades["net_pnl"] = todays_trades["pnl"] + todays_trades["commission"]
