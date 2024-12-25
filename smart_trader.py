@@ -36,7 +36,8 @@ class SmartTrader():
         self.systems:list = kwargs["systems"]
         self.strategy:str = kwargs["strategy"] # files_util.get_strategy()
         self.account_risk = kwargs["account_risk"]
-        self.each_position_risk = kwargs["each_position_risk"]
+        # self.each_position_risk = kwargs["each_position_risk"]
+        self.each_position_risk = round(self.account_risk/10, 2)
         self.enable_dynamic_direction = kwargs["enable_dynamic_direction"]
         self.multiple_positions = kwargs["multiple_positions"]
 
