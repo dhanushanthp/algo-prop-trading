@@ -13,6 +13,7 @@ REM Risk Management
 set entry_with_st_tgt=no
 set account_risk=1.0
 set account_target_ratio=2.5
+REM The each position size is account_risk/10
 set each_position_risk=0.1
 set target_ratio=5.0
 set enable_dynamic_direction=yes
