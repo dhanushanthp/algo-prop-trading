@@ -57,6 +57,12 @@ elif company == "FTMO S.R.O.":
     indexes = ['AUS200.cash', 'HK50.cash', 'JP225.cash',  'US500.cash', 'UK100.cash']
     support_pairs = ["NZDUSD", "USDCAD", "EURUSD"]
 
+elif company == "FundedNext Ltd":
+    currencies = master_currencies
+    jpy_currencies = master_jpy_pairs
+    indexes = ['AUS200.cash', 'HK50.cash', 'JP225.cash',  'US500.cash', 'UK100.cash']
+    support_pairs = ["NZDUSD", "USDCAD", "EURUSD"]
+
 # FundingPips
 elif company == "Black Bull Group Limited":
     currencies = master_currencies 
