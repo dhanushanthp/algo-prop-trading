@@ -174,13 +174,9 @@ class SmartTrader():
         self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.strategy}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
 
         # Write the pnl to a file
-        files_util.update_pnl(file_name=util.get_server_ip(), system='|'.join(self.systems), strategy=self.risk_manager.strategy, pnl=self.PnL, rr=self.rr, each_pos_percentage=self.risk_manager.position_risk_percentage)
         self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system='|'.join(self.systems), strategy=self.risk_manager.strategy, account_risk_percentage=self.risk_manager.account_risk_percentage, each_position_risk_percentage=self.risk_manager.position_risk_percentage)
-        # Update the strategy
-        # self.strategy:str = files_util.get_strategy()
 
         if self.record_pnl:
-            files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
             self.trade_tracker.record_pnl_logs(pnl=self.PnL, rr=self.rr)
                 
         # Reset account size for next day
@@ -305,15 +301,18 @@ class SmartTrader():
             if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
                 self.close_trades_early_on_pnl()
             
+
             if self.close_by_time:
                 positions = self.risk_manager.close_positions_by_time(timeframe=self.trading_timeframe, wait_factor=3)
                 for obj in positions:
                     self.orders.close_single_position(obj=obj)
 
+
             if self.close_by_solid_cdl:
                 positions = self.risk_manager.close_positions_by_solid_candle(timeframe=self.trading_timeframe, wait_factor=1, close_check_candle=1)
                 for obj in positions:
                     self.orders.close_single_position(obj=obj)
+
 
             # Record PNL even once after the positions are exit based on todays trades
             if not self.wrapper.get_todays_trades().empty:
@@ -325,18 +324,7 @@ class SmartTrader():
                     today_pnl = self.PnL
                     total_rr = self.rr
                 
-                files_util.record_pnl(iteration=1, pnl=today_pnl, rr=total_rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
                 self.trade_tracker.record_pnl_logs(pnl=today_pnl, rr=total_rr)
-
-            if self.record_pnl and (not self.exited_by_pnl) and (not self.is_market_close):
-                # Check if PnL recording is enabled, we are not in an immediate exit condition, and the market is still open
-                # Proceed to record PnL only if there are trades made today
-                # if not self.wrapper.get_todays_trades().empty:
-                #     files_util.record_pnl(iteration=1, pnl=self.PnL, rr=self.rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
-                
-                directional_pnl = self.wrapper.get_active_directional_pnl()
-                if directional_pnl:
-                    files_util.record_pnl_directional(long_pnl=directional_pnl.long, short_pnl=directional_pnl.short, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
 
 
             # Each position trail stop
@@ -354,6 +342,7 @@ class SmartTrader():
                     if self.trade(direction=direction, symbol=symbol, comment=f"NEUTRAL", break_level=-1, market_entry=True):
                         break
             
+
             if self.enable_breakeven:
                 self.risk_manager.breakeven(profit_factor=1)
 
@@ -382,6 +371,7 @@ class SmartTrader():
                 self.exited_by_pnl = False # Reset the Immidiate exit
                 self.dynamic_exit_rr = -1 # Reset the exit RR to -1
             
+
             if self.is_market_open and (not self.exited_by_pnl) \
                   and (not self.is_market_close) \
                     and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
@@ -484,7 +474,8 @@ class SmartTrader():
                         except Exception as e:
                             error_trace = traceback.format_exc()
                             log_it("STRATEGY_SELECTION").info(error_trace)
-                                
+                        
+                        
                         if trade_direction:
                             is_valid_signal, is_opening_trade = self.risk_manager.check_signal_validity(symbol=symbol,
                                                                                       timeframe=self.trading_timeframe,
