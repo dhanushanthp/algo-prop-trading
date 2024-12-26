@@ -117,6 +117,47 @@ class Prices:
                 None of the currency lead by USD
                 """
                 return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_base}USD")
+        elif curr.company == "FundedNext Ltd":
+            if symbol == "US500.cash" or (symbol in curr.master_stocks):
+                return 1.0
+            elif symbol == "UK100.cash":
+                return self.get_exchange_price("GBPUSD")
+            elif symbol == "HK50.cash":
+                return round(1/self.get_exchange_price("USDHKD"), 4)
+            elif symbol == "JP225.cash":
+                return round(1/self.get_exchange_price("USDJPY"), 4)
+            elif symbol == "AUS200.cash":
+                return self.get_exchange_price("AUDUSD")
+            elif symbol == "XAUUSD":
+                return self.get_exchange_price("XAUUSD")
+            elif symbol == "AUDUSD":
+                return 1.6 * self.get_exchange_price("AUDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol == "NZDUSD":
+                return 1.6 * self.get_exchange_price("NZDUSD") # TODO, This fix number 1.6 has to be changed!
+            elif symbol in ["CADJPY", "CADCHF"]:
+                return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCAD")
+            elif symbol in ["CHFJPY"]:
+                return (1/self.get_exchange_price(symbol)) * 1/self.get_exchange_price(f"USDCHF")
+            elif symbol_base == "USD":
+                """
+                When USD is a BASE Currency, First currency of the pair
+                e.g USDJPY, USDCAD, USDCHF
+                If the currency is lead by USD then we just calculate the inverse of the exchange
+                """
+                return 1/self.get_exchange_price(symbol)
+            elif symbol_quote == "USD":
+                """
+                When USD is a QUOTE Currency, the second currency
+                e.g XAUUSD, GBPUSD, EURUSD
+                If the currency is followed by USD then we just calculate the exchange
+                """
+                return self.get_exchange_price(symbol)
+            else:
+                """
+                e.g AUDNZD, AUDJPY, NZDJPY, EURJPY, GBPJPY
+                None of the currency lead by USD
+                """
+                return (1/self.get_exchange_price(symbol)) * self.get_exchange_price(f"{symbol_base}USD")
             
         elif curr.company == "Black Bull Group Limited":
             if symbol == "SPX500":

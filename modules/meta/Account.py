@@ -41,4 +41,4 @@ class Account:
     
 if __name__ == "__main__":
     ref = Account()
-    print(ref.get_account_id())
+    print(ref.get_account_details())
