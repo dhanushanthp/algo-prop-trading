@@ -320,13 +320,13 @@ class SmartTrader():
                 if self.exited_by_pnl:
                     today_pnl = self.risk_manager.calculate_trades_based_pnl()
                     total_rr = today_pnl/self.risk_manager.risk_of_an_account
+                    print(f"Offmarket PnL: {round(total_rr, 2)}")
                 else:
                     today_pnl = self.PnL
                     total_rr = self.rr
                 
                 files_util.record_pnl(iteration=1, pnl=today_pnl, rr=total_rr, risk_per=self.risk_manager.position_risk_percentage, strategy=self.risk_manager.strategy, system='|'.join(self.systems))
                 self.trade_tracker.record_pnl_logs(pnl=today_pnl, rr=total_rr)
-                print(f"Current RR: {round(total_rr, 2)}")
 
             if self.record_pnl and (not self.exited_by_pnl) and (not self.is_market_close):
                 # Check if PnL recording is enabled, we are not in an immediate exit condition, and the market is still open
