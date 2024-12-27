@@ -1,5 +1,6 @@
 import MetaTrader5 as mt
 mt.initialize()
+import os
 import time
 import argparse
 import traceback
@@ -192,6 +193,7 @@ class SmartTrader():
         """
         Print the configuration and Pnl parameters in console for monitoring purposes
         """
+        os.system('cls' if os.name == 'nt' else 'clear')
         day, hour, minute = util.get_current_day_hour_min()
         market_status_string = util.cl_status("Inactive: ", color="red") if self.is_market_close else util.cl_status("Active: ", color="green")
         print(f"\n--- {market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} ---")
