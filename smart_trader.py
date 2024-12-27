@@ -83,7 +83,8 @@ class SmartTrader():
                                         target_ratio=self.target_ratio,
                                         enable_dynamic_direction=self.enable_dynamic_direction,
                                         strategy=self.strategy,
-                                        stop_expected_move=self.stop_expected_move)
+                                        stop_expected_move=self.stop_expected_move,
+                                        account_target_ratio=self.account_target_ratio)
         self.alert = Slack()
         self.prices = Prices()
         self.wrapper = Wrapper()
@@ -185,7 +186,7 @@ class SmartTrader():
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.strategy, stop_expected_move=self.stop_expected_move)
+                                        strategy=self.strategy, stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
                 
         self.notify_pnl = False # Once sent, Disable
         self.exited_by_pnl = True
@@ -319,9 +320,15 @@ class SmartTrader():
                     self.orders.close_single_position(obj=obj)
 
             
-            if self.adaptive_reentry and self.exited_by_pnl:
-                # TODO - Reentry based on the RR hit
-                pass
+            if self.adaptive_reentry and self.exited_by_pnl and not self.wrapper.get_todays_trades().empty:
+                today_pnl = self.risk_manager.calculate_trades_based_pnl()
+                total_rr = today_pnl/self.risk_manager.risk_of_an_account
+                if total_rr < 0.1:
+                    self.exited_by_pnl = False
+                    self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
+                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy,
+                                                stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
+                
 
 
             # Record PNL even once after the positions are exit based on todays trades
@@ -375,7 +382,7 @@ class SmartTrader():
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy,
-                                                stop_expected_move=self.stop_expected_move)
+                                                stop_expected_move=self.stop_expected_move,  account_target_ratio=self.account_target_ratio)
 
                 self.notify_pnl = False # Once sent, Disable
                 self.exited_by_pnl = False # Reset the Immidiate exit

@@ -38,6 +38,7 @@ class RiskManager:
             account_name (str): The name of the trading account.
             strategy (str): The current trading strategy, determined dynamically or via input.
             stop_expected_move (float): Rather using ATR we can use the Potential % of move based on the symbol current price. Because the ATR could be vary based on the specific day of move
+            account_target_ratio (float): The target ratio for the account level.
 
         Methods:
             get_max_loss() -> int:
@@ -72,7 +73,7 @@ class RiskManager:
         self.partial_profit = round(self.account_size/1000)
         self.stop_ratio = stop_ratio
         self.target_ratio = target_ratio
-        self.account_target_ratio = files_util.get_dynamic_rr()
+        self.account_target_ratio = kwargs["account_target_ratio"] # files_util.get_dynamic_rr()
         
 
         # Initial Trail loss w.r.t to account size
