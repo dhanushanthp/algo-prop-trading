@@ -13,3 +13,4 @@ archive
 bat_scripts
 notebooks/data/candles/
 PnLData
+/logs
