@@ -326,7 +326,7 @@ class SmartTrader():
                 """
                 today_pnl = self.risk_manager.calculate_trades_based_pnl()
                 total_rr = today_pnl/self.risk_manager.risk_of_an_account
-                if total_rr < 0.1:
+                if total_rr < 0.2 and total_rr > 0:
                     self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy,
                                                 stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)

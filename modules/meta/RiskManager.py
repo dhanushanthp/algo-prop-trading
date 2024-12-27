@@ -317,8 +317,8 @@ class RiskManager:
             # we skip taking a new position to prevent reacting to sudden price movements (which could 
             # trigger a stop-loss and immediately open a new position based on the same signal).
             if active_positions.empty or (symbol not in list(active_positions["symbol"])):
-                if trade_time_gap > timeframe:
-                    return True, is_opening_trade
+                # if trade_time_gap > timeframe:
+                return True, is_opening_trade
         elif multiple_positions == "by_active_single_direction_with_limit":
             # Which means one trade at a time, So we just need to check the active trades
             is_opening_trade = True
