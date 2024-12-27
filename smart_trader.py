@@ -73,6 +73,8 @@ class SmartTrader():
         self.max_trades_on_same_direction = kwargs["max_trades_on_same_direction"]
 
         self.stop_expected_move = kwargs["stop_expected_move"]
+
+        self.adaptive_reentry = kwargs["adaptive_reentry"]
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -202,6 +204,7 @@ class SmartTrader():
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}\n")
 
         print(f"{'Strategy'.ljust(20)}: {self.systems}")
+        print(f"{'Adaptive Re-Entry'.ljust(20)}: {util.cl(self.adaptive_reentry)}")
         print(f"{'Entry with ST & TGT'.ljust(20)}: {util.cl(self.entry_with_st_tgt)}")
         print(f"{'Multiple Position'.ljust(20)}: {self.multiple_positions}")
         if "ATR_BASED_DIRECTION" in self.systems:
@@ -314,6 +317,11 @@ class SmartTrader():
                 positions = self.risk_manager.close_positions_by_solid_candle(timeframe=self.trading_timeframe, wait_factor=1, close_check_candle=1)
                 for obj in positions:
                     self.orders.close_single_position(obj=obj)
+
+            
+            if self.adaptive_reentry and self.exited_by_pnl:
+                # TODO - Reentry based on the RR hit
+                pass
 
 
             # Record PNL even once after the positions are exit based on todays trades
@@ -531,6 +539,7 @@ if __name__ == "__main__":
     parser.add_argument('--secondary_stop_selection', type=str, help='Stop by Candle or any other properties')
     parser.add_argument('--enable_sec_stop_selection', type=str, help='Enable secondary stop selection')
     parser.add_argument('--max_trades_on_same_direction', type=int, help='Max number of trades by direction')
+    parser.add_argument('--adaptive_reentry', type=str, help='Reentry based on the RR hit')
     
     
     args = parser.parse_args()
@@ -565,6 +574,7 @@ if __name__ == "__main__":
     entry_with_st_tgt = util.boolean(args.entry_with_st_tgt)
     stop_expected_move = float(args.stop_expected_move)
     account_trail_enabler = util.boolean(args.account_trail_enabler)
+    adaptive_reentry = util.boolean(args.adaptive_reentry)
 
     win = SmartTrader(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -576,6 +586,6 @@ if __name__ == "__main__":
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
                       max_trades_on_same_direction=max_trades_on_same_direction, entry_with_st_tgt=entry_with_st_tgt,
-                      stop_expected_move=stop_expected_move, account_trail_enabler=account_trail_enabler)
+                      stop_expected_move=stop_expected_move, account_trail_enabler=account_trail_enabler, adaptive_reentry=adaptive_reentry)
 
     win.main()

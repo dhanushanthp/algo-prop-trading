@@ -49,6 +49,8 @@ set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
 set max_trades_on_same_direction=100
 
+set adaptive_reentry=no
+
 python smart_trader.py ^
     --strategy %strategy% ^
     --enable_trail_stop %enable_trail_stop% ^
@@ -79,4 +81,5 @@ python smart_trader.py ^
     --entry_with_st_tgt %entry_with_st_tgt% ^
     --stop_expected_move %stop_expected_move% ^
     --account_trail_enabler %account_trail_enabler% ^
+    --adaptive_reentry %adaptive_reentry% ^
     --target_ratio %target_ratio%
