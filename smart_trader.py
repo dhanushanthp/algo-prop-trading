@@ -321,16 +321,20 @@ class SmartTrader():
 
             
             if self.adaptive_reentry and self.exited_by_pnl and not self.wrapper.get_todays_trades().empty:
+                """
+                This is based on the observed pattern, Where the RR comes to 1RR and goes back to 0 then comes back, So we take the advantage of it.
+                """
                 today_pnl = self.risk_manager.calculate_trades_based_pnl()
                 total_rr = today_pnl/self.risk_manager.risk_of_an_account
                 if total_rr < 0.1:
-                    self.exited_by_pnl = False
                     self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy,
                                                 stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
-                    self.dynamic_exit_rr = 0.0
+                    
+                    self.exited_by_pnl = False
+                    # we don't need to set the dynamic_rr to 0, Since when it takes new trades, 
+                    # the equity will be updated based on previous closed trades and the rr will be re calculated as fresh.
                 
-
 
             # Record PNL even once after the positions are exit based on todays trades
             if not self.wrapper.get_todays_trades().empty:
