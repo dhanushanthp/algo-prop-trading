@@ -128,29 +128,42 @@ class RiskManager:
         
         return list_to_close
     
-    def calculate_trades_based_pnl(self):
+    def calculate_trades_based_pnl(self, num_symbols:int=0):
         """
-        Calculates the total profit and loss (PnL) for today's trades.
-        
-        The function first defines a nested function to calculate directional PnL based on the trade entry price,
-        current price, and trade direction. It then retrieves today's trades and filters them to include only those
-        where 'entry' is 0 (indicating a new trade). For each trade, it updates the current price, calculates the 
-        price change, calculates the PnL for the position, and adjusts for commission to determine the net PnL.
-        Finally, it sums the net PnL for all trades to return the total PnL for the day.
-
+        Calculate the profit and loss (PnL) based on today's trades.
+        This method calculates the PnL for today's trades by considering the entry price, 
+        current price, trade direction, commission, and volume of each trade. It also 
+        allows limiting the number of symbols to consider.
+        Args:
+            num_symbols (int): The number of symbols to consider. If 0, all symbols are considered.
         Returns:
-            float: Total PnL for today's trades.
+            float: The total net PnL rounded to two decimal places.
         """
+
         def directional_pnl(entry, current, direction):
+            """
+            Calculate the profit and loss (PnL) based on the entry price, current price, and trade direction.
+
+            Args:
+                entry (float): The entry price of the trade.
+                current (float): The current price of the trade.
+                direction (int): The direction of the trade. 
+                         0 for long (buy) position, 1 for short (sell) position.
+
+            Returns:
+                float: The calculated PnL. Positive value indicates profit, negative value indicates loss.
+            """
             if direction == 0:
                 return current - entry
             elif direction == 1:
                 return entry - current
-            
-
+        
         todays_trades = self.wrapper.get_todays_trades()
+        todays_trades = todays_trades.sort_values(by="time", ascending=True)
         todays_trades = todays_trades[["symbol", "entry", "type", "price", "commission", "volume"]].copy()
         todays_trades = todays_trades[todays_trades["entry"] == 0]
+        if num_symbols > 0:
+            todays_trades = todays_trades.head(num_symbols)
         todays_trades["current_price"] = todays_trades["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
         todays_trades["change"] =  todays_trades.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
         todays_trades["pnl"] = todays_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
@@ -940,7 +953,7 @@ class RiskManager:
         return True
 
 if __name__ == "__main__":
-    obj = RiskManager(stop_ratio=1, target_ratio=3, strategy="dynamic")
+    obj = RiskManager(stop_ratio=1, target_ratio=3, strategy="dynamic", stop_expected_move=0.05, account_target_ratio=1)
     import sys
     test_symbol = sys.argv[1]
     decision = sys.argv[2]
@@ -1014,6 +1027,6 @@ if __name__ == "__main__":
         case "get_pnl":
             # python modules\meta\RiskManager.py CADJPY get_pnl
             for i in range(100):
-                print(obj.calculate_trades_based_pnl())
+                print(obj.calculate_initial_trades_based_pnl())
                 import time
                 time.sleep(1)
