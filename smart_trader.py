@@ -103,6 +103,8 @@ class SmartTrader():
         # Initiate the ticker
         curr.ticker_initiator(security=self.security, symbol_selection=self.symbol_selection)
 
+        # Get the trading symbols
+        self.trading_symbols = curr.get_symbols(security=self.security, symbol_selection=self.symbol_selection)
 
     def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False, stop_selection:str="ATR4H", entry_with_st_tgt:bool=True) -> bool:
         """
@@ -324,7 +326,7 @@ class SmartTrader():
                 """
                 This is based on the observed pattern, Where the RR comes to 1RR and goes back to 0 then comes back, So we take the advantage of it.
                 """
-                today_pnl = self.risk_manager.calculate_trades_based_pnl()
+                today_pnl = self.risk_manager.calculate_trades_based_pnl(num_symbols = len(self.trading_symbols))
                 total_rr = today_pnl/self.risk_manager.risk_of_an_account
                 if total_rr < 0.2 and total_rr > 0:
                     self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
@@ -332,6 +334,7 @@ class SmartTrader():
                                                 stop_expected_move=self.stop_expected_move, account_target_ratio=5)
                     
                     self.exited_by_pnl = False
+                    self.risk_manager.alert.send_msg(f"Enabling Adaptive Re-Entry {util.get_account_name()} - {config.local_ip} ($ {round(self.today_pnl, 2)}), ${round(self.equity)}")
                     # we don't need to set the dynamic_rr to 0, Since when it takes new trades, 
                     # the equity will be updated based on previous closed trades and the rr will be re calculated as fresh.
                 
@@ -341,7 +344,7 @@ class SmartTrader():
                 if self.exited_by_pnl:
                     today_pnl = self.risk_manager.calculate_trades_based_pnl()
                     total_rr = today_pnl/self.risk_manager.risk_of_an_account
-                    print(f"Offmarket PnL: {round(total_rr, 2)}")
+                    print(f"Offmarket RR: {round(total_rr, 2)}, ${round(today_pnl, 2)}")
                 else:
                     today_pnl = self.PnL
                     total_rr = self.rr
@@ -400,11 +403,7 @@ class SmartTrader():
                 # Once it's active in market then the initial run become deactive
                 self.is_initial_run = False 
 
-                for symbol in curr.get_symbols(security=self.security, symbol_selection=self.symbol_selection):
-                    # Check is the market has resonable spread
-                    # if not self.wrapper.is_reasonable_spread(symbol=symbol, pips_threshold=15):
-                    #     continue
-
+                for symbol in self.trading_symbols:
                     for system in self.systems:
                         # Reset trade direction for each system
                         trade_direction = None
