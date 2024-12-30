@@ -334,7 +334,7 @@ class SmartTrader():
                                                 stop_expected_move=self.stop_expected_move, account_target_ratio=5)
                     
                     self.exited_by_pnl = False
-                    self.risk_manager.alert.send_msg(f"Enabling Adaptive Re-Entry {util.get_account_name()} - {config.local_ip} ($ {round(self.today_pnl, 2)}), ${round(self.equity)}")
+                    self.risk_manager.alert.send_msg(f"Enabling Adaptive Re-Entry {util.get_account_name()} - {config.local_ip} ($ {round(today_pnl, 2)}), ${round(self.equity)}")
                     # we don't need to set the dynamic_rr to 0, Since when it takes new trades, 
                     # the equity will be updated based on previous closed trades and the rr will be re calculated as fresh.
                 
