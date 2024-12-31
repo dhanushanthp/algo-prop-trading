@@ -236,6 +236,21 @@ def is_us_activemarket_peroid() -> bool:
     return condition 
 
 def get_market_status(start_hour:int=10) -> Tuple[bool, bool]:
+    """
+    Determine the market status based on the current day and time.
+    Args:
+        start_hour (int): The hour at which the market opens. Defaults to 10.
+    Returns:
+        Tuple[bool, bool]: A tuple containing two boolean values:
+            - market_open (bool): True if the market is open, False otherwise.
+            - market_about_to_close (bool): True if the market is about to close, False otherwise.
+    Notes:
+        - The market is considered open from `start_hour` to 22:00 on weekdays.
+        - The market is considered about to close if:
+            - It is a weekend (Saturday or Sunday).
+            - It is 23:15 or later.
+            - It is before 01:00.
+    """
     market_open = False
     market_about_to_close= False
     day, hour, minute = get_current_day_hour_min()

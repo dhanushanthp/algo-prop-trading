@@ -340,7 +340,8 @@ class SmartTrader():
                 
 
             # Record PNL even once after the positions are exit based on todays trades
-            if not self.wrapper.get_todays_trades().empty:
+            # This helps to track the PnL based on the trades taken today
+            if not self.wrapper.get_todays_trades().empty and not self.is_market_close:
                 if self.exited_by_pnl:
                     today_pnl = self.risk_manager.calculate_trades_based_pnl()
                     total_rr = today_pnl/self.risk_manager.risk_of_an_account
