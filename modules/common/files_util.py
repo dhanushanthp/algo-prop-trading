@@ -37,6 +37,7 @@ def get_previous_pnl_direction():
     strategy = data["strategy"]
     return pnl, strategy
 
+@DeprecationWarning
 def update_pnl(file_name:str, system:str, strategy:str, pnl:float, rr:float, each_pos_percentage:float):
     """
     Updates the profit and loss (PnL) tracker with the provided data.
@@ -207,7 +208,7 @@ def get_most_risk_percentage(file_name:str, **kwargs):
 
     return MINIMUM_RISK, selected_strategy
 
-
+@DeprecationWarning
 def record_pnl(iteration, pnl, rr, risk_per, strategy, system, dirc="pnl"):
     """
     Records profit and loss (PnL) data along with risk and reward ratios to a CSV file.
@@ -237,6 +238,7 @@ def record_pnl(iteration, pnl, rr, risk_per, strategy, system, dirc="pnl"):
     with open(file_path, mode="a") as file:
         file.write(f"{iteration},{system},{strategy},{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{round(pnl, 2)},{round(rr, 2)},{risk_per}\n")
 
+@DeprecationWarning
 def record_pnl_directional(long_pnl, short_pnl, strategy, system, dirc="directional_pnl"):
     """
     Records the directional profit and loss (PnL) data to a CSV file.

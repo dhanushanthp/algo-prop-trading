@@ -20,16 +20,16 @@ class TradeTracker:
         with open(file_path, mode="a") as file:
             file.write(f"{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{self.account_id},{round(pnl, 2)},{round(rr, 2)}\n")
 
-    def daily_pnl_track(self, pnl, rr, system, strategy, account_risk_percentage, each_position_risk_percentage):
+    def daily_pnl_track(self, pnl, rr, system, strategy, account_risk_percentage, each_position_risk_percentage, equity):
         current_date = util.get_current_time().strftime('%Y-%m-%d')
         file_path = f"PnLData/pnl_trades/{self.account_id}.csv"
 
         if not files_util.check_file_exists(file_path=file_path):
             with open(file_path, mode="w") as file:
-                file.write("Date,AccountID,AccountName,System,Strategy,AccountRiskPerc,PositionRiskPerc,Pnl,RR\n")
+                file.write("Date,AccountID,AccountName,System,Strategy,AccountRiskPerc,PositionRiskPerc,Pnl,RR,Equity\n")
 
         with open(file_path, mode="a") as file:
-            file.write(f"{current_date},{self.account_id},{self.account_name},{system},{strategy},{account_risk_percentage},{each_position_risk_percentage},{round(pnl, 2)},{round(rr, 2)}\n")
+            file.write(f"{current_date},{self.account_id},{self.account_name},{system},{strategy},{account_risk_percentage},{each_position_risk_percentage},{round(pnl, 2)},{round(rr, 2)},{round(equity, 2)}\n")
 
 if __name__ == "__main__":
     ref = TradeTracker()
