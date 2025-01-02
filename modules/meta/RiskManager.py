@@ -130,16 +130,13 @@ class RiskManager:
     
     def calculate_trades_based_pnl(self, num_symbols:int=0):
         """
-        Calculate the profit and loss (PnL) based on today's trades.
-        This method calculates the PnL for today's trades by considering the entry price, 
-        current price, trade direction, commission, and volume of each trade. It also 
-        allows limiting the number of symbols to consider.
-        Args:
-            num_symbols (int): The number of symbols to consider. If 0, all symbols are considered.
-        Returns:
-            float: The total net PnL rounded to two decimal places.
+        Calculate the profit and loss (PnL) for today's trades based on the entry price, current price, and trade direction.
+            num_symbols (int, optional): The number of symbols to include in the calculation. 
+                                            If 0, include all symbols. Defaults to 0.
+            tuple: A tuple containing:
+                - total_pnl (float): The total net PnL for today's trades.
+                - DataFrame: A DataFrame with columns 'symbol' and 'net_pnl' for each trade.
         """
-
         def directional_pnl(entry, current, direction):
             """
             Calculate the profit and loss (PnL) based on the entry price, current price, and trade direction.
@@ -169,7 +166,7 @@ class RiskManager:
         todays_trades["pnl"] = todays_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
         todays_trades["net_pnl"] = todays_trades["pnl"] + todays_trades["commission"]
         total_pnl = round(todays_trades["net_pnl"].sum(), 2)
-        return total_pnl
+        return total_pnl, todays_trades[["symbol", "net_pnl"]]
     
     def close_positions_by_solid_candle(self, timeframe:int, wait_factor:int=1, close_check_candle:int=1, double_candle_check=False, candle_solid_ratio=0.6):
         """

@@ -327,7 +327,7 @@ class SmartTrader():
                 """
                 This is based on the observed pattern, Where the RR comes to 1RR and goes back to 0 then comes back, So we take the advantage of it.
                 """
-                today_pnl = self.risk_manager.calculate_trades_based_pnl(num_symbols = len(self.trading_symbols))
+                today_pnl, symbol_pnl = self.risk_manager.calculate_trades_based_pnl(num_symbols = len(self.trading_symbols))
                 total_rr = today_pnl/self.risk_manager.risk_of_an_account
                 if total_rr < 0.2 and total_rr > 0:
                     self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
@@ -343,8 +343,9 @@ class SmartTrader():
             # Record PNL even once after the positions are exit based on todays trades
             # This helps to track the PnL based on the trades taken today
             if not self.wrapper.get_todays_trades().empty and not self.is_market_close:
+                # The reason added out of the IF condition to calculate the positional PnL for each Symbol
+                today_pnl, symbol_pnl = self.risk_manager.calculate_trades_based_pnl()
                 if self.exited_by_pnl:
-                    today_pnl = self.risk_manager.calculate_trades_based_pnl()
                     total_rr = today_pnl/self.risk_manager.risk_of_an_account
                     print(f"Offmarket RR: {round(total_rr, 2)}, ${round(today_pnl, 2)}")
                 else:
@@ -352,6 +353,7 @@ class SmartTrader():
                     total_rr = self.rr
                 
                 self.trade_tracker.record_pnl_logs(pnl=today_pnl, rr=total_rr)
+                self.trade_tracker.record_symbol_pnl_logs(pnl_df=symbol_pnl)
 
 
             # Each position trail stop

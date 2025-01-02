@@ -2,6 +2,7 @@ from modules.meta.Account import Account
 from modules.meta import util
 from modules.common import files_util
 import time
+import pandas as pd
 
 class TradeTracker:
     def __init__(self):
@@ -10,6 +11,16 @@ class TradeTracker:
         self.account_name = self.account.get_account_name()
 
     def record_pnl_logs(self, pnl, rr):
+        """
+        Records profit and loss (PnL) logs along with risk-reward (RR) ratio to a CSV file.
+        This method creates a new CSV file for each day if it does not already exist, 
+        and appends the PnL and RR data with a timestamp to the file.
+        Args:
+            pnl (float): The profit and loss value to be recorded.
+            rr (float): The risk-reward ratio to be recorded.
+        Returns:
+            None
+        """
         current_date = util.get_current_time().strftime('%Y-%m-%d')
         file_path = f"PnLData/trade_logs/{self.account_id}_{current_date}.csv"
 
@@ -19,6 +30,30 @@ class TradeTracker:
 
         with open(file_path, mode="a") as file:
             file.write(f"{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{self.account_id},{round(pnl, 2)},{round(rr, 2)}\n")
+    
+    def record_symbol_pnl_logs(self, pnl_df:pd.DataFrame):
+        """
+        Records the profit and loss (PnL) logs for symbols to a CSV file.
+        
+        Args:
+            pnl_df (pandas.DataFrame): A DataFrame containing the PnL data with columns "Symbol" and "PnL".
+        
+        The function appends the PnL data to a CSV file named with the account ID and current date.
+        If the file does not exist, it creates the file and writes the header.
+        The CSV file is stored in the "PnLData/symbol_trade_logs/" directory.
+        """
+
+        current_date = util.get_current_time().strftime('%Y-%m-%d')
+        file_path = f"PnLData/symbol_trade_logs/{self.account_id}_{current_date}.csv"
+
+        if not files_util.check_file_exists(file_path=file_path):
+            with open(file_path, mode="w") as file:
+                file.write("Timestamp,Symbol,PnL\n")
+
+        pnl_df["Timestamp"] = util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')
+        pnl_df.rename(columns={"symbol": "Symbol", "net_pnl":"PnL"}, inplace=True)
+        pnl_df = pnl_df[["Timestamp", "Symbol", "PnL"]]
+        pnl_df.to_csv(file_path, mode="a", header=False, index=False)
 
     def daily_pnl_track(self, pnl, rr, system, strategy, account_risk_percentage, each_position_risk_percentage, equity):
         current_date = util.get_current_time().strftime('%Y-%m-%d')
