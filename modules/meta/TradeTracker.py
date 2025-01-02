@@ -29,7 +29,7 @@ class TradeTracker:
                 file.write("Date,AccountID,AccountName,System,Strategy,AccountRiskPerc,PositionRiskPerc,Pnl,RR,Equity\n")
 
         with open(file_path, mode="a") as file:
-            file.write(f"{current_date},{self.account_id},{self.account_name},{system},{strategy},{account_risk_percentage},{each_position_risk_percentage},{round(pnl, 2)},{round(rr, 2)},{round(equity, 2)}\n")
+            file.write(f"{current_date},{self.account_id},{self.account_name},{system},{strategy},{account_risk_percentage},{each_position_risk_percentage},{round(pnl, 2)},{round(rr, 2)},{round(equity)}\n")
 
 if __name__ == "__main__":
     ref = TradeTracker()
