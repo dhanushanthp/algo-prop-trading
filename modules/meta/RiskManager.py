@@ -128,14 +128,15 @@ class RiskManager:
         
         return list_to_close
     
-    def calculate_trades_based_pnl(self, num_symbols:int=0):
+    def calculate_trades_based_pnl(self):
         """
-        Calculate the profit and loss (PnL) for today's trades based on the entry price, current price, and trade direction.
-            num_symbols (int, optional): The number of symbols to include in the calculation. 
-                                            If 0, include all symbols. Defaults to 0.
+        Calculate the total profit and loss (PnL) for today's trades and return the PnL for each symbol.
+        This method retrieves today's trades, calculates the directional PnL for each trade, and computes the net PnL 
+        by considering the commission. It returns the total PnL for all trades and a DataFrame containing the net PnL 
+        for each symbol.
             tuple: A tuple containing:
-                - total_pnl (float): The total net PnL for today's trades.
-                - DataFrame: A DataFrame with columns 'symbol' and 'net_pnl' for each trade.
+                - total_pnl (float): The total PnL for today's trades, rounded to 2 decimal places.
+                - DataFrame: A DataFrame with columns "symbol" and "net_pnl" representing the net PnL for each symbol.
         """
         def directional_pnl(entry, current, direction):
             """
@@ -157,10 +158,12 @@ class RiskManager:
         
         todays_trades = self.wrapper.get_todays_trades()
         todays_trades = todays_trades.sort_values(by="time", ascending=True)
-        todays_trades = todays_trades[["symbol", "entry", "type", "price", "commission", "volume"]].copy()
+        todays_trades = todays_trades[["time", "symbol", "entry", "type", "price", "commission", "volume"]].copy()
         todays_trades = todays_trades[todays_trades["entry"] == 0]
-        if num_symbols > 0:
-            todays_trades = todays_trades.head(num_symbols)
+        # Get the last trade for the day, Calculate PnL based on the latest entry
+        todays_trades = todays_trades.sort_values(by="time")
+        todays_trades = todays_trades.drop_duplicates(subset=["symbol"], keep="last")
+        
         todays_trades["current_price"] = todays_trades["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
         todays_trades["change"] =  todays_trades.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
         todays_trades["pnl"] = todays_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
