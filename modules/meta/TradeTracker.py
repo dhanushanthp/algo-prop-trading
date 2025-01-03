@@ -3,7 +3,7 @@ from modules.meta import util
 from modules.common import files_util
 import time
 import pandas as pd
-from pprint import pprint
+from tabulate import tabulate
 
 class TradeTracker:
     def __init__(self):
@@ -27,9 +27,9 @@ class TradeTracker:
         current_date = util.get_current_time().strftime('%Y-%m-%d')
         file_path = f"PnLData/symbol_trade_logs/{self.account_id}_{current_date}.csv"
         df = pd.read_csv(file_path)
-        df = df.groupby("Symbol")["PnL"].mean().reset_index(name="pnl_mean")
+        df = df.groupby("Symbol")["PnL"].mean().round(2).reset_index(name="pnl_mean")
         df["risk_position"] = df["pnl_mean"] < (- each_position_risk_appertide)
-        pprint(df)
+        print(tabulate(df, headers='keys', tablefmt='pretty', showindex=False))
         selected_symbols =  df[df["risk_position"]]["Symbol"].unique()
         return selected_symbols
 
