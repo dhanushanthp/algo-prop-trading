@@ -5,3 +5,4 @@ class Directions(Enum):
     SHORT=1
     BREAK=2
     REVERSE=3
+    DIRECT=4
