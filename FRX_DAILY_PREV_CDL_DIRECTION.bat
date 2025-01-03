@@ -22,8 +22,8 @@ set max_target_exit=yes
 set account_trail_enabler=no
 
 REM Strategy and System
-set strategy=BREAK
-set system=PREV_DAY_CLOSE_DIR
+set market_direction=BREAK
+set strategy=PREV_DAY_CLOSE_DIR
 
 REM Security
 set security=FOREX
@@ -52,7 +52,7 @@ set max_trades_on_same_direction=100
 set adaptive_reentry=no
 
 python main.py ^
-    --strategy %strategy% ^
+    --market_direction %market_direction% ^
     --enable_trail_stop %enable_trail_stop% ^
     --enable_breakeven %enable_breakeven% ^
     --enable_neutralizer %enable_neutralizer% ^
@@ -61,7 +61,7 @@ python main.py ^
     --trades_per_day %trades_per_day% ^
     --num_prev_cdl_for_stop 2 ^
     --each_position_risk %each_position_risk% ^
-    --system %system% ^
+    --strategy %strategy% ^
     --security %security% ^
     --timeframe %timeframe% ^
     --atr_check_timeframe %atr_check_timeframe% ^

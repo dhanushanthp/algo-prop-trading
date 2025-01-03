@@ -542,8 +542,8 @@ class Main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Trader Configuration')
 
-    parser.add_argument('--system', type=str, help='Select System 3CDL or HOD, LOD Break')
-    parser.add_argument('--strategy', type=str, help='Selected Strategy')
+    parser.add_argument('--strategy', type=str, help='Select System 3CDL or HOD, LOD Break')
+    parser.add_argument('--market_direction', type=str, help='Selected Strategy')
     parser.add_argument('--security', type=str, help='Selected Type - Forex or Stock')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
     parser.add_argument('--atr_check_timeframe', type=int, help='Selected timeframe for ATR Check entry')
@@ -593,8 +593,8 @@ if __name__ == "__main__":
     start_hour = int(args.start_hour)
     max_loss_exit = util.boolean(args.max_loss_exit)
     max_target_exit = util.boolean(args.max_target_exit)
-    market_direction = args.strategy
-    strategy = args.system
+    market_direction = args.market_direction
+    strategy = args.strategy
     multiple_positions = args.multiple_positions
     record_pnl = util.boolean(args.record_pnl)
     close_by_time = util.boolean(args.close_by_time)
