@@ -811,9 +811,15 @@ if "__main__" == __name__:
     # print(obj.get_pnls())
     # print(obj.any_remaining_trades(max_trades=11))
     # print(obj.get_all_active_positions())
-    symbol_pnl = obj.get_all_active_positions()[["symbol", "profit"]]
-    symbol_pnl = symbol_pnl.rename({"profit": "net_pnl"}, axis=1)
-    print(symbol_pnl)
+    # symbol_pnl = obj.get_all_active_positions()[["symbol", "profit"]]
+    # symbol_pnl = symbol_pnl.rename({"profit": "net_pnl"}, axis=1)
+    # print(symbol_pnl)
+    trades = obj.get_todays_trades()
+    trades = trades[trades["entry"]==0]
+    print(trades)
+    df = trades.sort_values(by="time")
+    unique_symbols = df.drop_duplicates(subset=["symbol"], keep="last")[["symbol", "time", "type"]]
+    print(unique_symbols)
     # print(obj.candle_i_body(symbol=symbol, timeframe=60, candle_index=int(index)))
     # print(obj.get_weekly_candles(symbol=symbol, timeframe=240, most_latest_candle=0))
     # print(obj.get_todays_candles(symbol=symbol, timeframe=60, start_candle=index))
