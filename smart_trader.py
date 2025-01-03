@@ -75,6 +75,9 @@ class SmartTrader():
         self.stop_expected_move = kwargs["stop_expected_move"]
 
         self.adaptive_reentry = kwargs["adaptive_reentry"]
+
+        # Once the trade is taken then the position at risk will be calculated
+        self.len_position_at_risk = 0
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -322,23 +325,27 @@ class SmartTrader():
                 for obj in positions:
                     self.orders.close_single_position(obj=obj)
 
-            
-            if self.adaptive_reentry and self.exited_by_pnl and not self.wrapper.get_todays_trades().empty:
-                """
-                This is based on the observed pattern, Where the RR comes to 1RR and goes back to 0 then comes back, So we take the advantage of it.
-                """
-                today_pnl, symbol_pnl = self.risk_manager.calculate_trades_based_pnl(num_symbols = len(self.trading_symbols))
-                total_rr = today_pnl/self.risk_manager.risk_of_an_account
-                if total_rr < 0.2 and total_rr > 0:
-                    self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy,
-                                                stop_expected_move=self.stop_expected_move, account_target_ratio=5)
+            if self.adaptive_reentry:
+                position_at_risk = self.trade_tracker.symbol_historic_pnl(each_position_risk_appertide=self.risk_manager.risk_of_a_position)
+                self.len_position_at_risk = len(position_at_risk)
+                print(f"\nPosition at Risk: {position_at_risk}")
+                if self.len_position_at_risk > 0:
+                    # No need to check the today trades if the position at risk is empty
+                    today_trades = self.wrapper.get_todays_trades()
+                    today_trades = today_trades[today_trades["entry"] == 0]
+                    # Last traded direction
+                    position_dict = dict(zip(today_trades["symbol"], today_trades["type"]))
+                    today_trades = today_trades.groupby("symbol")["type"].count().reset_index(name="count")
+
+                    # Only position traded once
+                    trades_with_single_entry = today_trades[today_trades["count"] == 1]["symbol"].unique() 
                     
-                    self.exited_by_pnl = False
-                    self.risk_manager.alert.send_msg(f"Enabling Adaptive Re-Entry {util.get_account_name()} - {config.local_ip} ($ {round(today_pnl, 2)}), ${round(self.equity)}")
-                    # we don't need to set the dynamic_rr to 0, Since when it takes new trades, 
-                    # the equity will be updated based on previous closed trades and the rr will be re calculated as fresh.
+                    for symbol in position_at_risk:
+                        if symbol in trades_with_single_entry:
+                            # Once the postion is closed, the re entry will be taken care by the adaptive re-entry below
+                            self.orders.close_single_position_by_symbol(symbol=symbol)
                 
+                    time.sleep(3)
 
             # Record PNL even once after the positions are exit based on todays trades
             # This helps to track the PnL based on the trades taken today
@@ -514,6 +521,13 @@ class SmartTrader():
                             else:
                                 dynamic_stop_selection = self.primary_stop_selection
                             
+                            if self.adaptive_reentry and self.len_position_at_risk > 0:
+                                if self.risk_manager.strategy == Directions.BREAK.name:
+                                    trade_direction = Directions.SHORT if position_dict[symbol] == 0 else Directions.LONG
+                                else:
+                                    # If the strategy is REVERSE then the trade direction will be opposite to the last trade
+                                    trade_direction = Directions.LONG if position_dict[symbol] == 0 else Directions.SHORT
+
                             if is_valid_signal:
                                 if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1, stop_selection=dynamic_stop_selection, entry_with_st_tgt=self.entry_with_st_tgt):
                                     break # Break the symbol loop
