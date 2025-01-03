@@ -35,7 +35,7 @@ class Main():
 
         # Key Arguments, Below values will be override when the risk is dynamic
         self.strategy:str = kwargs["strategy"]
-        self.market_direction:str = kwargs["market_direction"] # files_util.get_strategy()
+        self.market_direction:str = kwargs["market_direction"] # BREAK or REVERSE, If the dynamic is not selected then it will be used
         self.account_risk = kwargs["account_risk"]
         # self.each_position_risk = kwargs["each_position_risk"]
         self.each_position_risk = round(self.account_risk/10, 2)
