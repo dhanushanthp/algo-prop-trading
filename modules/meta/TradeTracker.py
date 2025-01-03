@@ -79,7 +79,7 @@ class TradeTracker:
         pnl_df = pnl_df[["Timestamp", "Symbol", "PnL"]]
         pnl_df.to_csv(file_path, mode="a", header=False, index=False)
 
-    def daily_pnl_track(self, pnl, rr, system, market_direction, account_risk_percentage, each_position_risk_percentage, equity):
+    def daily_pnl_track(self, pnl, rr, strategy, market_direction, account_risk_percentage, each_position_risk_percentage, equity):
         current_date = util.get_current_time().strftime('%Y-%m-%d')
         file_path = f"PnLData/pnl_trades/{self.account_id}.csv"
 
@@ -88,7 +88,7 @@ class TradeTracker:
                 file.write("Date,AccountID,AccountName,System,Strategy,AccountRiskPerc,PositionRiskPerc,Pnl,RR,Equity\n")
 
         with open(file_path, mode="a") as file:
-            file.write(f"{current_date},{self.account_id},{self.account_name},{system},{market_direction},{account_risk_percentage},{each_position_risk_percentage},{round(pnl, 2)},{round(rr, 2)},{round(equity)}\n")
+            file.write(f"{current_date},{self.account_id},{self.account_name},{strategy},{market_direction},{account_risk_percentage},{each_position_risk_percentage},{round(pnl, 2)},{round(rr, 2)},{round(equity)}\n")
 
 if __name__ == "__main__":
     ref = TradeTracker()

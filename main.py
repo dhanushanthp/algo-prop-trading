@@ -34,8 +34,8 @@ class Main():
         self.dynamic_exit_rr:float = -1
 
         # Key Arguments, Below values will be override when the risk is dynamic
-        self.system:str = kwargs["system"]
-        self.market_direction:str = kwargs["strategy"] # files_util.get_strategy()
+        self.strategy:str = kwargs["strategy"]
+        self.market_direction:str = kwargs["market_direction"] # files_util.get_strategy()
         self.account_risk = kwargs["account_risk"]
         # self.each_position_risk = kwargs["each_position_risk"]
         self.each_position_risk = round(self.account_risk/10, 2)
@@ -180,10 +180,10 @@ class Main():
             A statement indicating the reason for early closure, by default "Early Close".
         """
         self.orders.close_all_positions()
-        self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{self.system}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
+        self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{self.strategy}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
 
         # Write the pnl to a file
-        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, strategy=self.strategy, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                            each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
 
         if self.record_pnl:
@@ -210,11 +210,11 @@ class Main():
         print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}\n")
 
-        print(f"{'Strategy'.ljust(20)}: {self.system}")
+        print(f"{'Strategy'.ljust(20)}: {self.strategy}")
         print(f"{'Adaptive Re-Entry'.ljust(20)}: {util.cl(self.adaptive_reentry)}")
         print(f"{'Entry with ST & TGT'.ljust(20)}: {util.cl(self.entry_with_st_tgt)}")
         print(f"{'Multiple Position'.ljust(20)}: {self.multiple_positions}")
-        if "ATR_BASED_DIRECTION" == self.system:
+        if "ATR_BASED_DIRECTION" == self.strategy:
             print(f"{'ATR TF'.ljust(20)}: {util.cl(self.atr_check_timeframe)}")
         
         if "_limit" in self.multiple_positions:
@@ -391,10 +391,10 @@ class Main():
                 
                 # Update the result in Slack
                 if self.notify_pnl and not self.is_initial_run:
-                    self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{'|'.join(self.system)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
+                    self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{self.strategy}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
-                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, strategy=self.strategy, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                                        each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
                 
                 # Reset account size for next day
@@ -427,7 +427,7 @@ class Main():
                     trade_direction = None
                     comment = system
                     try: 
-                        match self.system:
+                        match self.strategy:
                             case "3CDL_STR":
                                 trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe)
@@ -592,8 +592,8 @@ if __name__ == "__main__":
     start_hour = int(args.start_hour)
     max_loss_exit = util.boolean(args.max_loss_exit)
     max_target_exit = util.boolean(args.max_target_exit)
-    strategy = args.strategy
-    system = args.system
+    market_direction = args.strategy
+    strategy = args.system
     multiple_positions = args.multiple_positions
     record_pnl = util.boolean(args.record_pnl)
     close_by_time = util.boolean(args.close_by_time)
@@ -612,8 +612,8 @@ if __name__ == "__main__":
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
-                      start_hour=start_hour, enable_dynamic_direction=enable_dynamic_direction, strategy=strategy,
-                      system=system, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
+                      start_hour=start_hour, enable_dynamic_direction=enable_dynamic_direction, market_direction=market_direction,
+                      strategy=strategy, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 

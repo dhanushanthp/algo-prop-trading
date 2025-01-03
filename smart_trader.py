@@ -183,7 +183,7 @@ class SmartTrader():
         self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{self.system}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
 
         # Write the pnl to a file
-        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, strategy=self.system, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                            each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
 
         if self.record_pnl:
@@ -394,7 +394,7 @@ class SmartTrader():
                     self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{'|'.join(self.system)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
-                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, strategy=self.system, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                                        each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
                 
                 # Reset account size for next day
