@@ -85,7 +85,7 @@ class SmartTrader():
                                         stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio,
                                         enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.market_direction,
+                                        market_direction=self.market_direction,
                                         stop_expected_move=self.stop_expected_move,
                                         account_target_ratio=self.account_target_ratio)
         self.alert = Slack()
@@ -183,7 +183,7 @@ class SmartTrader():
         self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{self.system}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
 
         # Write the pnl to a file
-        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, strategy=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                            each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
 
         if self.record_pnl:
@@ -192,7 +192,7 @@ class SmartTrader():
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.market_direction, stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
+                                        market_direction=self.market_direction, stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
                 
         self.notify_pnl = False # Once sent, Disable
         self.exited_by_pnl = True
@@ -394,12 +394,12 @@ class SmartTrader():
                     self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{'|'.join(self.system)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
-                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, strategy=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, market_direction=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                                        each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.market_direction,
+                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, market_direction=self.market_direction,
                                                 stop_expected_move=self.stop_expected_move,  account_target_ratio=self.account_target_ratio)
 
                 self.notify_pnl = False # Once sent, Disable
