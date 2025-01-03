@@ -29,7 +29,6 @@ class TradeTracker:
         df = df.groupby("Symbol")["PnL"].mean().reset_index(name="pnl_mean")
         df["risk_position"] = df["pnl_mean"] < (- each_position_risk_appertide)
         selected_symbols =  df[df["risk_position"]]["Symbol"].unique()
-        print(df)
         return selected_symbols
 
 
