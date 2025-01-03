@@ -534,8 +534,7 @@ class Main():
                                 trade_direction = Directions.LONG if position_dict[symbol] == 0 else Directions.SHORT
 
                         if is_valid_signal:
-                            if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1, stop_selection=dynamic_stop_selection, entry_with_st_tgt=self.entry_with_st_tgt):
-                                break # Break the symbol loop
+                            self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1, stop_selection=dynamic_stop_selection, entry_with_st_tgt=self.entry_with_st_tgt)
 
             time.sleep(self.timer)
     
