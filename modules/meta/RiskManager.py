@@ -58,12 +58,12 @@ class RiskManager:
         self.alert = Slack()
         self.account_size = self.account.get_liquid_balance() - self.wrapper.get_closed_pnl()
         # self.position_risk_percentage, self.strategy = files_util.get_most_risk_percentage(file_name=util.get_server_ip(), strategy=kwargs["strategy"]) if dynamic_postional_risk else (position_risk, kwargs["strategy"])
-        self.strategy = kwargs["strategy"]
+        self.market_direction = kwargs["strategy"]
         self.position_risk_percentage = position_risk
         # If it's a dynamic risk then change the todays direction based on previous direction.
         if enable_dynamic_direction:
             # self.strategy = files_util.get_strategy()
-            self.strategy = self.indicators.get_dominant_direction()
+            self.market_direction = self.indicators.get_dominant_direction()
         
         self.stop_expected_move:float = kwargs["stop_expected_move"]
         self.account_risk_percentage = account_risk
