@@ -51,7 +51,7 @@ set max_trades_on_same_direction=100
 
 set adaptive_reentry=no
 
-python smart_trader.py ^
+python main.py ^
     --strategy %strategy% ^
     --enable_trail_stop %enable_trail_stop% ^
     --enable_breakeven %enable_breakeven% ^

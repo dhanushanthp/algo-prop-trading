@@ -12,7 +12,7 @@ def is_process_running(process_name):
     return False
 
 if __name__ == "__main__":
-    process_name = "smart_trader.py"
+    process_name = "main.py"
     system = sys.argv[1]
 
     if is_process_running(process_name):
