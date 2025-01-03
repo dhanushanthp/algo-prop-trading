@@ -62,7 +62,6 @@ class RiskManager:
         self.position_risk_percentage = position_risk
         # If it's a dynamic risk then change the todays direction based on previous direction.
         if enable_dynamic_direction:
-            # self.strategy = files_util.get_strategy()
             self.market_direction = self.indicators.get_dominant_direction()
         
         self.stop_expected_move:float = kwargs["stop_expected_move"]
