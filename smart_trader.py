@@ -35,7 +35,7 @@ class SmartTrader():
 
         # Key Arguments, Below values will be override when the risk is dynamic
         self.system:str = kwargs["system"]
-        self.strategy:str = kwargs["strategy"] # files_util.get_strategy()
+        self.market_direction:str = kwargs["strategy"] # files_util.get_strategy()
         self.account_risk = kwargs["account_risk"]
         # self.each_position_risk = kwargs["each_position_risk"]
         self.each_position_risk = round(self.account_risk/10, 2)
@@ -85,7 +85,7 @@ class SmartTrader():
                                         stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio,
                                         enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.strategy,
+                                        strategy=self.market_direction,
                                         stop_expected_move=self.stop_expected_move,
                                         account_target_ratio=self.account_target_ratio)
         self.alert = Slack()
@@ -133,7 +133,7 @@ class SmartTrader():
         the corresponding method from the `orders` object. If the method is not found, the trade is not executed.
         """
         if direction:
-            match self.risk_manager.strategy:
+            match self.risk_manager.market_direction:
                 case Directions.BREAK.name:
                     method_name = "long_entry" if direction == Directions.LONG else "short_entry"
                 case Directions.REVERSE.name:
@@ -180,10 +180,10 @@ class SmartTrader():
             A statement indicating the reason for early closure, by default "Early Close".
         """
         self.orders.close_all_positions()
-        self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.strategy}-{self.system}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
+        self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{self.system}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
 
         # Write the pnl to a file
-        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, strategy=self.risk_manager.strategy, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, strategy=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                            each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
 
         if self.record_pnl:
@@ -192,7 +192,7 @@ class SmartTrader():
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.strategy, stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
+                                        strategy=self.market_direction, stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
                 
         self.notify_pnl = False # Once sent, Disable
         self.exited_by_pnl = True
@@ -205,7 +205,7 @@ class SmartTrader():
         os.system('cls' if os.name == 'nt' else 'clear')
         day, hour, minute = util.get_current_day_hour_min()
         market_status_string = util.cl_status("Inactive: ", color="red") if self.is_market_close else util.cl_status("Active: ", color="green")
-        print(f"\n--- {market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.strategy.upper()} ---")
+        print(f"\n--- {market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.market_direction.upper()} ---")
         print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
         print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}\n")
@@ -374,7 +374,7 @@ class SmartTrader():
                 list_of_positions = self.risk_manager.neutralizer(enable_ratio=0.7, timeframe=self.trading_timeframe)
                 for symbol, direction in list_of_positions:
                     # This helps to neutralize the reverse option while trading, It's like we take squared for us to to the squreroot
-                    if self.risk_manager.strategy==Directions.REVERSE.name:
+                    if self.risk_manager.market_direction==Directions.REVERSE.name:
                         direction = Directions.LONG if direction == Directions.SHORT else Directions.SHORT
 
                     if self.trade(direction=direction, symbol=symbol, comment=f"NEUTRAL", break_level=-1, market_entry=True):
@@ -391,15 +391,15 @@ class SmartTrader():
                 
                 # Update the result in Slack
                 if self.notify_pnl and not self.is_initial_run:
-                    self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.strategy}-{'|'.join(self.system)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
+                    self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{'|'.join(self.system)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
-                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, strategy=self.risk_manager.strategy, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, strategy=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                                        each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy,
+                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.market_direction,
                                                 stop_expected_move=self.stop_expected_move,  account_target_ratio=self.account_target_ratio)
 
                 self.notify_pnl = False # Once sent, Disable
@@ -417,7 +417,7 @@ class SmartTrader():
                 # Once it's active in market then the initial run become deactive
                 self.is_initial_run = False 
                 current_active_positions = self.wrapper.get_active_positions()
-                
+
                 for symbol in self.trading_symbols:
                     # Skip the symbol if it's already in active positions
                     if symbol in current_active_positions:
@@ -515,7 +515,7 @@ class SmartTrader():
                         is_valid_signal, is_opening_trade = self.risk_manager.check_signal_validity(symbol=symbol,
                                                                                     timeframe=self.trading_timeframe,
                                                                                     trade_direction=trade_direction,
-                                                                                    strategy=self.risk_manager.strategy,
+                                                                                    strategy=self.risk_manager.market_direction,
                                                                                     multiple_positions=self.multiple_positions,
                                                                                     max_trades_per_day=self.max_trades_on_same_direction)
                         
@@ -526,7 +526,7 @@ class SmartTrader():
                             dynamic_stop_selection = self.primary_stop_selection
                         
                         if self.adaptive_reentry and self.len_position_at_risk > 0:
-                            if self.risk_manager.strategy == Directions.BREAK.name:
+                            if self.risk_manager.market_direction == Directions.BREAK.name:
                                 trade_direction = Directions.SHORT if position_dict[symbol] == 0 else Directions.LONG
                             else:
                                 # If the strategy is REVERSE then the trade direction will be opposite to the last trade
