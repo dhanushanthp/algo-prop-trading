@@ -425,7 +425,8 @@ class Main():
 
                     # Reset trade direction for each symbol
                     trade_direction = None
-                    comment = system
+                    comment = self.strategy
+                    
                     try: 
                         match self.strategy:
                             case "3CDL_STR":
