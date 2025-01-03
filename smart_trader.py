@@ -343,12 +343,14 @@ class SmartTrader():
             # Record PNL even once after the positions are exit based on todays trades
             # This helps to track the PnL based on the trades taken today
             if not self.wrapper.get_todays_trades().empty and not self.is_market_close:
-                # The reason added out of the IF condition to calculate the positional PnL for each Symbol
-                today_pnl, symbol_pnl = self.risk_manager.calculate_trades_based_pnl()
                 if self.exited_by_pnl:
+                    # The reason added out of the IF condition to calculate the positional PnL for each Symbol
+                    today_pnl, symbol_pnl = self.risk_manager.calculate_trades_based_pnl()
                     total_rr = today_pnl/self.risk_manager.risk_of_an_account
                     print(f"Offmarket RR: {round(total_rr, 2)}, ${round(today_pnl, 2)}")
                 else:
+                    symbol_pnl = self.wrapper.get_all_active_positions()[["symbol", "profit"]]
+                    symbol_pnl = symbol_pnl.rename({"profit": "net_pnl"}, axis=1)
                     today_pnl = self.PnL
                     total_rr = self.rr
                 

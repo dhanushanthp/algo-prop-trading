@@ -165,6 +165,7 @@ class RiskManager:
         todays_trades["change"] =  todays_trades.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
         todays_trades["pnl"] = todays_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
         todays_trades["net_pnl"] = todays_trades["pnl"] + todays_trades["commission"]
+        todays_trades["net_pnl"] = todays_trades["net_pnl"].round(2)
         total_pnl = round(todays_trades["net_pnl"].sum(), 2)
         return total_pnl, todays_trades[["symbol", "net_pnl"]]
     
