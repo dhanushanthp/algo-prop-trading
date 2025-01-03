@@ -10,6 +10,29 @@ class TradeTracker:
         self.account_id = self.account.get_account_id()
         self.account_name = self.account.get_account_name()
 
+    def symbol_historic_pnl(self, each_position_risk_appertide)->list:
+        """
+        Calculate the historic profit and loss (PnL) for each symbol and identify symbols with a mean PnL below a specified risk appetite.
+        Args:
+            each_position_risk_appertide (float): The risk appetite threshold for each position. Symbols with a mean PnL below the negative of this value will be flagged.
+        Returns:
+            list: A list of symbols that have a mean PnL below the specified risk appetite threshold.
+        Raises:
+            FileNotFoundError: If the CSV file containing the PnL data does not exist.
+            pd.errors.EmptyDataError: If the CSV file is empty.
+            KeyError: If the required columns ("Symbol", "PnL") are not present in the CSV file.
+        """
+
+        current_date = util.get_current_time().strftime('%Y-%m-%d')
+        file_path = f"PnLData/symbol_trade_logs/{self.account_id}_{current_date}.csv"
+        df = pd.read_csv(file_path)
+        df = df.groupby("Symbol")["PnL"].mean().reset_index(name="pnl_mean")
+        df["risk_position"] = df["pnl_mean"] < (- each_position_risk_appertide)
+        selected_symbols =  df[df["risk_position"]]["Symbol"].unique()
+        print(df)
+        return selected_symbols
+
+
     def record_pnl_logs(self, pnl, rr):
         """
         Records profit and loss (PnL) logs along with risk-reward (RR) ratio to a CSV file.
@@ -72,5 +95,7 @@ if __name__ == "__main__":
     #     ref.record_pnl_logs(200, 2.0)
     #     time.sleep(2)
 
-    for i in range(10):
-        ref.daily_pnl_track(200, 2.0, "Syste", "strategy", "acc_per", "eachPos")
+    # for i in range(10):
+    #     ref.daily_pnl_track(200, 2.0, "Syste", "strategy", "acc_per", "eachPos")
+
+    print(ref.symbol_historic_pnl(each_position_risk_appertide=12))
