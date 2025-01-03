@@ -26,12 +26,15 @@ class TradeTracker:
 
         current_date = util.get_current_time().strftime('%Y-%m-%d')
         file_path = f"PnLData/symbol_trade_logs/{self.account_id}_{current_date}.csv"
-        df = pd.read_csv(file_path)
-        df = df.groupby("Symbol")["PnL"].mean().round(2).reset_index(name="pnl_mean")
-        df["risk_position"] = df["pnl_mean"] < (- each_position_risk_appertide)
-        print(tabulate(df, headers='keys', tablefmt='pretty', showindex=False))
-        selected_symbols =  df[df["risk_position"]]["Symbol"].unique()
-        return selected_symbols
+        if files_util.check_file_exists(file_path=file_path):
+            df = pd.read_csv(file_path)
+            df = df.groupby("Symbol")["PnL"].mean().round(2).reset_index(name="pnl_mean")
+            df["risk_position"] = df["pnl_mean"] < (- each_position_risk_appertide)
+            print(tabulate(df, headers='keys', tablefmt='pretty', showindex=False))
+            selected_symbols =  df[df["risk_position"]]["Symbol"].unique()
+            return selected_symbols
+
+        return []
 
 
     def record_pnl_logs(self, pnl, rr):
