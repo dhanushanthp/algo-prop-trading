@@ -23,7 +23,7 @@ set account_trail_enabler=no
 
 REM Strategy and System
 set strategy=BREAK
-set systems=PREV_DAY_CLOSE_DIR
+set system=PREV_DAY_CLOSE_DIR
 
 REM Security
 set security=FOREX
@@ -61,7 +61,7 @@ python main.py ^
     --trades_per_day %trades_per_day% ^
     --num_prev_cdl_for_stop 2 ^
     --each_position_risk %each_position_risk% ^
-    --systems %systems% ^
+    --system %system% ^
     --security %security% ^
     --timeframe %timeframe% ^
     --atr_check_timeframe %atr_check_timeframe% ^

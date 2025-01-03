@@ -34,8 +34,8 @@ class Main():
         self.dynamic_exit_rr:float = -1
 
         # Key Arguments, Below values will be override when the risk is dynamic
-        self.systems:list = kwargs["systems"]
-        self.strategy:str = kwargs["strategy"] # files_util.get_strategy()
+        self.system:str = kwargs["system"]
+        self.market_direction:str = kwargs["strategy"] # files_util.get_strategy()
         self.account_risk = kwargs["account_risk"]
         # self.each_position_risk = kwargs["each_position_risk"]
         self.each_position_risk = round(self.account_risk/10, 2)
@@ -85,7 +85,7 @@ class Main():
                                         stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio,
                                         enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.strategy,
+                                        strategy=self.market_direction,
                                         stop_expected_move=self.stop_expected_move,
                                         account_target_ratio=self.account_target_ratio)
         self.alert = Slack()
@@ -180,10 +180,10 @@ class Main():
             A statement indicating the reason for early closure, by default "Early Close".
         """
         self.orders.close_all_positions()
-        self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
+        self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{self.system}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
 
         # Write the pnl to a file
-        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system='|'.join(self.systems), strategy=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+        self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, strategy=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                            each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
 
         if self.record_pnl:
@@ -192,7 +192,7 @@ class Main():
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction,
-                                        strategy=self.strategy, stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
+                                        strategy=self.market_direction, stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
                 
         self.notify_pnl = False # Once sent, Disable
         self.exited_by_pnl = True
@@ -210,11 +210,11 @@ class Main():
         print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}\n")
 
-        print(f"{'Strategy'.ljust(20)}: {self.systems}")
+        print(f"{'Strategy'.ljust(20)}: {self.system}")
         print(f"{'Adaptive Re-Entry'.ljust(20)}: {util.cl(self.adaptive_reentry)}")
         print(f"{'Entry with ST & TGT'.ljust(20)}: {util.cl(self.entry_with_st_tgt)}")
         print(f"{'Multiple Position'.ljust(20)}: {self.multiple_positions}")
-        if "ATR_BASED_DIRECTION" in self.systems:
+        if "ATR_BASED_DIRECTION" == self.system:
             print(f"{'ATR TF'.ljust(20)}: {util.cl(self.atr_check_timeframe)}")
         
         if "_limit" in self.multiple_positions:
@@ -391,15 +391,15 @@ class Main():
                 
                 # Update the result in Slack
                 if self.notify_pnl and not self.is_initial_run:
-                    self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{'|'.join(self.systems)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
+                    self.risk_manager.alert.send_msg(f"{util.get_account_name()} - {config.local_ip} : {self.risk_manager.market_direction}-{'|'.join(self.system)}: ($ {round(self.PnL, 2)})  {round(self.rr, 2)}, ${round(self.equity)}")
                     
                     # Write the pnl to a file
-                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system='|'.join(self.systems), strategy=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
+                    self.trade_tracker.daily_pnl_track(pnl=self.PnL, rr=self.rr, system=self.system, strategy=self.risk_manager.market_direction, account_risk_percentage=self.risk_manager.account_risk_percentage, 
                                                        each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
                 
                 # Reset account size for next day
                 self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
-                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.strategy,
+                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, strategy=self.market_direction,
                                                 stop_expected_move=self.stop_expected_move,  account_target_ratio=self.account_target_ratio)
 
                 self.notify_pnl = False # Once sent, Disable
@@ -416,128 +416,132 @@ class Main():
                 
                 # Once it's active in market then the initial run become deactive
                 self.is_initial_run = False 
+                current_active_positions = self.wrapper.get_active_positions()
 
                 for symbol in self.trading_symbols:
-                    for system in self.systems:
-                        # Reset trade direction for each system
-                        trade_direction = None
-                        comment = system
-                        try: 
-                            match system:
-                                case "3CDL_STR":
-                                    trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
-                                                                                            timeframe=self.trading_timeframe)
-                                case "3CDL_REV":
-                                    trade_direction = self.strategies.get_three_candle_reverse(symbol=symbol, 
-                                                                                              timeframe=self.trading_timeframe)                 
-                                case "4CDL_PULLBACK":
-                                    trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
-                                                                                            timeframe=self.trading_timeframe)
-                                case "4CDL_PULLBACK_EXT":
-                                    trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
-                                                                                            timeframe=self.trading_timeframe,
-                                                                                            extrame=True)
-                                case "DAILY_HL":
-                                    min_gap = 2
-                                    trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
-                                                                                            timeframe=self.trading_timeframe,
-                                                                                            min_gap=min_gap)
-                                case "DAILY_HL_DOUBLE_HIT":
-                                    min_gap = 4
-                                    trade_direction = self.strategies.daily_high_low_breakout_double_high_hit(symbol=symbol, 
-                                                                                                            timeframe=self.trading_timeframe,
-                                                                                                            min_gap=min_gap)
-                                case "WEEKLY_HL":
-                                    min_gap = 4
-                                    trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
-                                                                                            timeframe=self.trading_timeframe,
-                                                                                            min_gap=min_gap)
-                                case "D_TOP_BOTTOM":
-                                    trade_direction = self.strategies.get_dtop_dbottom(symbol=symbol, 
-                                                                                    timeframe=self.trading_timeframe)
-                                case "HEIKIN_ASHI":
-                                    trade_direction = self.strategies.get_heikin_ashi_reversal(symbol=symbol, 
-                                                                                            timeframe=self.trading_timeframe)
-                                case "HEIKIN_ASHI_PRE":
-                                    trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
-                                                                                            timeframe=self.trading_timeframe)
-                                
-                                case "HEIKIN_ASHI_3CDL_REV":
-                                    trade_direction = self.strategies.get_heikin_ashi_3_cdl_reversal(symbol=symbol, 
-                                                                                            timeframe=self.trading_timeframe, start=1)
+                    # Skip the symbol if it's already in active positions
+                    if symbol in current_active_positions:
+                        continue
 
-                                case "U_REVERSAL":
-                                    trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
-                                                                                    timeframe=self.trading_timeframe)
-                                case "SINGLES":
-                                    trade_direction = self.strategies.strike_by_solid_candle(symbol=symbol, 
-                                                                                    timeframe=self.trading_timeframe)
-                                case "PREV_DAY_CLOSE_DIR":
-                                    trade_direction = self.strategies.previous_day_close(symbol=symbol)
-                                
-                                case "DAY_CLOSE_SMA":
-                                    trade_direction = self.strategies.day_close_sma(symbol=symbol)
-                                
-                                case "PREV_DAY_CLOSE_DIR_PREV_HIGH_LOW":
-                                    trade_direction = self.strategies.previous_day_close_prev_high_low(symbol=symbol)
-                                
-                                case "ATR_BASED_DIRECTION":
-                                    trade_direction = self.strategies.atr_referenced_previous_close_direction(symbol=symbol, entry_atr_timeframe=self.atr_check_timeframe)
-                                
-                                case "PREV_DAY_CLOSE_DIR_ADVANCED":
-                                    trade_direction = self.strategies.previous_day_close_advanced(symbol=symbol)
-                                
-                                case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
-                                    trade_direction = self.strategies.previous_day_close_heikin_ashi(symbol=symbol)
-                                
-                                case "SAME_DIRECTION_PREV_HEIKIN":
-                                    trade_direction = self.strategies.same_prev_day_direction_with_heikin(symbol=symbol)
-
-                                case "4H_CLOSE_DIR":
-                                    trade_direction = self.strategies.four_hour_close(symbol=symbol)
-                                
-                                case "PEAK_REVERSAL":
-                                    trade_direction = self.strategies.get_peak_level_revesals(symbol=symbol, timeframe=self.trading_timeframe)
-                                
-                                case "SINGLE_SYMBOL":
-                                    print(f"{'Selected Symb'.ljust(20)}: {util.cl(symbol)}")
-                                    trade_direction = self.strategies.previous_candle_close(symbol=symbol, timeframe=self.trading_timeframe)
-                        except Exception as e:
-                            error_trace = traceback.format_exc()
-                            log_it("STRATEGY_SELECTION").info(error_trace)
-                        
-                        
-                        if trade_direction:
-                            is_valid_signal, is_opening_trade = self.risk_manager.check_signal_validity(symbol=symbol,
-                                                                                      timeframe=self.trading_timeframe,
-                                                                                      trade_direction=trade_direction,
-                                                                                      strategy=self.risk_manager.market_direction,
-                                                                                      multiple_positions=self.multiple_positions,
-                                                                                      max_trades_per_day=self.max_trades_on_same_direction)
+                    # Reset trade direction for each symbol
+                    trade_direction = None
+                    comment = system
+                    try: 
+                        match self.system:
+                            case "3CDL_STR":
+                                trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
+                                                                                        timeframe=self.trading_timeframe)
+                            case "3CDL_REV":
+                                trade_direction = self.strategies.get_three_candle_reverse(symbol=symbol, 
+                                                                                            timeframe=self.trading_timeframe)                 
+                            case "4CDL_PULLBACK":
+                                trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
+                                                                                        timeframe=self.trading_timeframe)
+                            case "4CDL_PULLBACK_EXT":
+                                trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
+                                                                                        timeframe=self.trading_timeframe,
+                                                                                        extrame=True)
+                            case "DAILY_HL":
+                                min_gap = 2
+                                trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
+                                                                                        timeframe=self.trading_timeframe,
+                                                                                        min_gap=min_gap)
+                            case "DAILY_HL_DOUBLE_HIT":
+                                min_gap = 4
+                                trade_direction = self.strategies.daily_high_low_breakout_double_high_hit(symbol=symbol, 
+                                                                                                        timeframe=self.trading_timeframe,
+                                                                                                        min_gap=min_gap)
+                            case "WEEKLY_HL":
+                                min_gap = 4
+                                trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
+                                                                                        timeframe=self.trading_timeframe,
+                                                                                        min_gap=min_gap)
+                            case "D_TOP_BOTTOM":
+                                trade_direction = self.strategies.get_dtop_dbottom(symbol=symbol, 
+                                                                                timeframe=self.trading_timeframe)
+                            case "HEIKIN_ASHI":
+                                trade_direction = self.strategies.get_heikin_ashi_reversal(symbol=symbol, 
+                                                                                        timeframe=self.trading_timeframe)
+                            case "HEIKIN_ASHI_PRE":
+                                trade_direction = self.strategies.get_heikin_ashi_pre_entry(symbol=symbol, 
+                                                                                        timeframe=self.trading_timeframe)
                             
-                            if self.enable_sec_stop_selection:
-                                # If it's considered as opening trade then choose the primary stop selection else choose secondary
-                                dynamic_stop_selection = self.primary_stop_selection if is_opening_trade else self.secondary_stop_selection
+                            case "HEIKIN_ASHI_3CDL_REV":
+                                trade_direction = self.strategies.get_heikin_ashi_3_cdl_reversal(symbol=symbol, 
+                                                                                        timeframe=self.trading_timeframe, start=1)
+
+                            case "U_REVERSAL":
+                                trade_direction, comment = self.strategies.get_u_reversal(symbol=symbol, 
+                                                                                timeframe=self.trading_timeframe)
+                            case "SINGLES":
+                                trade_direction = self.strategies.strike_by_solid_candle(symbol=symbol, 
+                                                                                timeframe=self.trading_timeframe)
+                            case "PREV_DAY_CLOSE_DIR":
+                                trade_direction = self.strategies.previous_day_close(symbol=symbol)
+                            
+                            case "DAY_CLOSE_SMA":
+                                trade_direction = self.strategies.day_close_sma(symbol=symbol)
+                            
+                            case "PREV_DAY_CLOSE_DIR_PREV_HIGH_LOW":
+                                trade_direction = self.strategies.previous_day_close_prev_high_low(symbol=symbol)
+                            
+                            case "ATR_BASED_DIRECTION":
+                                trade_direction = self.strategies.atr_referenced_previous_close_direction(symbol=symbol, entry_atr_timeframe=self.atr_check_timeframe)
+                            
+                            case "PREV_DAY_CLOSE_DIR_ADVANCED":
+                                trade_direction = self.strategies.previous_day_close_advanced(symbol=symbol)
+                            
+                            case "PREV_DAY_CLOSE_DIR_HEIKIN_ASHI":
+                                trade_direction = self.strategies.previous_day_close_heikin_ashi(symbol=symbol)
+                            
+                            case "SAME_DIRECTION_PREV_HEIKIN":
+                                trade_direction = self.strategies.same_prev_day_direction_with_heikin(symbol=symbol)
+
+                            case "4H_CLOSE_DIR":
+                                trade_direction = self.strategies.four_hour_close(symbol=symbol)
+                            
+                            case "PEAK_REVERSAL":
+                                trade_direction = self.strategies.get_peak_level_revesals(symbol=symbol, timeframe=self.trading_timeframe)
+                            
+                            case "SINGLE_SYMBOL":
+                                print(f"{'Selected Symb'.ljust(20)}: {util.cl(symbol)}")
+                                trade_direction = self.strategies.previous_candle_close(symbol=symbol, timeframe=self.trading_timeframe)
+                    except Exception as e:
+                        error_trace = traceback.format_exc()
+                        log_it("STRATEGY_SELECTION").info(error_trace)
+                    
+                    
+                    if trade_direction:
+                        is_valid_signal, is_opening_trade = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                    timeframe=self.trading_timeframe,
+                                                                                    trade_direction=trade_direction,
+                                                                                    strategy=self.risk_manager.market_direction,
+                                                                                    multiple_positions=self.multiple_positions,
+                                                                                    max_trades_per_day=self.max_trades_on_same_direction)
+                        
+                        if self.enable_sec_stop_selection:
+                            # If it's considered as opening trade then choose the primary stop selection else choose secondary
+                            dynamic_stop_selection = self.primary_stop_selection if is_opening_trade else self.secondary_stop_selection
+                        else:
+                            dynamic_stop_selection = self.primary_stop_selection
+                        
+                        if self.adaptive_reentry and self.len_position_at_risk > 0:
+                            if self.risk_manager.market_direction == Directions.BREAK.name:
+                                trade_direction = Directions.SHORT if position_dict[symbol] == 0 else Directions.LONG
                             else:
-                                dynamic_stop_selection = self.primary_stop_selection
-                            
-                            if self.adaptive_reentry and self.len_position_at_risk > 0:
-                                if self.risk_manager.market_direction == Directions.BREAK.name:
-                                    trade_direction = Directions.SHORT if position_dict[symbol] == 0 else Directions.LONG
-                                else:
-                                    # If the strategy is REVERSE then the trade direction will be opposite to the last trade
-                                    trade_direction = Directions.LONG if position_dict[symbol] == 0 else Directions.SHORT
+                                # If the strategy is REVERSE then the trade direction will be opposite to the last trade
+                                trade_direction = Directions.LONG if position_dict[symbol] == 0 else Directions.SHORT
 
-                            if is_valid_signal:
-                                if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1, stop_selection=dynamic_stop_selection, entry_with_st_tgt=self.entry_with_st_tgt):
-                                    break # Break the symbol loop
+                        if is_valid_signal:
+                            if self.trade(direction=trade_direction, symbol=symbol, comment=comment, break_level=-1, stop_selection=dynamic_stop_selection, entry_with_st_tgt=self.entry_with_st_tgt):
+                                break # Break the symbol loop
 
             time.sleep(self.timer)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Trader Configuration')
 
-    parser.add_argument('--systems', type=str, help='Select System 3CDL or HOD, LOD Break')
+    parser.add_argument('--system', type=str, help='Select System 3CDL or HOD, LOD Break')
     parser.add_argument('--strategy', type=str, help='Selected Strategy')
     parser.add_argument('--security', type=str, help='Selected Type - Forex or Stock')
     parser.add_argument('--timeframe', type=int, help='Selected timeframe for trade')
@@ -589,7 +593,7 @@ if __name__ == "__main__":
     max_loss_exit = util.boolean(args.max_loss_exit)
     max_target_exit = util.boolean(args.max_target_exit)
     strategy = args.strategy
-    systems = args.systems.split(",")
+    system = args.system
     multiple_positions = args.multiple_positions
     record_pnl = util.boolean(args.record_pnl)
     close_by_time = util.boolean(args.close_by_time)
@@ -609,7 +613,7 @@ if __name__ == "__main__":
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
                       start_hour=start_hour, enable_dynamic_direction=enable_dynamic_direction, strategy=strategy,
-                      systems=systems, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
+                      system=system, multiple_positions=multiple_positions, max_target_exit=max_target_exit, record_pnl=record_pnl, 
                       close_by_time=close_by_time, close_by_solid_cdl=close_by_solid_cdl, primary_symbols=primary_symbols,
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
