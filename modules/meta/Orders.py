@@ -14,6 +14,21 @@ class Orders:
         self.risk_manager=risk_manager
         self.wrapper = wrapper
 
+    def close_single_position_by_symbol(self, symbol:str):
+        """
+        Closes a single position based on the symbol.
+
+        Args:
+            symbol (str): The symbol of the position to be closed.
+
+        Returns:
+            None
+        """
+        positions = mt5.positions_get()
+        for obj in positions: 
+            if obj.symbol == symbol:
+                self.close_single_position(obj=obj)
+
     def close_single_position(self, obj):
         order_type = mt5.ORDER_TYPE_BUY if obj.type == 1 else mt5.ORDER_TYPE_SELL
         exist_price = mt5.symbol_info_tick(obj.symbol).bid if obj.type == 1 else mt5.symbol_info_tick(obj.symbol).ask
