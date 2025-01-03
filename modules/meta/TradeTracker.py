@@ -3,6 +3,7 @@ from modules.meta import util
 from modules.common import files_util
 import time
 import pandas as pd
+from pprint import pprint
 
 class TradeTracker:
     def __init__(self):
@@ -28,6 +29,7 @@ class TradeTracker:
         df = pd.read_csv(file_path)
         df = df.groupby("Symbol")["PnL"].mean().reset_index(name="pnl_mean")
         df["risk_position"] = df["pnl_mean"] < (- each_position_risk_appertide)
+        pprint(df)
         selected_symbols =  df[df["risk_position"]]["Symbol"].unique()
         return selected_symbols
 
