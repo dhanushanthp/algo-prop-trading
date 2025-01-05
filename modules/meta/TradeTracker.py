@@ -28,8 +28,8 @@ class TradeTracker:
         file_path = f"PnLData/symbol_trade_logs/{self.account_id}_{current_date}.csv"
         if files_util.check_file_exists(file_path=file_path):
             df = pd.read_csv(file_path)
-            df = df.groupby("Symbol")["PnL"].mean().round(2).reset_index(name="pnl_mean")
-            df["risk_position"] = df["pnl_mean"] < (- each_position_risk_appertide)
+            df = df.groupby("Symbol")["PnL"].mean().round(2).reset_index(name="PnL")
+            df["risk_position"] = df["PnL"] < (- each_position_risk_appertide)
             print(tabulate(df, headers='keys', tablefmt='pretty', showindex=False))
             selected_symbols =  df[df["risk_position"]]["Symbol"].unique()
             return selected_symbols
