@@ -157,19 +157,25 @@ class RiskManager:
         
         todays_trades = self.wrapper.get_todays_trades()
         todays_trades = todays_trades.sort_values(by="time", ascending=True)
-        todays_trades = todays_trades[["time", "symbol", "entry", "type", "price", "commission", "volume"]].copy()
-        todays_trades = todays_trades[todays_trades["entry"] == 0]
+        todays_trades = todays_trades[["time", "symbol", "entry", "type", "price", "commission", "volume", "profit"]].copy()
+        latest_closed_trades = todays_trades[todays_trades["entry"] == 0].copy()
         # Get the last trade for the day, Calculate PnL based on the latest entry
-        todays_trades = todays_trades.sort_values(by="time")
-        todays_trades = todays_trades.drop_duplicates(subset=["symbol"], keep="last")
+        latest_closed_trades = latest_closed_trades.drop_duplicates(subset=["symbol"], keep="last")
+
+        # Generate pnL for the early closed adaptive positions ** This is not the final PnL, This will be added to the final PnL
+        early_close_trades = todays_trades[todays_trades["entry"] == 1].copy()
+        adaptive_closed_trades = early_close_trades.drop_duplicates(subset=["symbol"], keep="last")
+        adapted_positions = early_close_trades[~early_close_trades.index.isin(adaptive_closed_trades.index)]
+        adapted_closed_positions_pnl = adapted_positions["profit"].sum() + adapted_positions["commission"].sum()
+        print(f"Adapted Closed Positions: {len(adapted_positions)}")
         
-        todays_trades["current_price"] = todays_trades["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
-        todays_trades["change"] =  todays_trades.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
-        todays_trades["pnl"] = todays_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
-        todays_trades["net_pnl"] = todays_trades["pnl"] + todays_trades["commission"]
-        todays_trades["net_pnl"] = todays_trades["net_pnl"].round(2)
-        total_pnl = round(todays_trades["net_pnl"].sum(), 2)
-        return total_pnl, todays_trades[["symbol", "net_pnl"]]
+        latest_closed_trades["current_price"] = latest_closed_trades["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
+        latest_closed_trades["change"] =  latest_closed_trades.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
+        latest_closed_trades["pnl"] = latest_closed_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
+        latest_closed_trades["net_pnl"] = latest_closed_trades["pnl"] + latest_closed_trades["commission"]
+        latest_closed_trades["net_pnl"] = latest_closed_trades["net_pnl"].round(2)
+        total_pnl = round(latest_closed_trades["net_pnl"].sum() + adapted_closed_positions_pnl, 2)
+        return total_pnl, latest_closed_trades[["symbol", "net_pnl"]]
     
     def close_positions_by_solid_candle(self, timeframe:int, wait_factor:int=1, close_check_candle:int=1, double_candle_check=False, candle_solid_ratio=0.6):
         """
