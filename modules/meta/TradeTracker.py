@@ -30,6 +30,7 @@ class TradeTracker:
             df = pd.read_csv(file_path)
             df = df.groupby("Symbol")["PnL"].mean().round(2).reset_index(name="PnL")
             df["risk_position"] = df["PnL"] < (- each_position_risk_appertide)
+            self.record_symbol_moving_average(pnl_df=df)
             print(tabulate(df, headers='keys', tablefmt='pretty', showindex=False))
             selected_symbols =  df[df["risk_position"]]["Symbol"].unique()
             return selected_symbols
@@ -58,6 +59,32 @@ class TradeTracker:
         with open(file_path, mode="a") as file:
             file.write(f"{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{self.account_id},{round(pnl, 2)},{round(rr, 2)}\n")
     
+    def record_symbol_moving_average(self, pnl_df:pd.DataFrame):
+        """
+        Records the moving average of symbols' profit and loss (PnL) to a CSV file.
+        This function takes a DataFrame containing symbols and their respective PnL,
+        adds a timestamp, and appends the data to a CSV file named with the account ID
+        and the current date. If the file does not exist, it creates it and writes the
+        header.
+        Args:
+            pnl_df (pd.DataFrame): A DataFrame containing the columns "Symbol" and "PnL".
+        Returns:
+            None
+        """
+        current_date = util.get_current_time().strftime('%Y-%m-%d')
+        file_path = f"PnLData/symbol_moving_avg/{self.account_id}_{current_date}.csv"
+
+        # Only pick selected columns
+        pnl_df = pnl_df[["Symbol", "PnL"]].copy()
+
+        if not files_util.check_file_exists(file_path=file_path):
+            with open(file_path, mode="w") as file:
+                file.write("Timestamp,Symbol,PnL\n")
+
+        pnl_df["Timestamp"] = util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')
+        pnl_df = pnl_df[["Timestamp", "Symbol", "PnL"]]
+        pnl_df.to_csv(file_path, mode="a", header=False, index=False)
+
     def record_symbol_pnl_logs(self, pnl_df:pd.DataFrame):
         """
         Records the profit and loss (PnL) logs for symbols to a CSV file.
