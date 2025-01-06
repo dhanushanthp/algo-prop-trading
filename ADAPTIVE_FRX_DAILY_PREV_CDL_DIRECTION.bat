@@ -12,7 +12,7 @@ set trades_per_day=100
 REM Risk Management
 set entry_with_st_tgt=no
 set account_risk=1.2
-set account_target_ratio=2.5
+set account_target_ratio=2.0
 REM The each position size is account_risk/10
 set each_position_risk=0.1
 set target_ratio=5.0
