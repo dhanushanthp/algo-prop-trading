@@ -327,7 +327,7 @@ class Main():
                 for obj in positions:
                     self.orders.close_single_position(obj=obj)
 
-            if self.adaptive_reentry:
+            if self.adaptive_reentry and not self.exited_by_pnl:
                 position_at_risk = self.trade_tracker.symbol_historic_pnl(each_position_risk_appertide=self.risk_manager.risk_of_a_position)
                 self.len_position_at_risk = len(position_at_risk)
                 print(f"\nPosition at Risk: {position_at_risk}")
