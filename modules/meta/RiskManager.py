@@ -159,7 +159,7 @@ class RiskManager:
         todays_trades = todays_trades.sort_values(by="time", ascending=True)
         todays_trades = todays_trades[["time", "symbol", "entry", "type", "price", "commission", "volume", "profit", "ticket"]].copy()
         individual_symbol_df = todays_trades[todays_trades["entry"] == 0].copy()
-        individual_symbol_df["symbol_apd"] =  individual_symbol_df.apply(lambda x: f'{x["symbol"]}_{x["ticket"]}', axis=1)
+        individual_symbol_df["symbol_apd"] =  individual_symbol_df.apply(lambda x: f'{x["time"]}_{x["symbol"]}', axis=1)
         
         # Get the last trade for the day, Calculate PnL based on the latest entry
         latest_closed_trades = todays_trades[todays_trades["entry"] == 0].copy()
