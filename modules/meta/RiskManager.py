@@ -157,9 +157,12 @@ class RiskManager:
         
         todays_trades = self.wrapper.get_todays_trades()
         todays_trades = todays_trades.sort_values(by="time", ascending=True)
-        todays_trades = todays_trades[["time", "symbol", "entry", "type", "price", "commission", "volume", "profit"]].copy()
-        latest_closed_trades = todays_trades[todays_trades["entry"] == 0].copy()
+        todays_trades = todays_trades[["time", "symbol", "entry", "type", "price", "commission", "volume", "profit", "ticket"]].copy()
+        individual_symbol_df = todays_trades[todays_trades["entry"] == 0].copy()
+        individual_symbol_df["symbol_apd"] =  individual_symbol_df.apply(lambda x: f'{x["symbol"]}_{x["ticket"]}', axis=1)
+        
         # Get the last trade for the day, Calculate PnL based on the latest entry
+        latest_closed_trades = todays_trades[todays_trades["entry"] == 0].copy()
         latest_closed_trades = latest_closed_trades.drop_duplicates(subset=["symbol"], keep="last")
 
         # Generate pnL for the early closed adaptive positions ** This is not the final PnL, This will be added to the final PnL
@@ -169,13 +172,22 @@ class RiskManager:
         adapted_closed_positions_pnl = adapted_positions["profit"].sum() + adapted_positions["commission"].sum()
         print(f"Adapted Closed Positions: {len(adapted_positions)}")
         
+        # Calculate the PnL for each positions with ticket as unique value
+        individual_symbol_df["current_price"] = individual_symbol_df["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
+        individual_symbol_df["change"] =  individual_symbol_df.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
+        individual_symbol_df["pnl"] = individual_symbol_df.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
+        individual_symbol_df["net_pnl"] = individual_symbol_df["pnl"] + individual_symbol_df["commission"]
+        individual_symbol_df["net_pnl"] = individual_symbol_df["net_pnl"].round(2)
+        individual_symbol_df["symbol"] = individual_symbol_df["symbol_apd"]
+
+        # the total pnl is based on the last exiting positions
         latest_closed_trades["current_price"] = latest_closed_trades["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
         latest_closed_trades["change"] =  latest_closed_trades.apply(lambda x: directional_pnl(entry=x["price"], current=x["current_price"], direction=x["type"]) , axis=1)
         latest_closed_trades["pnl"] = latest_closed_trades.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
         latest_closed_trades["net_pnl"] = latest_closed_trades["pnl"] + latest_closed_trades["commission"]
         latest_closed_trades["net_pnl"] = latest_closed_trades["net_pnl"].round(2)
         total_pnl = round(latest_closed_trades["net_pnl"].sum() + adapted_closed_positions_pnl, 2)
-        return total_pnl, latest_closed_trades[["symbol", "net_pnl"]]
+        return total_pnl, individual_symbol_df[["symbol", "net_pnl"]]
     
     def close_positions_by_solid_candle(self, timeframe:int, wait_factor:int=1, close_check_candle:int=1, double_candle_check=False, candle_solid_ratio=0.6):
         """
