@@ -75,6 +75,7 @@ class Main():
         self.stop_expected_move = kwargs["stop_expected_move"]
 
         self.adaptive_reentry = kwargs["adaptive_reentry"]
+        self.adaptive_tolerance = kwargs["adaptive_tolerance"]
 
         # Once the trade is taken then the position at risk will be calculated
         self.len_position_at_risk = 0
@@ -226,6 +227,7 @@ class Main():
         print(f"{'Max Risk'.ljust(20)}: ${round(self.risk_manager.risk_of_an_account, 2)}")
         print(f"{'Positional Risk'.ljust(20)}: {self.risk_manager.position_risk_percentage}%")
         print(f"{'Single Pos Risk'.ljust(20)}: ${round(self.risk_manager.risk_of_a_position, 2)}")
+        print(f"{'Ada. Risk Tolarance'.ljust(20)}: ${round(self.risk_manager.risk_of_a_position*self.adaptive_tolerance, 2)}")
         print(f"{'Max Loss'.ljust(20)}: ${self.max_possible_loss}")
         print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}\n")
         
@@ -328,7 +330,7 @@ class Main():
                     self.orders.close_single_position(obj=obj)
 
             if self.adaptive_reentry and not self.exited_by_pnl:
-                position_at_risk = self.trade_tracker.symbol_historic_pnl(each_position_risk_appertide=self.risk_manager.risk_of_a_position)
+                position_at_risk = self.trade_tracker.symbol_historic_pnl(each_position_risk_appertide=self.risk_manager.risk_of_a_position * self.adaptive_tolerance)
                 self.len_position_at_risk = len(position_at_risk)
                 print(f"\nPosition at Risk: {position_at_risk}")
                 if self.len_position_at_risk > 0:
@@ -574,6 +576,7 @@ if __name__ == "__main__":
     parser.add_argument('--enable_sec_stop_selection', type=str, help='Enable secondary stop selection')
     parser.add_argument('--max_trades_on_same_direction', type=int, help='Max number of trades by direction')
     parser.add_argument('--adaptive_reentry', type=str, help='Reentry based on the RR hit')
+    parser.add_argument('--adaptive_tolerance', type=float, help='The factor of the each position, that flip based on the pnl')
     
     
     args = parser.parse_args()
@@ -609,6 +612,7 @@ if __name__ == "__main__":
     stop_expected_move = float(args.stop_expected_move)
     account_trail_enabler = util.boolean(args.account_trail_enabler)
     adaptive_reentry = util.boolean(args.adaptive_reentry)
+    adaptive_tolerance = float(args.adaptive_tolerance)
 
     win = Main(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -620,6 +624,6 @@ if __name__ == "__main__":
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
                       max_trades_on_same_direction=max_trades_on_same_direction, entry_with_st_tgt=entry_with_st_tgt,
-                      stop_expected_move=stop_expected_move, account_trail_enabler=account_trail_enabler, adaptive_reentry=adaptive_reentry)
+                      stop_expected_move=stop_expected_move, account_trail_enabler=account_trail_enabler, adaptive_reentry=adaptive_reentry, adaptive_tolerance=adaptive_tolerance)
 
     win.main()
