@@ -158,8 +158,12 @@ class RiskManager:
         todays_trades = self.wrapper.get_todays_trades()
         todays_trades = todays_trades.sort_values(by="time", ascending=True)
         todays_trades = todays_trades[["time", "symbol", "entry", "type", "price", "commission", "volume", "profit", "ticket"]].copy()
+        
         individual_symbol_df = todays_trades[todays_trades["entry"] == 0].copy()
-        individual_symbol_df["symbol_apd"] =  individual_symbol_df.apply(lambda x: f'{x["time"]}_{x["symbol"]}', axis=1)
+        individual_symbol_df['entry_type'] = individual_symbol_df.groupby(['symbol']).cumcount().apply(lambda x: 'first' if x == 0 else 'reentry')
+
+        # Mark entries as 'first' or 'reentry'
+        individual_symbol_df["Mark"] = individual_symbol_df.duplicated(subset="symbol", keep="first").map({False: "first", True: "reentry"})
         
         # Get the last trade for the day, Calculate PnL based on the latest entry
         latest_closed_trades = todays_trades[todays_trades["entry"] == 0].copy()
@@ -178,7 +182,7 @@ class RiskManager:
         individual_symbol_df["pnl"] = individual_symbol_df.apply(lambda x: self.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
         individual_symbol_df["net_pnl"] = individual_symbol_df["pnl"] + individual_symbol_df["commission"]
         individual_symbol_df["net_pnl"] = individual_symbol_df["net_pnl"].round(2)
-        individual_symbol_df["symbol"] = individual_symbol_df["symbol_apd"]
+
 
         # the total pnl is based on the last exiting positions
         latest_closed_trades["current_price"] = latest_closed_trades["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
@@ -187,7 +191,7 @@ class RiskManager:
         latest_closed_trades["net_pnl"] = latest_closed_trades["pnl"] + latest_closed_trades["commission"]
         latest_closed_trades["net_pnl"] = latest_closed_trades["net_pnl"].round(2)
         total_pnl = round(latest_closed_trades["net_pnl"].sum() + adapted_closed_positions_pnl, 2)
-        return total_pnl, individual_symbol_df[["symbol", "net_pnl"]]
+        return total_pnl, individual_symbol_df[["symbol", "net_pnl", "Mark"]]
     
     def close_positions_by_solid_candle(self, timeframe:int, wait_factor:int=1, close_check_candle:int=1, double_candle_check=False, candle_solid_ratio=0.6):
         """

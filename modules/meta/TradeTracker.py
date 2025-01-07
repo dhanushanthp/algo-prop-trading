@@ -102,11 +102,11 @@ class TradeTracker:
 
         if not files_util.check_file_exists(file_path=file_path):
             with open(file_path, mode="w") as file:
-                file.write("Timestamp,Symbol,PnL\n")
+                file.write("Timestamp,Symbol,PnL,Mark\n")
 
         pnl_df["Timestamp"] = util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')
         pnl_df.rename(columns={"symbol": "Symbol", "net_pnl":"PnL"}, inplace=True)
-        pnl_df = pnl_df[["Timestamp", "Symbol", "PnL"]]
+        pnl_df = pnl_df[["Timestamp", "Symbol", "PnL", "Mark"]]
         pnl_df.to_csv(file_path, mode="a", header=False, index=False)
 
     def daily_pnl_track(self, pnl, rr, strategy, market_direction, account_risk_percentage, each_position_risk_percentage, equity):
