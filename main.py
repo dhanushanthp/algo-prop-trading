@@ -532,6 +532,10 @@ class Main():
                         else:
                             dynamic_stop_selection = self.primary_stop_selection
                         
+                        # Pending trades basedon waiting signal
+                        if not is_valid_signal:
+                            print(f"{symbol}: {trade_direction}")
+
                         if self.adaptive_reentry and self.len_position_at_risk > 0:
                             if self.risk_manager.market_direction == Directions.BREAK.name:
                                 trade_direction = Directions.SHORT if position_dict[symbol] == 0 else Directions.LONG
