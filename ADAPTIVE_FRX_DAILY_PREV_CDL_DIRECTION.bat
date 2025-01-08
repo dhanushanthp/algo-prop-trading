@@ -50,7 +50,7 @@ set secondary_stop_selection=ATR15M
 set max_trades_on_same_direction=100
 
 set adaptive_reentry=yes
-set adaptive_tolerance=0.75
+set adaptive_tolerance=1
 
 python main.py ^
     --market_direction %market_direction% ^
