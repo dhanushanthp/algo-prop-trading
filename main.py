@@ -309,9 +309,11 @@ class Main():
             """
             Enable account level breakeven when RR hit 0.8 RR, This way we protect the downside of it.
             # Just accept the loss, that what you have agreed for...
+
+            Later note: I have increased the Max target to 4, so If the price move above 2 then goes back make it break even.
             """
-            # if self.rr > 0.8:
-            #     self.dynamic_exit_rr = 0.0
+            if self.rr > 2.0:
+                self.dynamic_exit_rr = 0.1
 
             # Early exit based on max account level profit or Loss
             if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
