@@ -4,6 +4,7 @@ from modules.common import files_util
 import time
 import pandas as pd
 from tabulate import tabulate
+from glob import glob
 
 class TradeTracker:
     def __init__(self):
@@ -36,6 +37,62 @@ class TradeTracker:
             return selected_symbols
 
         return []
+    
+    def get_dynamic_rr(self, num_records: int = 3, default:bool=True) -> float:
+        """
+        Calculate the dynamic risk-reward ratio (RR) based on the most traded files.
+
+        This function reads the most recent CSV files from a specified directory, extracts the
+        risk-reward ratio (RR) values, and calculates the average of the maximum RR values from
+        each file. The RR values are converted to their absolute values before calculating the maximum.
+
+        Args:
+        num_records (int): The number of most recent files to consider. Default is 3.
+
+        Returns:
+        float: The average of the maximum RR values from the most recent files, rounded to 2 decimal places.
+        """
+        if default:
+            return 2.0
+        else:
+            all_files = sorted(glob(f"PnLData/trade_logs/{self.account_id}_*/*"), reverse=True)[:num_records]
+            df_dict = {"date": [], "max_rr": []}
+            for file_name in all_files:
+                date = file_name.split("/")[-1]
+                single_file = pd.read_csv(file_name, names=["index", "system", "Strategy", "pnl", "rr", "risk"])
+                single_file["rr"] = single_file["rr"].abs()
+                df_dict["date"].append(date)
+                max_rr = max(1, single_file["rr"].max())
+                df_dict["max_rr"].append(max_rr)
+
+            df = pd.DataFrame(df_dict)
+            return min(2, round(df["max_rr"].mean(), 2))
+    
+
+    def get_rr_change(self) -> tuple:
+        """
+        Calculate the change in risk-reward (RR) over the last 5 minutes.
+        This method reads a CSV file containing trade logs for the current date,
+        filters the data to include only the last 5 minutes, and calculates the 
+        change in RR within that period.
+        Returns:
+            tuple: A tuple containing:
+                - rr_change (float): The difference between the maximum and minimum RR values in the last 5 minutes.
+                - max_rr (float): The maximum RR value in the last 5 minutes.
+                - min_rr (float): The minimum RR value in the last 5 minutes.
+        """
+        current_time = util.get_current_time()
+        current_date = current_time.strftime('%Y-%m-%d')
+        file_path = f"PnLData/trade_logs/{self.account_id}_{current_date}.csv"
+        if files_util.check_file_exists(file_path=file_path):
+            df = pd.read_csv(file_path)
+            df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+            df.set_index('Timestamp', inplace=True)
+            # Filter data for the last 5 minutes
+            current_time = pd.to_datetime(current_time.strftime('%Y-%m-%d %H:%M:%S'))
+            filtered_df = df.loc[current_time - pd.Timedelta(minutes=5):current_time]
+            rr_change = round(filtered_df['RR'].max() - filtered_df['RR'].min(), 2)
+            return rr_change, round(filtered_df['RR'].max(), 2), round(filtered_df['RR'].min(), 2)
 
 
     def record_pnl_logs(self, pnl, rr):
@@ -129,4 +186,5 @@ if __name__ == "__main__":
     # for i in range(10):
     #     ref.daily_pnl_track(200, 2.0, "Syste", "strategy", "acc_per", "eachPos")
 
-    print(ref.symbol_historic_pnl(each_position_risk_appertide=12))
+    # print(ref.symbol_historic_pnl(each_position_risk_appertide=12))
+    print(ref.get_rr_change())
