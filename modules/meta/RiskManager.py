@@ -364,15 +364,15 @@ class RiskManager:
             # we skip taking a new position to prevent reacting to sudden price movements (which could 
             # trigger a stop-loss and immediately open a new position based on the same signal).
             if active_positions.empty or (symbol not in list(active_positions["symbol"])):
-                current_price = self.prices.get_exchange_price(symbol=symbol)
+                bid, ask = self.prices.get_bid_ask(symbol=symbol)
                 ema_10 = self.indicators.simple_moving_average(symbol=symbol, timeframe=15, n_moving_average=10)
                 ema_20 = self.indicators.simple_moving_average(symbol=symbol, timeframe=15, n_moving_average=20)
 
                 if trade_direction == Directions.LONG:
-                    if ema_10 < ema_20 and current_price < ema_10:
+                    if bid < ema_10 < ema_20:
                         return True, is_opening_trade
                 elif trade_direction == Directions.SHORT:
-                    if ema_10 > ema_20 and current_price > ema_10:
+                    if ask > ema_10 > ema_20:
                         return True, is_opening_trade
         elif multiple_positions == "by_active_single_direction_with_limit":
             # Which means one trade at a time, So we just need to check the active trades
