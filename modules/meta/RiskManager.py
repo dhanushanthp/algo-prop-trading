@@ -14,6 +14,7 @@ from modules.meta.wrapper import Wrapper
 from modules.common.Directions import Directions
 from modules.common import files_util
 from modules.common.logme import log_it
+from modules.meta.TradeTracker import TradeTracker
 
 mt5.initialize()
 
@@ -56,17 +57,26 @@ class RiskManager:
         self.prices = Prices()
         self.indicators = Indicators(wrapper=self.wrapper, prices=self.prices)
         self.alert = Slack()
+        self.trade_tracker = TradeTracker()
         self.account_size = self.account.get_liquid_balance() - self.wrapper.get_closed_pnl()
         # self.position_risk_percentage, self.strategy = files_util.get_most_risk_percentage(file_name=util.get_server_ip(), strategy=kwargs["strategy"]) if dynamic_postional_risk else (position_risk, kwargs["strategy"])
         self.market_direction = kwargs["market_direction"]
         self.position_risk_percentage = position_risk
+        self.account_risk_percentage = account_risk
+        
         # If it's a dynamic risk then change the todays direction based on previous direction.
         if enable_dynamic_direction:
             self.market_direction = self.indicators.get_dominant_direction()
+            
+            # TODO Need to add dynamic position size variable in .bat file
+            self.account_risk_percentage = self.trade_tracker.get_dynamic_account_risk_percen(max_account_risk=account_risk)
+            self.position_risk_percentage = self.account_risk_percentage/10
         
         self.stop_expected_move:float = kwargs["stop_expected_move"]
-        self.account_risk_percentage = account_risk
+        
+        # Calculate the risk based on the account size and account risk percentage
         self.risk_of_an_account = round(self.account_size/100*self.account_risk_percentage)
+        # Calculate the risk based on the account size and position risk percentage
         self.risk_of_a_position = round(self.account_size/100*self.position_risk_percentage)
         self.max_account_risk = round(self.account_size/100)
         self.partial_profit = round(self.account_size/1000)
