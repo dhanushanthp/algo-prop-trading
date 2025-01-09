@@ -38,6 +38,36 @@ class TradeTracker:
 
         return []
     
+    def get_dynamic_position_size(self, max_position_size:float) -> float:
+        """
+        Calculate the dynamic position size based on the account's recent trade performance.
+        Args:
+            max_position_size (float): The maximum allowable position size.
+        Returns:
+            float: The calculated position size.
+        The function reads the account's trade data from a CSV file and adjusts the position size based on the 
+        performance of the last three trades. If there are fewer than three records, it returns a default position 
+        size of 1.0. If the last three trades were losses, it decreases the position size by 0.1, but not below 1. 
+        Otherwise, it increases the position size by 0.1, up to the maximum allowable position size.
+        """
+        file_path = f"PnLData/pnl_trades/{self.account_id}.csv"
+        if files_util.check_file_exists(file_path=file_path):
+            df = pd.read_csv(file_path)
+            # If there are less than 3 records, return the default position size
+            if len(df) < 3:
+                return 1.0
+            
+            lastAccountRiskPerc = df.iloc[-1]["AccountRiskPerc"]
+            last_3_failed_trades = all(df["Pnl"].tail(3) < 0)
+            
+            if last_3_failed_trades:
+                return max(1, lastAccountRiskPerc - 0.1)
+            else:
+                # Increase the position size by 0.1
+                return min(max_position_size, lastAccountRiskPerc + 0.1)
+        return 1.0
+
+    
     def get_dynamic_rr(self, num_records: int = 3, default:bool=True) -> float:
         """
         Calculate the dynamic risk-reward ratio (RR) based on the most traded files.
@@ -93,6 +123,8 @@ class TradeTracker:
             filtered_df = df.loc[current_time - pd.Timedelta(minutes=5):current_time]
             rr_change = round(filtered_df['RR'].max() - filtered_df['RR'].min(), 2)
             return rr_change, round(filtered_df['RR'].max(), 2), round(filtered_df['RR'].min(), 2)
+        
+        return 0, 0, 0
 
 
     def record_pnl_logs(self, pnl, rr):
@@ -187,4 +219,5 @@ if __name__ == "__main__":
     #     ref.daily_pnl_track(200, 2.0, "Syste", "strategy", "acc_per", "eachPos")
 
     # print(ref.symbol_historic_pnl(each_position_risk_appertide=12))
-    print(ref.get_rr_change())
+    # print(ref.get_rr_change())
+    print(ref.get_dynamic_position_size(max_position_size=1.5))
