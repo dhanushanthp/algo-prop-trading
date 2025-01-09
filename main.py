@@ -110,6 +110,8 @@ class Main():
         # Get the trading symbols
         self.trading_symbols = curr.get_symbols(security=self.security, symbol_selection=self.symbol_selection)
 
+        self.rr_change = 0
+
     def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False, stop_selection:str="ATR4H", entry_with_st_tgt:bool=True) -> bool:
         """
         Executes a trade based on the given strategy and direction.
@@ -252,11 +254,13 @@ class Main():
         print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.risk_manager.account_target_ratio} R)\n")
 
         print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
+        print(f"{'RR Change'.ljust(20)}: {util.cl(self.rr_change)}")
         print(f"{'Exited RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}\n")
 
     def main(self):
         while True:
             self.is_market_open, self.is_market_close = util.get_market_status(start_hour=self.start_hour)
+            self.rr_change, _, _ = self.trade_tracker.get_rr_change()
 
             if self.security == "STOCK":
                 self.is_market_open = self.is_market_open and util.is_us_activemarket_peroid()
@@ -316,7 +320,7 @@ class Main():
                 self.dynamic_exit_rr = 0.1
 
             # Early exit based on max account level profit or Loss
-            if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit)) and (not self.exited_by_pnl) and self.notify_pnl:
+            if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit and self.rr_change >= 1)) and (not self.exited_by_pnl) and self.notify_pnl:
                 self.close_trades_early_on_pnl()
             
 
@@ -411,6 +415,7 @@ class Main():
                 self.notify_pnl = False # Once sent, Disable
                 self.exited_by_pnl = False # Reset the Immidiate exit
                 self.dynamic_exit_rr = -1 # Reset the exit RR to -1
+                self.rr_change = 0 # Reset the RR change
             
 
             if self.is_market_open and (not self.exited_by_pnl) \
