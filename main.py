@@ -315,9 +315,11 @@ class Main():
             # Just accept the loss, that what you have agreed for...
 
             Later note: I have increased the Max target to 4, so If the price move above 2 then goes back make it break even.
+
+            Later Note: I have moved the break even to Max target rather exit, So that the exit will happen based on the RR change more than 1, However If the price move below then it will exit with max target RR
             """
-            if self.rr > 2.0:
-                self.dynamic_exit_rr = 0.1
+            if self.rr > self.risk_manager.account_target_ratio:
+                self.dynamic_exit_rr = self.risk_manager.account_target_ratio
 
             # Early exit based on max account level profit or Loss
             if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit and self.rr_change >= 1)) and (not self.exited_by_pnl) and self.notify_pnl:
