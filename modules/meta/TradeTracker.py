@@ -38,11 +38,11 @@ class TradeTracker:
 
         return []
     
-    def get_dynamic_position_size(self, max_position_size:float) -> float:
+    def get_dynamic_account_risk_percen(self, max_account_risk:float) -> float:
         """
         Calculate the dynamic position size based on the account's recent trade performance.
         Args:
-            max_position_size (float): The maximum allowable position size.
+            max_account_risk (float): The maximum allowable position size.
         Returns:
             float: The calculated position size.
         The function reads the account's trade data from a CSV file and adjusts the position size based on the 
@@ -64,7 +64,7 @@ class TradeTracker:
                 return max(1, lastAccountRiskPerc - 0.1)
             else:
                 # Increase the position size by 0.1
-                return min(max_position_size, lastAccountRiskPerc + 0.1)
+                return min(max_account_risk, lastAccountRiskPerc + 0.1)
         return 1.0
 
     
@@ -220,4 +220,4 @@ if __name__ == "__main__":
 
     # print(ref.symbol_historic_pnl(each_position_risk_appertide=12))
     # print(ref.get_rr_change())
-    print(ref.get_dynamic_position_size(max_position_size=1.5))
+    print(ref.get_dynamic_account_risk_percen(max_account_risk=1.5))
