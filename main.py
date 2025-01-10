@@ -190,7 +190,7 @@ class Main():
                                            each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
 
         if self.record_pnl:
-            self.trade_tracker.record_pnl_logs(pnl=self.PnL, rr=self.rr)
+            self.trade_tracker.record_pnl_logs(pnl=self.PnL, rr=self.rr, rr_change=self.rr_change)
                 
         # Reset account size for next day
         self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
@@ -373,7 +373,7 @@ class Main():
                     today_pnl = self.PnL
                     total_rr = self.rr
                 
-                self.trade_tracker.record_pnl_logs(pnl=today_pnl, rr=total_rr)
+                self.trade_tracker.record_pnl_logs(pnl=today_pnl, rr=total_rr, rr_change=self.rr_change)
                 self.trade_tracker.record_symbol_pnl_logs(pnl_df=symbol_pnl)
 
 

@@ -121,13 +121,14 @@ class TradeTracker:
             # Filter data for the last 5 minutes
             current_time = pd.to_datetime(current_time.strftime('%Y-%m-%d %H:%M:%S'))
             filtered_df = df.loc[current_time - pd.Timedelta(minutes=5):current_time]
-            rr_change = round(filtered_df['RR'].max() - filtered_df['RR'].min(), 2)
-            return rr_change, round(filtered_df['RR'].max(), 2), round(filtered_df['RR'].min(), 2)
+            if not filtered_df.empty:
+                rr_change = round(filtered_df['RR'].max() - filtered_df['RR'].min(), 2)
+                return rr_change, round(filtered_df['RR'].max(), 2), round(filtered_df['RR'].min(), 2)
         
         return 0, 0, 0
 
 
-    def record_pnl_logs(self, pnl, rr):
+    def record_pnl_logs(self, pnl, rr, rr_change):
         """
         Records profit and loss (PnL) logs along with risk-reward (RR) ratio to a CSV file.
         This method creates a new CSV file for each day if it does not already exist, 
@@ -143,10 +144,10 @@ class TradeTracker:
 
         if not files_util.check_file_exists(file_path=file_path):
             with open(file_path, mode="w") as file:
-                file.write("Timestamp,AccountID,Pnl,RR\n")
+                file.write("Timestamp,AccountID,Pnl,RR,RRChange\n")
 
         with open(file_path, mode="a") as file:
-            file.write(f"{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{self.account_id},{round(pnl, 2)},{round(rr, 2)}\n")
+            file.write(f"{util.get_current_time().strftime('%Y-%m-%d %H:%M:%S')},{self.account_id},{round(pnl, 2)},{round(rr, 2)},{round(rr_change, 2)}\n")
     
     def record_symbol_moving_average(self, pnl_df:pd.DataFrame):
         """
