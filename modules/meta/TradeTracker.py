@@ -61,7 +61,7 @@ class TradeTracker:
             last_3_failed_trades = all(df["Pnl"].tail(3) < 0)
             
             if last_3_failed_trades:
-                return max(1, lastAccountRiskPerc - 0.1)
+                return max(1, lastAccountRiskPerc - 0.2)
             else:
                 # Increase the position size by 0.1
                 return min(max_account_risk, lastAccountRiskPerc + 0.1)
