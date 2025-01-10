@@ -800,7 +800,7 @@ class Indicators:
         for symbol in symbols:
             if not self.wrapper.is_chart_upto_date(symbol=symbol):
                 # If the chart is not update to then don't take the trade atleast for single symbol
-                logme.log_it(f"MISSING Symbol Chart, Dominant Direction: {symbol}")
+                print(f"MISSING Symbol Chart, Dominant Direction: {symbol}")
                 return "UNKNOWN"
             
             prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback)
@@ -923,8 +923,8 @@ if __name__ == "__main__":
         
         case "trade_direction":
             # python modules/meta/Indicators.py trade_direction
-            for i in range(0, 10):
-                print(f"Today - {i}", indi_obj.get_dominant_direction(lookback=i))
+            # for i in range(0, 10):
+            print(f"Today ", indi_obj.get_dominant_direction())
         
         case "high_low_range_hunt":
             # python modules/meta/Indicators.py high_low_range_hunt 15 2
