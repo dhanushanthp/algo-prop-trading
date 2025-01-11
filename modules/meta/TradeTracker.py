@@ -51,20 +51,26 @@ class TradeTracker:
         Otherwise, it increases the position size by 0.1, up to the maximum allowable position size.
         """
         file_path = f"PnLData/pnl_trades/{self.account_id}.csv"
+
+        # If exists, means at least one trade has been made
         if files_util.check_file_exists(file_path=file_path):
             df = pd.read_csv(file_path)
-            # If there are less than 3 records, return the default position size
-            if len(df) < 3:
-                return 1.0
+            last_acc_risk_perc = df.iloc[-1]["AccountRiskPerc"]
+            prev_day_pnl = df.iloc[-1]["Pnl"]
             
-            lastAccountRiskPerc = df.iloc[-1]["AccountRiskPerc"]
-            last_3_failed_trades = all(df["Pnl"].tail(3) < 0)
-            
-            if last_3_failed_trades:
-                return max(1, lastAccountRiskPerc - 0.2)
+            # Check if the last 3 trades were losses
+            if len(df) > 3:
+                # Reset the trade percentage
+                if all(df["Pnl"].tail(3) < 0):
+                    return 1.0
+
+            if prev_day_pnl > 0:
+                # Winning Trades
+                return min(max_account_risk, last_acc_risk_perc + 0.1)
             else:
-                # Increase the position size by 0.1
-                return min(max_account_risk, lastAccountRiskPerc + 0.1)
+                # Losing Trades
+                return max(1.0, last_acc_risk_perc - 0.1)
+                
         return 1.0
 
     
