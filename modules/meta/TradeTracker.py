@@ -73,8 +73,8 @@ class TradeTracker:
                 
         return 1.0
 
-    
-    def get_dynamic_rr(self, num_records: int = 3, default:bool=True) -> float:
+
+    def get_dynamic_rr(self, num_records:int = 5) -> float:
         """
         Calculate the dynamic risk-reward ratio (RR) based on the most traded files.
 
@@ -88,21 +88,25 @@ class TradeTracker:
         Returns:
         float: The average of the maximum RR values from the most recent files, rounded to 2 decimal places.
         """
-        if default:
-            return 2.0
-        else:
-            all_files = sorted(glob(f"PnLData/trade_logs/{self.account_id}_*/*"), reverse=True)[:num_records]
+        current_time = util.get_current_time()
+        current_date = current_time.strftime('%Y-%m-%d')
+        all_files = glob(f"PnLData/trade_logs/{self.account_id}_*.csv")
+        all_files = [file for file in all_files if current_date not in file]
+        if len(all_files) >= num_records:
+            all_files = sorted(all_files, reverse=True)[:num_records]
             df_dict = {"date": [], "max_rr": []}
             for file_name in all_files:
-                date = file_name.split("/")[-1]
-                single_file = pd.read_csv(file_name, names=["index", "system", "Strategy", "pnl", "rr", "risk"])
-                single_file["rr"] = single_file["rr"].abs()
+                date = file_name.split("/")[-1].split("_")[-1].split(".")[0]
+                single_file = pd.read_csv(file_name)
+                single_file["RR"] = single_file["RR"].abs()
                 df_dict["date"].append(date)
-                max_rr = max(1, single_file["rr"].max())
+                max_rr = max(1, single_file["RR"].max())
                 df_dict["max_rr"].append(max_rr)
 
             df = pd.DataFrame(df_dict)
-            return min(2, round(df["max_rr"].mean(), 2))
+            return max(2, round(df["max_rr"].mean() - 1, 2))
+        
+        return 2.0
     
 
     def get_rr_change(self) -> tuple:
@@ -227,4 +231,4 @@ if __name__ == "__main__":
 
     # print(ref.symbol_historic_pnl(each_position_risk_appertide=12))
     # print(ref.get_rr_change())
-    print(ref.get_dynamic_account_risk_percen(max_account_risk=1.5))
+    print(ref.get_dynamic_rr())
