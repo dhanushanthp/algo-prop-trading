@@ -318,11 +318,15 @@ class Main():
 
             Later Note: I have moved the break even to Max target rather exit, So that the exit will happen based on the RR change more than 1, However If the price move below then it will exit with max target RR
             """
-            if self.rr > self.risk_manager.account_target_ratio:
-                self.dynamic_exit_rr = self.risk_manager.account_target_ratio
+            if self.rr > 2:
+                self.dynamic_exit_rr = 0.1
 
             # Early exit based on max account level profit or Loss
-            if ((self.rr <= self.dynamic_exit_rr and self.max_loss_exit) or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit and self.rr_change >= 1)) and (not self.exited_by_pnl) and self.notify_pnl:
+            if ((
+                (self.rr <= self.dynamic_exit_rr and self.max_loss_exit) 
+                 or (self.rr > 2 and self.rr_change >= 1 and self.max_target_exit) # Price move above 2 then goes back make it break even exit
+                 or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit)) # Exit based on the Dynamic RR
+                and (not self.exited_by_pnl) and self.notify_pnl):
                 self.close_trades_early_on_pnl()
             
 

@@ -74,7 +74,7 @@ class TradeTracker:
         return 1.0
 
 
-    def get_dynamic_rr(self, num_records:int = 5) -> float:
+    def get_dynamic_rr(self, num_records:int=5, default:float=2.0) -> float:
         """
         Calculate the dynamic risk-reward ratio (RR) based on the most traded files.
 
@@ -104,9 +104,9 @@ class TradeTracker:
                 df_dict["max_rr"].append(max_rr)
 
             df = pd.DataFrame(df_dict)
-            return max(2, round(df["max_rr"].mean() - 1, 2))
+            return max(default, round(df["max_rr"].mean() - 1, 2))
         
-        return 2.0
+        return default
     
 
     def get_rr_change(self) -> tuple:
@@ -231,4 +231,4 @@ if __name__ == "__main__":
 
     # print(ref.symbol_historic_pnl(each_position_risk_appertide=12))
     # print(ref.get_rr_change())
-    print(ref.get_dynamic_rr())
+    print(ref.get_dynamic_rr(default=10.0))
