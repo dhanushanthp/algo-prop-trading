@@ -14,3 +14,4 @@ bat_scripts
 notebooks/data/candles/
 /PnLData
 /logs
+/notebooks
