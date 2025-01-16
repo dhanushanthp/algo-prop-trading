@@ -104,6 +104,30 @@ class DelayedEntry:
         
         return 0.0
 
+    def is_max_ranged(self):
+        """
+        Checks if the range of the 'RR' column in the historical price tracker file exceeds 1.
+        This method constructs a file path based on the current date and the account ID, 
+        and checks if the file exists. If the file exists, it reads the file into a pandas 
+        DataFrame, calculates the minimum and maximum values of the 'RR' column, and 
+        determines if the difference between the maximum and minimum values is greater than 1.
+        Returns:
+            bool: True if the range of the 'RR' column exceeds 1, False otherwise.
+        """
+        current_date = util.get_current_time().strftime('%Y-%m-%d')
+        file_path = f"PnLData/price_tracker/{self.account_id}_{current_date}_hist.csv"
+        if files_util.check_file_exists(file_path=file_path):
+            data = pd.read_csv(file_path)
+            min_index = data.iloc[data["RR"].idxmin()]
+            max_index = data.iloc[data["RR"].idxmax()]
+
+            if max_index["RR"] - min_index["RR"] > 1:
+                # The timestamp which has the minimum should be the latest
+                if min_index["Timestamp"]>  max_index["Timestamp"]:
+                    print("Max: ", max_index["RR"], "Min: ",min_index["RR"] )
+                    return True
+            
+        return False
 
     def record_pnl_logs(self, rr):
         """

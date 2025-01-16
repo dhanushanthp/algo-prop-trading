@@ -426,7 +426,8 @@ class Main():
                 self.rr_change = 0 # Reset the RR change
 
             
-            print("Delayed RR:", self.delayed_entry.delayed_rr())
+            print("\nDelayed RR:", self.delayed_entry.delayed_rr())
+            print("Max Ranged: ", self.delayed_entry.is_max_ranged())
 
             if self.is_market_open and (not self.exited_by_pnl) \
                   and (not self.is_market_close) \
