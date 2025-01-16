@@ -69,6 +69,7 @@ class Main():
         self.primary_stop_selection = kwargs["primary_stop_selection"]
         self.secondary_stop_selection = kwargs["secondary_stop_selection"] 
         self.enable_sec_stop_selection = kwargs["enable_sec_stop_selection"] # Even it might be TRUE, But only activate after a first trade of a symbol.
+        self.enable_delayed_entry = kwargs["enable_delayed_entry"]
 
         # Applies only for 
         self.atr_check_timeframe = kwargs["atr_check_timeframe"]
@@ -245,6 +246,7 @@ class Main():
             print(f"{'Primary STP Status'.ljust(20)}: {util.cl(self.primary_stop_selection)}")
         print(f"{'Secondary STP Status'.ljust(20)}: {util.cl(self.enable_sec_stop_selection)}")
         print(f"{'Secondary STP'.ljust(20)}: {util.cl(self.secondary_stop_selection)}\n")
+        print(f"{'Delayed Entry'.ljust(20)}: {util.cl(self.enable_delayed_entry)}\n")
             
         print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.symbol_selection)}")
         print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
@@ -606,6 +608,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_trades_on_same_direction', type=int, help='Max number of trades by direction')
     parser.add_argument('--adaptive_reentry', type=str, help='Reentry based on the RR hit')
     parser.add_argument('--adaptive_tolerance', type=float, help='The factor of the each position, that flip based on the pnl')
+    parser.add_argument('--enable_delayed_entry', type=str, help='Enable Delayed Entry')
     
     
     args = parser.parse_args()
@@ -642,6 +645,7 @@ if __name__ == "__main__":
     account_trail_enabler = util.boolean(args.account_trail_enabler)
     adaptive_reentry = util.boolean(args.adaptive_reentry)
     adaptive_tolerance = float(args.adaptive_tolerance)
+    enable_delayed_entry = util.boolean(args.enable_delayed_entry)
 
     win = Main(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -653,6 +657,7 @@ if __name__ == "__main__":
                       primary_stop_selection=primary_stop_selection, secondary_stop_selection=secondary_stop_selection, account_target_ratio=account_target_ratio,
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
                       max_trades_on_same_direction=max_trades_on_same_direction, entry_with_st_tgt=entry_with_st_tgt,
-                      stop_expected_move=stop_expected_move, account_trail_enabler=account_trail_enabler, adaptive_reentry=adaptive_reentry, adaptive_tolerance=adaptive_tolerance)
+                      stop_expected_move=stop_expected_move, account_trail_enabler=account_trail_enabler, adaptive_reentry=adaptive_reentry, adaptive_tolerance=adaptive_tolerance,
+                      enable_delayed_entry=enable_delayed_entry)
 
     win.main()

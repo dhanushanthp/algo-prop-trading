@@ -52,6 +52,8 @@ set max_trades_on_same_direction=100
 set adaptive_reentry=no
 set adaptive_tolerance=0.75
 
+set enable_delayed_entry=no
+
 python main.py ^
     --market_direction %market_direction% ^
     --enable_trail_stop %enable_trail_stop% ^
@@ -84,4 +86,5 @@ python main.py ^
     --account_trail_enabler %account_trail_enabler% ^
     --adaptive_reentry %adaptive_reentry% ^
     --adaptive_tolerance %adaptive_tolerance% ^
+    --enable_delayed_entry %enable_delayed_entry% ^
     --target_ratio %target_ratio%
