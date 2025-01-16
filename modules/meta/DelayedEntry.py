@@ -120,10 +120,10 @@ class DelayedEntry:
             data = pd.read_csv(file_path)
             min_index = data.iloc[data["RR"].idxmin()]
             max_index = data.iloc[data["RR"].idxmax()]
-
+            print("Change: ", round(max_index["RR"] - min_index["RR"]))
             if max_index["RR"] - min_index["RR"] > 1:
                 # The timestamp which has the minimum should be the latest
-                if min_index["Timestamp"]>  max_index["Timestamp"]:
+                if min_index["Timestamp"] >  max_index["Timestamp"]:
                     print("Max: ", max_index["RR"], "Min: ",min_index["RR"] )
                     return True
             
