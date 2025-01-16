@@ -30,11 +30,11 @@ class DelayedEntry:
             - Entry Price: The entry price of the symbol.
         If the strategy is "UNKNOWN", it prints a message indicating that the strategy is unknown.
         """
-        strategy = self.indicators.get_dominant_direction()
-        if strategy != "UNKNOWN":
-            current_date = util.get_current_time().strftime('%Y-%m-%d')
-            file_path = f"PnLData/price_tracker/{self.account_id}_{current_date}.csv"
-            if not files_util.check_file_exists(file_path=file_path):
+        current_date = util.get_current_time().strftime('%Y-%m-%d')
+        file_path = f"PnLData/price_tracker/{self.account_id}_{current_date}.csv"
+        if not files_util.check_file_exists(file_path=file_path):
+            strategy = self.indicators.get_dominant_direction()
+            if strategy != "UNKNOWN":
                 with open(file_path, mode="w") as file:
                     file.write("symbol,direction,entry_price,volume\n")
                 
@@ -52,8 +52,8 @@ class DelayedEntry:
                     
                     with open(file_path, mode="a") as file:
                         file.write(f"{symbol},{trade_direction},{entry_price},{lots}\n")
-        else:
-            print("Strategy is UNKNOWN")
+            else:
+                print("Strategy is UNKNOWN")
 
     def directional_pnl(self, entry, current, direction):
         """
