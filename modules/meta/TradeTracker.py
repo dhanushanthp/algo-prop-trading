@@ -71,7 +71,7 @@ class TradeTracker:
                 # Losing Trades
                 return max(1.0, last_acc_risk_perc - 0.1)
                 
-        return 1.0
+        return round(1.0, 2)
 
 
     def get_dynamic_rr(self, num_records:int=5, default:float=2.0) -> float:
