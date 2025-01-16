@@ -20,6 +20,7 @@ from modules.meta.wrapper import Wrapper
 from modules.meta.Strategies import Strategies
 from modules.common.logme import log_it
 from modules.meta.TradeTracker import TradeTracker
+from modules.meta.DelayedEntry import DelayedEntry
 
 class Main():
     def __init__(self, **kwargs):
@@ -97,6 +98,7 @@ class Main():
         self.strategies = Strategies(wrapper=self.wrapper, indicators=self.indicators)
         self.orders = Orders(prices=self.prices, risk_manager=self.risk_manager, wrapper=self.wrapper)
         self.trade_tracker = TradeTracker()
+        self.delayed_entry = DelayedEntry(indicators=self.indicators, strategies=self.strategies, risk_manager=self.risk_manager)
         
         # Account information
         self.account_name = self.account.get_account_name()
@@ -422,7 +424,10 @@ class Main():
                 self.exited_by_pnl = False # Reset the Immidiate exit
                 self.dynamic_exit_rr = -1 # Reset the exit RR to -1
                 self.rr_change = 0 # Reset the RR change
-            
+
+            # Record the Pnl Pre for perfect entry
+            self.delayed_entry.symbol_price_recorder(symbols=self.trading_symbols)
+            print("Delayed RR:", self.delayed_entry.delayed_rr())
 
             if self.is_market_open and (not self.exited_by_pnl) \
                   and (not self.is_market_close) \
