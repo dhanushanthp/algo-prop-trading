@@ -70,6 +70,7 @@ class Main():
         self.secondary_stop_selection = kwargs["secondary_stop_selection"] 
         self.enable_sec_stop_selection = kwargs["enable_sec_stop_selection"] # Even it might be TRUE, But only activate after a first trade of a symbol.
         self.enable_delayed_entry = kwargs["enable_delayed_entry"]
+        self.enter_market_by_delay = False
 
         # Applies only for 
         self.atr_check_timeframe = kwargs["atr_check_timeframe"]
@@ -435,9 +436,18 @@ class Main():
             print("\nDelayed RR:", self.delayed_entry.delayed_rr())
             print("Max Ranged: ", self.delayed_entry.is_max_ranged())
 
+            # Enable delayed entry based on the tracked performance
+            if self.enable_delayed_entry:
+                get_delay_signal = self.delayed_entry.is_max_ranged()
+                if get_delay_signal:
+                    self.enter_market_by_delay = True    
+            else:
+                self.enter_market_by_delay = True
+
             if self.is_market_open and (not self.exited_by_pnl) \
                   and (not self.is_market_close) \
-                    and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
+                    and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day) \
+                        and self.enter_market_by_delay:
 
                 # Record the Pnl Pre for perfect entry
                 self.delayed_entry.symbol_price_recorder(symbols=self.trading_symbols)
