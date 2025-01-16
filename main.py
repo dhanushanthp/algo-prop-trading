@@ -60,6 +60,7 @@ class Main():
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
         self.num_prev_cdl_for_stop = kwargs["num_prev_cdl_for_stop"]
         self.start_hour = kwargs["start_hour"]
+        self.start_minute = 5
         self.record_pnl = kwargs["record_pnl"]
         self.close_by_time = kwargs["close_by_time"]
         self.close_by_solid_cdl = kwargs["close_by_solid_cdl"]
@@ -211,6 +212,9 @@ class Main():
         day, hour, minute = util.get_current_day_hour_min()
         market_status_string = util.cl_status("Inactive: ", color="red") if self.is_market_close else util.cl_status("Active: ", color="green")
         print(f"\n--- {market_status_string}{self.security} {self.trading_timeframe} TF {self.risk_manager.market_direction.upper()} ---")
+        if self.is_market_close:
+            print(f"{'Market Open at '.ljust(20)}: {self.start_hour}:{str(self.start_minute).zfill(2)}")
+
         print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
         print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}\n")
