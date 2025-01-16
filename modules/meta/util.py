@@ -235,17 +235,19 @@ def is_us_activemarket_peroid() -> bool:
     condition = (us_hour > 9 or (us_hour == 9 and us_min >= 36)) and us_hour < 16
     return condition 
 
-def get_market_status(start_hour:int=10) -> Tuple[bool, bool]:
+def get_market_status(start_hour:int=10, start_minute:int=15) -> Tuple[bool, bool]:
     """
     Determine the market status based on the current day and time.
     Args:
         start_hour (int): The hour at which the market opens. Defaults to 10.
+        start_minute (int): The minute at which the market opens. Defaults to 15.
     Returns:
         Tuple[bool, bool]: A tuple containing two boolean values:
             - market_open (bool): True if the market is open, False otherwise.
             - market_about_to_close (bool): True if the market is about to close, False otherwise.
     Notes:
         - The market is considered open from `start_hour` to 22:00 on weekdays.
+        - Added minutes to avoid the market volatility
         - The market is considered about to close if:
             - It is a weekend (Saturday or Sunday).
             - It is 23:15 or later.
@@ -258,7 +260,9 @@ def get_market_status(start_hour:int=10) -> Tuple[bool, bool]:
     if day not in ["Saturday","Sunday"]:
         # Once market open become disabled, No new trades
         # We give first 1 hour and last 1 hour as non-trading time
-        if (hour >= start_hour and hour < 22):
+        if (((hour >= start_hour and minute >= start_minute) 
+             or (hour > start_hour)
+             ) and hour < 22):
             market_open = True
     
     # Close all the position 30 minute before the market close
