@@ -187,7 +187,7 @@ def ticker_initiator(security="FOREX", symbol_selection="NON-PRIMARY"):
     for symbol in symbols:
         mt.symbol_select(symbol, True)
 
-def get_symbols(security="FOREX", symbol_selection="NON-PRIMARY"):
+def get_symbols(security="FOREX", symbol_selection="PRIMARY"):
     if security == "FOREX":
         main_pairs = []
         if symbol_selection == "PRIMARY":
