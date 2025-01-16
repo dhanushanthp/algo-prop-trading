@@ -97,8 +97,11 @@ class DelayedEntry:
             data["change"] =  data.apply(lambda x: self.directional_pnl(entry=x["entry_price"], current=x["current_price"], direction=x["direction"]) , axis=1)
             data["pnl"] = data.apply(lambda x: self.risk_manager.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
             total_pnl = round(data["pnl"].sum(), 2)
-            rr = round(total_pnl/self.risk_manager.risk_of_an_account, 2)
+            commission = self.risk_manager.risk_of_an_account * 0.05 # 5% of the account
+            rr = round((total_pnl/self.risk_manager.risk_of_an_account) - commission, 2)
             return rr
+        
+        return 0.0
 
 if __name__ == "__main__":
     from modules.meta.Prices import Prices

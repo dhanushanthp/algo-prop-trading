@@ -425,14 +425,16 @@ class Main():
                 self.dynamic_exit_rr = -1 # Reset the exit RR to -1
                 self.rr_change = 0 # Reset the RR change
 
-            # Record the Pnl Pre for perfect entry
-            self.delayed_entry.symbol_price_recorder(symbols=self.trading_symbols)
+            
             print("Delayed RR:", self.delayed_entry.delayed_rr())
 
             if self.is_market_open and (not self.exited_by_pnl) \
                   and (not self.is_market_close) \
                     and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day):
-                
+
+                # Record the Pnl Pre for perfect entry
+                self.delayed_entry.symbol_price_recorder(symbols=self.trading_symbols)
+
                 # Enable again once market active
                 self.notify_pnl = True
                 
