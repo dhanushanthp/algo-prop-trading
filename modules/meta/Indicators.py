@@ -801,6 +801,7 @@ class Indicators:
             if not self.wrapper.is_chart_upto_date(symbol=symbol):
                 # If the chart is not update to then don't take the trade atleast for single symbol
                 print(f"MISSING Symbol Chart, Dominant Direction: {symbol}")
+                mt5.symbol_select(symbol, True)
                 return "UNKNOWN"
             
             prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback)

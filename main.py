@@ -151,7 +151,7 @@ class Main():
                     log_it("DIR_TRADE_SELECTION").info(f"{symbol}: Trade Skip! Direction not defined!")
             
             # Only take trades with valid method names
-            if method_name in ["long_entry", "short_entry"]:
+            if method_name:
                 method = getattr(self.orders, method_name, None)
 
                 if method:
