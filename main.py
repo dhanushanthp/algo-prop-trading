@@ -140,6 +140,8 @@ class Main():
         (either BREAK or REVERSE) and the direction (LONG or SHORT). It then attempts to execute the trade using 
         the corresponding method from the `orders` object. If the method is not found, the trade is not executed.
         """
+        method_name = None
+
         if direction:
             match self.risk_manager.market_direction:
                 case Directions.BREAK.name:
@@ -151,7 +153,7 @@ class Main():
                     log_it("DIR_TRADE_SELECTION").info(f"{symbol}: Trade Skip! Direction not defined!")
             
             # Only take trades with valid method names
-            if method_name:
+            if method_name in ["long_entry", "short_entry"]:
                 method = getattr(self.orders, method_name, None)
 
                 if method:
