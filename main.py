@@ -438,8 +438,8 @@ class Main():
                 self.delayed_entry.symbol_price_recorder(symbols=self.trading_symbols)
                 
                 get_delay_signal = self.delayed_entry.is_max_ranged()
-                print("\nDelayed RR:", self.delayed_entry.delayed_rr())
-                print("Max Ranged: ", get_delay_signal)
+                print("\nPre Tracked RR:", self.delayed_entry.delayed_rr())
+                print("Pre Track Signal: ", get_delay_signal)
                 
                 if get_delay_signal:
                     self.enter_market_by_delay = True    
