@@ -184,7 +184,6 @@ class RiskManager:
         adaptive_closed_trades = early_close_trades.drop_duplicates(subset=["symbol"], keep="last")
         adapted_positions = early_close_trades[~early_close_trades.index.isin(adaptive_closed_trades.index)]
         adapted_closed_positions_pnl = adapted_positions["profit"].sum() + adapted_positions["commission"].sum()
-        print(f"Adapted Closed Positions: {len(adapted_positions)}")
         
         # Calculate the PnL for each positions with ticket as unique value
         individual_symbol_df["current_price"] = individual_symbol_df["symbol"].apply(lambda x: self.prices.get_exchange_price(symbol=x))
