@@ -432,13 +432,12 @@ class Main():
                 self.dynamic_exit_rr = -1 # Reset the exit RR to -1
                 self.rr_change = 0 # Reset the RR change
 
-            
-            print("\nDelayed RR:", self.delayed_entry.delayed_rr())
-            print("Max Ranged: ", self.delayed_entry.is_max_ranged())
-
             # Enable delayed entry based on the tracked performance
             if self.enable_delayed_entry:
                 get_delay_signal = self.delayed_entry.is_max_ranged()
+                print("\nDelayed RR:", self.delayed_entry.delayed_rr())
+                print("Max Ranged: ", get_delay_signal)
+                
                 if get_delay_signal:
                     self.enter_market_by_delay = True    
             else:
