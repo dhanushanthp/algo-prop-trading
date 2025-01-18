@@ -8,3 +8,5 @@ pip install Flask
 pip install requests
 pip install termcolor
 pip install colorama
+pip install matplotlib
+pip install blessed
