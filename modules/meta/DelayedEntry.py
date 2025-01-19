@@ -38,20 +38,29 @@ class DelayedEntry:
                 with open(file_path, mode="w") as file:
                     file.write("symbol,direction,entry_price,volume\n")
                 
+                # Validate all the symbols entries in the file
+                counter = 0
                 for symbol in symbols:
-                    # Find each symbol direction
                     symbol_direction = self.strategies.previous_day_close(symbol=symbol)
-                    entry_price = self.indicators.prices.get_exchange_price(symbol=symbol)
-                    shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=15, buffer_ratio=0)
-                    _, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_long_stop)
-
-                    if strategy == "BREAK":
-                        trade_direction = symbol_direction.name
-                    else:
-                        trade_direction = "LONG" if symbol_direction.name == "SHORT" else "SHORT"
-                    
-                    with open(file_path, mode="a") as file:
-                        file.write(f"{symbol},{trade_direction},{entry_price},{lots}\n")
+                    counter += 1
+                
+                # Just to make sure that we covered all the symbols
+                if counter == len(symbols):
+                    for symbol in symbols:
+                        # Find each symbol direction
+                        symbol_direction = self.strategies.previous_day_close(symbol=symbol)
+                        entry_price = self.indicators.prices.get_exchange_price(symbol=symbol)
+                        shield_object = self.risk_manager.get_stop_range(symbol=symbol, timeframe=15, buffer_ratio=0)
+                        _, lots = self.risk_manager.get_lot_size(symbol=symbol, entry_price=entry_price, stop_price=shield_object.get_long_stop)
+                        
+                        if symbol_direction:
+                            if strategy == "BREAK":
+                                trade_direction = symbol_direction.name
+                            else:
+                                trade_direction = "LONG" if symbol_direction.name == "SHORT" else "SHORT"
+                            
+                            with open(file_path, mode="a") as file:
+                                file.write(f"{symbol},{trade_direction},{entry_price},{lots}\n")
             else:
                 print("Strategy is UNKNOWN")
 

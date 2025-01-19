@@ -40,7 +40,7 @@ with term.cbreak(), term.hidden_cursor():
 
         update_plot(x, y, line, ax)
 
-        time.sleep(1)  # Adjust the sleep time as needed
+        time.sleep(15)  # Adjust the sleep time as needed
 
         # Quiting
         if term.inkey(timeout=0.01) == 'q':

@@ -268,6 +268,21 @@ class Main():
         print(f"{'RR Change'.ljust(20)}: {util.cl(self.rr_change)}")
         print(f"{'Exited RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}\n")
 
+    def trading_activated(self):
+        """
+        Determines if trading is activated based on several conditions.
+        Returns:
+            bool: True if trading is activated, False otherwise.
+        Conditions:
+            - The market is open.
+            - The trading has not been exited by PnL (Profit and Loss).
+            - The market is not closed.
+            - There are remaining trades available for the day.
+        """
+        return self.is_market_open and (not self.exited_by_pnl) \
+                and (not self.is_market_close) \
+                and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day)
+    
     def main(self):
         while True:
             self.is_market_open, self.is_market_close = util.get_market_status(start_hour=self.start_hour)
@@ -437,21 +452,19 @@ class Main():
             # Enable delayed entry based on the tracked performance
             if self.enable_delayed_entry:
                 # Record the Pnl Pre for perfect entry
-                self.delayed_entry.symbol_price_recorder(symbols=self.trading_symbols)
+                if self.trading_activated():
+                    self.delayed_entry.symbol_price_recorder(symbols=self.trading_symbols)
                 
-                get_delay_signal = self.delayed_entry.is_max_ranged()
-                print(f"\n{'Pre Tracked RR'.ljust(20)}: {self.delayed_entry.delayed_rr()}")
-                print(f"{'Pre Track Signal'.ljust(20)}: {get_delay_signal}")
+                    get_delay_signal = self.delayed_entry.is_max_ranged()
+                    print(f"\n{'Pre Tracked RR'.ljust(20)}: {self.delayed_entry.delayed_rr()}")
+                    print(f"{'Pre Track Signal'.ljust(20)}: {get_delay_signal}")
                 
-                if get_delay_signal:
-                    self.enter_market_by_delay = True    
+                    if get_delay_signal:
+                        self.enter_market_by_delay = True    
             else:
                 self.enter_market_by_delay = True
 
-            if self.is_market_open and (not self.exited_by_pnl) \
-                  and (not self.is_market_close) \
-                    and self.wrapper.any_remaining_trades(max_trades=self.trades_per_day) \
-                        and self.enter_market_by_delay:
+            if self.trading_activated() and self.enter_market_by_delay:
 
                 # Enable again once market active
                 self.notify_pnl = True
