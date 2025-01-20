@@ -775,13 +775,13 @@ class Indicators:
         one unique strategy value that is 'REVERSE'. If both conditions are met, 
         it returns 'BREAK'.
         """
-        pnl_df = files_util.get_previous_pnls()
-        if pnl_df is not None:
-            if all(pnl_df["rr"] > 0):
-                unique_strategy = pnl_df["strategy"].unique()
-                if len(unique_strategy) == 1 and unique_strategy == "REVERSE":
-                    print("Previous 3 REVERSE Win")
-                    return "BREAK"
+        # pnl_df = files_util.get_previous_pnls()
+        # if pnl_df is not None:
+        #     if all(pnl_df["rr"] > 0):
+        #         unique_strategy = pnl_df["strategy"].unique()
+        #         if len(unique_strategy) == 1 and unique_strategy == "REVERSE":
+        #             print("Previous 3 REVERSE Win")
+        #             return "BREAK"
         
         """
         Most of the days If it's monday then REVERSE works the best, So we manually overide the rule
