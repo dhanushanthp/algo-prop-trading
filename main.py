@@ -116,6 +116,7 @@ class Main():
         self.trading_symbols = curr.get_symbols(security=self.security, symbol_selection=self.symbol_selection)
 
         self.rr_change = 0
+        self.rr_chage_prior = 0
 
     def trade(self, direction:Directions, symbol:str, comment:str, break_level:float, market_entry:bool=False, stop_selection:str="ATR4H", entry_with_st_tgt:bool=True) -> bool:
         """
@@ -350,11 +351,13 @@ class Main():
             # Early exit based on max account level profit or Loss
             if ((
                 (self.rr <= self.dynamic_exit_rr and self.max_loss_exit) 
-                 or (self.rr > 2 and self.rr_change >= 1 and self.max_target_exit) # Price move above 2 then goes back make it break even exit
-                 or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit)) # Exit based on the Dynamic RR
+                 or (self.rr > 2 and self.rr_change >= 1 and (self.rr_change < self.rr_chage_prior) and self.max_target_exit) # Once the RR change is goes above 1RR and the once it's start decreaing then take the exist,
+                 or (self.rr > self.risk_manager.account_target_ratio and self.max_target_exit and (not self.rr_change > 1))) # Exit based on the Dynamic RR, Once the RR change goes above 1, this logic will be deactivated, Where this will try to take max profit based on the sudden hype.
                 and (not self.exited_by_pnl) and self.notify_pnl):
                 self.close_trades_early_on_pnl()
             
+            # This should be come below the self.rr_change exit check.
+            self.rr_chage_prior = self.rr_change
 
             if self.close_by_time:
                 positions = self.risk_manager.close_positions_by_time(timeframe=self.trading_timeframe, wait_factor=3)
