@@ -82,6 +82,16 @@ class DelayedEntry:
         elif direction == "SHORT":
             return entry - current
 
+    def price_by_direction(self, symbol, direction):
+        if direction == "LONG":
+            # For long position, the stop is hit by the bid, Because the stop is a sell. 
+            price, _ = self.indicators.prices.get_bid_ask(symbol=symbol)
+        elif direction == "SHORT":
+            # For long position, the stop is hit by the ask, Because the stop is a buy.
+            _, price = self.indicators.prices.get_bid_ask(symbol=symbol)
+
+        return price
+
     def delayed_rr(self):
         """
         Calculate the risk-reward ratio (RR) for the current date based on the account's price tracker data.
@@ -102,7 +112,7 @@ class DelayedEntry:
         file_path = f"PnLData/price_tracker/{self.account_id}_{current_date}.csv"
         if files_util.check_file_exists(file_path=file_path):
             data = pd.read_csv(file_path)
-            data["current_price"] = data["symbol"].apply(lambda x: self.indicators.prices.get_exchange_price(symbol=x))
+            data["current_price"] = data.apply(lambda x: self.price_by_direction(symbol=x["symbol"], direction=x["direction"]) , axis=1)
             data["change"] =  data.apply(lambda x: self.directional_pnl(entry=x["entry_price"], current=x["current_price"], direction=x["direction"]) , axis=1)
             data["pnl"] = data.apply(lambda x: self.risk_manager.get_pnl_of_position(symbol=x["symbol"], lots=x["volume"], points_in_stop=x["change"]), axis=1)
             commission = self.risk_manager.risk_of_an_account * 0.05 # 5% of the account
