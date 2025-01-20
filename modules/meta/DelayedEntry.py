@@ -129,13 +129,22 @@ class DelayedEntry:
             data = pd.read_csv(file_path)
             min_index = data.iloc[data["RR"].idxmin()]
             max_index = data.iloc[data["RR"].idxmax()]
-            print(f"{'Ranged RR Changed'.ljust(20)}: {round(max_index['RR'] - min_index['RR'], 2)}")
-            if max_index["RR"] - min_index["RR"] > 1:
-                # The timestamp which has the minimum should be the latest
-                if min_index["Timestamp"] >  max_index["Timestamp"]:
-                    print(f"{'RR Max'.ljust(20)}: {max_index['RR']}")
-                    print(f"{'RR Min'.ljust(20)}: {min_index['RR']}")
-                    return True
+            latest_index = data.iloc[-1]
+            print(f"{'Ranged RR Changed'.ljust(20)}: {round(max_index['RR'] - min_index['RR'], 2)}, Latest: {round(max_index['RR'] - latest_index['RR'], 2)}")
+            # Only when the RR is below 0
+            if latest_index["RR"] < 0:
+                if (max_index["RR"] - min_index["RR"] > 1):
+                    # The timestamp which has the minimum should be the latest
+                    if min_index["Timestamp"] >  max_index["Timestamp"]:
+                        print(f"{'RR Max'.ljust(20)}: {max_index['RR']}")
+                        print(f"{'RR Min'.ljust(20)}: {min_index['RR']}")
+                        return True
+                elif(max_index["RR"] - latest_index["RR"] > 1):
+                    # The timestamp which has the minimum should be the latest
+                    if latest_index["Timestamp"] >  max_index["Timestamp"]:
+                        print(f"{'RR Max'.ljust(20)}: {max_index['RR']}")
+                        print(f"{'RR Latest'.ljust(20)}: {latest_index['RR']}")
+                        return True
             
         return False
 
