@@ -207,6 +207,7 @@ class Main():
                 
         self.notify_pnl = False # Once sent, Disable
         self.exited_by_pnl = True
+        self.enter_market_by_delay = False
 
 
     def verbose(self):
@@ -250,7 +251,8 @@ class Main():
             print(f"{'Primary STP Status'.ljust(20)}: {util.cl(self.primary_stop_selection)}")
         print(f"{'Secondary STP Status'.ljust(20)}: {util.cl(self.enable_sec_stop_selection)}")
         print(f"{'Secondary STP'.ljust(20)}: {util.cl(self.secondary_stop_selection)}\n")
-        print(f"{'Delayed Entry'.ljust(20)}: {util.cl(self.enable_delayed_entry)}\n")
+        print(f"{'Delayed Entry'.ljust(20)}: {util.cl(self.enable_delayed_entry)}")
+        print(f"{'Delayed Entry Active'.ljust(20)}: {util.cl(self.enter_market_by_delay)}\n")
             
         print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.symbol_selection)}")
         print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
@@ -451,6 +453,7 @@ class Main():
                 self.exited_by_pnl = False # Reset the Immidiate exit
                 self.dynamic_exit_rr = -1 # Reset the exit RR to -1
                 self.rr_change = 0 # Reset the RR change
+                self.enter_market_by_delay = False # reset the delayed entry
 
             # Enable delayed entry based on the tracked performance
             if self.enable_delayed_entry:
