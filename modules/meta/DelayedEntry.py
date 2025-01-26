@@ -142,16 +142,17 @@ class DelayedEntry:
             latest_index = data.iloc[-1]
             print(f"{'Ranged RR Changed'.ljust(20)}: {round(max_index['RR'] - min_index['RR'], 2)}, Latest: {round(max_index['RR'] - latest_index['RR'], 2)}")
 
-            # Only when the RR is below 0.5
-            if latest_index["RR"] < 0.5:
-                if (max_index["RR"] - min_index["RR"] > 0.6):
+            # Only when the RR is below -0.5
+            if latest_index["RR"] < -0.5:
+                # The RR between min and max should be greater than 1, Saying that It should have moved 1R below from the high.
+                if (max_index["RR"] - min_index["RR"] > 1.0):
                     # The timestamp which has the minimum should be the latest
                     if min_index["Timestamp"] >  max_index["Timestamp"]:
                         print(f"{'RR Max'.ljust(20)}: {max_index['RR']}")
                         print(f"{'RR Min'.ljust(20)}: {min_index['RR']}")
                         return True
-                
-                if (max_index["RR"] - latest_index["RR"] > 0.6):
+                # The RR between max and latest should be greater than 1, Saying that It should have moved 1R below from the high.
+                if (max_index["RR"] - latest_index["RR"] > 1.0):
                     # The timestamp which has the minimum should be the latest
                     if latest_index["Timestamp"] >  max_index["Timestamp"]:
                         print(f"{'RR Max'.ljust(20)}: {max_index['RR']}")
