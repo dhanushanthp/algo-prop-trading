@@ -83,13 +83,14 @@ class DelayedEntry:
             return entry - current
 
     def price_by_direction(self, symbol, direction):
-        if direction == "LONG":
-            # For long position, the stop is hit by the bid, Because the stop is a sell. 
-            price, _ = self.indicators.prices.get_bid_ask(symbol=symbol)
-        elif direction == "SHORT":
-            # For long position, the stop is hit by the ask, Because the stop is a buy.
-            _, price = self.indicators.prices.get_bid_ask(symbol=symbol)
+        # if direction == "LONG":
+        #     # For long position, the stop is hit by the bid, Because the stop is a sell. 
+        #     price, _ = self.indicators.prices.get_bid_ask(symbol=symbol)
+        # elif direction == "SHORT":
+        #     # For long position, the stop is hit by the ask, Because the stop is a buy.
+        #     _, price = self.indicators.prices.get_bid_ask(symbol=symbol)
 
+        price = self.indicators.prices.get_exchange_price(symbol=symbol)
         return price
 
     def delayed_rr(self):

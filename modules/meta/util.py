@@ -235,7 +235,7 @@ def is_us_activemarket_peroid() -> bool:
     condition = (us_hour > 9 or (us_hour == 9 and us_min >= 36)) and us_hour < 16
     return condition 
 
-def get_market_status(start_hour:int=10, start_minute:int=5) -> Tuple[bool, bool]:
+def get_market_status(start_hour:int=10, start_minute:int=0) -> Tuple[bool, bool]:
     """
     Determine the market status based on the current day and time.
     Args:

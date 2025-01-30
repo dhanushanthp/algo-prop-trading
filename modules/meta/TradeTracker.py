@@ -57,6 +57,12 @@ class TradeTracker:
             df = pd.read_csv(file_path)
             last_acc_risk_perc = df.iloc[-1]["AccountRiskPerc"]
             prev_day_pnl = df.iloc[-1]["Pnl"]
+
+            # Check if the last 5 trades were losses
+            if len(df) > 5:
+                # Reset the trade percentage
+                if all(df["Pnl"].tail(5) < 0):
+                    return 0.5
             
             # Check if the last 3 trades were losses
             if len(df) > 3:
