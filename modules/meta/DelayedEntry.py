@@ -135,7 +135,7 @@ class DelayedEntry:
             bool: True if the range of the 'RR' column exceeds 1, False otherwise.
         """
         current_date = util.get_current_time().strftime('%Y-%m-%d')
-        file_path = f"PnLData/price_tracker/{self.account_id}_{current_date}_hist.csv"
+        file_path = f"PnLData/price_tracker_history/{self.account_id}_{current_date}_hist.csv"
         if files_util.check_file_exists(file_path=file_path):
             data = pd.read_csv(file_path)
             min_index = data.iloc[data["RR"].idxmin()]
@@ -174,7 +174,7 @@ class DelayedEntry:
             None
         """
         current_date = util.get_current_time().strftime('%Y-%m-%d')
-        file_path = f"PnLData/price_tracker/{self.account_id}_{current_date}_hist.csv"
+        file_path = f"PnLData/price_tracker_history/{self.account_id}_{current_date}_hist.csv"
 
         if not files_util.check_file_exists(file_path=file_path):
             with open(file_path, mode="w") as file:
