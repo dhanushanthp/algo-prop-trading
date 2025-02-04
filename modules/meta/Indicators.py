@@ -15,6 +15,7 @@ from modules.meta.Prices import Prices
 from modules.common.Directions import Directions
 import modules.meta.Currencies as curr
 from modules.common import files_util
+import time
 
 class Indicators:
     def __init__(self, wrapper: Wrapper, prices:Prices) -> None:
@@ -802,7 +803,16 @@ class Indicators:
                 # If the chart is not update to then don't take the trade atleast for single symbol
                 print(f"MISSING Symbol Chart, Dominant Direction: {symbol}")
                 mt5.symbol_select(symbol, True)
-                return "UNKNOWN"
+                week_day = util.get_week_day()
+                if week_day in [5, 6]:
+                    print("Weekend Wait 1 Hour")
+                    # Wait for 1 hour on weekends
+                    time.sleep(60 * 60)
+                    return "UNKNOWN"
+
+                # On weekdays get the most update data
+                time.sleep(10)
+                return self.get_dominant_direction(lookback=lookback)
             
             prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback)
             prev_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback+1)
