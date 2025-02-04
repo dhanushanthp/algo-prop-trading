@@ -227,12 +227,14 @@ class Main():
         if self.is_market_close:
             print(f"{'Market Open at '.ljust(20)}: {self.start_hour}:{str(self.start_minute).zfill(2)}")
 
+        print(util.cl_status("\nBASIC CONDITIONS", "yellow"))
+        print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.symbol_selection)}")
         print(f"{'Day & Time'.ljust(20)}: {day}: {str(hour).zfill(2)}:{str(minute).zfill(2)}")
         print(f"{'PnL'.ljust(20)}: ${round(self.PnL, 2)}")
         print(f"{'RR'.ljust(20)}: {round(self.rr, 2)}\n")
 
         print(f"{'Strategy'.ljust(20)}: {self.strategy}")
-        print(f"{'Adaptive Re-Entry'.ljust(20)}: {util.cl(self.adaptive_reentry)}")
+        # print(f"{'Adaptive Re-Entry'.ljust(20)}: {util.cl(self.adaptive_reentry)}")
         print(f"{'Entry with ST & TGT'.ljust(20)}: {util.cl(self.entry_with_st_tgt)}")
         print(f"{'Multiple Position'.ljust(20)}: {self.multiple_positions}")
         if "ATR_BASED_DIRECTION" == self.strategy:
@@ -241,7 +243,7 @@ class Main():
         if "_limit" in self.multiple_positions:
             print(f"{'Multi Positions'.ljust(20)}: {util.cl(self.max_trades_on_same_direction)}")
 
-        print("")
+        print(util.cl_status("\nRISK CONDITIONS", "yellow"))
         print(f"{'Target Ratio'.ljust(20)}: 1:{int(self.target_ratio)}")
         print(f"{'Max Account Risk %'.ljust(20)}: {round(self.risk_manager.account_risk_percentage, 2)}%")
         print(f"{'Max Account Risk $'.ljust(20)}: ${round(self.risk_manager.risk_of_an_account, 2)}")
@@ -249,34 +251,35 @@ class Main():
         print(f"{'Positional Risk $ '.ljust(20)}: ${round(self.risk_manager.risk_of_a_position, 2)}")
         print(f"{'Ada. Risk Tolarance'.ljust(20)}: ${round(self.risk_manager.risk_of_a_position*self.adaptive_tolerance, 2)}")
         print(f"{'Max Loss'.ljust(20)}: ${self.max_possible_loss}")
-        print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}\n")
         
+        print(util.cl_status("\nSTOP CONDITIONS", "yellow"))
+        print(f"{'STOP SELECTION'.ljust(20)}: {util.cl(self.primary_stop_selection)}")
         if self.primary_stop_selection == "FACTOR":
             print(f"{'Factor STP %'.ljust(20)}: {util.cl(self.primary_stop_selection)}, {util.cl(self.stop_expected_move)}{util.cl('%')}")
         else:
             print(f"{'Primary STP Status'.ljust(20)}: {util.cl(self.primary_stop_selection)}")
-        print(f"{'Secondary STP Status'.ljust(20)}: {util.cl(self.enable_sec_stop_selection)}")
-        print(f"{'Secondary STP'.ljust(20)}: {util.cl(self.secondary_stop_selection)}\n")
-            
-        print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.symbol_selection)}")
-        print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
-        print(f"{'Trail ST Pos..n'.ljust(20)}: {util.cl(self.enable_trail_stop)}")
+        # print(f"{'Secondary STP Status'.ljust(20)}: {util.cl(self.enable_sec_stop_selection)}")
+        # print(f"{'Secondary STP'.ljust(20)}: {util.cl(self.secondary_stop_selection)}\n")
+        
+        # print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
+        # print(f"{'Trail ST Pos..n'.ljust(20)}: {util.cl(self.enable_trail_stop)}")
+        print(f"{'Account Trail ST'.ljust(20)}: {util.cl(self.account_trail_enabler)}")
         print(f"{'Dynamic Direction'.ljust(20)}: {util.cl(self.enable_dynamic_direction)}")
         print(f"{'Record PnL'.ljust(20)}: {util.cl(self.record_pnl)}\n")
 
-        print(f"{'Close by Solid CDL'.ljust(20)}: {util.cl(self.close_by_solid_cdl)}")
-        print(f"{'Close by Time'.ljust(20)}: {util.cl(self.close_by_time)}\n")
+        # print(f"{'Close by Solid CDL'.ljust(20)}: {util.cl(self.close_by_solid_cdl)}")
+        # print(f"{'Close by Time'.ljust(20)}: {util.cl(self.close_by_time)}\n")
 
         
-        print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
+        # print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
         print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
         print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.risk_manager.account_target_ratio} R)\n")
 
-        print("DOUBLE ENTRY")
+        print(util.cl_status("DOUBLE ENTRY", "yellow"))
         print(f"{'IS ENABLED'.ljust(20)}: {util.cl(self.enable_double_entry)}")
         print(f"{'IS ACTIVE'.ljust(20)}: {util.cl(self.active_double_entry)}\n")
 
-        print("DELAYED ENTRY")
+        print(util.cl_status("DELAYED ENTRY", "yellow"))
         print(f"{'IS ENABLED'.ljust(20)}: {util.cl(self.enable_delayed_entry)}")
         print(f"{'IS ACTIVE'.ljust(20)}: {util.cl(self.enter_market_by_delay)}\n")
 
@@ -417,6 +420,9 @@ class Main():
                     self.orders.close_single_position(obj=obj)
 
             if self.adaptive_reentry and not self.exited_by_pnl:
+                """
+                Close the positions which are at risk and take the opposite direction of the previous entry. This is individual position based re entry strategy
+                """
                 position_at_risk = self.trade_tracker.symbol_historic_pnl(each_position_risk_appertide=self.risk_manager.risk_of_a_position * self.adaptive_tolerance)
                 self.len_position_at_risk = len(position_at_risk)
                 print(f"\nPosition at Risk: {position_at_risk}")
