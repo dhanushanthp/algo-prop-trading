@@ -28,6 +28,7 @@ class Main():
         self.stop_ratio = 1.0
         self.exited_by_pnl:bool = False
         self.notify_pnl:bool = True
+        # This is confirms is it a fresh run of the day, or run after a crash, If this become false then we won't be taking any trades.
         self.is_initial_run:bool= True # This helps to avoid message and pnl write while market is closed.
         self.account_trail_enabler:bool=kwargs["account_trail_enabler"]
         self.PnL:float = 0
@@ -80,6 +81,9 @@ class Main():
 
         self.adaptive_reentry = kwargs["adaptive_reentry"]
         self.adaptive_tolerance = kwargs["adaptive_tolerance"]
+
+        # Dynamic Risk Management, Reentry on Loss
+        self.enable_double_entry = kwargs["enable_double_entry"]
 
         # Once the trade is taken then the position at risk will be calculated
         self.len_position_at_risk = 0
@@ -267,6 +271,7 @@ class Main():
         print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
         print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.risk_manager.account_target_ratio} R)\n")
 
+        print(f"{'Double Entry'.ljust(20)}: {util.cl(self.enable_double_entry)}")
         print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
         print(f"{'RR Change'.ljust(20)}: {util.cl(self.rr_change)}")
         print(f"{'Exited RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}\n")
@@ -298,8 +303,11 @@ class Main():
             self.equity = self.account.get_equity()
             self.max_possible_loss = round(self.risk_manager.get_max_loss())
 
-            self.PnL = (self.equity - self.risk_manager.account_size)
-            self.rr = self.PnL/self.risk_manager.risk_of_an_account
+            try:
+                self.PnL = (self.equity - self.risk_manager.account_size)
+                self.rr = self.PnL/self.risk_manager.risk_of_an_account
+            except Exception as e:
+                self.rr = 0
 
             """
             1. Retrieves all active positions and today's trades
@@ -317,9 +325,6 @@ class Main():
                     self.notify_pnl = False
                     self.is_initial_run = False
                     print(f"\n************* Initial Entry Check: Early Exit by PnL: {self.exited_by_pnl} *************")
-
-            # Print configs and pnl on console
-            self.verbose()
 
             # Cancel all pending orders
             self.orders.cancel_all_pending_orders()
@@ -360,6 +365,34 @@ class Main():
             
             # This should be come below the self.rr_change exit check.
             self.rr_chage_prior = self.rr_change
+
+            """
+            Once after a loss of a possition entry in to opposite direction, This will help to recover the loss in the same day. But not 100% Certain
+            """
+            if self.enable_double_entry:
+                # Check the PnL
+                if self.rr < -1.0:
+                    # Check the existing positions
+                    active_position = self.wrapper.get_all_active_positions()
+                    # When it's not a initial run condition and active position become zero
+                    if active_position.empty and self.is_initial_run:
+                        print("Enabling Double Entry")
+                        time.sleep(3)
+                        # Reset account size for next day
+                        self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
+                                                target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, market_direction=self.market_direction,
+                                                stop_expected_move=self.stop_expected_move,  account_target_ratio=self.account_target_ratio)
+                        
+                        # Toggle the Direction, Note this could be a double loss as well in come cases
+                        self.risk_manager.market_direction = "BREAK" if self.risk_manager.market_direction == "REVERSE" else "REVERSE"
+
+                        # Since we are changing the direction, we need to reset the RR that includes the previous loss position as well.
+                        self.dynamic_exit_rr = -2
+                        
+                        self.exited_by_pnl = False
+                        self.notify_pnl = True
+                        self.is_initial_run = False
+
 
             if self.close_by_time:
                 positions = self.risk_manager.close_positions_by_time(timeframe=self.trading_timeframe, wait_factor=3)
@@ -469,6 +502,9 @@ class Main():
                         self.enter_market_by_delay = True    
             else:
                 self.enter_market_by_delay = True
+
+            # Print configs and pnl on console
+            self.verbose()
 
             if self.trading_activated() and self.enter_market_by_delay:
 
@@ -639,6 +675,7 @@ if __name__ == "__main__":
     parser.add_argument('--adaptive_reentry', type=str, help='Reentry based on the RR hit')
     parser.add_argument('--adaptive_tolerance', type=float, help='The factor of the each position, that flip based on the pnl')
     parser.add_argument('--enable_delayed_entry', type=str, help='Enable Delayed Entry')
+    parser.add_argument('--enable_double_entry', type=str, help='Enable Double Entry on Loose Position')
     
     
     args = parser.parse_args()
@@ -676,6 +713,7 @@ if __name__ == "__main__":
     adaptive_reentry = util.boolean(args.adaptive_reentry)
     adaptive_tolerance = float(args.adaptive_tolerance)
     enable_delayed_entry = util.boolean(args.enable_delayed_entry)
+    enable_double_entry = util.boolean(args.enable_double_entry)
 
     win = Main(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
@@ -688,6 +726,6 @@ if __name__ == "__main__":
                       enable_sec_stop_selection=enable_sec_stop_selection, atr_check_timeframe=atr_check_timeframe, 
                       max_trades_on_same_direction=max_trades_on_same_direction, entry_with_st_tgt=entry_with_st_tgt,
                       stop_expected_move=stop_expected_move, account_trail_enabler=account_trail_enabler, adaptive_reentry=adaptive_reentry, adaptive_tolerance=adaptive_tolerance,
-                      enable_delayed_entry=enable_delayed_entry)
+                      enable_delayed_entry=enable_delayed_entry, enable_double_entry=enable_double_entry)
 
     win.main()

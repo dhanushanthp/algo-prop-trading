@@ -20,6 +20,7 @@ set enable_dynamic_direction=yes
 set max_loss_exit=yes
 set max_target_exit=yes
 set account_trail_enabler=no
+set enable_double_entry=no
 
 REM Strategy and System
 set market_direction=BREAK
@@ -87,4 +88,5 @@ python main.py ^
     --adaptive_reentry %adaptive_reentry% ^
     --adaptive_tolerance %adaptive_tolerance% ^
     --enable_delayed_entry %enable_delayed_entry% ^
+    --enable_double_entry %enable_double_entry% ^
     --target_ratio %target_ratio%
