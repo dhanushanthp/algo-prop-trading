@@ -566,6 +566,8 @@ class Wrapper:
 
         if len(position_deals) > 0:
             df = pd.DataFrame(position_deals, columns=position_deals[0]._asdict().keys())
+            # Eliminate the initial account balance
+            df = df[df["comment"] != "Initial account balance"]
             return df
         
         # return empty dataframe

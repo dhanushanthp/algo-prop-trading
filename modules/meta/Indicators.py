@@ -737,7 +737,7 @@ class Indicators:
         return None, None
 
 
-    def get_dominant_direction(self, lookback=1):
+    def get_dominant_direction(self, lookback=1) -> str:
         """
         Identify the potential direction of the market move.
 
