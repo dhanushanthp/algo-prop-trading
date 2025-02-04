@@ -84,6 +84,7 @@ class Main():
 
         # Dynamic Risk Management, Reentry on Loss
         self.enable_double_entry = kwargs["enable_double_entry"]
+        self.active_double_entry = False
 
         # Once the trade is taken then the position at risk will be calculated
         self.len_position_at_risk = 0
@@ -212,6 +213,7 @@ class Main():
         self.notify_pnl = False # Once sent, Disable
         self.exited_by_pnl = True
         self.enter_market_by_delay = False
+        self.active_double_entry = False # Reset the double entry
 
 
     def verbose(self):
@@ -255,8 +257,6 @@ class Main():
             print(f"{'Primary STP Status'.ljust(20)}: {util.cl(self.primary_stop_selection)}")
         print(f"{'Secondary STP Status'.ljust(20)}: {util.cl(self.enable_sec_stop_selection)}")
         print(f"{'Secondary STP'.ljust(20)}: {util.cl(self.secondary_stop_selection)}\n")
-        print(f"{'Delayed Entry'.ljust(20)}: {util.cl(self.enable_delayed_entry)}")
-        print(f"{'Delayed Entry Active'.ljust(20)}: {util.cl(self.enter_market_by_delay)}\n")
             
         print(f"{'Primary Symb'.ljust(20)}: {util.cl(self.symbol_selection)}")
         print(f"{'Break Even Pos..n'.ljust(20)}: {util.cl(self.enable_breakeven)}")
@@ -267,14 +267,23 @@ class Main():
         print(f"{'Close by Solid CDL'.ljust(20)}: {util.cl(self.close_by_solid_cdl)}")
         print(f"{'Close by Time'.ljust(20)}: {util.cl(self.close_by_time)}\n")
 
+        
         print(f"{'Neutraliser'.ljust(20)}: {util.cl(self.enable_neutralizer)}")
         print(f"{'Early Loss Exit'.ljust(20)}: {util.cl(self.max_loss_exit)}")
         print(f"{'Early Target Exit'.ljust(20)}: {util.cl(self.max_target_exit)} ({self.risk_manager.account_target_ratio} R)\n")
 
-        print(f"{'Double Entry'.ljust(20)}: {util.cl(self.enable_double_entry)}")
+        print("DOUBLE ENTRY")
+        print(f"{'IS ENABLED'.ljust(20)}: {util.cl(self.enable_double_entry)}")
+        print(f"{'IS ACTIVE'.ljust(20)}: {util.cl(self.active_double_entry)}\n")
+
+        print("DELAYED ENTRY")
+        print(f"{'IS ENABLED'.ljust(20)}: {util.cl(self.enable_delayed_entry)}")
+        print(f"{'IS ACTIVE'.ljust(20)}: {util.cl(self.enter_market_by_delay)}\n")
+
+
         print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
         print(f"{'RR Change'.ljust(20)}: {util.cl(self.rr_change)}")
-        print(f"{'Exited RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}\n")
+        print(f"{'Dynamic RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}\n")
 
     def trading_activated(self):
         """
@@ -371,11 +380,13 @@ class Main():
             """
             if self.enable_double_entry:
                 # Check the PnL
-                if self.rr <= -1.0:
+                # The max rr will avoid the over trading above 2 losses
+                if self.rr <= -1.0 and self.rr > -2.0:
                     # Check the existing positions
                     active_position = self.wrapper.get_all_active_positions()
                     # When it's not a initial run condition and active position become zero
                     if active_position.empty and self.is_initial_run:
+                        self.active_double_entry = True
                         # Reset account size for next day
                         self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, market_direction=self.market_direction,
@@ -487,6 +498,7 @@ class Main():
                 self.dynamic_exit_rr = -1 # Reset the exit RR to -1
                 self.rr_change = 0 # Reset the RR change
                 self.enter_market_by_delay = False # reset the delayed entry
+                self.active_double_entry = False # Reset the double entry
 
             # Enable delayed entry based on the tracked performance
             if self.enable_delayed_entry:
