@@ -371,27 +371,27 @@ class Main():
             """
             if self.enable_double_entry:
                 # Check the PnL
-                if self.rr < -1.0:
+                if self.rr <= -1.0:
                     # Check the existing positions
                     active_position = self.wrapper.get_all_active_positions()
                     # When it's not a initial run condition and active position become zero
                     if active_position.empty and self.is_initial_run:
-                        print("Enabling Double Entry")
-                        time.sleep(3)
                         # Reset account size for next day
                         self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, market_direction=self.market_direction,
                                                 stop_expected_move=self.stop_expected_move,  account_target_ratio=self.account_target_ratio)
                         
                         # Toggle the Direction, Note this could be a double loss as well in come cases
+                        # This remains the same until the market close or next postion exit
                         self.risk_manager.market_direction = "BREAK" if self.risk_manager.market_direction == "REVERSE" else "REVERSE"
 
                         # Since we are changing the direction, we need to reset the RR that includes the previous loss position as well.
                         self.dynamic_exit_rr = -2
                         
-                        self.exited_by_pnl = False
-                        self.notify_pnl = True
-                        self.is_initial_run = False
+                        self.exited_by_pnl = False # Reset the Immidiate exit
+                        self.notify_pnl = True # Once opening a trade, enable again
+                        self.is_initial_run = False # Once this is disabled, the process will not come in the double entry condition and other conditions remains same
+                        self.rr_change = 0 # Reset the RR change
 
 
             if self.close_by_time:
