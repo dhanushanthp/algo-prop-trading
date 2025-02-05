@@ -374,8 +374,8 @@ class Main():
 
             Later Note: I have moved the break even to Max target rather exit, So that the exit will happen based on the RR change more than 1, However If the price move below then it will exit with max target RR
             """
-            if self.rr > 1:
-                self.dynamic_exit_rr = 0.1
+            # if self.rr > 2:
+            #     self.dynamic_exit_rr = 0.1
 
             # Early exit based on max account level profit or Loss
             if ((
