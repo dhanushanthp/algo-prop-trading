@@ -392,7 +392,7 @@ class Main():
             if self.enable_double_entry:
                 # Check the PnL
                 # The max rr will avoid the over trading above 2 losses
-                if self.rr <= -1.0 and self.rr > -2.0:
+                if (self.rr <= -1.0 and self.rr > -2.0) or (self.off_market_rr <= -1.0 and self.off_market_rr > -2.0):
                     # Check the existing positions
                     active_position = self.wrapper.get_all_active_positions()
                     # When it's not a initial run condition and active position become zero
