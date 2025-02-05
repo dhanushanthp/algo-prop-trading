@@ -240,7 +240,7 @@ def get_market_status(start_hour:int=10, start_minute:int=0) -> Tuple[bool, bool
     Determine the market status based on the current day and time.
     Args:
         start_hour (int): The hour at which the market opens. Defaults to 10.
-        start_minute (int): The minute at which the market opens. Defaults to 15.
+        start_minute (int): The minute at which the market opens. Defaults to 0.
     Returns:
         Tuple[bool, bool]: A tuple containing two boolean values:
             - market_open (bool): True if the market is open, False otherwise.

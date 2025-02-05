@@ -62,7 +62,7 @@ class Main():
         # Total number of candles considered for stop is (self.num_prev_cdl_for_stop + 1) including the current candle
         self.num_prev_cdl_for_stop = kwargs["num_prev_cdl_for_stop"]
         self.start_hour = kwargs["start_hour"]
-        self.start_minute = 5
+        self.start_minute = 0
         self.record_pnl = kwargs["record_pnl"]
         self.close_by_time = kwargs["close_by_time"]
         self.close_by_solid_cdl = kwargs["close_by_solid_cdl"]
@@ -315,7 +315,7 @@ class Main():
     
     def main(self):
         while True:
-            self.is_market_open, self.is_market_close = util.get_market_status(start_hour=self.start_hour)
+            self.is_market_open, self.is_market_close = util.get_market_status(start_hour=self.start_hour, start_minute=self.start_minute)
             self.rr_change, _, _ = self.trade_tracker.get_rr_change()
 
             if self.security == "STOCK":
