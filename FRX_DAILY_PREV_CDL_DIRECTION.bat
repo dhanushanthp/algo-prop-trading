@@ -11,7 +11,8 @@ set trades_per_day=100
 
 REM Risk Management
 set entry_with_st_tgt=no
-set account_risk=1.3
+set account_risk=1.0
+set max_account_risk=1.3
 set account_target_ratio=2.0
 REM The each position size is account_risk/10
 set each_position_risk=0.1
@@ -70,6 +71,7 @@ python main.py ^
     --timeframe %timeframe% ^
     --atr_check_timeframe %atr_check_timeframe% ^
     --account_risk %account_risk% ^
+    --max_account_risk %max_account_risk% ^
     --start_hour %start_hour% ^
     --enable_dynamic_direction %enable_dynamic_direction% ^
     --multiple_positions %multiple_positions% ^

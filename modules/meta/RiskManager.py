@@ -19,7 +19,7 @@ from modules.meta.TradeTracker import TradeTracker
 mt5.initialize()
 
 class RiskManager:
-    def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1.0, position_risk:float=0.1, enable_dynamic_direction:bool=False, **kwargs) -> None:
+    def __init__(self, stop_ratio=1, target_ratio=5, account_risk:float=1.0, max_account_risk:float=1.0, position_risk:float=0.1, enable_dynamic_direction:bool=False, **kwargs) -> None:
         """
         A class for managing trading risk at both the account and position levels, ensuring 
         proper risk exposure and adherence to defined risk strategies.
@@ -28,6 +28,7 @@ class RiskManager:
             stop_ratio (float): The stop-loss ratio for calculating stop-loss levels.
             target_ratio (float): The target profit ratio for calculating take-profit levels.
             account_risk_percentage (float): The percentage of the account balance allocated for total risk.
+            max_account_risk (float): The maximum allowable risk based on the account size.
             position_risk_percentage (float): The percentage of the account balance allocated per position.
             enable_dynamic_direction (bool): Change the trade direction based on previous day win/loss
             risk_of_an_account (int): The maximum allowable loss at the account level.
@@ -63,13 +64,15 @@ class RiskManager:
         self.market_direction = kwargs["market_direction"]
         self.position_risk_percentage = position_risk
         self.account_risk_percentage = account_risk
+        self.max_account_risk = max_account_risk
         
         # If it's a dynamic risk then change the todays direction based on previous direction.
         if enable_dynamic_direction:
             self.market_direction = self.indicators.get_dominant_direction()
             
             # TODO Need to add dynamic position size variable in .bat file
-            self.account_risk_percentage = self.trade_tracker.get_dynamic_account_risk_percen(max_account_risk=account_risk)
+            self.account_risk_percentage = self.trade_tracker.get_dynamic_account_risk_percen(account_risk=account_risk, 
+                                                                                              max_account_risk=self.max_account_risk)
             self.position_risk_percentage = self.account_risk_percentage/10
         
         self.stop_expected_move:float = kwargs["stop_expected_move"]

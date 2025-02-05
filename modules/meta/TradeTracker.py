@@ -38,10 +38,11 @@ class TradeTracker:
 
         return []
     
-    def get_dynamic_account_risk_percen(self, max_account_risk:float) -> float:
+    def get_dynamic_account_risk_percen(self, account_risk:float, max_account_risk:float=1.3) -> float:
         """
         Calculate the dynamic position size based on the account's recent trade performance.
         Args:
+            account_risk (float): The current position size.
             max_account_risk (float): The maximum allowable position size.
         Returns:
             float: The calculated position size.
@@ -59,25 +60,25 @@ class TradeTracker:
             prev_day_pnl = df.iloc[-1]["Pnl"]
 
             # Check if the last 5 trades were losses
-            if len(df) > 5:
-                # Reset the trade percentage
-                if all(df["Pnl"].tail(5) < 0):
-                    return 0.5
+            # if len(df) > 5:
+            #     # Reset the trade percentage
+            #     if all(df["Pnl"].tail(5) < 0):
+            #         return round(account_risk/2, 2)
             
             # Check if the last 3 trades were losses
             if len(df) > 3:
                 # Reset the trade percentage
                 if all(df["Pnl"].tail(3) < 0):
-                    return 1.0
+                    return round(account_risk/2, 2)
 
             if prev_day_pnl > 0:
                 # Winning Trades
                 return min(max_account_risk, last_acc_risk_perc + 0.1)
             else:
                 # Losing Trades
-                return max(1.0, last_acc_risk_perc - 0.1)
+                return max(account_risk, last_acc_risk_perc - 0.1)
                 
-        return round(1.0, 2)
+        return round(account_risk, 2)
 
 
     def get_dynamic_rr(self, num_records:int=5, default:float=2.0) -> float:

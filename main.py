@@ -39,6 +39,7 @@ class Main():
         self.strategy:str = kwargs["strategy"]
         self.market_direction:str = kwargs["market_direction"] # BREAK or REVERSE, If the dynamic is not selected then it will be used
         self.account_risk = kwargs["account_risk"]
+        self.max_account_risk = kwargs["max_account_risk"]
         # self.each_position_risk = kwargs["each_position_risk"]
         self.each_position_risk = round(self.account_risk/10, 2)
         self.enable_dynamic_direction = kwargs["enable_dynamic_direction"]
@@ -94,6 +95,7 @@ class Main():
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
+                                        max_account_risk=self.max_account_risk,
                                         position_risk=self.each_position_risk, 
                                         stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio,
@@ -209,7 +211,7 @@ class Main():
             self.trade_tracker.record_pnl_logs(pnl=self.PnL, rr=self.rr, rr_change=self.rr_change)
                 
         # Reset account size for next day
-        self.risk_manager = RiskManager(account_risk=self.account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
+        self.risk_manager = RiskManager(account_risk=self.account_risk, max_account_risk=self.max_account_risk, position_risk=self.each_position_risk, stop_ratio=self.stop_ratio, 
                                         target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction,
                                         market_direction=self.market_direction, stop_expected_move=self.stop_expected_move, account_target_ratio=self.account_target_ratio)
                 
@@ -400,7 +402,7 @@ class Main():
                     if active_position.empty and self.is_initial_run:
                         self.active_double_entry = True
                         # Reset account size for next day
-                        self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
+                        self.risk_manager = RiskManager(account_risk=self.account_risk, max_account_risk=self.max_account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, market_direction=self.market_direction,
                                                 stop_expected_move=self.stop_expected_move,  account_target_ratio=self.account_target_ratio)
                         
@@ -503,7 +505,7 @@ class Main():
                                                        each_position_risk_percentage=self.risk_manager.position_risk_percentage, equity=self.equity)
                 
                 # Reset account size for next day
-                self.risk_manager = RiskManager(account_risk=self.account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
+                self.risk_manager = RiskManager(account_risk=self.account_risk, max_account_risk=self.max_account_risk, position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
                                                 target_ratio=self.target_ratio, enable_dynamic_direction=self.enable_dynamic_direction, market_direction=self.market_direction,
                                                 stop_expected_move=self.stop_expected_move,  account_target_ratio=self.account_target_ratio)
 
@@ -675,6 +677,7 @@ if __name__ == "__main__":
     parser.add_argument('--atr_check_timeframe', type=int, help='Selected timeframe for ATR Check entry')
     parser.add_argument('--trades_per_day', type=int, help='Number of trades per day')
     parser.add_argument('--account_risk', type=float, help='Total Account Risk for Trade Session')
+    parser.add_argument('--max_account_risk', type=float, help='Total Account Risk for Trade Session')
     parser.add_argument('--target_ratio', type=float, help='Target ratio, assume stop is 1')
     parser.add_argument('--account_target_ratio', type=float, help='Account Target ratio, assume stop is 1')
     parser.add_argument('--each_position_risk', type=float, help='Each Position risk percentage w.r.t account size') # Just Dummy
@@ -710,6 +713,7 @@ if __name__ == "__main__":
     atr_check_timeframe = int(args.atr_check_timeframe)
     each_position_risk = float(args.each_position_risk)
     account_risk =  float(args.account_risk) # each_position_risk * 10
+    max_account_risk = float(args.max_account_risk)
     target_ratio = float(args.target_ratio)
     account_target_ratio = float(args.account_target_ratio)
     security = str(args.security)
@@ -741,7 +745,7 @@ if __name__ == "__main__":
     enable_delayed_entry = util.boolean(args.enable_delayed_entry)
     enable_double_entry = util.boolean(args.enable_double_entry)
 
-    win = Main(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, 
+    win = Main(security=security, trading_timeframe=trading_timeframe, account_risk=account_risk, max_account_risk=max_account_risk,
                       each_position_risk=each_position_risk, target_ratio=target_ratio, trades_per_day=trades_per_day,
                       num_prev_cdl_for_stop=num_prev_cdl_for_stop, enable_trail_stop=enable_trail_stop,
                       enable_breakeven=enable_breakeven, enable_neutralizer=enable_neutralizer, max_loss_exit=max_loss_exit,
