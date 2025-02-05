@@ -88,6 +88,9 @@ class Main():
 
         # Once the trade is taken then the position at risk will be calculated
         self.len_position_at_risk = 0
+
+        self.off_market_rr = 0
+        self.off_market_pnl = 0
         
         # External dependencies
         self.risk_manager = RiskManager(account_risk=self.account_risk, 
@@ -286,7 +289,12 @@ class Main():
 
         print(f"{'Exited On PnL'.ljust(20)}: {util.cl(self.exited_by_pnl)}")
         print(f"{'RR Change'.ljust(20)}: {util.cl(self.rr_change)}")
-        print(f"{'Dynamic RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}\n")
+        print(f"{'Dynamic RR'.ljust(20)}: {util.cl(self.dynamic_exit_rr)}")
+
+        print(util.cl_status("\nOFF MARKET", "yellow"))
+        print(f"{'RR'.ljust(20)}: {util.cl(self.off_market_rr)}")
+        print(f"{'PNL'.ljust(20)}: {util.cl(self.off_market_pnl)}")
+
 
     def trading_activated(self):
         """
@@ -448,17 +456,16 @@ class Main():
             # This helps to track the PnL based on the trades taken today
             if not self.wrapper.get_todays_trades().empty and not self.is_market_close:
                 # The reason added out of the IF condition to calculate the positional PnL for each Symbol
-                today_pnl, symbol_pnl = self.risk_manager.calculate_trades_based_pnl()
+                self.off_market_pnl, symbol_pnl = self.risk_manager.calculate_trades_based_pnl()
                 if self.exited_by_pnl:
-                    total_rr = today_pnl/self.risk_manager.risk_of_an_account
-                    print(f"Offmarket RR: {round(total_rr, 2)}, ${round(today_pnl, 2)}")
+                    self.off_market_rr = round(self.off_market_pnl/self.risk_manager.risk_of_an_account, 2)
                 else:
                     # symbol_pnl = self.wrapper.get_all_active_positions()[["symbol", "profit"]]
                     # symbol_pnl = symbol_pnl.rename({"profit": "net_pnl"}, axis=1)
-                    today_pnl = self.PnL
-                    total_rr = self.rr
+                    self.off_market_pnl = self.PnL
+                    self.off_market_rr = round(self.rr, 2)
                 
-                self.trade_tracker.record_pnl_logs(pnl=today_pnl, rr=total_rr, rr_change=self.rr_change)
+                self.trade_tracker.record_pnl_logs(pnl=self.off_market_pnl, rr=self.off_market_rr, rr_change=self.rr_change)
                 self.trade_tracker.record_symbol_pnl_logs(pnl_df=symbol_pnl)
 
 
