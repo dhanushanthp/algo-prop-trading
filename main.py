@@ -295,7 +295,7 @@ class Main():
 
         print(util.cl_status("\nOFF MARKET", "yellow"))
         print(f"{'RR'.ljust(20)}: {util.cl(self.off_market_rr)}")
-        print(f"{'PNL'.ljust(20)}: {util.cl(self.off_market_pnl)}")
+        print(f"{'PNL'.ljust(20)}: {util.cl(round(self.off_market_pnl, 2))}")
 
 
     def trading_activated(self):
