@@ -76,7 +76,7 @@ class Prices:
         symbol_base = symbol[0:3]
         symbol_quote = symbol[3:6]
 
-        if curr.company == "FTMO S.R.O.":
+        if "FTMO" in curr.company:
             if symbol == "US500.cash" or (symbol in curr.master_stocks):
                 return 1.0
             elif symbol == "UK100.cash":

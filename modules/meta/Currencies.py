@@ -51,7 +51,7 @@ if company == "AXSE Brokerage Ltd.":
     support_pairs = ["NZDUSD_raw", "USDCAD_raw"]
 
 # FTMO
-elif company == "FTMO S.R.O.":
+elif "FTMO" in company:
     currencies = master_currencies
     jpy_currencies = master_jpy_pairs
     indexes = ['AUS200.cash', 'HK50.cash', 'JP225.cash',  'US500.cash', 'UK100.cash']
@@ -89,7 +89,7 @@ else:
 
 
 def get_symbol_mapping(symbol):
-    if company == "FTMO S.R.O.":
+    if "FTMO" in company:
        return symbol
     elif company == "Black Bull Group Limited":
         """
