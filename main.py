@@ -399,7 +399,7 @@ class Main():
                     # Check the existing positions
                     active_position = self.wrapper.get_all_active_positions()
                     # When it's not a initial run condition and active position become zero
-                    if active_position.empty and self.is_initial_run:
+                    if active_position.empty:
                         self.active_double_entry = True
                         # Reset account size for next day
                         self.risk_manager = RiskManager(account_risk=self.account_risk, max_account_risk=self.max_account_risk,  position_risk=self.each_position_risk,  stop_ratio=self.stop_ratio, 
