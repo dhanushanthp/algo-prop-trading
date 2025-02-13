@@ -787,10 +787,10 @@ class Indicators:
         """
         Most of the days If it's monday then REVERSE works the best, So we manually overide the rule
         """
-        week_day = util.get_week_day()
-        if week_day == 0:
-            print("Monday Reversal Manual Set")
-            return "REVERSE"
+        # week_day = util.get_week_day()
+        # if week_day == 0:
+        #     print("Monday Reversal Manual Set")
+        #     return "REVERSE"
 
 
         symbols = curr.get_symbols(symbol_selection="PRIMARY")
