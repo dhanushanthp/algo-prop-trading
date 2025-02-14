@@ -736,6 +736,62 @@ class Indicators:
                 
         return None, None
 
+    def get_dominant_market_actual_direction(self, lookback=1) -> str:
+        symbols = curr.get_symbols(symbol_selection="PRIMARY")
+        # Ignore US500 and XAUUSD since they don't open at the time of forex open
+        symbols = [i for i in symbols if i not in ["US500.cash", "XAUUSD"]]
+        long_count = 0
+        short_count = 0
+        even_count = 0
+        for symbol in symbols:
+            if not self.wrapper.is_chart_upto_date(symbol=symbol):
+                # If the chart is not update to then don't take the trade atleast for single symbol
+                print(f"MISSING Symbol Chart, Dominant Direction: {symbol}")
+                mt5.symbol_select(symbol, True)
+                week_day = util.get_week_day()
+                if week_day in [5, 6]:
+                    print("Weekend Wait 1 Hour")
+                    # Wait for 1 hour on weekends
+                    time.sleep(60 * 60)
+                    return "UNKNOWN"
+
+                # On weekdays get the most update data
+                time.sleep(10)
+                return self.get_dominant_market_actual_direction(lookback=lookback)
+            
+            prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback)
+            prev_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback+1)
+
+            prev_dir = "long" if prev_candle["close"] > prev_candle["open"] else "short"
+            prev_prev_dir = "long" if prev_prev_candle["close"] > prev_prev_candle["open"] else "short"
+            
+            if prev_dir == prev_prev_dir== "long":
+                long_count += 1
+            
+            if prev_dir == prev_prev_dir== "short":
+                short_count += 1
+            
+            if prev_dir != prev_prev_dir:
+                even_count += 1
+        
+        print(f"Long Count: {long_count}, Short Count: {short_count}, Even Count: {even_count}")
+        
+        if long_count > short_count:
+            print(f"Long Confidence: {round(long_count/8, 2)}")
+            return Directions.LONG
+        elif short_count > long_count:
+            print(f"Short Confidence: {round(short_count/8, 2)}")
+            return Directions.SHORT
+        else:
+            if long_count > even_count:
+                print(f"Even Long Confidence: {round(long_count/8, 2)}")
+                return Directions.LONG
+            elif short_count > even_count:
+                print(f"Even Short Confidence: {round(short_count/8, 2)}")
+                return Directions.SHORT
+            else:
+                print(f"Even Confidence: {round(even_count/8, 2)}")
+                return Directions.LONG
 
     def get_dominant_direction(self, lookback=1) -> str:
         """
@@ -855,6 +911,10 @@ if __name__ == "__main__":
     # print(indi_obj.get_weekly_day_levels(symbol=symbol, timeframe=240, most_latest_candle=0))
 
     match indicator:
+        case "dominant_direction":
+            # python modules/meta/Indicators.py dominant_direction AUDUSD
+            print(indi_obj.get_dominant_market_actual_direction())
+
         case "body_ratio":
             symbol = sys.argv[2]
             timeframe = int(sys.argv[3])

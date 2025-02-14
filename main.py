@@ -605,6 +605,11 @@ class Main():
                             case "PREV_DAY_CLOSE_DIR":
                                 trade_direction = self.strategies.previous_day_close(symbol=symbol)
                             
+                            case "PREV_DAY_CLOSE_DIR_MKT_DOMINATION":
+                                trade_direction = self.indicators.get_dominant_market_actual_direction()
+                                # Fixed direction if this specific strategy is enabled
+                                self.risk_manager.market_direction = "BREAK"
+                            
                             case "DAY_CLOSE_SMA":
                                 trade_direction = self.strategies.day_close_sma(symbol=symbol)
                             

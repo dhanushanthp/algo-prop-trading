@@ -76,7 +76,7 @@ class TradeTracker:
                 return min(max_account_risk, last_acc_risk_perc + 0.1)
             else:
                 # Losing Trades
-                return max(account_risk, last_acc_risk_perc - 0.1)
+                return max(0.5, last_acc_risk_perc - 0.1)
                 
         return round(account_risk, 2)
 
