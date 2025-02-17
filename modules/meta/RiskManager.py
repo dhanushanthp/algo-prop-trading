@@ -62,6 +62,7 @@ class RiskManager:
         self.account_size = self.account.get_liquid_balance() - self.wrapper.get_closed_pnl()
         # self.position_risk_percentage, self.strategy = files_util.get_most_risk_percentage(file_name=util.get_server_ip(), strategy=kwargs["strategy"]) if dynamic_postional_risk else (position_risk, kwargs["strategy"])
         self.market_direction = kwargs["market_direction"]
+        self.double_entry = kwargs["double_entry"]
         self.position_risk_percentage = position_risk
         self.account_risk_percentage = account_risk
         self.max_account_risk = max_account_risk
@@ -73,6 +74,9 @@ class RiskManager:
             # TODO Need to add dynamic position size variable in .bat file
             self.account_risk_percentage = self.trade_tracker.get_dynamic_account_risk_percen(account_risk=account_risk, 
                                                                                               max_account_risk=self.max_account_risk)
+            if self.double_entry:
+                self.account_risk_percentage = self.account_risk_percentage/2
+            
             self.position_risk_percentage = self.account_risk_percentage/10
         
         self.stop_expected_move:float = kwargs["stop_expected_move"]
