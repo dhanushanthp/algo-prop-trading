@@ -5,6 +5,7 @@ cd /d %TRADEAU_PATH%
 
 REM Time and Trading
 set start_hour=1
+set start_minute=2
 set atr_check_timeframe=60
 set timeframe=15
 set trades_per_day=100
@@ -73,6 +74,7 @@ python main.py ^
     --account_risk %account_risk% ^
     --max_account_risk %max_account_risk% ^
     --start_hour %start_hour% ^
+    --start_minute %start_minute% ^
     --enable_dynamic_direction %enable_dynamic_direction% ^
     --multiple_positions %multiple_positions% ^
     --record_pnl %record_pnl% ^
