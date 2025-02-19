@@ -69,7 +69,7 @@ class TradeTracker:
             if len(df) > 3:
                 # Reset the trade percentage
                 if all(df["Pnl"].tail(3) < 0):
-                    return round(account_risk/2, 2)
+                    return round(max(0.5, account_risk/2), 2)
 
             if prev_day_pnl > 0:
                 # Winning Trades
