@@ -4,6 +4,8 @@ from modules.meta import util
 from modules.meta.Indicators import Indicators
 from typing import Dict, Tuple
 import pandas as pd
+import MetaTrader5 as mt5
+import time
 
 class Strategies:
     def __init__(self, wrapper:Wrapper, indicators:Indicators):
@@ -461,6 +463,26 @@ class Strategies:
             direction = Directions.LONG if previous_day_candle["close"] > previous_day_candle["open"] else Directions.SHORT
             return direction
     
+    def today_domination(self, symbol:str) -> Directions:
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            today_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
+            body = abs(today_candle["close"] - today_candle["open"])
+            
+            # Bullish candle
+            if today_candle["close"] > today_candle["open"]:
+                lower_wick = abs(today_candle["open"] - today_candle["low"])
+                if body > lower_wick:
+                    return Directions.LONG
+            elif today_candle["close"] < today_candle["open"]:
+                upper_wick = abs(today_candle["high"] - today_candle["open"])
+                if body > upper_wick:
+                    return Directions.SHORT
+        else:
+            mt5.symbol_select(symbol, True)
+            print(f"Waiting for the chart to update: {symbol}")
+            time.sleep(10)
+            return self.today_domination(symbol=symbol)
+
     def day_close_sma(self, symbol:str) -> Directions:
         """
         Determines the market direction based on the daily (1440-minute timeframe) simple moving averages (SMA) 
@@ -1048,6 +1070,16 @@ if __name__ == "__main__":
                 symbol = sys.argv[4]
                 print(strat_obj.get_u_reversal(symbol=symbol, timeframe=timeframe))
         
+        case "TODAY_DOMINATION":
+            # python modules\meta\Strategies.py TODAY_DOMINATION y 0
+            if batch=="y":
+                for symbol in curr.get_symbols(symbol_selection="PRIMARY"):
+                    output = strat_obj.today_domination(symbol=symbol)
+                    if output:
+                        print(symbol, output)
+            else:
+                symbol = sys.argv[4]
+                print(strat_obj.today_domination(symbol=symbol))
         case "SAME_DIRECTION_PREV_HEIKIN":
             # python modules\meta\Strategies.py SAME_DIRECTION_PREV_HEIKIN y 0
             if batch=="y":
