@@ -71,7 +71,7 @@ class RiskManager:
         if enable_dynamic_direction:
             self.market_direction = self.indicators.get_dominant_direction()
             
-            # TODO Need to add dynamic position size variable in .bat file
+            # TODO Need to add dynamic position size variable in .bat file       
             self.account_risk_percentage = self.trade_tracker.get_dynamic_account_risk_percen(account_risk=account_risk, 
                                                                                               max_account_risk=self.max_account_risk)
             if self.double_entry:
@@ -1011,7 +1011,7 @@ class RiskManager:
         return True
 
 if __name__ == "__main__":
-    obj = RiskManager(stop_ratio=1, target_ratio=3, strategy="dynamic", stop_expected_move=0.05, account_target_ratio=1)
+    obj = RiskManager(stop_ratio=1, target_ratio=3, strategy="dynamic", stop_expected_move=0.2, account_target_ratio=1, market_direction="BREAK", double_entry=False)
     import sys
     test_symbol = sys.argv[1]
     decision = sys.argv[2]
@@ -1040,7 +1040,7 @@ if __name__ == "__main__":
             print()
             stp_range = obj.get_stop_range(symbol=test_symbol, timeframe=15,  stop_selection="FACTOR")
             point_in_stop, lots = obj.get_lot_size(symbol=test_symbol, entry_price=entry_price, stop_price=stp_range.get_long_stop)
-            print(f"Entry:{entry_price + point_in_stop} \nSTP SRT:{entry_price + point_in_stop + point_in_stop} \nSTP LNG: {entry_price} \nLOT: {lots}")
+            print(f"Entry:{entry_price + point_in_stop} \nSTP SRT:{entry_price + point_in_stop + point_in_stop} \nSTP LNG: {entry_price} \nLOT: {lots}, point_in_stop: {point_in_stop}")
         
         case "wait_time":
             check_time = obj.check_trade_wait_time(symbol=test_symbol)

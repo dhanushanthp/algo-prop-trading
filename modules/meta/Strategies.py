@@ -464,6 +464,9 @@ class Strategies:
             return direction
     
     def today_domination(self, symbol:str) -> Directions:
+        """
+        Determines the market direction based on the current day's candlestick pattern for a given symbol.
+        """
         if self.wrapper.is_chart_upto_date(symbol=symbol):
             today_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=0)
             body = abs(today_candle["close"] - today_candle["open"])
