@@ -72,8 +72,9 @@ class RiskManager:
             self.market_direction = self.indicators.get_dominant_direction()
             
             # TODO Need to add dynamic position size variable in .bat file       
-            self.account_risk_percentage = self.trade_tracker.get_dynamic_account_risk_percen(account_risk=account_risk, 
-                                                                                              max_account_risk=self.max_account_risk)
+            # self.account_risk_percentage = self.trade_tracker.get_dynamic_account_risk_percen(account_risk=account_risk, 
+            #                                                                                   max_account_risk=self.max_account_risk)
+            self.account_risk_percentage = 0.25
             if self.double_entry:
                 self.account_risk_percentage = self.account_risk_percentage/2
             

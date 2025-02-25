@@ -622,7 +622,7 @@ class Main():
                             case "TODAY_DOMINATION":
                                 trade_direction = self.strategies.today_domination(symbol=symbol)
                                 # Fixed direction if this specific strategy is enabled
-                                self.risk_manager.market_direction = "BREAK"
+                                self.risk_manager.market_direction = "REVERSE"
                             
                             case "PREV_DAY_CLOSE_DIR_MKT_DOMINATION":
                                 trade_direction = self.indicators.get_dominant_market_actual_direction()
