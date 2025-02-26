@@ -44,30 +44,36 @@ class Strategies:
             print("Bearish trend identified")
         ```
         """
-        previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=4)
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            previous_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=start_candle, n_candles=4)
 
-        if len(previous_bars) >= 3:
-            last_3_bars = previous_bars.tail(3).copy()
-            last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
+            if len(previous_bars) >= 3:
+                last_3_bars = previous_bars.tail(3).copy()
+                last_3_bars["body_size"] = last_3_bars["close"] - last_3_bars["open"]
 
-            is_higher_high = (last_3_bars["high"] > last_3_bars["high"].shift(1)).iloc[1:]
-            is_higher_low = (last_3_bars["low"] > last_3_bars["low"].shift(1)).iloc[1:]
+                is_higher_high = (last_3_bars["high"] > last_3_bars["high"].shift(1)).iloc[1:]
+                is_higher_low = (last_3_bars["low"] > last_3_bars["low"].shift(1)).iloc[1:]
 
-            is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
-            is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
-            
-            if ignore_body:
-                is_bullish = all(is_higher_high) and all(is_higher_low)
-                is_bearish = all(is_lower_high) and all(is_lower_low)
-            else:
-                is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
-                is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
+                is_lower_high = (last_3_bars["high"] < last_3_bars["high"].shift(1)).iloc[1:]
+                is_lower_low = (last_3_bars["low"] < last_3_bars["low"].shift(1)).iloc[1:]
+                
+                if ignore_body:
+                    is_bullish = all(is_higher_high) and all(is_higher_low)
+                    is_bearish = all(is_lower_high) and all(is_lower_low)
+                else:
+                    is_bullish = all(last_3_bars["body_size"] > 0) and all(is_higher_high) and all(is_higher_low)
+                    is_bearish = all(last_3_bars["body_size"] < 0) and all(is_lower_high) and all(is_lower_low)
 
-            if is_bullish:
-                return Directions.LONG
-            
-            if is_bearish:
-                return Directions.SHORT
+                if is_bullish:
+                    return Directions.LONG
+                
+                if is_bearish:
+                    return Directions.SHORT
+        else:
+            mt5.symbol_select(symbol, True)
+            print(f"Waiting for the chart to update: {symbol}")
+            time.sleep(10)
+            return self.get_three_candle_strike(symbol=symbol, timeframe=timeframe, start_candle=start_candle, ignore_body=ignore_body)
     
     def fib_retracement_ref_previous_day(self, symbol:str, fib_level:str="78"):
         yesday_cdl = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=1)
@@ -348,6 +354,39 @@ class Strategies:
                 return Directions.SHORT
         
         return None
+
+
+    def get_three_candle_escape(self, symbol:str, timeframe:int=60) -> Directions:
+        """
+        This method checks if the chart for the given symbol is up to date. If it is, it retrieves the last three candles
+        (excluding the previous closed one) and determines the highest high and lowest low among them. It then compares the close
+        price of the previous candle with these values to decide the trading direction.
+        If the chart is not up to date, it waits for the chart to update and then recursively calls itself.
+
+        This covers 2 scenarious,
+        1. TRENDING SITUATION: When the price is keep moving up or down in last 4 hours (3 candles) and the last candle close is above the highest high of the last 3 candles. Then it will take a trade
+        2. RANGIN SITUATION: When the price is moving up and down in last 4 hours (3 candles) and the last candle close is below the lowest low of the last 3 candles. Then it will take a trade. Since this avoid the up/down ranging noise.
+        
+        Args:
+            symbol (str): The trading symbol to analyze.
+            timeframe (int, optional): The timeframe in minutes for each candle. Defaults to 60.
+        Returns:
+            Directions: The trading direction, either Directions.LONG or Directions.SHORT.
+        """
+        if self.wrapper.is_chart_upto_date(symbol=symbol):
+            three_cdl_bars = self.wrapper.get_last_n_candles(symbol=symbol, timeframe=timeframe, start_candle=2, n_candles=3)
+            three_cdl_higher_highs = max(three_cdl_bars["high"])
+            three_cdl_lower_lows = min(three_cdl_bars["low"])
+            prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+            if prev_candle["close"] > three_cdl_higher_highs:
+                return Directions.LONG
+            elif prev_candle["close"] < three_cdl_lower_lows:
+                return Directions.SHORT
+        else:
+            mt5.symbol_select(symbol, True)
+            print(f"Waiting for the chart to update: {symbol}")
+            time.sleep(10)
+            return self.get_three_candle_escape(symbol=symbol, timeframe=timeframe)
 
 
     def get_four_candle_reversal(self, symbol:str, timeframe:int, extrame=False) -> Directions:
@@ -1122,13 +1161,13 @@ if __name__ == "__main__":
             # python modules\meta\Strategies.py FIB_RETRACEMENT y 0
             if batch=="y":
                 for symbol in curr.get_symbols(symbol_selection="PRIMARY"):
-                    output = strat_obj.fib_retracement_ref_previous_day(symbol=symbol)
+                    output = strat_obj.get_three_candle_escape(symbol=symbol)
                     if output:
                         print(symbol, output)
             else:
                 # python modules\meta\Strategies.py FIB_RETRACEMENT y 0 AUDUSD
                 symbol = sys.argv[4]
-                print(strat_obj.fib_retracement_ref_previous_day(symbol=symbol))
+                print(strat_obj.get_three_candle_escape(symbol=symbol))
         
         case "ATR_BASED_DIRECTION":
             # python modules\meta\Strategies.py ATR_BASED_DIRECTION y 0

@@ -571,26 +571,32 @@ class Main():
                             case "3CDL_STR":
                                 trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe)
+                                self.risk_manager.market_direction = "BREAK"
                             case "3CDL_REV":
                                 trade_direction = self.strategies.get_three_candle_reverse(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)                 
+                                self.risk_manager.market_direction = "BREAK"
                             case "4CDL_PULLBACK":
                                 trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe)
+                                self.risk_manager.market_direction = "BREAK"
                             case "4CDL_PULLBACK_EXT":
                                 trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe,
                                                                                         extrame=True)
+                                self.risk_manager.market_direction = "BREAK"
                             case "DAILY_HL":
                                 min_gap = 2
                                 trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe,
                                                                                         min_gap=min_gap)
+                                self.risk_manager.market_direction = "BREAK"
                             case "DAILY_HL_DOUBLE_HIT":
                                 min_gap = 4
                                 trade_direction = self.strategies.daily_high_low_breakout_double_high_hit(symbol=symbol, 
                                                                                                         timeframe=self.trading_timeframe,
                                                                                                         min_gap=min_gap)
+                                self.risk_manager.market_direction = "BREAK"
                             case "WEEKLY_HL":
                                 min_gap = 4
                                 trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
@@ -618,6 +624,10 @@ class Main():
                                                                                 timeframe=self.trading_timeframe)
                             case "PREV_DAY_CLOSE_DIR":
                                 trade_direction = self.strategies.previous_day_close(symbol=symbol)
+
+                            case "3CDL_ESCAPE":
+                                trade_direction = self.strategies.get_three_candle_escape(symbol=symbol)
+                                self.risk_manager.market_direction = "BREAK"
                             
                             case "TODAY_DOMINATION":
                                 trade_direction = self.strategies.today_domination(symbol=symbol)
