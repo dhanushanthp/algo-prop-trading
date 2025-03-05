@@ -79,6 +79,29 @@ class TradeTracker:
                 return max(0.5, last_acc_risk_perc - 0.1)
                 
         return round(account_risk, 2)
+    
+    def get_market_direction(self):
+        """
+        Determine the market direction based on the account's recent trade performance.
+        Returns:
+            str: The market direction, which can be "BREAK" or "REVERSE".
+        The function reads the account's trade data from a CSV file and determines the market direction based on the
+        performance of the last trade. If the last trade was profitable, it returns the previous market direction.  
+        """
+        file_path = f"PnLData/pnl_trades/{self.account_id}.csv"
+
+        # If exists, means at least one trade has been made
+        if files_util.check_file_exists(file_path=file_path):
+            df = pd.read_csv(file_path)
+            previous_strategy = df.iloc[-1]["Strategy"]
+            prev_day_pnl = df.iloc[-1]["Pnl"]
+
+            if prev_day_pnl > 0:
+                return previous_strategy
+            else:
+                return "BREAK" if previous_strategy == "REVERSE" else "REVERSE"
+            
+        return "BREAK"
 
 
     def get_dynamic_rr(self, num_records:int=5, default:float=2.0) -> float:
@@ -239,3 +262,4 @@ if __name__ == "__main__":
     # print(ref.symbol_historic_pnl(each_position_risk_appertide=12))
     # print(ref.get_rr_change())
     print(ref.get_dynamic_rr(default=10.0))
+    print(ref.get_market_direction())

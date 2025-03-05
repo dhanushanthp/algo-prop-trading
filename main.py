@@ -477,7 +477,7 @@ class Main():
                     self.off_market_rr = round(self.rr, 2)
                 
                 self.trade_tracker.record_pnl_logs(pnl=self.off_market_pnl, rr=self.off_market_rr, rr_change=self.rr_change)
-                self.trade_tracker.record_symbol_pnl_logs(pnl_df=symbol_pnl)
+                # self.trade_tracker.record_symbol_pnl_logs(pnl_df=symbol_pnl)
 
 
             # Each position trail stop
@@ -571,32 +571,26 @@ class Main():
                             case "3CDL_STR":
                                 trade_direction = self.strategies.get_three_candle_strike(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe)
-                                self.risk_manager.market_direction = "BREAK"
                             case "3CDL_REV":
                                 trade_direction = self.strategies.get_three_candle_reverse(symbol=symbol, 
                                                                                             timeframe=self.trading_timeframe)                 
-                                self.risk_manager.market_direction = "BREAK"
                             case "4CDL_PULLBACK":
                                 trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe)
-                                self.risk_manager.market_direction = "BREAK"
                             case "4CDL_PULLBACK_EXT":
                                 trade_direction = self.strategies.get_four_candle_reversal(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe,
                                                                                         extrame=True)
-                                self.risk_manager.market_direction = "BREAK"
                             case "DAILY_HL":
                                 min_gap = 2
                                 trade_direction = self.strategies.daily_high_low_breakouts(symbol=symbol, 
                                                                                         timeframe=self.trading_timeframe,
                                                                                         min_gap=min_gap)
-                                self.risk_manager.market_direction = "BREAK"
                             case "DAILY_HL_DOUBLE_HIT":
                                 min_gap = 4
                                 trade_direction = self.strategies.daily_high_low_breakout_double_high_hit(symbol=symbol, 
                                                                                                         timeframe=self.trading_timeframe,
                                                                                                         min_gap=min_gap)
-                                self.risk_manager.market_direction = "BREAK"
                             case "WEEKLY_HL":
                                 min_gap = 4
                                 trade_direction = self.strategies.weekly_high_low_breakouts(symbol=symbol, 
@@ -627,17 +621,14 @@ class Main():
 
                             case "3CDL_ESCAPE":
                                 trade_direction = self.strategies.get_three_candle_escape(symbol=symbol)
-                                self.risk_manager.market_direction = "BREAK"
                             
                             case "TODAY_DOMINATION":
                                 trade_direction = self.strategies.today_domination(symbol=symbol)
                                 # Fixed direction if this specific strategy is enabled
-                                self.risk_manager.market_direction = "REVERSE"
                             
                             case "PREV_DAY_CLOSE_DIR_MKT_DOMINATION":
                                 trade_direction = self.indicators.get_dominant_market_actual_direction()
                                 # Fixed direction if this specific strategy is enabled
-                                self.risk_manager.market_direction = "BREAK"
                             
                             case "DAY_CLOSE_SMA":
                                 trade_direction = self.strategies.day_close_sma(symbol=symbol)
