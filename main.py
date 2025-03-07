@@ -621,6 +621,7 @@ class Main():
 
                             case "3CDL_ESCAPE":
                                 trade_direction = self.strategies.get_three_candle_escape(symbol=symbol)
+                                self.risk_manager.market_direction = Directions.REVERSE.name
                             
                             case "TODAY_DOMINATION":
                                 trade_direction = self.strategies.today_domination(symbol=symbol)
