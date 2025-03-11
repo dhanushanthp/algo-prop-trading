@@ -962,6 +962,8 @@ class RiskManager:
         today_trades = self.wrapper.get_todays_trades()
         closed_position_ids = today_trades[today_trades["entry"] == 1]["position_id"]
         entry_of_closed_positions = today_trades[today_trades["position_id"].isin(closed_position_ids) & (today_trades["entry"] == 0)].copy()
+        # Pick the most latest trade based on time, Incase If we have multiple trades based on the logic
+        entry_of_closed_positions = entry_of_closed_positions.loc[entry_of_closed_positions.groupby("symbol")["time"].idxmax()]
         entry_of_closed_positions["time"] = entry_of_closed_positions["time"].apply(lambda x: util.get_traded_time(epoch=x))
         entry_of_closed_positions.loc[:, "hour"] = entry_of_closed_positions["time"].apply(lambda x: x.hour)
         entry_of_closed_positions["traded_position"] = entry_of_closed_positions["type"].apply(lambda x: Directions.LONG if x == 0 else Directions.SHORT)
