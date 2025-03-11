@@ -918,6 +918,69 @@ class RiskManager:
         return points_in_stop, lots
     
 
+    def neutralizer_improvised(self, timeframe:int=60):
+        """
+        Identifies positions that need to be neutralized based on the direction of the latest candle.
+
+        This function scans existing positions and identifies those where the direction of the last
+        candle is opposite to the direction of the position. If such positions are found, they are
+        added to the neutral_positions list.
+
+        Parameters:
+        -----------
+        timeframe : int, optional
+            Timeframe for candle data (default is 60).
+
+        Returns:
+        --------
+        list
+            A list of tuples containing:
+            - position: The existing position object.
+            - symbol: The symbol for the position.
+            - trade_bar_direction: The direction of the latest candle (LONG or SHORT).
+        """
+        existing_positions = mt5.positions_get()
+        neutral_positions = []
+        current_hour = int(util.get_current_time().strftime("%H"))
+
+        for position in existing_positions:
+            symbol = position.symbol
+            traded_position = Directions.LONG if position.type == 0 else Directions.SHORT
+            traded_time = position.time
+            traded_hour = int(util.get_traded_time(epoch=traded_time).strftime("%H"))
+            
+            
+            if current_hour == traded_hour + 1:
+                traded_bar = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+                trade_bar_direction = Directions.LONG if traded_bar["close"] > traded_bar["open"] else Directions.SHORT
+
+                if traded_position != trade_bar_direction:
+                    # Object of the existing position and the direction of the bar, which is opposite to previous trade
+                    neutral_positions.append((position, symbol, trade_bar_direction))
+        
+        # For Closed Positions
+        today_trades = self.wrapper.get_todays_trades()
+        closed_position_ids = today_trades[today_trades["entry"] == 1]["position_id"]
+        entry_of_closed_positions = today_trades[today_trades["position_id"].isin(closed_position_ids) & (today_trades["entry"] == 0)].copy()
+        entry_of_closed_positions["time"] = entry_of_closed_positions["time"].apply(lambda x: util.get_traded_time(epoch=x))
+        entry_of_closed_positions.loc[:, "hour"] = entry_of_closed_positions["time"].apply(lambda x: x.hour)
+        entry_of_closed_positions["traded_position"] = entry_of_closed_positions["type"].apply(lambda x: Directions.LONG if x == 0 else Directions.SHORT)
+        
+        for idx, row in entry_of_closed_positions.iterrows():
+            symbol = row["symbol"]
+            traded_hour = row["hour"]
+            traded_position = row["traded_position"]
+            traded_bar = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+            trade_bar_direction = Directions.LONG if traded_bar["close"] > traded_bar["open"] else Directions.SHORT
+
+            if current_hour == traded_hour + 1:
+                if traded_position != trade_bar_direction:
+                    # Object of the existing position and the direction of the bar, which is opposite to previous trade
+                    neutral_positions.append((None, symbol, trade_bar_direction))
+        
+        return neutral_positions
+
+
     def neutralizer(self, timeframe:int, enable_ratio:float=0.5):
         """
         Evaluates existing trading positions and identifies positions to neutralize based on the given risk threshold.
@@ -1083,6 +1146,10 @@ if __name__ == "__main__":
             # python modules\meta\RiskManager.py CADJPY time_gap
             for symbol in curr.get_symbols():
                 print(symbol, obj.find_last_trade_time_gap(symbol=symbol, timeframe=60))
+        
+        case "trade_neutral":
+            # python modules\meta\RiskManager.py CADJPY trade_neutral
+            print(obj.neutralizer_improvised(timeframe=60))
 
         case "get_pnl":
             # python modules\meta\RiskManager.py CADJPY get_pnl
