@@ -486,14 +486,25 @@ class Main():
                                                            num_cdl_for_stop=self.num_prev_cdl_for_stop, stop_selection=self.primary_stop_selection)
             
             if self.enable_neutralizer:
-                list_of_positions = self.risk_manager.neutralizer(enable_ratio=0.7, timeframe=self.trading_timeframe)
-                for symbol, direction in list_of_positions:
+                list_of_positions = self.risk_manager.neutralizer_improvised()
+                for obj, symbol, direction in list_of_positions:
                     # This helps to neutralize the reverse option while trading, It's like we take squared for us to to the squreroot
                     if self.risk_manager.market_direction==Directions.REVERSE.name:
                         direction = Directions.LONG if direction == Directions.SHORT else Directions.SHORT
 
-                    if self.trade(direction=direction, symbol=symbol, comment=f"NEUTRAL", break_level=-1, market_entry=True):
-                        break
+                    if obj is not None:
+                        self.orders.close_single_position(obj=obj)
+                        print("Closing Existing Position: ", symbol)
+                    
+                    is_valid_signal, _ = self.risk_manager.check_signal_validity(symbol=symbol,
+                                                                                    timeframe=self.trading_timeframe,
+                                                                                    trade_direction=direction,
+                                                                                    strategy=self.risk_manager.market_direction,
+                                                                                    multiple_positions=self.multiple_positions,
+                                                                                    max_trades_per_day=self.max_trades_on_same_direction)
+                    if is_valid_signal:
+                        if self.trade(direction=direction, symbol=symbol, comment="NEUTRAL", break_level=-1, stop_selection=self.primary_stop_selection, entry_with_st_tgt=self.entry_with_st_tgt):
+                            break
             
 
             if self.enable_breakeven:
