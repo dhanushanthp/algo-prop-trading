@@ -330,7 +330,7 @@ class RiskManager:
         return timeframe * 3
 
 
-    def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_active_single_direction", max_trades_per_day:int=2) -> Tuple[bool, bool]:
+    def check_signal_validity(self, symbol:str, timeframe:int, trade_direction:Directions, strategy:str, multiple_positions:str="by_active_single_direction", max_trades_per_day_per_symbol:int=2) -> Tuple[bool, bool]:
         is_opening_trade = False
 
         if strategy==Directions.REVERSE.name:
@@ -402,15 +402,14 @@ class RiskManager:
             # we skip taking a new position to prevent reacting to sudden price movements (which could 
             # trigger a stop-loss and immediately open a new position based on the same signal).
             if active_positions.empty or (symbol not in list(active_positions["symbol"])):
-                if trade_time_gap > timeframe:
-                    todays_trades = self.wrapper.get_todays_trades()
-                    if not todays_trades:
-                        traded_symbol = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
-                        # Limit the number of trades by day by symbol regardless of it's direction
-                        if len(todays_trades) < max_trades_per_day:
-                            return True, is_opening_trade
-                        
-                    return True, is_opening_trade
+                todays_trades = self.wrapper.get_todays_trades()
+                if not todays_trades.empty:
+                    todays_trades = todays_trades[(todays_trades["symbol"] == symbol) & (todays_trades["entry"] == 0)]
+                    # Limit the number of trades by day by symbol regardless of it's direction
+                    if len(todays_trades) < max_trades_per_day_per_symbol:
+                        return True, is_opening_trade
+                    
+                return True, is_opening_trade
 
         return False, is_opening_trade
     
@@ -960,25 +959,26 @@ class RiskManager:
         
         # For Closed Positions
         today_trades = self.wrapper.get_todays_trades()
-        closed_position_ids = today_trades[today_trades["entry"] == 1]["position_id"]
-        entry_of_closed_positions = today_trades[today_trades["position_id"].isin(closed_position_ids) & (today_trades["entry"] == 0)].copy()
-        # Pick the most latest trade based on time, Incase If we have multiple trades based on the logic
-        entry_of_closed_positions = entry_of_closed_positions.loc[entry_of_closed_positions.groupby("symbol")["time"].idxmax()]
-        entry_of_closed_positions["time"] = entry_of_closed_positions["time"].apply(lambda x: util.get_traded_time(epoch=x))
-        entry_of_closed_positions.loc[:, "hour"] = entry_of_closed_positions["time"].apply(lambda x: x.hour)
-        entry_of_closed_positions["traded_position"] = entry_of_closed_positions["type"].apply(lambda x: Directions.LONG if x == 0 else Directions.SHORT)
-        
-        for idx, row in entry_of_closed_positions.iterrows():
-            symbol = row["symbol"]
-            traded_hour = row["hour"]
-            traded_position = row["traded_position"]
-            traded_bar = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
-            trade_bar_direction = Directions.LONG if traded_bar["close"] > traded_bar["open"] else Directions.SHORT
+        if not today_trades.empty:
+            closed_position_ids = today_trades[today_trades["entry"] == 1]["position_id"]
+            entry_of_closed_positions = today_trades[today_trades["position_id"].isin(closed_position_ids) & (today_trades["entry"] == 0)].copy()
+            # Pick the most latest trade based on time, Incase If we have multiple trades based on the logic
+            entry_of_closed_positions = entry_of_closed_positions.loc[entry_of_closed_positions.groupby("symbol")["time"].idxmax()]
+            entry_of_closed_positions["time"] = entry_of_closed_positions["time"].apply(lambda x: util.get_traded_time(epoch=x))
+            entry_of_closed_positions.loc[:, "hour"] = entry_of_closed_positions["time"].apply(lambda x: x.hour)
+            entry_of_closed_positions["traded_position"] = entry_of_closed_positions["type"].apply(lambda x: Directions.LONG if x == 0 else Directions.SHORT)
+            
+            for idx, row in entry_of_closed_positions.iterrows():
+                symbol = row["symbol"]
+                traded_hour = row["hour"]
+                traded_position = row["traded_position"]
+                traded_bar = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=1)
+                trade_bar_direction = Directions.LONG if traded_bar["close"] > traded_bar["open"] else Directions.SHORT
 
-            if current_hour == traded_hour + 1:
-                if traded_position != trade_bar_direction:
-                    # Object of the existing position and the direction of the bar, which is opposite to previous trade
-                    neutral_positions.append((None, symbol, trade_bar_direction))
+                if current_hour == traded_hour + 1:
+                    if traded_position != trade_bar_direction:
+                        # Object of the existing position and the direction of the bar, which is opposite to previous trade
+                        neutral_positions.append((None, symbol, trade_bar_direction))
         
         return neutral_positions
 

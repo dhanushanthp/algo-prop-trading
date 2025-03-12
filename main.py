@@ -76,7 +76,7 @@ class Main():
 
         # Applies only for 
         self.atr_check_timeframe = kwargs["atr_check_timeframe"]
-        self.max_trades_on_same_direction = kwargs["max_trades_on_same_direction"]
+        self.max_trades_per_day_per_symbol = kwargs["max_trades_on_same_direction"]
 
         self.stop_expected_move = kwargs["stop_expected_move"]
 
@@ -253,7 +253,7 @@ class Main():
             print(f"{'ATR TF'.ljust(20)}: {util.cl(self.atr_check_timeframe)}")
         
         if "_limit" in self.multiple_positions:
-            print(f"{'Multi Positions'.ljust(20)}: {util.cl(self.max_trades_on_same_direction)}")
+            print(f"{'Multi Positions'.ljust(20)}: {util.cl(self.max_trades_per_day_per_symbol)}")
 
         print(util.cl_status("\nRISK CONDITIONS", "yellow"))
         print(f"{'Target Ratio'.ljust(20)}: 1:{int(self.target_ratio)}")
@@ -501,7 +501,7 @@ class Main():
                                                                                     trade_direction=direction,
                                                                                     strategy=self.risk_manager.market_direction,
                                                                                     multiple_positions=self.multiple_positions,
-                                                                                    max_trades_per_day=self.max_trades_on_same_direction)
+                                                                                    max_trades_per_day_per_symbol=self.max_trades_per_day_per_symbol)
                     if is_valid_signal:
                         if self.trade(direction=direction, symbol=symbol, comment="NEUTRAL", break_level=-1, stop_selection=self.primary_stop_selection, entry_with_st_tgt=self.entry_with_st_tgt):
                             break
@@ -632,6 +632,7 @@ class Main():
 
                             case "3CDL_ESCAPE":
                                 trade_direction = self.strategies.get_three_candle_escape(symbol=symbol)
+                                self.risk_manager.market_direction = Directions.REVERSE.name
                             
                             case "TODAY_DOMINATION":
                                 trade_direction = self.strategies.today_domination(symbol=symbol)
@@ -677,7 +678,7 @@ class Main():
                                                                                     trade_direction=trade_direction,
                                                                                     strategy=self.risk_manager.market_direction,
                                                                                     multiple_positions=self.multiple_positions,
-                                                                                    max_trades_per_day=self.max_trades_on_same_direction)
+                                                                                    max_trades_per_day_per_symbol=self.max_trades_per_day_per_symbol)
                         
                         if self.enable_sec_stop_selection:
                             # If it's considered as opening trade then choose the primary stop selection else choose secondary

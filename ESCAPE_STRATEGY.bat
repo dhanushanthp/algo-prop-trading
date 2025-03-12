@@ -34,9 +34,10 @@ set security=FOREX
 REM Trade Controls
 set enable_trail_stop=no
 set enable_breakeven=no
-set enable_neutralizer=no
+set enable_neutralizer=yes
 REM by_active or by_trades or by_open or by_active_limit or by_active_both_direction or by_active_single_direction
-set multiple_positions=by_active_single_direction
+set multiple_positions=by_active_single_direction_with_limit
+set max_trades_on_same_direction=2
 
 set record_pnl=yes
 set close_by_time=no
@@ -47,10 +48,9 @@ set primary_symbols=PRIMARY
 REM CANDLE or "ATR5M", "ATR15M", "ATR1H", "ATR2H", "ATR4H", "ATR1D", "FACTOR"
 set primary_stop_selection=FACTOR
 REM Lower it goes, tigher the risk is
-set stop_expected_move=0.05 
+set stop_expected_move=0.025
 set enable_sec_stop_selection=no
 set secondary_stop_selection=ATR15M
-set max_trades_on_same_direction=100
 
 set adaptive_reentry=no
 set adaptive_tolerance=0.75
