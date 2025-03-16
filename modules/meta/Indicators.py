@@ -823,7 +823,6 @@ class Indicators:
             - If the directions are the same (both "long" or both "short"), it increments the `break_count`.
             - If the directions are different (one "long" and the other "short"), it increments the `reverse_count`.
         - After looping through all symbols, the method returns "BREAK" if `break_count` is greater than `reverse_count`, indicating that the market is likely to continue in the same direction. Otherwise, it returns "REVERSE", indicating that the market is likely to change direction.
-
         """
 
         """

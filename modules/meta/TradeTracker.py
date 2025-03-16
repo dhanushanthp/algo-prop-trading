@@ -100,7 +100,7 @@ class TradeTracker:
                 return previous_strategy
             else:
                 return "BREAK" if previous_strategy == "REVERSE" else "REVERSE"
-            
+        
         return "BREAK"
 
 

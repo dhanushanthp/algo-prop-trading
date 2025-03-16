@@ -489,7 +489,12 @@ class Strategies:
     def previous_day_close(self, symbol:str, start_candle:int=0) -> Directions:
         """
         Determines the market direction (LONG or SHORT) based on the previous day's closing price for a given symbol.
-        This function fetches the previous day's candle data for the specified symbol and compares the closing price with the opening price. If the closing price is higher than the opening price, the market direction is considered LONG; otherwise, it is considered SHORT.
+        This function fetches the previous day's candle data for the specified symbol and compares the closing price with the opening price. 
+        If the closing price is higher than the opening price, the market direction is considered LONG; otherwise, it is considered SHORT.
+
+        The decision of BREAK OR REVERSE comes from the market domination.
+        @link src.meta.indicators.get_dominant_direction()
+
 
         Args:
             symbol (str): The trading symbol for which the previous day's closing direction is to be determined.
