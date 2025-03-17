@@ -793,7 +793,7 @@ class Indicators:
                 print(f"Even Confidence: {round(even_count/8, 2)}")
                 return Directions.LONG
 
-    def get_dominant_direction(self, lookback=1) -> str:
+    def get_dominant_direction(self, lookback=1, timeframe:int=1440) -> str:
         """
         Identify the potential direction of the market move.
 
@@ -869,8 +869,8 @@ class Indicators:
                 time.sleep(10)
                 return self.get_dominant_direction(lookback=lookback)
             
-            prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback)
-            prev_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=1440, i=lookback+1)
+            prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=lookback)
+            prev_prev_candle = self.wrapper.get_candle_i(symbol=symbol, timeframe=timeframe, i=lookback+1)
             prev_dir = "long" if prev_candle["close"] > prev_candle["open"] else "short"
             prev_prev_dir = "long" if prev_prev_candle["close"] > prev_prev_candle["open"] else "short"
             if prev_dir == prev_prev_dir:
