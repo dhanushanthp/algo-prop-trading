@@ -1,9 +1,14 @@
-# History
-The first commit has been made on 2023 Nov 06, to start this as Meta Query Project.
+# Background
+The first commit for the Meta Query Project was made on November 6, 2023. This project aimed to trade proprietary trading accounts using MetaTrader, leveraging the MetaTrader API for transactions. This includes risk management, dynamic risk allocation, entry and exit plan and also data collection to analyse the PNL and risk reward ratios including Power BI dashboard.
 
-# Automated Trading
+Throughout the journey, I experimented with various strategies, but ultimately realized the unpredictable nature of the stock market. Regardless of the approach, finding an edge proved to be extremely difficult. One key lesson I learned is to avoid relying on a single stock or symbol. Instead, trading with a diversified selection of stocks or symbols can help manage risk—if one moves in an unfavorable direction, others may balance out the loss.
+
+However, this strategy also fell short. Even when the entire position briefly showed profit, fluctuations between positive and negative were inevitable, reflecting the volatile dynamics of the market. Furthermore, trading trade proprietary specifically presented additional challenges due to the substantial spread, which made trading conditions far from ideal.
+
+Given these insights, I’ve decided to archive this project and accept the reality that trading in the forex market is not viable for me. For anyone interested in pursuing this, the simplest way would be to use the MetaTrader main.py, which includes predefined strategies accessible via a bot script
+
+# Learnings
 I recommend automating trading instead of doing it manually. While it's possible for individuals to trade manually, emotions can negatively impact their decisions. For instance, a trader might gain confidence from a series of winning trades, not realizing that the market was simply favorable at that time. This confidence can lead to increased risk due to greed. If the market then reverses, the trader may not adapt, resulting in significant losses. Over time, this cycle can erode their confidence.
-
 
 Emotions like greed and fear greatly influence this process. The best way to eliminate these emotions is by using a trading bot that makes decisions based on set rules, such as:
 
@@ -11,7 +16,6 @@ Emotions like greed and fear greatly influence this process. The best way to eli
 2. Which symbol to trade
 3. The risk level for each trade
 4. Entry and exit plans
-
 
 In trading, there's no single right or wrong approach. If a method works for you and brings in profit, that's what matters.
 
@@ -34,47 +38,3 @@ From my experience, I’ve learned that the market doesn’t always move in one 
 
 
 # Configuration
-### enable_neutralizer
-(This don't work, Since market is unpreditable)
-Assesses existing trading positions and identifies those that need neutralization based on a specified risk threshold. It compares the current price of each open position to a dynamically calculated midpoint. If the price crosses the threshold defined by `enable_ratio`, it recommends taking an opposite position to mitigate risk.
-
-### enable_breakeven
-(This don't work, Since market is unpreditable)
-Moves the stop-loss of existing positions to the breakeven point once a certain profit threshold is met for each position.
-
-### enable_trail_stop
-(This don't work, Since market is unpreditable)
-Activates trailing stops and targets for existing positions, guided by predefined multipliers and the trading timeframe.
-
-### multiple_positions
-(This don't work, Since market is unpreditable)
-Defines the rule for managing multiple positions in the same symbol and direction. The default is "by_trades":
-
-- **"by_active"**: Permits only one active position per direction for a symbol.
-- **"by_active_limit"**: Limits the number of trades in the same direction for a symbol to a specified maximum.
-- **"by_trades"**: Allows only one trade per direction per day for a symbol.
-- **"by_open"**: Allows additional trades if a specified time interval has passed since the last trade.
-
-> GO WITH A FLOW......
-
-# Selected Strategies
-## [Trade Based on Previos Day Close](FRX_PREV_DAY_CLOSE_DIR.bat)
-| year_month | Win Rate |
-|------------|--------------|
-| 2023_10    | 49.0%        |
-| 2023_11    | 57.0%        |
-| 2023_12    | 50.0%        |
-| 2024_1     | 44.0%        |
-| 2024_2     | 56.0%        |
-| 2024_3     | 48.0%        |
-| 2024_4     | 51.0%        |
-| 2024_5     | 57.0%        |
-| 2024_6     | 52.0%        |
-| 2024_7     | 58.0%        |
-| 2024_8     | 52.0%        |
-
-
-## [15 minutes 4 Candle Break](FRX_15M_4CDL_BREAK.bat)
-
-
-## [15 minutes 4 Candle Reverse](FRX_15M_4CDL_REVERSE.bat)
