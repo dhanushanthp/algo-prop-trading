@@ -1,3 +1,6 @@
+# Who is this intended for?
+If someone asks me whether they should venture into trading, my general advice would be: if you can lose $1,000 in a single day and still sleep peacefully that night, then you might have the temperament to handle trading.
+
 # Background
 The first commit for the Meta Query Project was made on November 6, 2023. This project aimed to trade proprietary trading accounts using MetaTrader, leveraging the MetaTrader API for transactions. This includes risk management, dynamic risk allocation, entry and exit plan and also data collection to analyse the PNL and risk reward ratios including Power BI dashboard.
 
@@ -35,6 +38,15 @@ From my experience, I’ve learned that the market doesn’t always move in one 
 | 35%              | -0.3                       | 0.05                       | 0.4                        | 0.75                       | 1.1                        |
 | 30%              | -0.4                       | -0.1                       | 0.2                        | 0.5                        | 0.8                        |
 | 25%              | -0.5                       | -0.25                      | 0.0                        | 0.25                       | 0.5                        |
+
+
+# What do you need
+1. Prop Trading Account (e.g. [FTMO](https://ftmo.com/))
+2. [MetaTrader 5](https://www.metatrader5.com/en) (Works only on Windows OS)
+3. Python Packages - [run the script to install](scripts/install.bat)
+
+# Where and How to Start?
+ 
 
 
 # Configuration
