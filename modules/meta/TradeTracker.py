@@ -102,6 +102,22 @@ class TradeTracker:
                 return "BREAK" if previous_strategy == "REVERSE" else "REVERSE"
         
         return "BREAK"
+    
+
+    def is_win_yesterday(self):
+        file_path = f"PnLData/pnl_trades/{self.account_id}.csv"
+
+        # If exists, means at least one trade has been made
+        if files_util.check_file_exists(file_path=file_path):
+            df = pd.read_csv(file_path)
+            prev_day_pnl = df.iloc[-1]["Pnl"]
+
+            if prev_day_pnl > 0:
+                return True
+            else:
+                return False
+        
+        return True
 
 
     def get_dynamic_rr(self, num_records:int=5, default:float=2.0) -> float:

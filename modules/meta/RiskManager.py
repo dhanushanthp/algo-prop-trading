@@ -69,8 +69,13 @@ class RiskManager:
         
         # If it's a dynamic risk then change the todays direction based on previous direction.
         if enable_dynamic_direction:
-            self.market_direction = self.indicators.get_dominant_direction()
-            # self.market_direction = self.trade_tracker.get_market_direction()
+            # Determine the market direction based on yesterday's trade outcome and current candle trend
+            # If yesterday was a win, use the dominant direction from candles.
+            # Otherwise, switch to "BREAK" if the dominant direction is "REVERSE", or use "REVERSE" otherwise.
+            market_direction = self.indicators.get_dominant_direction()
+            is_win = self.trade_tracker.is_win_yesterday()
+            # Toggle the position
+            self.market_direction = market_direction if is_win else ("BREAK" if market_direction == "REVERSE" else "REVERSE")
             
             # TODO Need to add dynamic position size variable in .bat file       
             # self.account_risk_percentage = self.trade_tracker.get_dynamic_account_risk_percen(account_risk=account_risk, 
