@@ -8,7 +8,7 @@ class Slack:
     def __init__(self) -> None:
         try:
             self.client = WebClient(
-                token="xoxb-4628404917445-4631574171810-nrebpFdu1u7M3mpmy0H5y0Pq")
+                token="")
         except Exception as e:
             print(e)
         self.SLACK_CHANNEL = 'general'
