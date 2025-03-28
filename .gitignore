@@ -15,3 +15,5 @@ notebooks/data/candles/
 /PnLData
 /logs
 /notebooks
+.vscode
+.ipynb_checkpoints
